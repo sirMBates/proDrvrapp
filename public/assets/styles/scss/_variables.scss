@@ -1,0 +1,38 @@
+$navbar-dark-color: white;
+$enable-gradients: true;
+
+@import "./gradients";
+@import "./mixins";
+
+:root {
+    --bs-body-font-family: 'Roboto', sans-serif !important; 
+}
+
+.custom-tooltip {
+    --bs-tooltip-bg: rgba(29, 82, 131, 0.9) !important;
+    --bs-tooltip-color: #FAF9F6 !important;
+}
+
+body, .offcanvas-body {
+    @include gradient-x-three-colors();
+}
+
+.niteMode {
+    @include body-bkgd-nite-mode($color: #28282B);
+}
+
+.nightMode::before {
+    @include header-before-nitemode();
+}
+
+.nightMode {
+    @include header-nitemode();
+}
+
+.bkgd {
+    @include input-bkgd-color(rgba(250, 250, 210, .85));
+}
+
+.noprint {
+    @include no-print-page();
+}

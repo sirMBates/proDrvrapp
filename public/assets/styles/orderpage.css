@@ -1,0 +1,16 @@
+/*.newColor {
+        background-image: repeating-linear-gradient(120deg, var(--dodger-blue) 33%, navy 75%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+}*/
+
+
+#signaturecon::-webkit-scrollbar {
+        display: none;
+}
+
+#signaturePad {
+        border: 2px solid black;
+        cursor: url('../../images-videos/logoandicons/icons8-pen-50.png') 1 50, pointer;
+}

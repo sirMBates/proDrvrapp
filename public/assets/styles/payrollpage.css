@@ -1,0 +1,43 @@
+.carousel-control-prev,
+.carousel-control-next{
+        margin-top: 10rem;
+        margin-right: 1rem;
+}
+
+.card {
+        padding-bottom: 1.25rem;  
+}
+
+#entriesDataCon::-webkit-scrollbar {
+        display: none;
+}
+
+#paySheetCardCon .card-body::-webkit-scrollbar {
+        display: none;
+}
+
+.plain-bkgd {
+        background-image: none;
+}
+
+@media only screen and (width <= 765px) {
+        #paySheetCardCon .card-body {
+                overflow-x: scroll;
+        }
+}
+
+@media only print {
+        #paySheetCardCon > .card {
+                border: none;
+                margin: auto 0;
+        }
+
+        #paySheetCardCon .card-body {
+                overflow-x: visible;
+                width: 100%;
+        }
+
+        .navbar {
+                display: none !important;
+        }
+}
