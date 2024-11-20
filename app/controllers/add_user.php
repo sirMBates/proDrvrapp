@@ -1,5 +1,4 @@
 <?php
-
 class AddDrvrContr extends AddedDrvr {
     private $username;
     private $email;

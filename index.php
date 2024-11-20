@@ -1,14 +1,11 @@
 <?php
-
 //require_once __DIR__ . '/vendor/autoload.php';
-
 /*$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, 'local.env');
 $dotenv->load();
 $dbhost = $_ENV['DB_HOST'];
 echo $dbhost;*/
 header("location: public/views/drvrsignup.php");
 exit();
-
 /*$request = $_SERVER['REQUEST_URI'];
 $viewDir = '/public/';
 

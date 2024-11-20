@@ -17,5 +17,5 @@ if (isset($_POST['saveinfo'])) {
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
     header("Location: ../../public/views/drvrsignin.php?error=none&status=complete");
     exit();
-}
+};
 ?>

@@ -10,7 +10,7 @@ $dotenv->load();*/
 
 class Login extends ConnectDatabase {
     protected function getDriver($username, $password) {
-        $stmt =$this->connect()->prepare("SELECT password FROM drivers WHERE username = ? OR email = ?;");
+        $stmt =$this->connect()->prepare("SELECT password FROM driver WHERE username = ? OR email = ?;");
         /*function getKeyFromEnv() {
             $keyAscii = $_ENV["ENCRYPT_SECRET_KEY"];
             return Key::loadFromAsciiSafeString($keyAscii);
@@ -41,7 +41,7 @@ class Login extends ConnectDatabase {
         }
 
         elseif ($checkPsw === true) {
-            $stmt =$this->connect()->prepare("SELECT * FROM drivers WHERE username = ? OR email = ? AND password = ?;");
+            $stmt =$this->connect()->prepare("SELECT * FROM driver WHERE username = ? OR email = ? AND password = ?;");
 
             if (!$stmt->execute(array($username, $username, $password))) {
                 $stmt = null;

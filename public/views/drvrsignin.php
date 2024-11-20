@@ -1,11 +1,11 @@
 <?php
-        require "../../config.php";
-        $title = "Pro Driver - Sign in";
-        require "../includes/head.php";
+require "../../config.php";
+$title = "Pro Driver - Sign in";
+require "../includes/head.php";
 ?>
 <body class="d-flex flex-column align-items-center min-vh-100 noprint overflow-y-scroll prodrvrbkgd">
 <?php
-        require "../includes/errormsgs.php";
+require "../includes/errormsgs.php";
 ?>
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
 
@@ -43,7 +43,7 @@
         </footer>
 
 <?php
-        require "../includes/scripts.php";
+require "../includes/scripts.php";
 ?>
 </body>
 </html>
