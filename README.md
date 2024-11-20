@@ -36,4 +36,10 @@ The driver will see all information pertaining to the current trip/work order th
 + HTML
 + Font Awesome
 + Google Fonts
++ Composer
++ SCSS
++ PhpMailer
++ jSignature
++ vlucas/Phpdotenv
++ Defuse/php-encryption
 
