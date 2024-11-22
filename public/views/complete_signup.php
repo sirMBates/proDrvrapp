@@ -1,13 +1,13 @@
 <?php
-        require "../../config.php";
-        $title = "Pro Driver - driver Info";
-        require "../includes/head.php";
+require "../../config.php";
+$title = "Pro Driver - driver Info";
+require "../includes/head.php";
 ?>
-
 <body class="d-flex flex-column align-items-center min-vh-100 noprint">
-
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
-
+<?php
+require "../includes/errormsgs.php";
+?>
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="../../app/router/drvrprofile.php" method="POST" novalidate>
@@ -68,9 +68,8 @@
                         <p class="text-center"><a class="text-dark" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
                 </div>
         </footer>
-
 <?php
-        include "../includes/scripts.php";
+include "../includes/getscripts.php";
 ?>
 </body>
 </html>

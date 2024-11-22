@@ -6,10 +6,9 @@ if (isset($_POST['createAccount'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
     $firstname = 'blank';
-    $lastname = 'blank';
+    $lastname = 'blanked';
     $mobileNum = '0009998765';
     $birthdate = '2010-03-30';
-
     // Instantiate the add user controller class. ↓
     include_once "../models/database.php";
     include_once "../models/addusermeth.php";

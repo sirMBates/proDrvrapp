@@ -11,7 +11,6 @@ if (isset($_POST['saveinfo'])) {
     include_once "../models/database.php";
     include_once "../models/drvrprofilemeth.php";
     include_once "../controllers/completedrvrprofile.php";
-
     $enterData = new DrvrProfileContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
     $enterData->processDrvrProfile();
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓

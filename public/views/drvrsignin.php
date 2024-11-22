@@ -4,11 +4,10 @@ $title = "Pro Driver - Sign in";
 require "../includes/head.php";
 ?>
 <body class="d-flex flex-column align-items-center min-vh-100 noprint overflow-y-scroll prodrvrbkgd">
+        <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
 <?php
 require "../includes/errormsgs.php";
 ?>
-        <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
-
         <div id="form-container" class="d-flex flex-column my-auto">
                 <form id="logInAcct" class="needs-validation" action="../../app/router/drvr-login.php" method="POST" novalidate>
                         <div class="input-group input-group-lg d-flex flex-column justify-content-center px-2">
@@ -22,9 +21,9 @@ require "../includes/errormsgs.php";
                                         <div class="invalid-feedback">Please enter your password</div>
                                 </div>
 
-                                <div class="input-group">
-                                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                                </div>
+                                <!--<div class="input-group">
+                                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="" required>
+                                </div>-->
                                                 
                                 <div class="d-flex justify-content-center my-3 px-2">
                                         <button type="submit" id="signin" name="loginAcct" class="btn btn-lg btn-primary text-center text-capitalize" disabled>sign in</button>
@@ -41,9 +40,8 @@ require "../includes/errormsgs.php";
                 <h5 class="text-center text-uppercase"><i>created by </i>softbigboy</h5>
                 <p class="text-center"><a class="text-light" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
         </footer>
-
 <?php
-require "../includes/scripts.php";
+require "../includes/getscripts.php";
 ?>
 </body>
 </html>
