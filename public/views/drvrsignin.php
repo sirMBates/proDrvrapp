@@ -9,7 +9,7 @@ require "../includes/head.php";
 require "../includes/errormsgs.php";
 ?>
         <div id="form-container" class="d-flex flex-column my-auto">
-                <form id="logInAcct" class="needs-validation" action="../../app/router/drvr-login.php" method="POST" novalidate>
+                <form id="logInAcct" class="needs-validation" action="../../app/controllers/drvr-login.php" method="POST" novalidate>
                         <div class="input-group input-group-lg d-flex flex-column justify-content-center px-2">
                                 <div class="input-group my-2">
                                         <input type="text" id="username" class="form-control fs-4 rounded-2" name="username" placeholder="Username" data-bs-container="body" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-title="Username" data-bs-content="Please enter your username" required>
