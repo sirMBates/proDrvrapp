@@ -12,13 +12,13 @@ if (isset($_POST['createAccount'])) {
     // Instantiate the add user controller class. ↓
     include_once "../models/database.php";
     include_once "../models/addusermeth.php";
-    include_once "../controllers/add_user.php";
+    include_once "./add_user.php";
     $signup = new AddDrvrContr($username, $email, $password, $firstname, $lastname, $mobileNum, $birthdate);
     // Running error handlers and user signup.
     $signup->addDriver();
     $_SESSION['username'] = $username;
     // Go to complete signup page after username, email and password has been successfully entered.
-    header("Location: ../../public/views/complete_signup.php?error=none&status=notcomplete");
+    header("Location: ../../public/views/complete_signup.php?error=none");
     exit();
 }
 

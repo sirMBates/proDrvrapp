@@ -41,7 +41,7 @@ class DrvrProfileContr extends DrvrProfileEntry {
 
         /*if ($this->cleanToken() !== $_SESSION['drvr_token']) {
             // echo "<p class='text-capitalize fs-3'>problem with form submission</p>";
-            header("location: ../../public/views/complete_signup.php?error=problemwithsubmission");
+            header("Location: ../../public/views/complete_signup.php?error=problemwithsubmission");
             exit();
         }*/
 

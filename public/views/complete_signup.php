@@ -10,7 +10,7 @@ require "../includes/errormsgs.php";
 ?>
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
-                        <form id="acct_info" class="needs-validation" action="../../app/router/drvrprofile.php" method="POST" novalidate>
+                        <form id="acct_info" class="needs-validation" action="../../app/controllers/drvrprofile.php" method="POST" novalidate>
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username']?></h2>
 
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>
