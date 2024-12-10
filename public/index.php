@@ -1,6 +1,10 @@
 <?php
-header("location: /public/views/drvrsignup.php");
-exit();
+require "/app/router/basicrouter.php";
+
+$uri = $_SERVER['REQUEST_URI'];
+
+#header("location: /public/views/drvrsignup.php");
+#exit();
 //require_once __DIR__ . '/vendor/autoload.php';
 /*$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, 'local.env');
 $dotenv->load();
