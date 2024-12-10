@@ -36,7 +36,7 @@ class router {
 
     protected function abort($code = 404){
         http_response_code($code);
-        header("location: ../../public/views/{$code}.php");
+        header("Location: ../../public/views/{$code}.php");
         die();
     }
 }

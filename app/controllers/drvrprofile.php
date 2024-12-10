@@ -14,7 +14,7 @@ if (isset($_POST['saveinfo'])) {
     $enterData = new DrvrProfileContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
     $enterData->processDrvrProfile();
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
-    include("../../public/views/drvrsignin.php?error=none");
+    header("Location: ../../public/views/drvrsignin.php?error=none");
     exit();
 };
 ?>
