@@ -1,11 +1,11 @@
 ## update page url with parameters
 RewriteEngine On
 RewriteCond %{QUERY_STRING} ^(.*)$
-RewriteRule ^drvrsignup\.php$ drvrsignup\.php?%1 [R=301 ,L]
-RewriteRule ^drvrsignin\.php$ drvrsignin\.php?%1 [R=301 ,L]
-RewriteRule ^complete_signup\.php$ complete_signup\.php?%1 [R=301 ,L]
-RewriteRule ^home\.php$ home\.php?%1 [R=301 ,L]
-RewriteRule ^joborder\.php$ joborder\.php?%1 [R=301 ,L]
-RewriteRule ^dprofile\.php$ dprofile\.php?%1 [R=301 ,L]
-RewriteRule ^payroll\.php$ payroll\.php?%1 [R=301 ,L]
+RewriteRule ^drvrsignup\.php$ drvrsignup\.php?%1 [R=301]
+RewriteRule ^drvrsignin\.php$ drvrsignin\.php?%1 [R=301]
+RewriteRule ^complete_signup\.php$ complete_signup\.php?%1 [R=301]
+RewriteRule ^home\.php$ home\.php?%1 [R=301]
+RewriteRule ^joborder\.php$ joborder\.php?%1 [R=301]
+RewriteRule ^dprofile\.php$ dprofile\.php?%1 [R=301]
+RewriteRule ^payroll\.php$ payroll\.php?%1 [R=301]
 RewriteRule ^resetpswd\.php$ resetpswd\.php?%1 [R=301 ,L]
