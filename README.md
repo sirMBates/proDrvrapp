@@ -21,6 +21,8 @@ Once signed into the app, the driver will be able to update there status and sen
 + The driver is reporting to the garage.
 + The driver is currently at garage.
 + The driver is enroute to start of trip/work location.
++ The driver is currently working the trip/work order.
++ The driver has finished the trip/work order.
 
 As well as other status updates.  
 The driver will see all information pertaining to the current trip/work order that they've been assign to. They will complete any and all details needed, review the trip/work order and submit back to dispatch for finalizing. The driver can also add details from the trip/work order to there trip/work sheet, which can also be submitted to payroll department (if necessary).   
