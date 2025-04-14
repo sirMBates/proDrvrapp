@@ -1,6 +1,13 @@
 <?php
+$uri = $_SERVER['REQUEST_URI'];
+function correctStyling($uri) {
+        if (strpos($uri, '?') !== false) {
+                echo "<script>alert('The requested uri has a parameter.')</script>"
+        }
+}
 function pageStyle() {
-        switch($_SERVER['REQUEST_URI']) {
+        $checkStyle = correctStyling($uri);
+        switch($checkStyle) {
                 case "/public/views/drvrsignup.php":
                         echo "<link rel='stylesheet' href='../assets/styles/dvrsignup.css'>\n";
                         break;
