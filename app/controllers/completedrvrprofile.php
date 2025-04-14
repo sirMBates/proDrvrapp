@@ -17,36 +17,36 @@ class DrvrProfileContr extends DrvrProfileEntry {
     public function processDrvrProfile () {
         if ($this->isEmpty() === false) {
             //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: ../../public/views/complete_signup.php?error=emptyblank");
+            header("Location: ../../public/views/drvrinfo.php?error=emptyblank");
             exit();
         }
 
         if ($this->drvrNameInvalid() === false) {
             //echo "<p class='text-capitalize fs-3'>name invalid</p>";
-            header("Location: ../../public/views/complete_signup.php?error=nameinvalid");
+            header("Location: ../../public/views/drvrinfo.php?error=nameinvalid");
             exit();
         }
 
         if ($this->drvrInvalidMobileNumber() === false) {
             //echo "<p class='text-capitalize fs-3'>mobile number invalid</p>";
-            header("Location: ../../public/views/complete_signup.php?error=mobileinvalid");
+            header("Location: ../../public/views/drvrinfo.php?error=mobileinvalid");
             exit();
         }
 
         if ($this->drvrInvalidBirthDate() === false) {
             //echo "<p class='text-capitalize fs-3'>dob invalid</p>";
-            header("Location: ../../public/views/complete_signup.php?error=dobinvalid");
+            header("Location: ../../public/views/drvrinfo.php?error=dobinvalid");
             exit();
         }
 
         /*if ($this->cleanToken() !== $_SESSION['drvr_token']) {
             // echo "<p class='text-capitalize fs-3'>problem with form submission</p>";
-            header("Location: ../../public/views/complete_signup.php?error=problemwithsubmission");
+            header("Location: ../../public/views/drvrinfo.php?error=problemwithsubmission");
             exit();
         }*/
 
         if ($this->enterDrvrInfo() === false) {
-            header("Location: ../../public/views/complete_signup.php?error=usernotvalid");
+            header("Location: ../../public/views/drvrinfo.php?error=usernotvalid");
             exit();
         }
 

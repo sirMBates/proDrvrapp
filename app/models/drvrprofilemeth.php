@@ -8,7 +8,7 @@ class DrvrProfileEntry extends ConnectDatabase {
 
         if (!$stmt->execute(array($firstname, $lastname, $mobileNum, $birthdate, $username))) {
             $stmt = null;
-            header("Location: ../../public/views/complete_signup.php?error=stmtfailed");
+            header("Location: ../../public/views/drvrinfo.php?error=stmtfailed");
             exit();
         }
         $stmt = null;

@@ -18,7 +18,7 @@ if (isset($_POST['createAccount'])) {
     $signup->addDriver();
     $_SESSION['username'] = $username;
     // Go to complete signup page after username, email and password has been successfully entered.
-    header("Location: ../../public/views/complete_signup.php?error=none");
+    header("Location: ../../public/views/drvrinfo.php?error=none");
     exit();
 }
 
