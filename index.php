@@ -1,4 +1,4 @@
 <?php
-header("Location: /public/views/drvrsignup.php");
+header("Location: public/views/drvrsignup.php");
 exit();
 ?>
