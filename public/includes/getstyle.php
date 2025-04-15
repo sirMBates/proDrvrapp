@@ -1,48 +1,49 @@
 <?php
-$uri = $_SERVER['REQUEST_URI'];
-function correctStyling($uri) {
-        if (strpos($uri, '?') !== false) {
+$url = $_SERVER['REQUEST_URI'];
+function correctStyling($url) {
+        if (strpos($url, '?') !== false) {
                 echo "<script>alert('The requested uri has a parameter.')</script>";
         }
 }
-correctStyling($uri);
+correctStyling($url);/prodrvapp
 
 function pageStyle() {
-        switch($uri) {
-                case "public/views/drvrsignup.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/dvrsignup.css'>\n";
+        global $url;
+        switch($url) {
+                case "/prodrvrapp/public/views/drvrsignup.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/dvrsignup.css'>\n";
                         break;
 
-                case "public/views/drvrsignin.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/dvrsignin.css'>\n";
+                case "/prodrvrapp/public/views/drvrsignin.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/dvrsignin.css'>\n";
                         break;
                 
-                case "public/views/complete_signup.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/onboard.css'>\n";
+                case "/prodrvrapp/public/views/drvrinfo.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/onboard.css'>\n";
                         break;
 
-                case "public/mail/sendmail.php":
+                case "/prodrvrapp/public/mail/sendmail.php":
                         return;
                         break;
 
-                case "public/views/home.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/home-style.css'>\n";
+                case "/prodrvrapp/public/views/home.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/home-style.css'>\n";
                         break;
 
-                case "public/views/joborder.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/orderpage.css'>\n";
+                case "/prodrvrapp/public/views/joborder.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/orderpage.css'>\n";
                         break;
 
-                case "public/views/dprofile.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/profilepage.css'>\n";
+                case "/prodrvrapp/public/views/dprofile.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/profilepage.css'>\n";
                         break;
 
-                case "public/views/payroll.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/payrollpage.css'>\n";
+                case "/prodrvrapp/public/views/payroll.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/payrollpage.css'>\n";
                         break;
 
-                case "public/views/printable.php":
-                        echo "<link rel='stylesheet' href='../assets/styles/payrollpage.css'>\n";
+                case "/prodrvrapp/public/views/printable.php":
+                        echo "<link rel='stylesheet' href='/prodrvapp/public/assets/styles/payrollpage.css'>\n";
                         break;
                         
                 default:
