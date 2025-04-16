@@ -17,8 +17,8 @@ if (isset($_POST['createAccount'])) {
     // Running error handlers and user signup.
     $signup->addDriver();
     $_SESSION['username'] = $username;
-    // Go to complete signup page after username, email and password has been successfully entered.
-    header("Location: ../../public/views/drvrinfo.php?error=none");
+    // Go to complete info page after username, email and password has been successfully entered.
+    header("Location: /prodrvrapp/public/views/drvrinfo.php");
     exit();
 }
 
