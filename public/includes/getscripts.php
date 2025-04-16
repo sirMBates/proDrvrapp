@@ -6,21 +6,55 @@ echo "<script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' inte
 $url = $_SERVER['REQUEST_URI'];
 function getClockandMainOrNav () {
     global $url;
-    if ($url === '/prodrvrapp/public/views/printable.php') {
+    switch($url) { 
+    case '/prodrvrapp/public/views/printable.php': 
         echo "<script type='module' src='/prodrvrapp/public/assets/js/printablenavbar.js'></script>\n\n";
-    }
-    if ($url === '/prodrvrapp/public/views/drvrsignup.php') {
+        break;
+    
+    case '/prodrvrapp/public/views/drvrsignup.php': 
         return ;
-    }
-    if ($url === '/prodrvrapp/public/views/drvrinfo.php') {
+        break;
+
+    case '/prodrvrapp/public/views/drvrsignup.php?error=stmtfailed': 
         return ;
-    }
-    if ($url === '/prodrvrapp/public/views/drvrsignin.php') {
+        break;
+
+    case '/prodrvrapp/public/views/drvrsignup.php?error=emptyblank': 
         return ;
-    } 
-    else {
+        break;
+
+    case '/prodrvrapp/public/views/drvrsignup.php?error=namenotvalid': 
+        return ;
+        break;
+
+    case '/prodrvrapp/public/views/drvrsignup.php?error=emailnotvalid': 
+        return ;
+        break;
+
+    case '/prodrvrapp/public/views/drvrsignup.php?error=passwordnotvalid': 
+        return ;
+        break;
+
+    case '/prodrvrapp/public/views/drvrsignup.php?error=nameexistalready': 
+        return ;
+        break;
+
+    case '/prodrvrapp/public/views/drvrsignup.php?error=stmtfailed': 
+        return ;
+        break;
+    
+    case '/prodrvrapp/public/views/drvrinfo.php': 
+        return ;
+        break;
+    
+    case '/prodrvrapp/public/views/drvrsignin.php': 
+        return ;
+        break;
+     
+    default:
         echo "<script type='module' src='/prodrvrapp/public/assets/js/clock.js'></script>\n\n";
         echo "<script type='module' src='/prodrvrapp/public/assets/js/main.js'></script>\n\n";
+        break;
     }
 };
 

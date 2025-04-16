@@ -21,7 +21,7 @@ class AddDrvrContr extends AddedDrvr {
     public function addDriver() {
         if ($this->isEmpty() === false) {
             //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: ../../public/views/drvrsignup.php?error=emptyblank");
+            header("Location: ../../public/views/drvrsignup.php?error=emptyinput");
             exit();
         }
 
