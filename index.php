@@ -1,4 +1,7 @@
 <?php
-header("Location: public/views/drvrsignup.php");
-exit();
+
+require 'helperfunc.php';
+
+require 'app/router/router.php';
+
 ?>

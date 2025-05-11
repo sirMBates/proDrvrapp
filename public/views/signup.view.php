@@ -1,15 +1,13 @@
 <?php
-require "../../config.php";
-$title = "Pro Driver - Register";
-require "../includes/head.php";
+require "config.php";
+require "public/views/partials/head.php";
 ?>
-<body class="d-flex flex-column align-items-center min-vh-100 noprint prodrvrbkgd">
 <?php
-include "../includes/cus-modal.php";
+include "public/includes/cus-modal.php";
 ?>       
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
 <?php
-require "../includes/errormsgs.php";
+require "public/includes/errormsgs.php";
 ?>
         <div id="form-container" class="d-flex flex-column my-auto">
                 <form id="signUpAcct" class="needs-validation" action="../../app/controllers/adduser.php" method="POST" novalidate>
@@ -48,13 +46,6 @@ require "../includes/errormsgs.php";
                         </div>
                 </form>
         </div>
-
-        <footer class="mt-auto text-light text-center text-lg-start" >
-                <h5 class="text-center text-uppercase"><i>created by </i>softbigboy</h5>
-                <p class="text-center"><a class="text-light" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
-        </footer>
 <?php
-include "../includes/getscripts.php";
+        require "public/views/partials/footer.php";
 ?>
-</body>
-</html>
