@@ -7,7 +7,7 @@
         <meta name="robots" content="noindex">
         <link rel="stylesheet" href="/prodrvrapp/public/assets/styles/components.css">
         <?php
-                require "getstyle.php";
+                require "public/includes/getstyle.php";
         ?>
         <link rel="stylesheet" href="/prodrvrapp/public/assets/styles/main.css">
         <link rel="stylesheet" href="/prodrvrapp/public/bootstrap/css/bootstrap.css">
@@ -21,3 +21,4 @@
         <link rel="icon" type="image/png" href="/prodrvrapp/public/images-videos/logoandicons/bus-driver-icon-png-14404.png">                
         <title><?= $title;?></title>
 </head>
+<body class="d-flex flex-column align-items-center min-vh-100 noprint prodrvrbkgd">
