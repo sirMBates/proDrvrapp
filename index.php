@@ -2,6 +2,6 @@
 
 require 'helperfunc.php';
 
-require 'app/router/router.php';
+require 'app/router.php';
 
 ?>
