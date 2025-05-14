@@ -1,8 +1,6 @@
 <?php
 require "config.php";
 require "public/views/partials/head.php";
-?>
-<?php
 include "public/includes/cus-modal.php";
 ?>       
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->

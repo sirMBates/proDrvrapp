@@ -1,5 +1,5 @@
 <?php
 
-$title = "Pro Driver - Register";
+$title = "Pro Driver";
 
 require "public/views/signup.view.php";

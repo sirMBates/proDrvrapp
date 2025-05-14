@@ -1,5 +1,5 @@
 <?php
-echo "\n\n<script src='/prodrvrapp/public/bootstrap/js/bootstrap.bundle.js'></script>\n\n";
+//echo "\n\n<script src='/prodrvrapp/public/bootstrap/js/bootstrap.bundle.js'></script>\n\n";
 echo "<!-- Load JQuery Color CDN(Content Delivery Network) -->\n";
 echo "<script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity='sha256-KfnxwOV3FhXN7A/28TCtqslo5fRS23cxO5XcxVO5we8=' crossorigin='anonymous'></script>\n\n";
 
