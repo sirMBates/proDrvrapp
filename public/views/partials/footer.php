@@ -5,10 +5,9 @@
                 <p class="text-light"><a class="text-light" target="_blank" href="https://icons8.com/icon/8177/ball-point-pen" rel="noopener">Pen</a> icon by <a class="text-light" target="_blank" href="https://icons8.com">Icons8</a></p><p class="text-center"><a class="text-light" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
         </div>
 </footer>
-
-<script src='public/bootstrap/js/bootstrap.bundle.js'></script>
+<script src='bootstrap/js/bootstrap.bundle.js'></script>
 <?php
-        require "";
+        require "includes/getscripts.php";
 ?>
 </body>
 </html>

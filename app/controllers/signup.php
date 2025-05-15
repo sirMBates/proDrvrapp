@@ -2,4 +2,4 @@
 
 $title = "Pro Driver";
 
-require "public/views/signup.view.php";
+require "views/signup.view.php";
