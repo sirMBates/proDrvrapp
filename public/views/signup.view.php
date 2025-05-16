@@ -1,14 +1,12 @@
 <?php
 require "../config.php";
-require "partials/head.php";
+require "partials/outhead.php";
 include "includes/cus-modal.php";
+include "includes/errormsgs.php";
 ?>       
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
-<?php
-require "includes/errormsgs.php";
-?>
         <div id="form-container" class="d-flex flex-column my-auto">
-                <form id="signUpAcct" class="needs-validation" action="../../app/controllers/adduser.php" method="POST" novalidate>
+                <form id="signUpAcct" class="needs-validation" action="adduser.php" method="POST" novalidate>
                         <div class="input-group input-group-lg px-3 my-3 d-flex justify-content-center flex-column">
                                 <div class="input-group my-1">
                                         <input type="text" id="username" class="form-control fs-4 rounded-2" name="username" placeholder="Username" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Username" data-bs-content="Must contain 5 - 7 characters with atleast 1 (U)ppercase letter, 1  (l)owercase letter & a number." data-bs-placement="top" data-bs-trigger="focus" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,6}$" required>
@@ -40,10 +38,10 @@ require "includes/errormsgs.php";
                                         <button id="signup" type="submit" name="createAccount" class="btn btn-lg btn-primary" disabled>Create Account</button>
                                 </div>
 
-                                <p class="text-center"><a href="./drvrsignin.php" id="linkSignIn" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover">Already have an account? Log in here!</a></p>
+                                <p class="text-center"><a href="signin.php" id="linkSignIn" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover">Already have an account? Log in here!</a></p>
                         </div>
                 </form>
         </div>
 <?php
-        require "partials/footer.php";
+        require "partials/outfooter.php";
 ?>
