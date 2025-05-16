@@ -1,12 +1,12 @@
 <?php
-require "../../config.php";
-$title = "Pro Driver - Sign in";
-require "../includes/head.php";
+require "../config.php";
+require "partials/outhead.php";
+include "partials/errormsgs.php";
 ?>
-<body class="d-flex flex-column align-items-center min-vh-100 noprint overflow-y-scroll prodrvrbkgd">
+
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
 <?php
-require "../includes/errormsgs.php";
+require "/includes/errormsgs.php";
 ?>
         <div id="form-container" class="d-flex flex-column my-auto">
                 <form id="logInAcct" class="needs-validation" action="../../app/controllers/drvr-login.php" method="POST" novalidate>
@@ -35,13 +35,6 @@ require "../includes/errormsgs.php";
                         </div>
                 </form>
         </div>
-
-        <footer class="mt-auto text-light text-center text-lg-start" >
-                <h5 class="text-center text-uppercase"><i>created by </i>softbigboy</h5>
-                <p class="text-center"><a class="text-light" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
-        </footer>
 <?php
-require "../includes/getscripts.php";
+require "partials/outfooter.php";
 ?>
-</body>
-</html>

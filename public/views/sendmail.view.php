@@ -1,12 +1,9 @@
 <?php
-    $title = "Pro Driver - Send Email";
-    require_once "../partials/header.php";
-?>
-
-<body class="d-flex flex-column min-vh-100 overflow-x-hidden noprint">
-<?php
-    include_once "../partials/navbar.php";
-    include_once "../partials/topper.php";
+require "../config.php";
+require "partials/head.php";
+include "includes/errormsgs.php";
+require "partials/nav.php";
+require "partials/banner.php";
 ?>
     <main class="container-fluid">
         <div class="card my-3" style="width: 100%;">
@@ -36,8 +33,5 @@
     </main>
 
 <?php
-    include_once "../partials/footer.php";
-    require_once "../partials/getscripts.php";
+    require "partials/footer.php";
 ?>
-</body>
-</html>

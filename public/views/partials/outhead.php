@@ -5,7 +5,6 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex">
-        <link rel="stylesheet" href="styles/components.css">
         <?php
                 require "includes/getstyle.php";
         ?>
@@ -21,7 +20,4 @@
         <link rel="icon" type="image/png" href="images-videos/logoandicons/bus-driver-icon-png-14404.png">                
         <title><?= $title;?></title>
 </head>
-<body class="d-flex flex-column align-items-center min-vh-100 noprint">
-<?php
-        //<?= urlIs('/contact') ? 'overflow-x-hidden ';
-?>
+<body class="d-flex flex-column align-items-center min-vh-100 overflow-y-scroll noprint prodrvrbkgd">
