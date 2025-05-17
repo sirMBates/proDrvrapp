@@ -1,7 +1,7 @@
 <?php
 //use Defuse\Crypto\Crypto;
 //use Defuse\Crypto\Key;
-require_once "../../vendor/autoload.php";
+require_once "../vendor/autoload.php";
 //$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, '.env');
 //$dotenv->load();
 class AddedDrvr extends ConnectDatabase {

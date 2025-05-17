@@ -21,4 +21,4 @@
         <link rel="icon" type="image/png" href="images-videos/logoandicons/bus-driver-icon-png-14404.png">                
         <title><?= $title;?></title>
 </head>
-<body class="<?= !urlIs('/contact') ?: 'overflow-x-hidden'; ?> d-flex flex-column align-items-center min-vh-100 noprint">
+<body class="d-flex flex-column align-items-center min-vh-100 overflow-x-hidden noprint">
