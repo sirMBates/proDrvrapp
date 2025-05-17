@@ -20,7 +20,7 @@ class AddedDrvr extends ConnectDatabase {
 
         if (!$stmt->execute(array($username, $email, $hashPsW, $firstname, $lastname, $mobileNum, $birthdate))) { 
             $stmt = null;
-            header("Location: ../../public/views/drvrsignup.php?error=stmtfailed");
+            header("Location: /?error=stmtfailed");
             exit();
         }
 
@@ -31,7 +31,7 @@ class AddedDrvr extends ConnectDatabase {
         $stmt =$this->connect()->prepare('SELECT driverid FROM driver WHERE username = ? OR email = ?;');
         if (!$stmt->execute(array($username, $email))) {
             $stmt = null;
-            header("Location: ../../public/views/drvrsignup.php?error=stmtfailed");
+            header("Location: /?error=stmtfailed");
             exit();
         }
 

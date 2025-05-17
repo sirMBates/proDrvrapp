@@ -1,10 +1,10 @@
 <?php
-session_start();
+//session_start();
 if (isset($_POST['createAccount'])) {
     // Getting the info from the form using POST method from the name attribute.
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $username = htmlspecialchars($_POST['username']);
+    $email = htmlspecialchars($_POST['email']);
+    $password = htmlspecialchars($_POST['password']);
     $firstname = 'blank';
     $lastname = 'blanked';
     $mobileNum = '0009998765';
@@ -12,13 +12,13 @@ if (isset($_POST['createAccount'])) {
     // Instantiate the add user controller class. ↓
     include_once "../models/database.php";
     include_once "../models/addusermeth.php";
-    include_once "./add_user.php";
+    include_once "/add_user";
     $signup = new AddDrvrContr($username, $email, $password, $firstname, $lastname, $mobileNum, $birthdate);
     // Running error handlers and user signup.
     $signup->addDriver();
     $_SESSION['username'] = $username;
     // Go to complete info page after username, email and password has been successfully entered.
-    header("Location: /prodrvrapp/public/views/drvrinfo.php");
+    header("Location: /app/controllers/register.php");
     exit();
 }
 

@@ -1,6 +1,6 @@
 <footer class="mt-auto text-light text-center text-lg-start">
-        <h5 class="text-center text-uppercase"><i>created by </i>softbigboy</h5>
-        <p class="text-center"><a class="text-light" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
+        <h5 class="<?= !urlIs('/register') ?: 'text-dark';?> text-center text-uppercase"><i>created by </i>softbigboy</h5>
+        <p class="text-center"><a class="<?= urlIS('/register') ? 'text-dark' : 'text-light';?>" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
 </footer>
 <script src="bootstrap/js/bootstrap.bundle.js"></script>
 <!-- Load JQuery Color CDN(Content Delivery Network) -->

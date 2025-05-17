@@ -21,31 +21,31 @@ class AddDrvrContr extends AddedDrvr {
     public function addDriver() {
         if ($this->isEmpty() === false) {
             //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: ../../public/views/drvrsignup.php?error=emptyinput");
+            header("Location: /?error=emptyinput");
             exit();
         }
 
         if ($this->invalidUserName() === false) {
             //echo "<p class='text-capitalize fs-3'>invalid user name</p>";
-            header("Location: ../../public/views/drvrsignup.php?error=namenotvalid");
+            header("Location: /?error=namenotvalid");
             exit();
         }
 
         if ($this->invalidEmail() === false) {
             //echo "<p class='text-capitalize fs-3'>invalid email</p>";
-            header("Location: ../../public/views/drvrsignup.php?error=emailnotvalid");
+            header("Location: /?error=emailnotvalid");
             exit();
         }
 
         if ($this->invalidPsword() === false) {
             //echo "<p class='text-capitalize fs-3'>invalid password</p>";
-            header("Location: ../../public/views/drvrsignup.php?error=passwordnotvalid");
+            header("Location: /?error=passwordnotvalid");
             exit();
         }
 
         if ($this->nameExist() === false) {
             //echo "<p class='text-capitalize fs-3'>person already exist</p>";
-            header("Location: ../../public/views/drvrsignup.php?error=nameexistalready");
+            header("Location: /?error=nameexistalready");
             exit();
         }
 
