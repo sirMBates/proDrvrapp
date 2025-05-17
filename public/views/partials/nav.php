@@ -48,7 +48,7 @@
                         </div>
                 </div>
         </div>
-        <nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-besttrailsclr">
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-besttrailsclr container-fluid">
                 <div class="container-fluid">
                         <a class="navbar-brand m-0" data-bs-toggle="offcanvas" role="button" aria-controls="useraccess" href="#useraccess"><img src="../images-videos/logoandicons/bus-driver-icon-png-14404.png" alt="N/A" width="50" height="50" class="d-inline-block align-text-center"></a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
