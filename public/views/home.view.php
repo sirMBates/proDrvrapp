@@ -1,14 +1,9 @@
 <?php
-        require_once "../../config.php";
-        $title = "Pro Driver - Home";
-        require_once '../includes/head.php';
-?>
-
-<body class="d-flex flex-column vh-100 overflow-x-hidden noprint">
-<?php
-        include_once "../includes/navbar.php";
-        include_once "../includes/header.php";
-        include_once "../includes/cus-modal.php";
+        require "../config.php";
+        require "partials/head.php";
+        require "partials/nav.php";
+        require "partials/banner.php";
+        include "includes/cus-modal.php";
 ?>
         <main class="container-fluid mb-3 p-1">
                 <div class="d-flex flex-row flex-wrap justify-content-evenly mb-3">
@@ -55,8 +50,5 @@
                 </div>
         </main>
 <?php
-        include_once '../includes/footer.php';
-        require_once '../includes/getscripts.php';
-?>    
-</body>
-</html>
+        require "partials/footer.php";
+?>
