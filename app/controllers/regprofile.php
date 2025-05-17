@@ -10,11 +10,11 @@ if (isset($_POST['saveinfo'])) {
     // Instantiate the add user controller class. ↓
     include_once "../models/database.php";
     include_once "../models/drvrprofilemeth.php";
-    include_once "./completedrvrprofile.php";
+    include_once "completeregis.php";
     $enterData = new DrvrProfileContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
     $enterData->processDrvrProfile();
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
-    header("Location: ../../public/views/drvrsignin.php?error=none");
+    header("Location: public/views/signin.php?error=none");
     exit();
 };
 ?>

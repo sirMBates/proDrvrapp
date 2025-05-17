@@ -1,15 +1,11 @@
 <?php
 require "../config.php";
 require "partials/outhead.php";
-include "partials/errormsgs.php";
+include "includes/errormsgs.php";
 ?>
-
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
-<?php
-require "/includes/errormsgs.php";
-?>
         <div id="form-container" class="d-flex flex-column my-auto">
-                <form id="logInAcct" class="needs-validation" action="../../app/controllers/drvr-login.php" method="POST" novalidate>
+                <form id="logInAcct" class="needs-validation" action="drvr-login.php" method="POST" novalidate>
                         <div class="input-group input-group-lg d-flex flex-column justify-content-center px-2">
                                 <div class="input-group my-2">
                                         <input type="text" id="username" class="form-control fs-4 rounded-2" name="username" placeholder="Username" data-bs-container="body" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-title="Username" data-bs-content="Please enter your username" required>
@@ -29,7 +25,7 @@ require "/includes/errormsgs.php";
                                         <button type="submit" id="signin" name="loginAcct" class="btn btn-lg btn-primary text-center text-capitalize" disabled>sign in</button>
                                 </div>
 
-                                <p class="text-center"><a href="./drvrsignup.php" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover" id="linkCreateAcct">Don't have an account? Create account</a></p>
+                                <p class="text-center"><a href="/" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover" id="linkCreateAcct">Don't have an account? Create account</a></p>
 
                                 <p class="text-center"><a href="#" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover" id="linkResetPass">Forgot password?</a></p>
                         </div>
