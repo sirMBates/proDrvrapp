@@ -1,5 +1,3 @@
 <?php
 
-$title = 'Reset Your Password';
-
-require "views/reset.view.php";
+view('reset.view.php', ['title' => 'Reset your password',]);

@@ -1,5 +1,3 @@
 <?php
 
-$title = "Pro Driver - Sign in";
-
-require "views/signin.view.php";
+view('signin.view.php', ['title' => 'Pro Driver - Sign in',]);

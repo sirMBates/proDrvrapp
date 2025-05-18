@@ -1,5 +1,3 @@
 <?php
 
-$title = 'Job Orders';
-
-require "views/job.view.php";
+view('job.view.php', ['title' => 'Job Orders',]);

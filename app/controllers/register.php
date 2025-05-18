@@ -1,5 +1,3 @@
 <?php
 
-$title = "Pro Driver - Register";
-
-require "views/register.view.php";
+view('register.view.php', ['title' => 'Pro Driver - Register',]);

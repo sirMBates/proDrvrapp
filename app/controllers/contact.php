@@ -1,5 +1,3 @@
 <?php
 
-$title = 'Contact Help';
-
-require "views/sendmail.view.php";
+view('sendmail.view.php', ['title' => 'Contact Help',]);
