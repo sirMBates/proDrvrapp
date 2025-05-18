@@ -1,5 +1,3 @@
 <?php
 
-$title = 'Payroll';
-
-require "views/payroll.view.php";
+view('payroll.view.php', ['title' => 'Payroll',]);
