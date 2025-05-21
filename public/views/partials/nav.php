@@ -22,7 +22,7 @@
                         <div class="dropdown mt-3">
                                 <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"><span class="px-2 fa-solid fa-user-tie"></span>Web Admin</button>
                                 <ul class="dropdown-menu">
-                                        <li class="dropdown-item"><a href="../mail/index.php"><i class="px-2 fa-solid fa-envelope"></i>Send email</a></li>
+                                        <li class="dropdown-item"><a href="/contact"><i class="px-2 fa-solid fa-envelope"></i>Send email</a></li>
                                 </ul>
                         </div>
                         <div class="dropdown mt-3 d-none">
@@ -57,16 +57,16 @@
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                         <li class="nav-item">
-                                                <a class="nav-link" href="../views/home.php"><span class="px-2 fa-solid fa-house"></span>Home</a>
+                                                <a class="nav-link" href="/home"><span class="px-2 fa-solid fa-house"></span>Home</a>
                                         </li>
                                         <li class="nav-item">
-                                                <a class="nav-link" href="../views/joborder.php"><span class="px-2 fa-solid fa-file"></span>Job Order</a>
+                                                <a class="nav-link" href="/orders"><span class="px-2 fa-solid fa-file"></span>Job Order</a>
                                         </li>
                                         <li class="nav-item">
-                                                <a class="nav-link" href="../views/dprofile.php"><span class="px-2 fa-solid fa-user"></span>My Profile</a>
+                                                <a class="nav-link" href="/profile"><span class="px-2 fa-solid fa-user"></span>My Profile</a>
                                         </li>
                                         <li class="nav-item">
-                                                <a class="nav-link" href="../views/payroll.php"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>Payroll</a>
+                                                <a class="nav-link" href="/payroll"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>Payroll</a>
                                         </li>                                                                
                                 </ul>
                         </div>

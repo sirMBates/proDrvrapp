@@ -1,13 +1,9 @@
 <?php
-        $title = "Pro Driver - Dispatch Order";
-        require_once "../includes/head.php";
-?>
-
-<body class="d-flex flex-column vh-100 overflow-x-hidden noprint">
-<?php
-        include_once "../includes/navbar.php";
-        include_once "../includes/header.php";
-        include_once "../includes/cus-modal.php";
+        require "../config.php";
+        require "partials/head.php";
+        require "partials/nav.php";
+        require "partials/banner.php";
+        include "includes/cus-modal.php";
 ?>       
         <main class="container-fluid my-3">
                 <form class="" action="" method="">
@@ -196,7 +192,7 @@
                         </section>
 <?php
         // Will only be avaiable if signature is needed.
-        //include_once "../includes/signpad.php";
+        //include_once "includes/signpad.php";
 ?>
                         <section id="customer_details" class="card my-3">
                                 <div class="card-header bg-besttrailsclr">
@@ -263,10 +259,6 @@
                         </section>
                 </form>
         </main>       
-
 <?php
-        include_once "../includes/footer.php";
-        require_once "../includes/getscripts.php";
-?>       
-</body>
-</html>
+        require "partials/footer.php";
+?>
