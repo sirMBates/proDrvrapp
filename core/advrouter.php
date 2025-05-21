@@ -1,14 +1,18 @@
 <?php
-class router {
+
+namespace core;
+
+class advRouter {
     protected $routes = [];
 
-    public function add($method, $uri, $controller){
+    public function add($method, $uri, $controller) {
         $this->routes[] = [
             'uri' => $uri,
             'controller' => $controller,
             'method' => $method
-        ]
+        ];
     }
+
     public function get($uri, $controller){
         $this->add('GET', $uri, $controller);
     }
@@ -28,7 +32,8 @@ class router {
     public function route($uri, $method){
         foreach($this->routes as $route){
             if($route['uri'] === $uri && $route['method'] === strtoupper($method)){
-                return $route['controller'];
+                return require base_path($route['controller']);
+                //return $route['controller'];
             }
         }
         $this->abort();
@@ -39,7 +44,7 @@ class router {
         header("Location: views/{$code}.php");
         die();
     }
-}
+};
 
 
 ?>
