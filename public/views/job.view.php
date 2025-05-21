@@ -4,6 +4,7 @@
         require "partials/nav.php";
         require "partials/banner.php";
         include "includes/cus-modal.php";
+        include "includes/errormsgs.php";
 ?>       
         <main class="container-fluid my-3">
                 <form class="" action="" method="">

@@ -14,7 +14,7 @@ spl_autoload_register(function ($class) {
 });
 
 # To use old router file, use the path below this comment ⬇
-//require base_path('core/router.php');
+# require base_path('core/router.php');
 
 $router = new \core\router;
 
