@@ -1,13 +1,10 @@
 <?php
-        $title = "Pro Driver - Work week summary";
-        require_once '../includes/head.php';
-?>
-
-<body class="d-flex flex-column vh-100 overflow-x-hidden noprint">      
-<?php
-        include_once '../includes/navbar.php';
-        include_once '../includes/header.php';
-        include_once "../includes/cus-modal.php";
+        require "../config.php";
+        require "partials/head.php";
+        require "partials/nav.php";
+        require "partials/banner.php";
+        include "includes/cus-modal.php";
+        include "includes/errormsgs.php";
 ?>
         <main class="container-fluid p-3 d-flex flex-column">
                 <form id="" action="" method="">
@@ -267,9 +264,7 @@
                         </div>
                 </form>
         </main>
+
 <?php
-        include_once '../includes/footer.php';
-        require_once '../includes/getscripts.php';
+        require "partials/footer.php";
 ?>
-</body>
-</html>

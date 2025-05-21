@@ -1,9 +1,9 @@
 <?php
 require "../config.php";
 require "partials/head.php";
-include "includes/errormsgs.php";
 require "partials/nav.php";
 require "partials/banner.php";
+include "includes/errormsgs.php";
 ?>
     <main class="container-fluid">
         <div class="card my-3" style="width: 100%;">

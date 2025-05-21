@@ -1,14 +1,12 @@
 <?php
-        $title = "Pro Driver - Driver account";
-        require_once "../includes/head.php";
+require "../config.php";
+require "partials/head.php";
+require "partials/nav.php";
+require "partials/banner.php";
+require "includes/cus-modal.php";
+include "includes/errormsgs.php";
 ?>
 
-<body class="d-flex flex-column min-vh-100 overflow-x-hidden noprint">
-<?php
-        include_once "../includes/navbar.php";
-        include_once "../includes/header.php";
-        include_once "../includes/cus-modal.php";
-?>   
 <main class="container-fluid my-3">
         <form id="acctinfo" action="" method="">
                 <div class="card">
@@ -93,8 +91,5 @@
 </main>
 
 <?php
-        include_once "../includes/footer.php";
-        require_once "../includes/getscripts.php";
+        require "partials/footer.php";
 ?>
-</body>
-</html>

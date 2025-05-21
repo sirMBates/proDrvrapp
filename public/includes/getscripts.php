@@ -14,6 +14,10 @@ function getClockandMainOrNav($value) {
             return;
             break;
 
+        case '/reset':
+            return;
+            break;
+
         case '/printable': 
             echo "<script type='module' src='js/printablenavbar.js'></script>\n\n";
             break;
@@ -56,7 +60,7 @@ function pageScripts($value) {
                 echo "<!--<script type='module' src='js/orderpage.js'></script>-->\n";
                 break;
 
-            case "/dprofile":
+            case "/profile":
                 echo "<script type='module' src='js/profilehandler.js'></script>\n";
                 break;
 

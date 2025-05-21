@@ -13,9 +13,10 @@ spl_autoload_register(function ($class) {
     require base_path("{$class}.php");
 });
 
-//require base_path('core/advrouter.php');
+# To use old router file, use the path below this comment ⬇
+//require base_path('core/router.php');
 
-$router = new \core\advrouter();
+$router = new \core\router;
 
 $routes = require base_path("routes.php");
 
