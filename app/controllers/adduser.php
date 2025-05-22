@@ -10,9 +10,9 @@ if (isset($_POST['createAccount'])) {
     $mobileNum = '0009998765';
     $birthdate = '2010-03-30';
     // Instantiate the add user controller class. ↓
-    include_once "../models/database.php";
-    include_once "../models/addusermeth.php";
-    include_once "../classes/add_user.php";
+    include_once base_path("app/models/database.php");
+    include_once base_path("app/models/addusermeth.php");
+    include_once base_path("app/classes/add_user.php");
     $signup = new AddDrvrContr($username, $email, $password, $firstname, $lastname, $mobileNum, $birthdate);
     // Running error handlers and user signup.
     $signup->addDriver();

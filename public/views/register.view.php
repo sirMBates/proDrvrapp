@@ -1,13 +1,13 @@
 <?php
-require "../config.php";
+require base_path("config.php");
 require "partials/outhead.php";
 include "includes/errormsgs.php";
+//dd($_SESSION);
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
-                        <form id="acct_info" class="needs-validation" action="regprofile.php" method="POST" novalidate>
-                                <input type="hidden" name="__method" value="UPDATE">
+                        <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username']?></h2>
 
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>

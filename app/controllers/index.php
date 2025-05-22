@@ -1,3 +1,3 @@
 <?php
 
-view('index.view.php', ['title' => 'Pro Driver',]);
+view('signup.view.php', ['title' => 'Pro Driver',]);
