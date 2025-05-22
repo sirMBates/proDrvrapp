@@ -8,13 +8,13 @@ if (isset($_POST['saveinfo'])) {
     $birthdate = $_POST['dateofbirth'];
     $formToken = $_POST['drvrtoken'];
     // Instantiate the add user controller class. ↓
-    include_once "../models/database.php";
-    include_once "../models/drvrprofilemeth.php";
-    include_once "completeregis.php";
+    include_once base_path("app/models/database.php");
+    include_once base_path("app/models/drvrprofilemeth.php");
+    include_once base_path("app/classes/completeregis.php");
     $enterData = new DrvrProfileContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
     $enterData->processDrvrProfile();
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
-    header("Location: public/views/signin.php?error=none");
+    header("Location: /signin?error=none");
     exit();
 };
 ?>
