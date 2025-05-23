@@ -1,5 +1,5 @@
 <?php
-require_once "../../vendor/autoload.php";
+require_once "../vendor/autoload.php";
 class DrvrProfileEntry extends ConnectDatabase {
     protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
         $sql = "UPDATE driver SET firstName = ?, lastName = ?, mobileNumber = ?, birthdate = ? WHERE username = ?";
