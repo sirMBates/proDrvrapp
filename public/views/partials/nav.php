@@ -38,7 +38,7 @@
                                 <a href="#" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Help</a>
                         </div>
                         <div class="dropdown mt-3">
-                                <a href="../../app/controllers/logout.php" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-right-from-bracket"></span>Sign Out</a>
+                                <a href="/logout" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-right-from-bracket"></span>Sign Out</a>
                         </div>
                         <div class="d-inline-flex fixed-bottom">
                                 <button type="button" id="themeBtn" class="btn btn-light" aria-label="Left Align" style="background: none; border: none; width: 50px; height: 50px;">
