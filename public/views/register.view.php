@@ -8,7 +8,7 @@ include "includes/errormsgs.php";
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
-                                <input type="hidden" name="__method" value="UPDATE">
+                                <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
 
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>
@@ -34,7 +34,7 @@ include "includes/errormsgs.php";
                                 <div class="input-group mb-2">
                                         <span class="input-group-text"><i class="fa-solid fa-mobile fs-4 text-primary"></i></span>
                                         <div class="form-floating">
-                                                <input id="mobile_num" type="tel" inputmode="tel" class="form-control form-control-lg" name="mobilenum" placeholder="Mobile number" pattern="^\d{10}$" required>
+                                                <input id="mobile_num" type="tel" inputmode="tel" class="form-control form-control-lg" name="mobilenum" placeholder="Mobile number" pattern="[0-9]{10}" required>
                                                 <label for="mobile_num" class="text-capitalize"><b>mobile number</b></label>
                                         </div>
                                         <div class="invalid-feedback fs-5"><strong>Enter mobile number.</strong></div>
