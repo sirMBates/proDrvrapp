@@ -9,7 +9,7 @@ if (isset($_POST['saveinfo'])) {
     $formToken = $_POST['drvrtoken'];
     // Instantiate the add user controller class. ↓
     include_once base_path("app/models/database.php");
-    include_once base_path("app/models/drvrprofilemeth.php");
+    include_once base_path("app/models/regprofilemeth.php");
     include_once base_path("app/classes/completeregis.php");
     $enterData = new DrvrProfileContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
     $enterData->processDrvrProfile();

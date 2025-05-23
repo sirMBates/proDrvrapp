@@ -1,6 +1,6 @@
 <?php
     if(!empty($_GET["error"])){
-        switch($_GET['error']){
+        switch($_GET["error"]){
                 case 'emptyinput':
                         echo "<div class='alert alert-warning alert-dismissible' role='alert'><i class='me-2 fa-solid fa-triangle-exclamation'></i>Please fill out form.<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button></div>";
                         break;
