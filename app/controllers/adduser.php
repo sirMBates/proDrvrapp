@@ -17,7 +17,7 @@ if (isset($_POST['createAccount'])) {
     // Running error handlers and user signup.
     $signup->addDriver();
     $_SESSION['username'] = $username;
-    session_write_close();
+    //session_write_close();
     //dd($_SESSION['username']);
     // If the user is successfully added to the database, redirect to the register page.
     // Go to registration page after username, email and password has been successfully entered.

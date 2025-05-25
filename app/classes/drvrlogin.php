@@ -12,7 +12,7 @@ class Logincontr extends Login {
     public function loginDriver() {
         if ($this->isEmpty() === false) {
             //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: ../../public/views/drvrsignin.php?error=emptyinput");
+            header("Location: /signin?error=emptyinput");
             exit();
         }
 
