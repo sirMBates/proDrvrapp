@@ -17,25 +17,25 @@ class DrvrProfileContr extends DrvrProfileEntry {
     public function processDrvrProfile () {
         if ($this->isEmpty() === false) {
             //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: ../../public/views/drvrinfo.php?error=emptyblank");
+            header("Location: /register?error=emptyblank");
             exit();
         }
 
         if ($this->drvrNameInvalid() === false) {
             //echo "<p class='text-capitalize fs-3'>name invalid</p>";
-            header("Location: ../../public/views/drvrinfo.php?error=nameinvalid");
+            header("Location: /register?error=nameinvalid");
             exit();
         }
 
         if ($this->drvrInvalidMobileNumber() === false) {
             //echo "<p class='text-capitalize fs-3'>mobile number invalid</p>";
-            header("Location: ../../public/views/drvrinfo.php?error=mobileinvalid");
+            header("Location: /register?error=mobileinvalid");
             exit();
         }
 
         if ($this->drvrInvalidBirthDate() === false) {
             //echo "<p class='text-capitalize fs-3'>dob invalid</p>";
-            header("Location: ../../public/views/drvrinfo.php?error=dobinvalid");
+            header("Location: /register?error=dobinvalid");
             exit();
         }
 
@@ -46,7 +46,7 @@ class DrvrProfileContr extends DrvrProfileEntry {
         }*/
 
         if ($this->enterDrvrInfo() === false) {
-            header("Location: ../../public/views/drvrinfo.php?error=usernotvalid");
+            header("Location: /register?error=usernotvalid");
             exit();
         }
 

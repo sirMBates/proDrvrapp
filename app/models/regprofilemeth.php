@@ -1,5 +1,5 @@
 <?php
-require_once "../vendor/autoload.php";
+require_once base_path("../vendor/autoload.php");
 class DrvrProfileEntry extends ConnectDatabase {
     protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
         $sql = "UPDATE driver SET firstName = ?, lastName = ?, mobileNumber = ?, birthdate = ? WHERE username = ?";
@@ -8,7 +8,7 @@ class DrvrProfileEntry extends ConnectDatabase {
 
         if (!$stmt->execute(array($firstname, $lastname, $mobileNum, $birthdate, $username))) {
             $stmt = null;
-            header("Location: ../../public/views/drvrinfo.php?error=stmtfailed");
+            header("Location: /register?error=stmtfailed");
             exit();
         }
         $stmt = null;
