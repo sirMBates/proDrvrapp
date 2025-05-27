@@ -1,5 +1,5 @@
 <?php
-class DrvrProfileContr extends DrvrProfileEntry {
+class RegProContr extends RegProInfo {
     private $firstname;
     private $lastname;
     private $mobileNum;
@@ -14,7 +14,7 @@ class DrvrProfileContr extends DrvrProfileEntry {
         $this->formToken = $formToken;
     }
 
-    public function processDrvrProfile () {
+    public function processProfile () {
         if ($this->isEmpty() === false) {
             //echo "<p class='text-capitalize fs-3'>empty input</p>";
             header("Location: /register?error=emptyblank");
@@ -101,7 +101,7 @@ class DrvrProfileContr extends DrvrProfileEntry {
             return $cleanMobNum;
         }
 
-        if (!preg_match("/^\d{10}$/", cleanMobileNumber($mobNumber))) {
+        if (!preg_match("/^[0-9]{10}$/", cleanMobileNumber($mobNumber))) {
             $result = false;
         }
         else {

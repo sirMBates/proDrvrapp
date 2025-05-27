@@ -1,6 +1,6 @@
 <?php
-require_once base_path("../vendor/autoload.php");
-class DrvrProfileEntry extends ConnectDatabase {
+require_once base_path("vendor/autoload.php");
+class RegProInfo extends ConnectDatabase {
     protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
         $sql = "UPDATE driver SET firstName = ?, lastName = ?, mobileNumber = ?, birthdate = ? WHERE username = ?";
 

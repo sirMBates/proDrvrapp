@@ -36,7 +36,7 @@ function pageScripts($value) {
                 break;
 
             case "/register":
-                echo "<script type='module' src='js/messagevalidation.js'></script>\n\n";
+                //echo "<script type='module' src='js/messagevalidation.js'></script>\n\n";
                 echo "<script type='module' src='js/inputfeedback.js'></script>\n";
                 break;
 
