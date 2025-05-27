@@ -66,7 +66,7 @@ class AddDrvrContr extends AddedDrvr {
     private function invalidUserName() {
         $result;
         $cleanUsername = filter_var($this->username, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,6}$/", $cleanUsername)) {
+        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/", $cleanUsername)) {
             $result = false;
         }
         else {
