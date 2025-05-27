@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (isset($_POST['register'])) {
+if (isset($_POST['reginfo'])) {
     // Getting the info from the form using POST method from the name attribute.
     $firstname = $_POST['forename'];
     $lastname = $_POST['surname'];
