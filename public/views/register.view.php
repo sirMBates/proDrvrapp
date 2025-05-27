@@ -54,7 +54,7 @@ include "includes/errormsgs.php";
                                 </div>
 
                                 <div id="save_btn_box" class="col-12 row mx-auto mb-3">
-                                        <button type="submit" id="save" class="btn btn-primary btn-lg text-uppercase" name="saveinfo">save & log-in</button>
+                                        <button type="submit" id="register" class="btn btn-primary btn-lg text-uppercase" name="reginfo">save & log-in</button>
                                 </div>
                         </form>
                 </div>
