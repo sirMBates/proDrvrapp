@@ -1,13 +1,12 @@
 <?php
-require "../config.php";
 require "partials/outhead.php";
 include "includes/errormsgs.php";
-//dd($_SESSION);
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
+                                <?php dd($_SESSION); ?>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
 
@@ -54,7 +53,7 @@ include "includes/errormsgs.php";
                                 </div>
 
                                 <div id="save_btn_box" class="col-12 row mx-auto mb-3">
-                                        <button type="submit" id="register" class="btn btn-primary btn-lg text-uppercase" name="reginfo">save & log-in</button>
+                                        <button id="register" type="submit" name="reginfo" class="btn btn-primary btn-lg text-uppercase">save & log-in</button>
                                 </div>
                         </form>
                 </div>

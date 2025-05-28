@@ -1,5 +1,7 @@
 <?php
 
+require "../config.php";
+
 define('BASE_PATH', __DIR__ . '/../');
 
 define('HOME_PATH', __DIR__ . '/');

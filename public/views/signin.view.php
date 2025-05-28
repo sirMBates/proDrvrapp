@@ -1,5 +1,4 @@
 <?php
-require "../config.php";
 require "partials/outhead.php";
 include "includes/errormsgs.php";
 ?>
