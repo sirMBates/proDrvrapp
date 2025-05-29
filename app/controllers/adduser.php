@@ -1,4 +1,7 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 if (isset($_POST['createAccount'])) {
     // Getting the info from the form using POST method from the name attribute.
     $username = htmlspecialchars($_POST['username']);
@@ -15,10 +18,12 @@ if (isset($_POST['createAccount'])) {
     $signup = new AddDrvrContr($username, $email, $password, $firstname, $lastname, $mobileNum, $birthdate);
     // Running error handlers and user signup.
     $signup->addDriver();
-    $_SESSION['username'] = $username;
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $_SESSION['username'] = $username;
+    }
     //dd($_SESSION['username']);
     // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page.
-    header("Location: /register");
+    header("Location: /register?error=none");
     exit();
 }
 

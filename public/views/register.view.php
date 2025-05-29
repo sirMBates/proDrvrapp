@@ -6,7 +6,7 @@ include "includes/errormsgs.php";
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
-                                <?php dd($_SESSION); ?>
+                                <?php print_r($_SESSION); ?>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
 
