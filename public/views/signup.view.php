@@ -8,7 +8,7 @@ include "includes/errormsgs.php";
                 <form id="signUpAcct" class="needs-validation" action="" method="POST" novalidate>
                         <div class="input-group input-group-lg px-3 my-3 d-flex justify-content-center flex-column">
                                 <div class="input-group my-1">
-                                        <input type="text" id="username" class="form-control fs-4 rounded-2" name="username" placeholder="Username" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Username" data-bs-content="Must contain 5 - 7 characters with atleast 1 (U)ppercase letter, 1  (l)owercase letter & a number." data-bs-placement="top" data-bs-trigger="focus" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$" required>
+                                        <input type="text" id="username" class="form-control fs-4 rounded-2" name="username" placeholder="Username" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Username" data-bs-content="Must contain a minimum of 5 characters with atleast 1 (U)ppercase letter, 1  (l)owercase letter & a number." data-bs-placement="top" data-bs-trigger="focus" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$" required>
                                         <div class="invalid-feedback">Please enter a username.</div>
                                 </div>
                                 

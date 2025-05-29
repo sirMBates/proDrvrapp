@@ -1,4 +1,7 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 if (isset($_POST['reginfo'])) {
     // Getting the info from the form using POST method from the name attribute.
     $firstname = $_POST['forename'];
