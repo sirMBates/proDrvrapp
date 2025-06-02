@@ -13,4 +13,4 @@ $router->get('/logout', 'app/controllers/logout.php');
 
 $router->post('/', 'app/controllers/adduser.php');
 $router->post('/register', 'app/controllers/regprofile.php');
-$router->post('/signin', 'app/controllers/drvr-login.php');
+$router->post('/signin', 'app/controllers/login.php');
