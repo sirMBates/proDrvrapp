@@ -3,6 +3,7 @@ ini_set('session.use_only_cookies', 1);
 ini_set('session.use_strict_mode', 1);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
+//ini_set('session.save_path', __DIR__ . '../../TEMP');
 error_reporting(E_ALL);
 
 session_set_cookie_params([
@@ -10,7 +11,7 @@ session_set_cookie_params([
     'lifetime' => 3600,
     'domain' => 'localhost',
     'path' => '/',
-    'secure' => true,
+    'secure' => false,
     'httponly' => true
 ]);
 
@@ -61,4 +62,18 @@ else {
         $_SESSION['token_time'] = time();
     }
 }
+
+if (session_status() === 2 && !isset($_SESSION['username'])) {
+    $_SESSION['username'] = 'Guest';
+} elseif (session_status() === 2 && !empty($_POST['signup'])) {
+    $_SESSION['username'] = htmlspecialchars($_POST['username']);
+}
+
+if (!isset($_SESSION['counter'])) {
+    $_SESSION['counter'] = 1;
+} else {
+    $_SESSION['counter']++;
+}
+echo "Session counter: " . $_SESSION['counter'];
+//phpinfo();
 ?>

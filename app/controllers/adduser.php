@@ -1,5 +1,5 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) {
+if (session_status() !== 2) {
     session_start();
 }
 if (isset($_POST['createAccount'])) {
