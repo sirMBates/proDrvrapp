@@ -1,5 +1,4 @@
 <?php
-        require "../config.php";
         require "partials/head.php";
         require "partials/nav.php";
         require "partials/banner.php";
@@ -12,6 +11,11 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
                                 </div>
+
+                                <div class="input-group">
+                                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                </div>
+                                
                                 <div class="card-body d-sm-inline-flex justify-content-between">                        
                                         <div id="sub_head_1" class="p-2 overflow-x-auto">
                                                 <div>

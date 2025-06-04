@@ -1,5 +1,4 @@
 <?php
-require "../config.php";
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
@@ -72,8 +71,8 @@ include "includes/errormsgs.php";
                                                         <label for="status" class="text-capitalize"><b>status</b></label>
                                                 </div>
                                         </div>
-                                        <div class="input-group mb-2">
-                                                <input id="secretTok" type="hidden" class="form-control" required>
+                                        <div class="input-group">
+                                                <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                         </div>
                                 </fieldset>
                         </div>

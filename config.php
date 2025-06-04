@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 session_set_cookie_params([
     //↓lifetime is set in seconds.
     'lifetime' => 3600,
-    'domain' => 'localhost',
+    'domain' => 'prodriver.local',
     'path' => '/',
     'secure' => false,
     'httponly' => true

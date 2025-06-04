@@ -16,9 +16,9 @@ include "includes/errormsgs.php";
                                         <div class="invalid-feedback">Please enter your password</div>
                                 </div>
 
-                                <!--<div class="input-group">
-                                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="" required>
-                                </div>-->
+                                <div class="input-group">
+                                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                </div>
                                                 
                                 <div class="d-flex justify-content-center my-3 px-2">
                                         <button type="submit" id="signin" name="loginAcct" class="btn btn-lg btn-primary text-center text-capitalize" disabled>sign in</button>
