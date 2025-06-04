@@ -1,5 +1,4 @@
 <?php
-        require "../config.php";
         require "partials/head.php";
         require "partials/nav.php";
         require "partials/banner.php";
@@ -8,6 +7,10 @@
 ?>
         <main class="container-fluid p-3 d-flex flex-column">
                 <form id="" action="" method="">
+                        <div class="input-group">
+                                <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                        </div>
+                        
                         <div id="drvrEntryData" class="w-100 carousel slide carousel-fade mb-3">
                                 <div class="carousel-inner">
                                         <div class="carousel-item active">

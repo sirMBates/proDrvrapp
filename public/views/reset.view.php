@@ -1,5 +1,4 @@
 <?php
-        require "../config.php";
         require "partials/outhead.php";
         include "includes/errormsgs.php";
 ?>
@@ -10,6 +9,9 @@
             <div class="form-floating row mb-2">
                 <input id="email-for-pswdreset" type="email" inputmode="email" class="form-control" placeholder="Please enter your email" required>
                 <label for="email-for-pswdreset">Email address</label>
+            </div>
+            <div class="input-group">
+                    <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
             </div>
             <div class="row mb-2">
                 <button type="button" class="btn btn-lg btn-primary my-2 p-3" name="reset-pswd">Send email</button>

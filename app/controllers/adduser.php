@@ -24,5 +24,4 @@ if (isset($_POST['createAccount'])) {
     header("Location: /register?error=none");
     exit();
 }
-
 ?>

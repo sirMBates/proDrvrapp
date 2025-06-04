@@ -1,5 +1,4 @@
 <?php
-require "../config.php";
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
@@ -12,6 +11,9 @@ include "includes/errormsgs.php";
             </div>
             <div class="card-body">
             <form id="email-form" class="needs-validation" name="emailform" action="" method="" novalidate>
+                <div class="input-group">
+                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                </div>
                 <div class="form-floating mb-3 position-relative">
                     <input type="email" class="form-control" id="drvr-email" name="sendingemailaddy" placeholder="Your email address" required>
                     <label for="drvr-email">Sender</label>

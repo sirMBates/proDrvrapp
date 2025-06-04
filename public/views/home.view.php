@@ -1,5 +1,4 @@
 <?php
-        require "../config.php";
         require "partials/head.php";
         require "partials/nav.php";
         require "partials/banner.php";

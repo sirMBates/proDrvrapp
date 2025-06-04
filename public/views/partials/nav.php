@@ -5,7 +5,7 @@
                                 echo "Pro Driver";
                         }
                         else {
-                                echo $_SESSION['last_name'] . " " . $_SESSION['first_name'];
+                                echo $_SESSION['last_name'] . ", " . $_SESSION['first_name'];
                         }?></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="close"></button>
                 </div>
