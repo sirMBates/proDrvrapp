@@ -21,7 +21,9 @@ if (isset($_POST['createAccount'])) {
     $_SESSION['username'] = $username;
     //dd($_SESSION['username']);
     // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page.
-    header("Location: /register?error=none");
+    Flash::setMsg(checkForKey(), "Account created successfully! Please log in.");
+ // Redirect to register page with success message
+    header("Location: /register?success");
     exit();
 }
 ?>

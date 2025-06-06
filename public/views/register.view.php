@@ -1,6 +1,10 @@
 <?php
 require "partials/outhead.php";
-include "includes/errormsgs.php";
+//include "includes/errormsgs.php";
+if ($message = Flash::getMsg('success')): ?>
+        <div <?= "class='alert alert-success alert-dismissible' role='alert'><i class='me-2 fa-solid fa-thumbs-up'>$msg</i><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>";?>>
+        </div>
+
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">

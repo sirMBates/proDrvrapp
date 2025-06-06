@@ -10,7 +10,7 @@ class AddedDrvr extends ConnectDatabase {
 
         if (!$stmt->execute(array($username, $email, $hashPsW, $firstname, $lastname, $mobileNum, $birthdate))) { 
             $stmt = null;
-            header("Location: /?error=stmtfailed");
+            header("Location: /?danger"); //stmtfailed
             exit();
         }
 
