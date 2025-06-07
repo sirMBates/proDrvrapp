@@ -20,9 +20,6 @@ spl_autoload_register(function ($class) {
 
 $router = new \core\router;
 
-$alerts = new \core\flash;
-// Load the flash messages if any
-
 $routes = require base_path("routes.php");
 
 $uri = parse_url($_SERVER['REQUEST_URI'])['path'];

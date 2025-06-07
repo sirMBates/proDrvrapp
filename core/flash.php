@@ -3,7 +3,20 @@
 namespace core;
 
 class Flash {
-    public function checkForKey() {
+	public function setMsg($key, $msg) {
+		$_SESSION['flash'][$key] = $msg; // Store message in session
+	}
+
+	public function getMsg($key) {
+		if (isset($_SESSION['flash'][$key])) {
+			$msg = $_SESSION['flash'][$key];
+			unset($_SESSION['flash'][$key]); // Remove after displaying
+			return $msg;
+		}
+		return null; // Return null if no message is set
+	}
+
+    /*public function checkForKey() {
         if (isset($_GET[$key])) {
 			return $key;
 		}
@@ -33,28 +46,6 @@ class Flash {
 		} elseif ($type === "info") {
 			$class = 'me-2 fa-solid fa-circle-info';
 		}
-	}
-	
-	public static function setMsg($key, $msg) {
-		$param = checkForKey();
-		if ($param === "danger") {
-			$_SESSION['flash'][$key] = $msg;
-		} elseif ($param === "success") {
-			$_SESSION['flash'][$key] = $msg;
-		} elseif ($param === "warning") {
-			$_SESSION['flash'][$key] = $msg;
-		} elseif ($param === "info") {
-			$_SESSION['flash'][$key] = $msg;
-		}
-	}
-
-	Public static function getMsg($key) {
-		if (isset($_SESSION['flash'][$key])) {
-			$msg = $_SESSION['flash'][$key];
-			unset($_SESSION['flash'][$key]); // Remove after displaying
-			return $msg;
-		}
-		return null; // Return null if no message is set
-	}
+	}*/
 }
 ?>

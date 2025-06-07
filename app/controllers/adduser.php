@@ -1,7 +1,11 @@
 <?php
+
+$alert = new \core\Flash;
+
 if (session_status() !== 2) {
     session_start();
 }
+
 if (isset($_POST['createAccount'])) {
     // Getting the info from the form using POST method from the name attribute.
     $username = htmlspecialchars($_POST['username']);
@@ -21,7 +25,7 @@ if (isset($_POST['createAccount'])) {
     $_SESSION['username'] = $username;
     //dd($_SESSION['username']);
     // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page.
-    Flash::setMsg(checkForKey(), "Account created successfully! Please log in.");
+    $alert->setMsg('success', 'Account created successfully! Please enter additional information to complete your profile.');
  // Redirect to register page with success message
     header("Location: /register?success");
     exit();
