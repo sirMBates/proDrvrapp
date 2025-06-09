@@ -2,8 +2,13 @@
 $alert = new \core\Flash;
 require "partials/outhead.php";
 //include "includes/errormsgs.php";
+$qString = $_SERVER['QUERY_STRING'];
+parse_str($qString, $queryParams);
+foreach ($queryParams as $key => $value) {
+        echo "Parameter: $key, Value: $value<br>";
+}
 if ($msg = $alert->getMsg('success')): ?>
-        <div <?= "class='alert alert-success alert-dismissible' role='alert'><i class='me-2 fa-solid fa-thumbs-up'>".htmlspecialchars($msg)."</i><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>";?>>
+        <div id="flash-alert" <?= "class='alert alert-success alert-dismissible' role='alert'><i class='me-2 fa-solid fa-thumbs-up'>".htmlspecialchars($msg)."</i><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>";?>>
         </div>
 <?php
 endif;
