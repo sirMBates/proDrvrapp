@@ -21,13 +21,13 @@ class Login extends ConnectDatabase {
 
         if (!$stmt->execute(array($username, $password))) {
             $stmt = null;
-            header("Location: ../../public/views/drvrsignin.php?error=stmtfailed");
+            header("Location: /signin?error=stmtfailed");
             exit();
         }
 
         if ($stmt->rowCount() === 0) {
             $stmt = null;
-            header("Location: ../../public/views/drvrsignin.php?error=usernotfound");
+            header("Location: /signin?error=usernotfound");
             exit();
         }
 
@@ -36,7 +36,7 @@ class Login extends ConnectDatabase {
         
         if ($checkPsw === false) {
             $stmt = null;
-            header("Location: ../../public/views/drvrsignin.php?error=wrongpassword");
+            header("Location: /signin?error=wrongpassword");
             exit();
         }
 
@@ -45,13 +45,13 @@ class Login extends ConnectDatabase {
 
             if (!$stmt->execute(array($username, $username, $password))) {
                 $stmt = null;
-                header("Location: ../../public/views/drvrsignin.php?error=stmtfailed");
+                header("Location: /signin?error=stmtfailed");
                 exit();
             }
 
             if ($stmt->rowCount() === 0) {
                 $stmt = null;
-                header("Location: ../../public/views/drvrsignin.php?error=usernotfound");
+                header("Location: /signin?error=usernotfound");
                 exit();
             }
 

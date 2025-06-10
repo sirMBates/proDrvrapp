@@ -14,7 +14,7 @@ if (isset($_POST['loginAcct'])) {
     // Running error handlers and user signin.
     $signin->loginDriver();
     // Going to home page.
-    header("Location: /home?error=none&status=official");
+    header("Location: /home?status=official");
     exit();
 }
 

@@ -21,7 +21,7 @@ class AddedDrvr extends ConnectDatabase {
         $stmt =$this->connect()->prepare('SELECT driverid FROM driver WHERE username = ? OR email = ?;');
         if (!$stmt->execute(array($username, $email))) {
             $stmt = null;
-            header("Location: /?error=stmtfailed");
+            header("Location: /?danger"); //stmtfailed
             exit();
         }
 

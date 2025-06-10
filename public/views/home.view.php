@@ -3,7 +3,7 @@
         require "partials/nav.php";
         require "partials/banner.php";
         include "includes/cus-modal.php";
-        include "includes/errormsgs.php";
+        //include "includes/errormsgs.php";
 ?>
         <main class="container-fluid mb-3 p-1">
                 <div class="d-flex flex-row flex-wrap justify-content-evenly mb-3">
