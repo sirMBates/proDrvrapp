@@ -2,11 +2,15 @@
 $alert = new \core\Flash;
 require "partials/outhead.php";
 //include "includes/errormsgs.php";
-if ($msg = $alert->getMsg('success')): ?>
+if ($msg = $alert->getMsg('success')){ ?>
         <div id="flash-alert" <?= "class='alert alert-success alert-dismissible' role='alert'><i class='me-2 fa-solid fa-thumbs-up'>".htmlspecialchars($msg)."</i><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>";?>>
         </div>
 <?php
-endif;
+} elseif (isset($_GET['status'])){ ?>
+        <div id="flash-alert" <?= "class='alert alert-info alert-dismissible' role='alert'><i class='me-2 fa-solid fa-circle-info'>You have successfully logged out.</i><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>";?>>
+        </div>
+<?php
+};
 ?>
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
         <div id="form-container" class="d-flex flex-column my-auto">
