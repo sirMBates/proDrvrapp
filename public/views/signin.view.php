@@ -9,6 +9,7 @@ if ($msg = $alert->getMsg('success')){ ?>
 } elseif (isset($_GET['status'])){ ?>
         <div id="flash-alert" <?= "class='alert alert-info alert-dismissible' role='alert'><i class='me-2 fa-solid fa-circle-info'>You have successfully logged out.</i><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>";?>>
         </div>
+        echo "<script>setTimeout(() => {window.location.href = '/signin'}, 5000);</script>";
 <?php
 };
 ?>
