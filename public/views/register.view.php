@@ -7,8 +7,8 @@ parse_str($qString, $queryParams);
 foreach ($queryParams as $key => $value) {
         echo "Parameter: $key, Value: $value<br>";
 }
-if ($msg = $alert->getMsg('success', 'success')): ?>
-        <div id="flash-alert" <?= "class='alert alert-success alert-dismissible' role='alert'><i class='me-2 fa-solid fa-thumbs-up'>".htmlspecialchars($msg)."</i><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>";?>>
+if ($msg = $alert->getMsg('success', 'acct-created')): ?>
+        <div id="flash-alert" class="alert alert-success alert-dismissible" role="alert"><i class="me-2 fa-solid fa-thumbs-up"><?= htmlspecialchars($msg);?></i><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
 endif;
@@ -17,7 +17,7 @@ endif;
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
-                                <?php print_r($_SESSION).'\n'.print_r($_SESSION['flash']); ?>
+                                <?php $flashArray = $_SESSION['flash']; var_dump($flashArray); ?>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
 

@@ -18,7 +18,7 @@ if (isset($_POST['reginfo'])) {
     include_once base_path("app/classes/completeregis.php");
     $enterData = new RegProContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
     $enterData->processProfile();
-    $alert->setMsg('success', 'Updated your profile successfully! Please sign in to continue.');
+    $alert->setMsg('success', 'acct-updated', 'Updated your profile successfully! Please sign in to continue.');
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
     header("Location: /signin?success=profileupdated");
     exit();
