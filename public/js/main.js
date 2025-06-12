@@ -27,7 +27,7 @@ const themeSet = {
                 if (textbox) {
                         $(textbox).removeClass('bg-btd-textarea-clr text-dark');
                 }
-                if (myCurrentView === "/public/views/home.php") {
+                if (myCurrentView === "/home") {
                         let enrouteBtn = document.querySelector("#check_in_btns").childNodes[1];
                         $(enrouteBtn).removeClass("btn-dark");
                         $(enrouteBtn).addClass("btn-light");
@@ -53,7 +53,7 @@ const themeSet = {
                 if (textbox) {
                         $(textbox).addClass('bg-btd-textarea-clr text-dark');
                 }
-                if (myCurrentView === "/public/views/home.php") {
+                if (myCurrentView === "/home") {
                         let enrouteBtn = document.querySelector("#check_in_btns").childNodes[1];
                         $(enrouteBtn).removeClass("btn-light");
                         $(enrouteBtn).addClass("btn-dark");
@@ -126,13 +126,13 @@ activeLink();
 //View pay card link in driver menu when on payroll page.
 function viewablePayCard () {
         let currentView = window.location.pathname;
-        if (currentView === '/public/views/payroll.php') {
+        if (currentView === '/payroll') {
                 viewPayCard.classList.remove('d-none');        
         } else {
                 viewPayCard.classList.add('d-none');
         }
 
-        if (currentView === '/public/views/printable.php') {
+        if (currentView === '/printable') {
                 viewPayCard.classList.remove('d-none', 'dropdown');
                 viewPayCard.classList.add('dropdown-center');
                 viewPayCard.childNodes[1].classList.add('d-none');

@@ -3,14 +3,14 @@
 namespace core;
 
 class Flash {
-	public function setMsg($key, $msg) {
-		$_SESSION['flash'][$key] = $msg; // Store message in session
+	public function setMsg($key, $type, $msg) {
+		$_SESSION['flash'][$key][$type] = $msg; // Store message in session
 	}
 
-	public function getMsg($key) {
-		if (isset($_SESSION['flash'][$key])) {
-			$msg = $_SESSION['flash'][$key];
-			unset($_SESSION['flash'][$key]); // Remove after displaying
+	public function getMsg($key, $type) {
+		if (isset($_SESSION['flash'][$key][$type])) {
+			$msg = $_SESSION['flash'][$key][$type];
+			unset($_SESSION['flash'][$key][$type]); // Remove after displaying
 			return $msg;
 		}
 		return null; // Return null if no message is set
