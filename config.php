@@ -65,15 +65,13 @@ else {
 
 if (session_status() === 2 && !isset($_SESSION['username'])) {
     $_SESSION['username'] = 'Guest';
-} /*elseif (session_status() === 2 && !empty($_POST['signup'])) {
-    $_SESSION['username'] = htmlspecialchars($_POST['username']);
-}*/
+}
 
-if (!isset($_SESSION['counter'])) {
+/*if (!isset($_SESSION['counter'])) {
     $_SESSION['counter'] = 1;
 } else {
     $_SESSION['counter']++;
 }
 echo "Session counter: " . $_SESSION['counter'];
-//phpinfo();
+phpinfo();*/
 ?>
