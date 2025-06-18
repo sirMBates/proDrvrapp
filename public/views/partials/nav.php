@@ -1,5 +1,6 @@
         <div class="offcanvas offcanvas-start" tabindex="-1" id="useraccess" aria-labelledby="useraccessLabel">
                 <div class="offcanvas-header bg-besttrailsclr">
+                        <img id="profile-pic" src="../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="d-inline-block align-text-center rounded-circle me-2">
                         <h5 class="offcanvas-title text-light" id="useraccessLabel"><?php
                         if (!isset($_SESSION['first_name']) && !isset($_SESSION['last_name'])) {
                                 echo "Pro Driver";
