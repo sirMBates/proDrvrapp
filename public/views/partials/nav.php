@@ -1,12 +1,15 @@
         <div class="offcanvas offcanvas-start" tabindex="-1" id="useraccess" aria-labelledby="useraccessLabel">
                 <div class="offcanvas-header bg-besttrailsclr">
-                        <img id="profile-pic" src="../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="d-inline-block align-text-center rounded-circle me-2">
+                        <div id="profilecon" style="width: 60px; height: 60px;" class="border border-2 border-primary rounded d-inline-block me-2">
+                                <label for="profile-upload"><img id="profile-pic" src="../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="mx-1 my-1"></label>
+                                <input type="file" id="profile-upload" accept=".jpg, .jpeg, .png, .gif" capture="user">
+                        </div>
                         <h5 class="offcanvas-title text-light" id="useraccessLabel"><?php
                         if (!isset($_SESSION['first_name']) && !isset($_SESSION['last_name'])) {
                                 echo "Pro Driver";
                         }
                         else {
-                                echo $_SESSION['last_name'] . ", " . $_SESSION['first_name'];
+                                echo $_SESSION['first_name'] . " " . $_SESSION['last_name'];
                         }?></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="close"></button>
                 </div>
