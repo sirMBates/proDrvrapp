@@ -91,3 +91,11 @@ body::-webkit-scrollbar-thumb:hover {
 footer h6 {
     -webkit-text-stroke: .25px black;
 }
+
+#profilecon img {
+    cursor: pointer;
+}
+
+#profilecon #profile-upload {
+    display: none;
+}

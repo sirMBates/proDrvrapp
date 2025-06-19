@@ -1,4 +1,5 @@
 const myCurrentView = window.location.pathname;
+const profCon = document.querySelector("#profilecon");
 const getMenuItems = document.querySelectorAll(".nav-item");
 const textLink = document.querySelector("#useraccess");
 const driverMenu = document.querySelector(".offcanvas-body");
@@ -145,5 +146,18 @@ function viewablePayCard () {
         }
 };
 $(window).on('load', viewablePayCard);
+
+// Profile image display in navbar.
+// console.log(profCon.childNodes);
+// [default image is firstChild.nextElementSibling] & [file selector is 3]
+let profileImage = profCon.firstChild.nextElementSibling;
+let profileInput = profCon.childNodes[3];
+$(profileInput).on('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+                profileImage.src = URL.createObjectURL(file);
+        }
+});
+
 /*const dropdownElementList = document.querySelectorAll('.dropdown-toggle')
 const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl))*/
