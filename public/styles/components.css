@@ -96,6 +96,12 @@ footer h6 {
     cursor: pointer;
 }
 
+#profilecon label {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
 #profilecon #profile-upload {
     display: none;
 }

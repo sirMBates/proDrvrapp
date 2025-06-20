@@ -150,14 +150,28 @@ $(window).on('load', viewablePayCard);
 // Profile image display in navbar.
 // console.log(profCon.childNodes);
 // [default image is firstChild.nextElementSibling] & [file selector is 3]
-let profileImage = profCon.firstChild.nextElementSibling;
-let profileInput = profCon.childNodes[3];
+const profileImage = profCon.childNodes[1].childNodes[0];
+const profileInput = profCon.childNodes[3];
 $(profileInput).on('change', (e) => {
-        const file = e.target.files[0];
+        //profileImage.setAttribute('src', URL.createObjectURL(profileInput.files[0]));
+        const file = e.target.files[0]; // Get the first selected file
         if (file) {
-                profileImage.src = URL.createObjectURL(file);
+                const reader = new FileReader();
+
+                // Define what happens when the file is successfully read
+                reader.onload = (e) => {
+                        profileImage.setAttribute('src', e.target.result); // Display file content
+                };
+
+                // Handle errors
+                reader.onerror = () => {
+                        console.error('Error reading file:', reader.error);
+                };
+
+                // Read the file as text
+                reader.readAsDataURL(file);
         }
 });
-
+        
 /*const dropdownElementList = document.querySelectorAll('.dropdown-toggle')
 const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl))*/
