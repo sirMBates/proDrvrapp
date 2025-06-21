@@ -168,8 +168,42 @@ $(profileInput).on('change', (e) => {
                         console.error('Error reading file:', reader.error);
                 };
 
-                // Read the file as text
+                // Read the file as image URL
                 reader.readAsDataURL(file);
+
+                // Optionally, you can also log the file name and size
+                console.log('Selected file:', file.name, 'Size:', file.size, 'bytes');
+                // You can also check the file type if needed
+                console.log('File type:', file.type);
+                // Check if the file is an image
+                if (!file.type.startsWith('image/')) {
+                        alert('Please select a valid image file.');
+                        profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
+                        return;
+                }
+                // Reset the input value to allow re-uploading the same file
+                profileInput.value = ''; // Clear the input value to allow re-uploading the same file
+                // Reset the profile image to default if no file is selected
+                if (file.name === "photo-camera-interface-symbol-for-button.png") {
+                        profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
+                }
+                // If you want to upload the image to the server, you can do it here
+                // For example, using fetch or XMLHttpRequest to send the file to your server
+                
+                /*if ($(profileImage).attr('src') !== "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png") {
+                        const formData = new FormData();
+                        formData.append('profileImage', file);
+
+                        fetch('/profile-image', {
+                                method: 'POST',
+                                body: formData
+                        })
+                        .then(response => response.text())
+                        .then(data => alert(data))
+                        .catch(error => console.error('Error uploading image:', error));
+                } else {
+                        alert("Please select a valid image file.");
+                }*/
         }
 });
         

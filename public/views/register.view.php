@@ -7,11 +7,13 @@ parse_str($qString, $queryParams);
 foreach ($queryParams as $key => $value) {
         echo "Parameter: $key, Value: $value<br>";
 }
-if ($msg = $alert->getMsg('success', 'acct-created')): ?>
+if ($msg = $alert->getMsg('success', 'acct-created')) { ?>
         <div id="flash-alert" class="alert alert-success alert-dismissible" role="alert"><i class="me-2 fa-solid fa-thumbs-up"><?= htmlspecialchars($msg);?></i><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
-endif;
+} elseif ($msg = $alert->getMsg('error', 'acct-created')) {
+        # code...
+};
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">
