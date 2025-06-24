@@ -1,14 +1,15 @@
 <?php
 $alert = new \core\Flash;
+//$flasher = new \core\Flalert;
 require "partials/outhead.php";
 //include "includes/errormsgs.php";
-$qString = $_SERVER['QUERY_STRING'];
+/*$qString = $_SERVER['QUERY_STRING'];
 parse_str($qString, $queryParams);
 foreach ($queryParams as $key => $value) {
-        echo "Parameter: $key, Value: $value<br>";
-}
+        echo "Parameter: ".htmlspecialchars($key).", Value: $value<br>";
+}*/
 if ($msg = $alert->getMsg('success', 'acct-created')) { ?>
-        <div id="flash-alert" class="alert alert-success alert-dismissible" role="alert"><i class="me-2 fa-solid fa-thumbs-up"><?= htmlspecialchars($msg);?></i><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div id="flash-alert" class="alert alert-success alert-dismissible" role="alert"><i class="me-2 fa-solid fa-thumbs-up"><?= $msg;?></i><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
 } elseif ($msg = $alert->getMsg('error', 'acct-created')) {
@@ -19,10 +20,18 @@ if ($msg = $alert->getMsg('success', 'acct-created')) { ?>
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
-                                <?php $flashArray = $_SESSION['flash']; var_dump($flashArray); ?>
+                                <?php $flashArray = $_SESSION; var_dump($flashArray); ?>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
-
+                                <p class="fs-4"><?php $keys = array_keys($_GET);
+                                echo $keys[1]."<br>";
+                                $kValue;
+                                $qString = $_SERVER['QUERY_STRING'];
+                                parse_str($qString, $queryParams); 
+                                foreach ($queryParams as $key => $value) {
+                                        echo "Parameter: ".htmlspecialchars($key).", Value: $value<br>";
+                                }
+                                ?></p>
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>
 
                                 <div class="input-group mb-2">
