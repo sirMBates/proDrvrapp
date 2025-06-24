@@ -8,8 +8,8 @@ parse_str($qString, $queryParams);
 foreach ($queryParams as $key => $value) {
         echo "Parameter: ".htmlspecialchars($key).", Value: $value<br>";
 }*/
-if ($msg = $alert->getMsg('success', 'acct-created')) { ?>
-        <div id="flash-alert" class="alert alert-success alert-dismissible" role="alert"><i class="me-2 fa-solid fa-thumbs-up"><?= $msg;?></i><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+if ($msg = $alert->getMsg($alert::displayType($_GET), $alert::messageType($_SERVER['QUERY_STRING']))) { ?>
+        <div id="flash-alert" class="alert alert-<?= $alert::displayType($_GET);?> alert-dismissible" role="alert"><i class="<?= $alert::iconType($alert::displayType($_GET))?>"><?= $alert::displayMsg($alert::messageType($_SERVER['QUERY_STRING']));?></i><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
 } elseif ($msg = $alert->getMsg('error', 'acct-created')) {
@@ -23,15 +23,17 @@ if ($msg = $alert->getMsg('success', 'acct-created')) { ?>
                                 <?php $flashArray = $_SESSION; var_dump($flashArray); ?>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
-                                <p class="fs-4"><?php $keys = array_keys($_GET);
+                                <!--<p class="fs-4"><?php /*$keys = array_keys($_GET);
                                 echo $keys[1]."<br>";
-                                $kValue;
+                                $resultArray = [];
                                 $qString = $_SERVER['QUERY_STRING'];
                                 parse_str($qString, $queryParams); 
                                 foreach ($queryParams as $key => $value) {
-                                        echo "Parameter: ".htmlspecialchars($key).", Value: $value<br>";
+                                        $resultArray[$key] = $value;
                                 }
-                                ?></p>
+                                print_r($resultArray);
+                                echo $resultArray[$key];*/
+                                ?></p>-->
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>
 
                                 <div class="input-group mb-2">
