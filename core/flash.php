@@ -3,79 +3,69 @@
 namespace core;
 
 class Flash {
-	public function setMsg($key, $type, $msg) {
-		$_SESSION['flash'][$key][$type] = $msg; // Store message in session
+	public function setMsg($key, $msg) {
+		$_SESSION['flash'][$key] = $msg; // Store message in session
 	}
 
-	public function getMsg($key, $type) {
-		if (isset($_SESSION['flash'][$key][$type])) {
-			$msg = $_SESSION['flash'][$key][$type];
-			unset($_SESSION['flash'][$key][$type]); // Remove after displaying
+	public function getMsg($key) {
+		if (isset($_SESSION['flash'][$key])) {
+			$msg = $_SESSION['flash'][$key];
+			unset($_SESSION['flash'][$key]); // Remove after displaying
 			return $msg;
 		}
 		return null; // Return null if no message is set
 	}
 
     public static function displayType($type) {
-		$qKeys = array_keys($type);
-        //echo $qKeys[1];
-        switch($qKeys[1]) {
-			case 'success':
-                return 'success';
+        $qKeys = array_keys($type);
+        $getValues = array_values($qKeys);
+        //print_r($getValues);
+        $typeDisplay = $getValues[1];
+        switch($typeDisplay) {
+            case 'success':
+                echo 'success';
                 break;
             case 'danger':
-                return 'danger';
+                echo 'danger';
                 break;
             case 'warning':
-                return 'warning';
+                echo 'warning';
                 break;
             case 'info':
-                return 'info';
+                echo 'info';
                 break;
             default:
-                return 'dark';
-				break;
+                echo 'error';
+                break;
+        }
+    }
+
+    public static function alertType($type) {
+		$qKeys = array_keys($type);
+        $getValues = array_values($qKeys);
+        //print_r($getValues);
+        $typeDisplay = $getValues[1]; // Get the first value from the array
+        switch($typeDisplay) {
+            case 'success':
+                echo 'success';
+                break;
+            case 'danger':
+                echo 'danger';
+                break;
+            case 'warning':
+                echo 'warning';
+                break;
+            case 'info':
+                echo 'info';
+                break;
+            default:
+                echo 'dark';
+                break;
     	}
 	}
 
-	public static function messageType($string) {
-		$queryArray = [];
-        //$string = $_SERVER['QUERY_STRING'];
-        parse_str($string, $queryParams);
-        foreach ($queryParams as $key => $value) {
-			$queryArray[$key] = $value;
-		}
-		$getQueryKey = $queryArray[$key];
-		//echo $queryArray[$key];
-		switch($getQueryKey) {
-            case 'acct-created':
-                echo 'acct-created';
-                break;
-            case 'acct-updated':
-                echo 'acct-updated';
-                break;
-            case 'invalid-password':
-                echo 'invalid-password';
-                break;
-            case 'invalid-username':
-                echo 'invalid-username';
-                break;
-            case 'email-exists':
-                echo 'email-exists';
-                break;
-            case 'username-exists':
-                echo 'username-exists';
-                break;
-            case 'profile-updated':
-                echo 'profile-updated';
-                break;
-            default:
-                echo 'unexpected';
-                break;
-        }
-	}
-
-	public static function displayMsg($msg) {
+	public function displayMsg($query) {
+        //$msg = $this->messageTypeAndDisplay();
         switch($msg) {
             case 'acct-created':
                 echo 'Account created successfully! Please enter additional information to complete your profile.';
@@ -107,8 +97,12 @@ class Flash {
         }
     }
 	
-	public static function iconType($func) {
-		switch($func) {
+	public static function iconType($type) {
+        $qKeys = array_keys($type);
+        $getValues = array_values($qKeys);
+        //print_r($getValues);
+        $typeDisplay = $getValues[1]; // Get the first value from the array
+		switch($typeDisplay) {
 			case 'success':
 				echo 'me-2 fa-solid fa-thumbs-up';
 				break;
