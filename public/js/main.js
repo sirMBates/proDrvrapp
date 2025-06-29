@@ -28,11 +28,7 @@ const themeSet = {
                 if (textbox) {
                         $(textbox).removeClass('bg-btd-textarea-clr text-dark');
                 }
-                if (myCurrentView === "/home") {
-                        let enrouteBtn = document.querySelector("#check_in_btns").childNodes[1];
-                        $(enrouteBtn).removeClass("btn-dark");
-                        $(enrouteBtn).addClass("btn-light");
-                }
+                
                 isDarkMode = true;
         },
         // Set the Light theme.
@@ -54,11 +50,7 @@ const themeSet = {
                 if (textbox) {
                         $(textbox).addClass('bg-btd-textarea-clr text-dark');
                 }
-                if (myCurrentView === "/home") {
-                        let enrouteBtn = document.querySelector("#check_in_btns").childNodes[1];
-                        $(enrouteBtn).removeClass("btn-light");
-                        $(enrouteBtn).addClass("btn-dark");
-                }
+                
                 isDarkMode = false;
         },
         
