@@ -1,14 +1,7 @@
 <?php
 $alert = new \core\Flash;
 require "partials/outhead.php";
-//include "includes/errormsgs.php";
-if ($msg = $alert->getMsg($alert::displayType($_GET))) { ?>
-        <div id="flash-alert" class="alert alert-<?= $alert::alertType($_GET);?> alert-dismissible" role="alert"><i class="<?= $alert::iconType($_GET)?>"><?= $msg;?></i><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-<?php
-} elseif ($msg = $alert->getMsg('error', 'acct-created')) {
-        # code...
-};
+require "includes/flashmessage.php";
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">
