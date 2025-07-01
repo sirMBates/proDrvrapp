@@ -11,13 +11,13 @@
                                 <p class='h3 text-center text-capitalize'>driver information</p>
                         </div>
                         <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                                <table id="dashboard-info" class="table table-bordered">
+                                <table id="dashboard-info" class="table">
                                         <thead class="table-info">
                                                 <tr>
                                                         <th scope="col">Driver Name</th>
                                                         <th scope="col">Driver ID#</th>
-                                                        <th scope="col">Report Time</th>
-                                                        <th scope="col">Spot Time</th>
+                                                        <th scope="col">Garage<br>Report Time</th>
+                                                        <th scope="col">Spot Time<br>(PU Location)</th>
                                                         <th scope="col">Status</th>
                                                 </tr>
                                         </thead>
