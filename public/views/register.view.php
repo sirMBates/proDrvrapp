@@ -7,7 +7,8 @@ require "includes/flashmessage.php";
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
-                                <?php $flashArray = $_SESSION; //dd($flashArray); ?>
+                                <?php $flashArray = $_SESSION; //dd($flashArray); 
+                                $alert::checkType()?>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
                                 <p class="fs-4"><?php
