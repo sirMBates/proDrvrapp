@@ -80,5 +80,19 @@ class Flash {
 				break;
 		}
 	}
+
+    public static function checkType() {
+        if (isset($_GET['success']) && $_GET['success'] === 'acct-created') {
+            echo 'The account created value is set in the URL.';
+        } else if (isset($_GET['danger']) && $_GET['danger'] === 'invalid-password') {
+            echo 'The invalid password value is set in the URL.';
+        } else if (isset($_GET['warning']) && $_GET['warning'] === 'email-exists') {
+            echo 'The email exists value is set in the URL.';
+        } else if (isset($_GET['info']) && $_GET['info'] === 'profile-updated') {
+            echo 'The profile updated value is set in the URL.';
+        } else {
+            echo 'No specific type is set in the URL.';
+        }
+    }
 }
 ?>
