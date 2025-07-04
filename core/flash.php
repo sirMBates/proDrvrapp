@@ -3,11 +3,11 @@
 namespace core;
 
 class Flash {
-	public function setMsg($key, $msg) {
+	public static function setMsg($key, $msg) {
 		$_SESSION['flash'][$key] = $msg; // Store message in session
 	}
 
-	public function getMsg($key) {
+	public static function getMsg($key) {
 		if (isset($_SESSION['flash'][$key])) {
 			$msg = $_SESSION['flash'][$key]; // Retrieve message from session
             unset($_SESSION['flash'][$key]); // Remove after displaying
@@ -24,7 +24,37 @@ class Flash {
         echo $typeDisplay;
     }
 
-	public function displayMsg($query) {
+    public static function getMsgType() {
+        echo "<script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        console.log(urlParams);
+        </script>";
+    }
+
+    public static function displayMsg() {
+        if (isset($_GET['success']) && $_GET['success'] === 'acct-created') {
+            echo 'Account created successfully! Please enter additional information to complete your profile.';
+        } else if (isset($_GET['success']) && $_GET['success'] === 'acct-updated') {
+            echo 'Account updated successfully! Please log in to continue.';
+        } else if (isset($_GET['warning']) && $_GET['warning'] === 'invalid-password') {
+            echo 'invalid-password. Please try again.';
+        } else if (isset($_GET['warning']) && $_GET['warning'] === 'invalid-username') {
+            echo 'invalid-username. Please try again.';
+        } else if (isset($_GET['warning']) && $_GET['warning'] === 'empty-input') {
+            echo 'Please fill in all required fields.';
+        } else if (isset($_GET['danger']) && $_GET['danger'] === 'email-exists') {
+            echo 'Email already exists! Please use a different email address.';
+        } else if (isset($_GET['danger']) && $_GET['danger'] === 'username-exists') {
+            echo 'Username already exists! Please choose a different username.';
+        } else if (isset($_GET['info']) && $_GET['info'] === 'profile-updated') {
+            echo 'Driver profile updated successfully!';
+        } else {
+            echo 'An unexpected error occurred. Please try again.';
+        }
+    }
+
+	/*public function displayMsg($query) {
         //$msg = $this->messageTypeAndDisplay();
         switch($msg) {
             case 'acct-created':
@@ -55,7 +85,7 @@ class Flash {
                 echo 'An unexpected error occurred. Please try again.';
                 break;
         }
-    }
+    }*/
 	
 	public static function iconType($type) {
         $qKeys = array_keys($type);
@@ -64,35 +94,21 @@ class Flash {
         $typeDisplay = $getValues[1]; // Get the first value from the array
 		switch($typeDisplay) {
 			case 'success':
-				echo 'me-2 fa-solid fa-thumbs-up';
+				echo ' fa-thumbs-up';
 				break;
 			case 'danger':
-				echo 'me-2 fa-solid fa-circle-radiation';
+				echo ' fa-circle-radiation';
 				break;
 		 	case 'warning':
-				echo 'me-2 fa-solid fa-triangle-radiation';
+				echo ' fa-triangle-radiation';
 				break;
 			case 'info':
-				echo 'me-2 fa-solid fa-circle-info';
+				echo ' fa-circle-info';
 				break;
 			default:
-				echo 'me-2 fa-solid fa-thumbs-down';
+				echo ' fa-thumbs-down';
 				break;
 		}
 	}
-
-    public static function checkType() {
-        if (isset($_GET['success']) && $_GET['success'] === 'acct-created') {
-            echo 'The account created value is set in the URL.';
-        } else if (isset($_GET['danger']) && $_GET['danger'] === 'invalid-password') {
-            echo 'The invalid password value is set in the URL.';
-        } else if (isset($_GET['warning']) && $_GET['warning'] === 'email-exists') {
-            echo 'The email exists value is set in the URL.';
-        } else if (isset($_GET['info']) && $_GET['info'] === 'profile-updated') {
-            echo 'The profile updated value is set in the URL.';
-        } else {
-            echo 'No specific type is set in the URL.';
-        }
-    }
 }
 ?>
