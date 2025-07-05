@@ -26,7 +26,7 @@ if (isset($_POST['createAccount'])) {
     $_SESSION['username'] = $username;
     //dd($_SESSION['username']);
     // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page.
-    $alert::setMsg($alert::displayType($_GET), $alert::displayMsg());
+    //$alert::setMsg($alert::displayType($_GET), $alert::displayMsg());
  // Redirect to register page with success message
     header("Location: /register?success=acct-created");
     exit();
