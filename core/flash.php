@@ -28,29 +28,29 @@ class Flash {
         echo "<script>
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
-        console.log(urlParams);
+
         </script>";
     }
 
     public static function displayMsg() {
         if (isset($_GET['success']) && $_GET['success'] === 'acct-created') {
-            echo 'Account created successfully! Please enter additional information to complete your profile.';
+            return 'Account created successfully! Please enter additional information to complete your profile.';
         } else if (isset($_GET['success']) && $_GET['success'] === 'acct-updated') {
-            echo 'Account updated successfully! Please log in to continue.';
+            return 'Account updated successfully! Please log in to continue.';
         } else if (isset($_GET['warning']) && $_GET['warning'] === 'invalid-password') {
-            echo 'invalid-password. Please try again.';
+            return 'invalid-password. Please try again.';
         } else if (isset($_GET['warning']) && $_GET['warning'] === 'invalid-username') {
-            echo 'invalid-username. Please try again.';
+            return 'invalid-username. Please try again.';
         } else if (isset($_GET['warning']) && $_GET['warning'] === 'empty-input') {
-            echo 'Please fill in all required fields.';
+            return 'Please fill in all required fields.';
         } else if (isset($_GET['danger']) && $_GET['danger'] === 'email-exists') {
-            echo 'Email already exists! Please use a different email address.';
+            return 'Email already exists! Please use a different email address.';
         } else if (isset($_GET['danger']) && $_GET['danger'] === 'username-exists') {
-            echo 'Username already exists! Please choose a different username.';
+            return 'Username already exists! Please choose a different username.';
         } else if (isset($_GET['info']) && $_GET['info'] === 'profile-updated') {
-            echo 'Driver profile updated successfully!';
+            return 'Driver profile updated successfully!';
         } else {
-            echo 'An unexpected error occurred. Please try again.';
+            return 'An unexpected error occurred. Please try again.';
         }
     }
 
