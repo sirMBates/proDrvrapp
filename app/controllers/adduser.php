@@ -1,8 +1,5 @@
 <?php
 
-$alert = new \core\Flash;
-//$flasher = new \core\Flalert;
-
 if (session_status() !== 2) {
     session_start();
 }
@@ -25,9 +22,7 @@ if (isset($_POST['createAccount'])) {
     $signup->addDriver();
     $_SESSION['username'] = $username;
     //dd($_SESSION['username']);
-    // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page.
-    //$alert::setMsg($alert::displayType($_GET), $alert::displayMsg());
- // Redirect to register page with success message
+    // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page with success alert.
     header("Location: /register?success=acct-created");
     exit();
 }

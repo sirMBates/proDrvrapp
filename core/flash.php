@@ -16,21 +16,21 @@ class Flash {
 		return null; // Return null if no message is set
 	}
 
-    public static function displayType($type) {
+    public static function setType($type) {
+        $qKeys = array_keys($type);
+        $getValues = array_values($qKeys);
+        $typeDisplay = $getValues[1];
+        //print_r($qKeys);
+        return $typeDisplay;
+    }
+
+    /*public static function getType($function) {
         $qKeys = array_keys($type);
         $getValues = array_values($qKeys);
         $typeDisplay = $getValues[1];
         //print_r($qKeys);
         echo $typeDisplay;
-    }
-
-    public static function getMsgType() {
-        echo "<script>
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-
-        </script>";
-    }
+    }*/
 
     public static function displayMsg() {
         if (isset($_GET['success']) && $_GET['success'] === 'acct-created') {
