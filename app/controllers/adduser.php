@@ -1,5 +1,7 @@
 <?php
 
+$alert = new core\Flash();
+
 if (session_status() !== 2) {
     session_start();
 }
@@ -23,6 +25,7 @@ if (isset($_POST['createAccount'])) {
     $_SESSION['username'] = $username;
     //dd($_SESSION['username']);
     // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page with success alert.
+    $alert::setMsg('success', 'Account created successfully! Please enter additional information to complete your profile.');
     header("Location: /register?success=acct-created");
     exit();
 }

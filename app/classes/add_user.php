@@ -1,4 +1,7 @@
 <?php
+
+use core\Flash;
+
 class AddDrvrContr extends AddedDrvr {
     private $username;
     private $email;
@@ -19,33 +22,35 @@ class AddDrvrContr extends AddedDrvr {
     }
 
     public function addDriver() {
+        $alert = new core\Flash();
+
         if ($this->isEmpty() === false) {
-            //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: /?warning=empty-input"); //emptyinput
+            $alert::setMsg('warning', 'Please fill in all required fields.');
+            header("Location: /?warning=empty"); //emptyinput
             exit();
         }
 
         if ($this->invalidUserName() === false) {
-            //echo "<p class='text-capitalize fs-3'>invalid user name</p>";
-            header("Location: /?danger"); //namenotvalid
+            $alert::setMsg('warning', 'Please re-enter your username.');
+            header("Location: /?warning=invalid"); //namenotvalid
             exit();
         }
 
         if ($this->invalidEmail() === false) {
-            //echo "<p class='text-capitalize fs-3'>invalid email</p>";
-            header("Location: /?danger"); //emailnotvalid
+            $alert::setMsg('warning', 'Please re-enter your email.');
+            header("Location: /?warning=invalid"); //emailnotvalid
             exit();
         }
 
         if ($this->invalidPsword() === false) {
-            //echo "<p class='text-capitalize fs-3'>invalid password</p>";
-            header("Location: /?danger"); //passwordnotvalid
+            $alert::setMsg('warning', 'Please re-enter your password.');
+            header("Location: /?warning=invalid"); //passwordnotvalid
             exit();
         }
 
-        if ($this->nameExist() === false) {
-            //echo "<p class='text-capitalize fs-3'>person already exist</p>";
-            header("Location: /?warning"); //nameexistalready
+        if ($this->nameOrEmailExist() === false) {
+            $alert::setMsg('danger', 'Please choose a different username or email.');
+            header("Location: /?danger=exist+already"); //nameexistalready
             exit();
         }
 
@@ -89,7 +94,7 @@ class AddDrvrContr extends AddedDrvr {
 
     private function invalidPsword() {
         $result;
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#\$%&\._]).\S{7,}$/", $this->password)) {
+        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
             $result = false;
         }
         else {
@@ -98,7 +103,7 @@ class AddDrvrContr extends AddedDrvr {
         return $result;
     }
 
-    private function nameExist() {
+    private function nameOrEmailExist() {
         $result;
         if (!$this->checkDriver($this->username, $this->email)) {
             $result = false;

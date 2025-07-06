@@ -1,33 +1,22 @@
 <?php
-
-//use Defuse\Crypto\Crypto;
-//use Defuse\Crypto\Key;
-
-require_once home_path("../vendor/autoload.php");
-
-/*$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, '.env');
-$dotenv->load();*/
+use core\Flash;
 
 class Login extends ConnectDatabase {
     protected function getDriver($username, $password) {
+        $alert = new Flash();
         $stmt =$this->connect()->prepare("SELECT password FROM driver WHERE username = ? OR email = ?;");
-        /*function getKeyFromEnv() {
-            $keyAscii = $_ENV["ENCRYPT_SECRET_KEY"];
-            return Key::loadFromAsciiSafeString($keyAscii);
-        }
-        $key = getKeyFromEnv();
-        $cipherText = $username;
-        $secret_data = Crypto::decrypt($cipherText, $key, $raw_binary = false);*/
 
         if (!$stmt->execute(array($username, $password))) {
             $stmt = null;
-            header("Location: /signin?error=stmtfailed");
+            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
+            header("Location: /signin?error=try+again"); // unexpectedError
             exit();
         }
 
         if ($stmt->rowCount() === 0) {
             $stmt = null;
-            header("Location: /signin?error=usernotfound");
+            $alert::setMsg('error', 'User not found. Please check your username or email.');
+            header("Location: /signin?error=not+found"); // noRegisteredUseraccount
             exit();
         }
 
@@ -36,7 +25,8 @@ class Login extends ConnectDatabase {
         
         if ($checkPsw === false) {
             $stmt = null;
-            header("Location: /signin?error=wrongpassword");
+            $alert::setMsg('danger', 'Incorrect password. Please try again.');
+            header("Location: /signin?danger=invalid"); // wrongPassword
             exit();
         }
 
@@ -45,13 +35,15 @@ class Login extends ConnectDatabase {
 
             if (!$stmt->execute(array($username, $username, $password))) {
                 $stmt = null;
-                header("Location: /signin?error=stmtfailed");
+                $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
+                header("Location: /signin?error=try+again"); // unexpectedError
                 exit();
             }
 
             if ($stmt->rowCount() === 0) {
                 $stmt = null;
-                header("Location: /signin?error=usernotfound");
+                $alert::setMsg('error', 'User not found. Please check your username or email.');
+                header("Location: /signin?error=not+found"); // noRegisteredUseraccount
                 exit();
             }
 

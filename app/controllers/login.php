@@ -1,7 +1,10 @@
 <?php
+$alert = new \core\Flash();
+
 if (session_status() !== 2) {
     session_start();
 }
+
 if (isset($_POST['loginAcct'])) {
     // Getting the info from the form using POST method from the name attribute.
     $username = $_POST['username'];
@@ -13,8 +16,9 @@ if (isset($_POST['loginAcct'])) {
     $signin = new Logincontr($username, $password);
     // Running error handlers and user signin.
     $signin->loginDriver();
-    // Going to home page.
-    header("Location: /home?status=official");
+    // Redirect to home page upon successful login with valid message.
+    $alert::setMsg('success', 'You\'ve signed in successfully! Welcome back.');
+    header("Location: /home?success=logged+in&status=official");
     exit();
 }
 

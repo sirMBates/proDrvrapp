@@ -1,6 +1,6 @@
 <?php
 
-$alert = new \core\Flash;
+$alert = new \core\Flash();
 
 if (session_status() !== 2) {
     session_start();
@@ -18,8 +18,8 @@ if (isset($_POST['reginfo'])) {
     include_once base_path("app/classes/completeregis.php");
     $enterData = new RegProContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
     $enterData->processProfile();
-    $alert->setMsg('success', 'acct-updated', 'Updated your profile successfully! Please sign in to continue.');
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
+    $alert::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');
     header("Location: /signin?success=profileupdated");
     exit();
 };

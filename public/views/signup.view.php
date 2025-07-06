@@ -1,7 +1,8 @@
 <?php
 require "partials/outhead.php";
-include "includes/cus-modal.php";
-//include "includes/errormsgs.php";
+$alert = new \core\Flash();
+require "includes/flashmessage.php";
+//include "includes/cus-modal.php";
 ?>       
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
         <div id="form-container" class="d-flex flex-column my-auto">
@@ -18,7 +19,7 @@ include "includes/cus-modal.php";
                                 </div>
                                 
                                 <div class="input-group my-1">
-                                        <input type="password" id="password" class="form-control fs-4" name="password" placeholder="Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Password" data-bs-content="Must contain a minimum of 8 characters with atleast 1 (U)ppercase letter, 1 (l)owercase letter, 1 number and 1 special character. (i.e. !@#$%&._)" data-bs-placement="right" data-bs-trigger="focus" pattern="^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#\$%&\._]).\S{7,}$" required><span class="input-group-text rounded-end" id="pwd-icon-click" aria-describedby="password"><i class="fa-solid fa-eye" id="pwd-icon"></i></span>
+                                        <input type="password" id="password" class="form-control fs-4" name="password" placeholder="Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Password" data-bs-content="Must contain a minimum of 8 characters with atleast 1 (U)ppercase letter, 1 (l)owercase letter, 1 number and 1 special character. (i.e. !@#%&_)" data-bs-placement="right" data-bs-trigger="focus" pattern="^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$" required><span class="input-group-text rounded-end" id="pwd-icon-click" aria-describedby="password"><i class="fa-solid fa-eye" id="pwd-icon"></i></span>
                                         <div class="invalid-feedback">Please enter a password</div>
                                 </div>          
                                 

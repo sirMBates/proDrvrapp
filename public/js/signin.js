@@ -1,5 +1,5 @@
 const unamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,6}$/;
-const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#\$%&\._]).\S{7,}$/;
+const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
 const checkInputs = document.querySelectorAll('.form-control');
 const usernameInput = checkInputs[0]; 
 const passwordInput = checkInputs[1];

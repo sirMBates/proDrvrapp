@@ -1,28 +1,14 @@
 <?php
-$alert = new \core\Flash;
 require "partials/outhead.php";
+$alert = new \core\Flash();
 require "includes/flashmessage.php";
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
-                                <?php $flashArray = $_SESSION; //dd($flashArray); 
-                                //$alert::checkType()?>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
-                                <p class="fs-4"><?php
-                                /*$keys = array_keys($_GET);
-                                echo $keys[1]."<br>";
-                                $resultArray = [];
-                                $qString = $_SERVER['QUERY_STRING'];
-                                parse_str($qString, $queryParams); 
-                                foreach ($queryParams as $key => $value) {
-                                        $resultArray[$key] = $value;
-                                }
-                                print_r($resultArray);
-                                echo $resultArray[$key];*/
-                                ?></p>
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>
 
                                 <div class="input-group mb-2">
