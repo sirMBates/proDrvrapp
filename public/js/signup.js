@@ -2,7 +2,7 @@ import { buildModal } from './appmodal.js';
 // Used to test & validate the fields as they are filled. ↓
 const unamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
 const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#\$%&\._]).\S{7,}$/;
+const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
 
 // Set variables to the inputs from the form control class.
 const checkInputs = document.querySelectorAll('.form-control');

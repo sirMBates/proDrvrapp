@@ -1,5 +1,6 @@
 <?php
-require_once base_path("vendor/autoload.php");
+use core\Flash;
+
 class RegProInfo extends ConnectDatabase {
     protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
         $sql = "UPDATE driver SET firstName = ?, lastName = ?, mobileNumber = ?, birthdate = ? WHERE username = ?";
@@ -7,8 +8,10 @@ class RegProInfo extends ConnectDatabase {
         $stmt = $this->connect()->prepare($sql);
 
         if (!$stmt->execute(array($firstname, $lastname, $mobileNum, $birthdate, $username))) {
+            $alert = new Flash();
             $stmt = null;
-            header("Location: /register?error=stmtfailed");
+            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
+            header("Location: /register?error=try+again"); //stmtfailed
             exit();
         }
         $stmt = null;

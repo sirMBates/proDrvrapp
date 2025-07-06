@@ -1,4 +1,6 @@
 <?php
+use core\Flash;
+
 class Logincontr extends Login {
     private $username;
     private $password;
@@ -11,11 +13,11 @@ class Logincontr extends Login {
 
     public function loginDriver() {
         if ($this->isEmpty() === false) {
-            //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: /signin?error=emptyinput");
+            $alert = new Flash();
+            $alert::setMsg('error', 'Please fill in all fields.');
+            header("Location: /signin?error=empty"); // emptyInputs
             exit();
         }
-
         $this->getDriver($this->username, $this->password);
     }
 

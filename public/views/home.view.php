@@ -3,7 +3,8 @@
         require "partials/nav.php";
         require "partials/banner.php";
         //include "includes/cus-modal.php";
-        //include "includes/errormsgs.php";
+        $alert = new \core\Flash;
+        require "includes/flashmessage.php";
 ?>
         <main class="container-fluid d-flex flex-row flex-wrap justify-content-evenly mb-1 p-1">
                 <div class="card mb-auto" style="width: 90rem;">

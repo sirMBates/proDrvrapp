@@ -1,4 +1,6 @@
 <?php
+use core\Flash;
+
 class RegProContr extends RegProInfo {
     private $firstname;
     private $lastname;
@@ -15,27 +17,29 @@ class RegProContr extends RegProInfo {
     }
 
     public function processProfile () {
+        $alert = new Flash();
+
         if ($this->isEmpty() === false) {
-            //echo "<p class='text-capitalize fs-3'>empty input</p>";
-            header("Location: /register?error=emptyblank");
+            $alert::setMsg('warning', 'Please fill in all required fields.');
+            header("Location: /register?warning=empty"); //emptyinputs
             exit();
         }
 
         if ($this->drvrNameInvalid() === false) {
-            //echo "<p class='text-capitalize fs-3'>name invalid</p>";
-            header("Location: /register?error=nameinvalid");
+            $alert::setMsg('warning', 'Please re-enter your first or last name.');
+            header("Location: /register?warning=invalid"); //FirstorLastnameNotValid
             exit();
         }
 
         if ($this->drvrInvalidMobileNumber() === false) {
-            //echo "<p class='text-capitalize fs-3'>mobile number invalid</p>";
-            header("Location: /register?error=mobileinvalid");
+            $alert::setMsg('warning', 'Please re-enter your mobile number.');
+            header("Location: /register?warning=invalid"); //mobileNumberNotValid
             exit();
         }
 
         if ($this->drvrInvalidBirthDate() === false) {
-            //echo "<p class='text-capitalize fs-3'>dob invalid</p>";
-            header("Location: /register?error=dobinvalid");
+            $alert::setMsg('warning', 'Please re-enter your date of birth.');
+            header("Location: /register?warning=invalid"); //birthdateNotValid
             exit();
         }
 
@@ -46,7 +50,8 @@ class RegProContr extends RegProInfo {
         }*/
 
         if ($this->enterDrvrInfo() === false) {
-            header("Location: /register?error=usernotvalid");
+            $alert::setMsg('danger', 'We\'re very sorry but please, try again!');
+            header("Location: /register?danger=invalid"); //userNotValid
             exit();
         }
 
