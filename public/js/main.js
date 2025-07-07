@@ -102,9 +102,9 @@ function enableDarkMode () {
 // Highlight the active link of the current page.
 function activeLink () {
         getMenuItems.forEach(item => {
-                let currentPage = window.location.href;
+                let currentPage = window.location.pathname;
                 let itemLink = item.firstElementChild;
-                let itemLocation = itemLink.href;
+                let itemLocation = itemLink.pathname;
                 if (itemLocation !== currentPage) {
                         itemLink.classList.remove('active');
                         itemLink.removeAttribute('aria-current');                        
