@@ -25,7 +25,3 @@ a.link-primary:hover {
     color: rgba(246, 244, 241, .9) !important;
     text-decoration-color: rgba(246, 244, 241, .9) !important;
 }
-
-.alert {
-    text-transform: none !important;
-}

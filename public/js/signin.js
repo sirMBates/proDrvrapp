@@ -52,7 +52,20 @@ $(function() {
             }
         }
     })
-})
+});
+
+(() => {
+
+    const qString = window.location.search;
+    const urlParams = new URLSearchParams(qString);
+    const paramValue = urlParams.get('info');
+    if (paramValue === 'logged out') {
+        setInterval(() => {
+            window.location.href = '/signin';
+        }, 6000);
+    }
+
+})();
 
 // Example starter JavaScript for disabling form submissions if there are invalid fields
 (() => {
