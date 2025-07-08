@@ -11,10 +11,10 @@ if (isset($_POST['createAccount'])) {
     $username = htmlspecialchars($_POST['username']);
     $email = htmlspecialchars($_POST['email']);
     $password = htmlspecialchars($_POST['password']);
-    $firstname = 'blank';
-    $lastname = 'blanked';
-    $mobileNum = '0009998765';
-    $birthdate = '2010-03-30';
+    $firstname = htmlspecialchars('blank');
+    $lastname = htmlspecialchars('blanked');
+    $mobileNum = htmlspecialchars('0009998765');
+    $birthdate = htmlspecialchars('2010-03-30');
     // Instantiate the add user controller class. ↓
     include_once base_path("app/models/database.php");
     include_once base_path("app/models/addusermeth.php");

@@ -22,7 +22,7 @@ class AddDrvrContr extends AddedDrvr {
     }
 
     public function addDriver() {
-        $alert = new core\Flash();
+        $alert = new Flash();
 
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please fill in all required fields.');

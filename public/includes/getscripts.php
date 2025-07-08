@@ -44,6 +44,10 @@ function pageScripts($value) {
                 echo "<script type='module' src='js/signin.js'></script>\n";
                 break;
 
+            case "/reset":
+                echo "<script type='module' src='js/reset.js'></script>\n";
+                break;
+
             case "/contact":
                 echo "<script type='module' src='js/messagevalidation.js'></script>";
                 break;
