@@ -32,6 +32,30 @@ class ResetPswdContr extends ResetPswd {
         $this->setResetToken($this->token_hash, $this->tokenExpTime, $this->email);
     }
 
+    public function sendResetEmail() {
+        if (!$this->emailExistandSend()) {
+            $alert = new Flash();
+            $alert::setMsg('error', 'Email not sent. Please try again.');
+            header('Location: /reset?error=try+again');
+            exit();
+        } else {
+            $mail = require home_path("mail/resetemail.php");
+            $mail->setFrom('bttbuscompany@gmail.com', 'Marvin Bates Jr');
+            $mail->addAddress($email);
+            $mail->Subject = "Password Reset";
+            $mail->Body = <<<END
+
+                    Click <a href="http://prodriver.local/reset-password.php?token=$token_hash">here</a> to reset password.
+
+                    END;
+            try {
+                $mail->send();
+            } catch (Exception $e) {
+                echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
+            }
+        }
+    } 
+
     private function isEmpty() {
         $result;
         if (empty($this->email)) {
@@ -57,7 +81,7 @@ class ResetPswdContr extends ResetPswd {
 
     private function emailExistandSend() {
         $result;
-        if (!$this->checkEmail($this->email)) {
+        if (!$this->checkEmailExist($this->email)) {
             $result = false;
         }
         else {

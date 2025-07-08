@@ -31,15 +31,15 @@ class ResetPswd extends ConnectDatabase {
         $stmt = null;
     }
 
-    protected function checkEmail($email) {
+    protected function checkEmailExist($email) {
         $alert = new Flash();
         $stmt =$this->connect()->prepare('SELECT email FROM driver WHERE email = ?');
         if (!$stmt->execute(array($email))) {
             $stmt = null;
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /?error=try+again"); //stmtfailed
+            header("Location: /reset?error=try+again"); //stmtfailed
             exit();
-        }
+        } 
 
         $resultCheck;
         if ($stmt->rowCount() > 0) {
