@@ -15,21 +15,9 @@ if (isset($_POST['reset-pswd'])) {
     include_once base_path("app/models/database.php");
     include_once base_path("app/models/resetpwdmeth.php");
     include_once base_path("app/classes/reset_pswd.php");
-    $enterToken = new ResetPswdContr($token_hash, $tokenExpTime, $email);
-    $enterToken->checkEmailandAddTokenAndExpireTime();
-    /*$mail = require base_path("mail/resetemail.php");
-    $mail->setFrom('bttbuscompany@gmail.com', 'Marvin Bates Jr');
-    $mail->addAddress($email);
-    $mail->Subject = "Password Reset";
-    $mail->Body = <<<END
-            Click <a href="http://prodriver.local/reset-password.php?token=$token_hash">here</a> to reset password.
-
-            END;
-            try {
-                $mail->send();
-            } catch (Exception $e) {
-                echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
-            }*/
+    $startReset = new ResetPswdContr($token_hash, $tokenExpTime, $email);
+    $startReset->checkEmailandAddTokenAndExpireTime();
+    $startReset->sendResetEmail();
     $alert::setMsg('info', 'Email sent! Please check your inbox to complete the reset.');
     header("Location: /reset?info=email+sent");
     exit();
