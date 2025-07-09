@@ -33,7 +33,12 @@ class ResetPswd extends ConnectDatabase {
 
     protected function checkEmailExist($email) {
         $alert = new Flash();
-        $stmt =$this->connect()->prepare('SELECT email FROM driver WHERE email = ?');
+        $sql = "SELECT email FROM driver 
+                WHERE email = ?";
+        $stmt =$this->connect()->prepare($sql);
+
+        $stmt->bindParam(1, $email);
+
         if (!$stmt->execute(array($email))) {
             $stmt = null;
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
@@ -43,9 +48,9 @@ class ResetPswd extends ConnectDatabase {
 
         $resultCheck;
         if ($stmt->rowCount() > 0) {
-            $resultCheck = false;
-        } else {
             $resultCheck = true;
+        } else {
+            $resultCheck = false;
         }
         return $resultCheck;
     }
