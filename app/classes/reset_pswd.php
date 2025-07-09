@@ -27,31 +27,42 @@ class ResetPswdContr extends ResetPswd {
             header("Location: /reset?warning=invalid"); //emailnotvalid
             exit();
         }
+
+        if($this->emailExistandSend() === false) {
+            $alert = new Flash();
+            $alert::setMsg('danger', 'Please create an account to continue.');
+            header("Location: /reset?danger=invalid");
+            exit();
+        }
         // Example: Store token hash and expiration time in the database for the user
         // Assuming you have a method in the parent class to handle DB operations
         $this->setResetToken($this->token_hash, $this->tokenExpTime, $this->email);
     }
 
     public function sendResetEmail() {
-        if (!$this->emailExistandSend()) {
+        if ($this->emailExistandSend() === false) {
             $alert = new Flash();
             $alert::setMsg('error', 'Email not sent. Please try again.');
             header('Location: /reset?error=try+again');
             exit();
         } else {
-            $mail = require home_path("mail/resetemail.php");
+            $mail = require_once home_path("mail/resetemail.php");
             $mail->setFrom('bttbuscompany@gmail.com', 'Marvin Bates Jr');
-            $mail->addAddress($email);
+            $mail->addAddress($this->email);
             $mail->Subject = "Password Reset";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset-password.php?token=$token_hash">here</a> to reset password.
+                    Click <a href="http://prodriver.local/reset-password.php?token=$this->token_hash">here</a> to reset password.
 
                     END;
             try {
                 $mail->send();
             } catch (Exception $e) {
-                echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
+                $alert = new Flash(); //remove(comment out if need to check mailer errors).
+                //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
+                $alert::setMsg('danger', 'Message not sent. Try again');
+                header("Location: /reset?danger=system+error");
+                exit();
             }
         }
     } 
