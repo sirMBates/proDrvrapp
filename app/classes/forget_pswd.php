@@ -46,8 +46,8 @@ class ForgetPswdContr extends ForgetPswd {
             header('Location: /forget?error=try+again');
             exit();
         } else {
-            $mail = require_once home_path("mail/forget-email.php");
-            $mail->setFrom('bttbuscompany@gmail.com', 'Marvin Bates Jr');
+            $mail = require_once home_path("mail/emailSetup.php");
+            $mail->setFrom('help@prodriver.local', 'Help Desk');
             $mail->addAddress($this->email);
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
@@ -60,7 +60,7 @@ class ForgetPswdContr extends ForgetPswd {
             } catch (Exception $e) {
                 $alert = new Flash(); //remove(comment out if need to check mailer errors).
                 //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
-                $alert::setMsg('danger', 'Message not sent. Try again');
+                $alert::setMsg('danger', "Message not sent. Try again. {$mail->ErrorInfo}");
                 header("Location: /forget?danger=system+error");
                 exit();
             }

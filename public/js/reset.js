@@ -5,8 +5,9 @@ if (window.location.pathname === '/forget') {
 }
 const resetpwd = document.querySelector('#resetpswd');
 const confRespwd = document.querySelector('#conf-reset-pswd');
+const resetBtn = document.querySelector('#reset');
 
-if (window.location.pathname === '/forget') {
+/*if (window.location.pathname === '/forget') {
     $(forgetEmail).on('blur', () => {
             let isValid = Validation.validate($(resetEmail).val(), $(resetEmail).attr('type'));
             if (!isValid) {
@@ -17,7 +18,7 @@ if (window.location.pathname === '/forget') {
                 return formValidation;
             }
     });
-}
+}*/
 
 $(resetpwd).on('blur', () => {
         let isValid = Validation.validate($(resetpwd).val(), $(resetpwd).attr('type'));
@@ -26,30 +27,29 @@ $(resetpwd).on('blur', () => {
         } else {
             $(resetpwd).removeClass('is-invalid');
             $(resetpwd).addClass('is-valid');
-            return formValidation;
         }
 });
 
 $(confRespwd).on('blur', () => {
         let isValid = Validation.validate($(confRespwd).val(), $(confRespwd).attr('type'));
+        console.log(isValid);
         let resetpwdInput = $(resetpwd).val();
         let confRespwdInput = $(confRespwd).val();
         if (resetpwdInput.length > 0 && confRespwdInput.length > 0) {
             if (!isValid && confRespwdInput !== resetpwdInput) {
-                $(confRespwdInput).addClass('is-invalid');
+                $(confRespwd).addClass('is-invalid');
                 $("#password-not-match").removeAttr("hidden");
                 $("#reset").attr("disabled", true);
             } else if (isValid && confRespwdInput !== resetpwdInput) {
-                $(confRespwdInput).addClass('is-invalid');
+                $(confRespwd).addClass('is-invalid');
                 $("#password-not-match").removeAttr("hidden");
                 $("#reset").attr("disabled", true);
             } else {
-                $(confRespwdInput).removeClass('is-invalid');
-                $(confRespwdInput).addClass('is-valid');
+                $(confRespwd).removeClass('is-invalid');
+                $(confRespwd).addClass('is-valid');
                 $('#reset').prop("disabled", false);
                 $("#reset").removeAttr("disabled");
                 $("#password-not-match").attr("hidden", true);
-                return formValidation;
             }
         }
 });
@@ -90,4 +90,6 @@ $(function() {
 });
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, {
+    container: 'body'
+}));
