@@ -25,3 +25,10 @@ a.link-primary:hover {
     color: rgba(246, 244, 241, .9) !important;
     text-decoration-color: rgba(246, 244, 241, .9) !important;
 }
+
+.roboto-condensed {
+  font-family: "Roboto Condensed", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}

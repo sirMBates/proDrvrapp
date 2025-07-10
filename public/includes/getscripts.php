@@ -14,6 +14,10 @@ function getClockandMainOrNav($value) {
             return;
             break;
 
+        case '/forget':
+            return;
+            break;
+
         case '/reset':
             return;
             break;
@@ -42,6 +46,10 @@ function pageScripts($value) {
 
             case "/signin":
                 echo "<script type='module' src='js/signin.js'></script>\n";
+                break;
+
+            case "/forget":
+                echo "<script type='module' src='js/reset.js'></script>\n";
                 break;
 
             case "/reset":

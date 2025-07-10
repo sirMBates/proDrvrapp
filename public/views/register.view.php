@@ -1,12 +1,12 @@
 <?php
 require "partials/outhead.php";
 $alert = new \core\Flash();
-require "includes/flashmessage.php";
+include "includes/flashmessage.php";
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
-                        <form id="acct_info" class="needs-validation" action="" method="POST" novalidate>
+                        <form id="acct_info" action="" method="POST" class="needs-validation" novalidate>
                                 <!--<input type="hidden" name="__method" value="UPDATE">-->
                                 <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>

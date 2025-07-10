@@ -15,6 +15,10 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='styles/style.css'>\n";
                         break;
 
+                case "/forget":
+                        echo "<link rel='stylesheet' href='styles/style.css'>\n";
+                        break;
+
                 case "/reset":
                         echo "<link rel='stylesheet' href='styles/style.css'>\n";
                         break;

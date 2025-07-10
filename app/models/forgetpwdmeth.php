@@ -2,8 +2,8 @@
 
 use core\Flash;
 
-class ResetPswd extends ConnectDatabase {
-    protected function setResetToken($token_hash, $tokenExpTime, $email) {
+class ForgetPswd extends ConnectDatabase {
+    protected function setForgetToken($token_hash, $tokenExpTime, $email) {
         $alert = new Flash();
         // Prepare the SQL statement to update the reset token and its expiration time.
         // Note: The SQL syntax is corrected to use the SET clause properly.
