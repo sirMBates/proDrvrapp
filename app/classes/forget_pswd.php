@@ -2,7 +2,7 @@
 
 use core\Flash;
 
-class ResetPswdContr extends ResetPswd {
+class ForgetPswdContr extends ForgetPswd {
     private $token_hash;
     private $tokenExpTime;
     private $email;
@@ -17,42 +17,42 @@ class ResetPswdContr extends ResetPswd {
         if ($this->isEmpty() === false) {
             $alert = new Flash();
             $alert::setMsg('warning', 'Please fill in all required fields.');
-            header("Location: /reset?warning=empty"); //emptyinput
+            header("Location: /forget?warning=empty"); //emptyinput
             exit();
         }
 
         if ($this->invalidEmail() === false) {
             $alert = new Flash();
             $alert::setMsg('warning', 'Please re-enter your email.');
-            header("Location: /reset?warning=invalid"); //emailnotvalid
+            header("Location: /forget?warning=invalid"); //emailnotvalid
             exit();
         }
 
         if($this->emailExistandSend() === false) {
             $alert = new Flash();
             $alert::setMsg('danger', 'Please create an account to continue.');
-            header("Location: /reset?danger=invalid");
+            header("Location: /forget?danger=invalid");
             exit();
         }
         // Example: Store token hash and expiration time in the database for the user
         // Assuming you have a method in the parent class to handle DB operations
-        $this->setResetToken($this->token_hash, $this->tokenExpTime, $this->email);
+        $this->setForgetToken($this->token_hash, $this->tokenExpTime, $this->email);
     }
 
-    public function sendResetEmail() {
+    public function sendForgetEmail() {
         if ($this->emailExistandSend() === false) {
             $alert = new Flash();
             $alert::setMsg('error', 'Email not sent. Please try again.');
-            header('Location: /reset?error=try+again');
+            header('Location: /forget?error=try+again');
             exit();
         } else {
-            $mail = require_once home_path("mail/resetemail.php");
+            $mail = require_once home_path("mail/forget-email.php");
             $mail->setFrom('bttbuscompany@gmail.com', 'Marvin Bates Jr');
             $mail->addAddress($this->email);
-            $mail->Subject = "Password Reset";
+            $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset-password.php?token=$this->token_hash">here</a> to reset password.
+                    Click <a href="http://prodriver.local/reset.php?token=$this->token_hash">here</a> to forget password.
 
                     END;
             try {
@@ -61,7 +61,7 @@ class ResetPswdContr extends ResetPswd {
                 $alert = new Flash(); //remove(comment out if need to check mailer errors).
                 //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
                 $alert::setMsg('danger', 'Message not sent. Try again');
-                header("Location: /reset?danger=system+error");
+                header("Location: /forget?danger=system+error");
                 exit();
             }
         }
