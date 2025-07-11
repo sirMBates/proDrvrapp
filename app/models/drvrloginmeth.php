@@ -54,6 +54,7 @@ class Login extends ConnectDatabase {
             $_SESSION['first_name'] = $driver[0]['firstName'];
             $_SESSION['last_name'] = $driver[0]['lastName'];
             $_SESSION['birth_date'] = $driver[0]['birthdate'];
+            $_SESSION['mobile_number'] = $driver[0]['mobileNumber'];
 
             $stmt = null;
         }

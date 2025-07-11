@@ -55,11 +55,11 @@ window.addEventListener('load', () => {
         if (screenSize >= 900) {
                 $(btnGrp).removeClass('btn-group-sm');
                 $(btnGrp).addClass('btn-group-lg');
-                console.log("Screen size is large enough for large button group.");
+                //console.log("Screen size is large enough for large button group.");
         } else if (screenSize < 900) {
                 $(btnGrp).removeClass('btn-group-lg');
                 $(btnGrp).addClass('btn-group-sm');
-                console.log("Screen size is small enough for small button group.");
+                //console.log("Screen size is small enough for small button group.");
         }
 }, false);
         
