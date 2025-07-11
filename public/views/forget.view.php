@@ -15,7 +15,7 @@
                     <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
             </div>
             <div class="d-flex flex-column justify-content-center mb-3">
-                <button type="submit" class="btn btn-primary my-2 p-3 fs-5" name="forget-pswd">Send email</button>
+                <button id="forget-pwd" type="submit" class="btn btn-primary my-2 p-3 fs-5" name="forget-pswd">Send email</button>
                 <a href="/signin" class="btn btn-lg btn-primary my-2" role="button">Go back</a>
             </div>
         </form>

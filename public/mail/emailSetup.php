@@ -21,7 +21,7 @@ $mail->Port = $_ENV['MAIL_PORT'];
 ** use the code below for sending email without
 ** an SSL Certificate Authority (CA) to
 ** get through the SSL socket layer 
-** (used in a production environment).
+** (used in a production environment).↓
 */ 
 $mail->SMTPOptions = array(
     'ssl' => array(

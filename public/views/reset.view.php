@@ -13,12 +13,12 @@
                 <p class="fs-4 mt-1 text-center text-besttrailsclr roboto-condensed"><u>Use this form to complete your reset.</u></p>
                 <div class="card-body p-3 my-3 d-flex flex-column justify-content-center align-items-center">
                     <div class="input-group my-1">
-                            <input type="password" id="resetpswd" class="form-control fs-4" name="password" placeholder="Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Password" data-bs-content="Must contain a minimum of 8 characters with atleast 1 (U)ppercase letter, 1 (l)owercase letter, 1 number and 1 special character. (i.e. !@#%&_)" data-bs-placement="top" data-bs-trigger="focus" pattern="^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$" required><span class="input-group-text rounded-end" id="pwd-icon-click" aria-describedby="password"><i class="fa-solid fa-eye" id="pwd-icon"></i></span>
+                            <input type="password" id="resetpswd" class="form-control fs-4" name="password" placeholder="Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Password" data-bs-content="Must contain a minimum of 8 characters with atleast 1 (U)ppercase letter, 1 (l)owercase letter, 1 number and 1 special character. (i.e. !@#%&_)" data-bs-placement="top" data-bs-trigger="focus" required><span class="input-group-text rounded-end" id="pwd-icon-click" aria-describedby="password"><i class="fa-solid fa-eye" id="pwd-icon"></i></span>
                             <div class="invalid-feedback">Please enter a password</div>
                     </div>
 
                     <div class="input-group my-1">
-                            <input type="password" id="conf-reset-pswd" class="form-control fs-4" name="conf-resetpswd" placeholder="Confirm Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Confirm password" data-bs-content="Re-enter password" data-bs-placement="bottom" data-bs-trigger="focus" required><span class="input-group-text rounded-end" aria-describedby="conf-resetpswd"><i class="fa-solid fa-eye" id="con-pwd-icon"></i></span>
+                            <input type="password" id="conf-reset-pswd" class="form-control fs-4" name="conf-reset-pswd" placeholder="Confirm Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Confirm password" data-bs-content="Re-enter password" data-bs-placement="bottom" data-bs-trigger="focus" required><span class="input-group-text rounded-end" aria-describedby="conf-resetpswd"><i class="fa-solid fa-eye" id="con-pwd-icon"></i></span>
                             <div class="invalid-feedback">Re-type password exactly.</div>
                     </div>
 

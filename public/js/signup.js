@@ -1,20 +1,22 @@
+import { Validation } from './validation.js';
+import  formValidation  from './messagevalidation.js';
 import { buildModal } from './appmodal.js';
-// Used to test & validate the fields as they are filled. ↓
-const unamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
-const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
-
 // Set variables to the inputs from the form control class.
 const checkInputs = document.querySelectorAll('.form-control');
 const usernameInput = checkInputs[0]; 
 const emailInput = checkInputs[1]; 
 const passwordInput = checkInputs[2];
 const confPasswordInput = checkInputs[3];
-// Validate and secure the inputs after each one has a value before submission 
-// following this! ↓ 
+const pwdIcon = document.querySelector('#pwd-icon');
+const confPwdIcon = document.querySelector('#con-pwd-icon');
+const signUpBtn = document.querySelector('#signup');
+/*
+** Validate and secure the inputs after each one has a value before submission 
+** following this! ↓
+*/
 $(function () {
-    $(usernameInput).on('blur', () => {
-        let isValid = unamePattern.test($(usernameInput).val());
+    $(usernameInput).on('input', () => {
+        let isValid = Validation.validateOnlyUsername($(usernameInput).val(), $(usernameInput).attr('type'));
         if (!isValid) {
             $(usernameInput).addClass('is-invalid');
         } else {
@@ -23,8 +25,8 @@ $(function () {
         }
     })
 
-    $(emailInput).on('blur', () => {
-        let isValid = emailPattern.test($(emailInput).val());
+    $(emailInput).on('input', () => {
+        let isValid = Validation.validate($(emailInput).val(), $(emailInput).attr('type'));
         if (!isValid) {
             $(emailInput).addClass('is-invalid');
         } else {
@@ -33,8 +35,8 @@ $(function () {
         }
     })
 
-    $(passwordInput).on('blur', () => {
-        let isValid = pswordPattern.test($(passwordInput).val());
+    $(passwordInput).on('input', () => {
+        let isValid = Validation.validate($(passwordInput).val(), $(passwordInput).attr('type'));
         if (!isValid) {
             $(passwordInput).addClass('is-invalid');
         } else {
@@ -43,84 +45,67 @@ $(function () {
         }
     })
         
-    $(confPasswordInput).on('blur', () => {
-        let isValid = pswordPattern.test($(confPasswordInput).val());
+    $(confPasswordInput).on('input', () => {
+        let isValid = Validation.validate($(confPasswordInput).val(), $(confPasswordInput).attr('type'));
         let pswordVal = $(passwordInput).val();
         let confPswordVal = $(confPasswordInput).val();
         if (pswordVal.length > 0 && confPswordVal.length > 0) {
             if (!isValid && confPswordVal !== pswordVal) {
                 $(confPasswordInput).addClass('is-invalid');
                 $("#password-does-not-match-text").removeAttr("hidden");
-                $("#signup").attr("disabled", true);
+                $(signUpBtn).prop("disabled", true);
             } else if (isValid && confPswordVal !== pswordVal) {
                 $(confPasswordInput).addClass('is-invalid');
                 $("#password-does-not-match-text").removeAttr("hidden");
-                $("#signup").attr("disabled", true);
+                $(signUpBtn).prop("disabled", true);
             } else {
                 $(confPasswordInput).removeClass('is-invalid');
                 $(confPasswordInput).addClass('is-valid');
-                $('#signup').prop("disabled", false);
-                $("#signup").removeAttr("disabled");
                 $("#password-does-not-match-text").attr("hidden", true);
+                $(signUpBtn).prop("disabled", false);
             }
         }
     })
-});
 
 // Checkbox functionality. Enables password to be hidden or viewed.
-$(function() {
-    $("#pwd-icon").on("click", function() {
-        if ($("#pwd-icon").hasClass("fa-eye")) {
-            $("#pwd-icon").removeClass("fa-eye");
-            $("#pwd-icon").addClass("fa-eye-slash");
-            if ($("#password").attr("type") === "password") {
-                $("#password").attr("type", "text");
+    $(pwdIcon).on("click", function() {
+        if ($(pwdIcon).hasClass("fa-eye")) {
+            $(pwdIcon).removeClass("fa-eye");
+            $(pwdIcon).addClass("fa-eye-slash");
+            if ($(passwordInput).attr("type") === "password") {
+                $(passwordInput).attr("type", "text");
             }
         } else {
-            $("#pwd-icon").removeClass("fa-eye-slash");
-            $("#pwd-icon").addClass("fa-eye");
-            $("#password").attr("type, password");
-            if($("#password").attr("type") === "text") {
-                $("#password").attr("type", "password");
+            $(pwdIcon).removeClass("fa-eye-slash");
+            $(pwdIcon).addClass("fa-eye");
+            $(passwordInput).attr("type", "password");
+            if($(passwordInput).attr("type") === "text") {
+                $(passwordInput).attr("type", "password");
             }
         }
     })
-    $("#con-pwd-icon").on("click", function() {
-        if ($("#con-pwd-icon").hasClass("fa-eye")) {
-            $("#con-pwd-icon").removeClass("fa-eye");
-            $("#con-pwd-icon").addClass("fa-eye-slash");
-            if ($("#confirmPassword").attr("type") === "password") {
-                $("#confirmPassword").attr("type", "text");
-            }
-        } else {
-            $("#con-pwd-icon").removeClass("fa-eye-slash");
-            $("#con-pwd-icon").addClass("fa-eye");
-            $("#confirmPassword").attr("type, password");
-            if($("#confirmPassword").attr("type") === "text") {
-                $("#confirmPassword").attr("type", "password");
-            }
-        }
-    })
-});
 
-// Example starter JavaScript for disabling form submissions if there are invalid fields
-(() => {
-  
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    const forms = document.querySelectorAll('.needs-validation')
-  
-    // Loop over them and prevent submission
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', event => {
-            if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
+    $(confPwdIcon).on("click", function() {
+        if ($(confPwdIcon).hasClass("fa-eye")) {
+            $(confPwdIcon).removeClass("fa-eye");
+            $(confPwdIcon).addClass("fa-eye-slash");
+            if ($(confPasswordInput).attr("type") === "password") {
+                $(confPasswordInput).attr("type", "text");
             }
-  
-            form.classList.add('was-validated')
-        }, false)
+        } else {
+            $(confPwdIcon).removeClass("fa-eye-slash");
+            $(confPwdIcon).addClass("fa-eye");
+            $(confPasswordInput).attr("type", "password");
+            if($(confPasswordInput).attr("type") === "text") {
+                $(confPasswordInput).attr("type", "password");
+            }
+        }
     })
-})();
+
+    $(signUpBtn).on('submit', () => {
+        return formValidation();
+    });
+});
 
 /*window.addEventListener('load', () => {
     const infoMsg = document.querySelector('#info-modal');
@@ -137,6 +122,8 @@ $(function() {
 });*/
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
-//const popover = new bootstrap.Popover('.popover-dismiss', {trigger: 'focus'});
+const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, {
+    container: 'body'
+}));
+//popover = new bootstrap.Popover('.popover-dismiss', {trigger: 'focus'});
 
