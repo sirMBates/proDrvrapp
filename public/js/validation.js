@@ -5,7 +5,7 @@
 const namePattern = /^[a-zA-Z]{1,}$/;
 const phoneNumberPattern = /^[0-9]{10}$/;
 const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])$/;
-const unamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
+const usernamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
 const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
 const photoPattern = /^[a-zA-Z0-9./_-]+\.(jpg|jpeg|png|gif)$/i;
@@ -21,20 +21,27 @@ export class Validation {
      */
     static validate(input, type) {
         switch (type) {
-            case 'name':
+            case 'text':
                 return this.validateName(input);
             case 'number':
                 return this.validatePhoneNumber(input);
             case 'date':
                 return this.validateDate(input);
-            case 'username':
-                return this.validateUsername(input);
             case 'email':
                 return this.validateEmail(input);
             case 'password':
                 return this.validatePassword(input);
             case 'file':
                 return this.photoPattern.test(input);
+            default:
+                throw new Error('Invalid validation type');
+        }
+    }
+
+    static validateOnlyUsername(input, type) {
+        switch(type) {
+            case 'text':
+                return this.validateUsername(input);
             default:
                 throw new Error('Invalid validation type');
         }
@@ -53,7 +60,7 @@ export class Validation {
     }
 
     static validateUsername(input) {
-        return unamePattern.test(input);
+        return usernamePattern.test(input);
     }
 
     static validateEmail(input) {

@@ -41,7 +41,7 @@ function pageScripts($value) {
 
             case "/register":
                 //echo "<script type='module' src='js/messagevalidation.js'></script>\n\n";
-                echo "<script type='module' src='js/inputfeedback.js'></script>\n";
+                echo "<script type='module' src='js/regisprofile.js'></script>\n";
                 break;
 
             case "/signin":
