@@ -50,17 +50,16 @@ $(function() {
     $(signInBtn).on('submit', () => {
         return formValidation();
     })
+});
 
-    const qString = window.location.search;
-    const urlParams = new URLSearchParams(qString);
-    const paramValue = urlParams.get('info');
-    if (paramValue === 'logged out') {
-        setInterval(() => {
-            window.location.href = '/signin';
-        }, 5000);
-    }
-
-})();
+const qString = window.location.search;
+const urlParams = new URLSearchParams(qString);
+const paramValue = urlParams.get('info');
+if (paramValue === 'logged out') {
+    setInterval(() => {
+        window.location.href = '/signin';
+    }, 5000);
+}
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
 const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));

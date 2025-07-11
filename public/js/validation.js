@@ -3,7 +3,8 @@
 // This file is part of the ProDrvrApp project.
 // ProDrvrApp is a web application for managing driver profiles and related functionalities.
 const namePattern = /^[a-zA-Z]{1,}$/;
-const phoneNumberPattern = /^[0-9]{10}$/;
+const numberPattern = /^[0-9]{1,}$/;
+const phoneNumberPattern = /^\d{10}$/
 const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])$/;
 const usernamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
 const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
@@ -24,6 +25,8 @@ export class Validation {
             case 'text':
                 return this.validateName(input);
             case 'number':
+                return this.validateNumber(input);
+            case 'tel':
                 return this.validatePhoneNumber(input);
             case 'date':
                 return this.validateDate(input);
@@ -49,6 +52,10 @@ export class Validation {
 
     static validateName(input) {
         return namePattern.test(input);
+    }
+
+    static validateNumber(input) {
+        return numberPattern.test(input);
     }
 
     static validatePhoneNumber(input) {
