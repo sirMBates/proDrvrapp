@@ -49,7 +49,7 @@ function pageScripts($value) {
                 break;
 
             case "/forget":
-                echo "<script type='module' src='js/reset.js'></script>\n";
+                echo "<script type='module' src='js/forget.js'></script>\n";
                 break;
 
             case "/reset":
