@@ -34,6 +34,13 @@ class ForgetPswdContr extends ForgetPswd {
             header("Location: /forget?danger=invalid");
             exit();
         }
+
+        if($this->checkDriverToken() === true) {
+            $alert = new Flash();
+            $alert::setMsg('info', 'Please check your email for reset link.');
+            header("Location: /forget?info=already+sent");
+            exit();
+        }
         // Example: Store token hash and expiration time in the database for the user
         // Assuming you have a method in the parent class to handle DB operations
         $this->setForgetToken($this->token_hash, $this->tokenExpTime, $this->email);
@@ -88,10 +95,7 @@ class ForgetPswdContr extends ForgetPswd {
                 exit();
             }
         }
-    }
-
-    public function genNewTok() {
-        return $this->getNewToken();
+        $this->resetToken($this->token_hash, $this->tokenExpTime, $this->email);
     }
 
     private function isEmpty() {
@@ -146,10 +150,6 @@ class ForgetPswdContr extends ForgetPswd {
             $isExpired = false;
         }
         return $isExpired;
-    }
-
-    private function getNewToken() {
-        return $this->resetToken($this->token_hash, $this->token_exp_at, $this->email);
     }
 }
 ?>
