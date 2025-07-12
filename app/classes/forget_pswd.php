@@ -65,7 +65,34 @@ class ForgetPswdContr extends ForgetPswd {
                 exit();
             }
         }
-    } 
+    }
+    
+    public function resetDriverToken() {
+        if ($this->invalidEmail() === false) {
+            $alert = new Flash();
+            $alert::setMsg('warning', 'Please re-enter your email.');
+            header("Location: /forget?warning=invalid"); //emailnotvalid
+            exit();
+        }
+        if ($this->checkDriverToken() === false) {
+            $alert = new Flash();
+            $alert::setMsg('info', 'Please click on button to have token sent to your email.');
+            header("Location: /forget?info=get+token");
+            exit();
+        }
+        elseif ($this->checkDriverToken() === true) {
+            if ($this->isTokenExpired() === true) {
+                $alert = new Flash();
+                $alert::setMsg('info', 'Token has expired! Please click button to generate a new token.');
+                header("Location: /forget?info=expired");
+                exit();
+            }
+        }
+    }
+
+    public function genNewTok() {
+        return $this->getNewToken();
+    }
 
     private function isEmpty() {
         $result;
@@ -99,6 +126,30 @@ class ForgetPswdContr extends ForgetPswd {
             $result = true;
         }
         return $result;
+    }
+
+    private function checkDriverToken() {
+        $result;
+        if (!$this->getResetToken()) {
+            $result = false;
+        } else {
+            $result = true;
+        }
+        return $result;
+    }
+
+    private function isTokenExpired() {
+        $isExpired;
+        if ($this->checkExpToken($this->email) === true) {
+            $isExpired = true;
+        } else {
+            $isExpired = false;
+        }
+        return $isExpired;
+    }
+
+    private function getNewToken() {
+        return $this->resetToken($this->token_hash, $this->token_exp_at, $this->email);
     }
 }
 ?>

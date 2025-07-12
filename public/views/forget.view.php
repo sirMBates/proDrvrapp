@@ -16,6 +16,8 @@
             </div>
             <div class="d-flex flex-column justify-content-center mb-3">
                 <button id="forget-pwd" type="submit" class="btn btn-primary my-2 p-3 fs-5" name="forget-pswd">Send email</button>
+                <?php if ($_GET['info'] = 'expired') { ?>
+                    <button id="generate" type="submit" class="btn btn-secondary my-2 p-3 fs-5" name="generate">Generate new<br>TOKEN</button><?php }?>
                 <a href="/signin" class="btn btn-lg btn-primary my-2" role="button">Go back</a>
             </div>
         </form>

@@ -54,4 +54,74 @@ class ForgetPswd extends ConnectDatabase {
         }
         return $resultCheck;
     }
+
+    protected function getResetToken() {
+        $alert = new Flash();
+        $sql = "SELECT * FROM driver 
+                WHERE reset_token_hash = ?";
+        $stmt = $this->connect()->prepare($sql);
+
+        $stmt->bindParam(1, $token_hash);
+
+        if (!$stmt->execute(array($token_hash))) {
+            $stmt = null;
+            $alert::setMsg('error', 'There was a problem. Try again');
+            header("Location: /forget?error=not+available"); //stmtfailed
+            exit();
+        }
+
+        $resultCheck;
+        if ($stmt->rowCount() === 0) {
+            $resultCheck = false;
+        } else {
+            $resultCheck = true;
+        }
+        return $resultCheck;
+    }
+
+    protected function checkExpToken($email) {
+        $alert = new Flash();
+        $sql = "SELECT reset_token_hash, token_exp_at FROM driver
+                WHERE email = ?";                
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->bindParam(1, $token_hash);
+        $stmt->bindParam(2, $tokenExpTime);
+        $stmt->bindParam(3, $email);
+
+        if (!$stmt->execute(array($token_hash, $tokenExpTime))) {
+            $stmt = null;
+            $alert::setMsg('info', 'Token not found. Please try again.');
+            header("Location: /reset?info=try+again"); //stmtfailed
+            exit();
+        }
+
+        $driver = $stmt->execute(array($tokenExpTime));
+        $expired;
+        if (strtotime($driver["token_exp_at"]) <= time()) {
+            $expired = true;
+        } else {
+            $expired = false;
+        }
+        return $expired;
+    }
+
+    protected function resetToken($token_hash, $tokenExpTime, $email) {
+        $alert = new Flash();
+        $sql = "UPDATE driver
+                SET reset_token_hash = ?, token_exp_at = ?
+                WHERE email = ?";
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->bindParam(1, $token_hash);
+        $stmt->bindParam(2, $tokenExpTime);
+        $stmt->bindParam(3, $email);
+
+        if (!$stmt->execute(array($token_hash, $tokenExpTime, $email))){
+            $stmt = null;
+            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
+            header("Location: /reset?error=try+again"); //stmtfailed
+            exit();
+        }
+
+        $stmt = null;
+    }
 }
