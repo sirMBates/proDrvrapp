@@ -13,8 +13,8 @@ class ResetPwd extends ConnectDatabase {
 
         if (!$stmt->execute(array($token_hash))) {
             $stmt = null;
-            $alert::setMsg('error', 'No token found. Please try again.');
-            header("Location: /reset?error=try+again"); //stmtfailed
+            $alert::setMsg('error', 'No token found. Request for a token.');
+            header("Location: /forget?error=not+available"); //stmtfailed
             exit();
         }
     }
@@ -22,7 +22,9 @@ class ResetPwd extends ConnectDatabase {
     protected function tokenExpiration($tokenExp) {
         $alert = new Flash();
         if (strtotime($driver['token_exp_at']) <= time()) {
-            $alert::setMsg
+            $alert::setMsg('info', 'Token has expired. Request for a new token.');
+            header("Location: /forget?info=expired");
+            exit();
         }
     }
 }

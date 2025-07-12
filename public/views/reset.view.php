@@ -17,6 +17,10 @@
                             <div class="invalid-feedback">Please enter a password</div>
                     </div>
 
+                    <div class="input-group">
+                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?= htmlspecialchars($token_hash)?>">
+                    </div>
+
                     <div class="input-group my-1">
                             <input type="password" id="conf-reset-pswd" class="form-control fs-4" name="conf-reset-pswd" placeholder="Confirm Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Confirm password" data-bs-content="Re-enter password" data-bs-placement="bottom" data-bs-trigger="focus" required><span class="input-group-text rounded-end" aria-describedby="conf-resetpswd"><i class="fa-solid fa-eye" id="con-pwd-icon"></i></span>
                             <div class="invalid-feedback">Re-type password exactly.</div>
