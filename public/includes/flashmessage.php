@@ -24,4 +24,9 @@ elseif ($msg = $alert::getMsg('error')) { ?>
         <div id="flash-alert" class="my-2 alert alert-dark alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-thumbs-down"></i><span class="fs-5"><?= $msg;?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
-} ?>
+}
+elseif ($msg = $alert::getMsg('status')) { ?>
+        <div id="flash-alert" class="my-2 alert alert-primary alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-message-exclamation"></i><span class="fs-5"><?= $msg;?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+<?php
+}?>
