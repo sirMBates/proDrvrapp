@@ -3,8 +3,6 @@
 use core\Flash;
 
 class ResetPwd extends ConnectDatabase {
-    
-
     protected function tokenExpiration($tokenExp) {
         $alert = new Flash();
         if (strtotime($driver['token_exp_at']) <= time()) {

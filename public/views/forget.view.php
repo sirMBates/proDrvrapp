@@ -5,7 +5,7 @@
 ?>
     <main class="w-50 my-5 align-self-center">
         <h1 class="text-center text-light text-bg-dark font-monospace"><u>Reset your password here!</u></h1>
-        <p class="h5 text-center text-light text-bg-dark">You will receive an email with further instructions on resetting your password.</p>
+        <p class="h5 text-center text-light text-bg-dark">You will receive an email with a link to reset your password.</p>
         <form id="forgetpswd" action="" method="POST" class="needs-validation" novalidate>
             <div class="form-floating row mb-2">
                 <input id="email" type="email" class="form-control" name="email" placeholder="Please enter your email" required>
@@ -16,8 +16,6 @@
             </div>
             <div class="d-flex flex-column justify-content-center mb-3">
                 <button id="forget-pwd" type="submit" class="btn btn-primary my-2 p-2 fs-5" name="forget-pswd">Send email</button>
-                <?php if ($_GET['info'] = 'expired') { ?>
-                    <button id="generate" type="submit" class="btn btn-secondary my-2 fs-5" name="generate">Generate token</button><?php }?>
                 <a href="/signin" class="btn btn-lg btn-primary my-2" role="button">Go back</a>
             </div>
         </form>
