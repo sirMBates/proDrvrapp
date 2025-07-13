@@ -70,8 +70,9 @@ class ForgetPswd extends ConnectDatabase {
             exit();
         }
 
+        $result = $stmt->rowCount();
         $resultCheck;
-        if ($stmt->rowCount() === 0) {
+        if ($result === 0) {
             $resultCheck = false;
         } else {
             $resultCheck = true;

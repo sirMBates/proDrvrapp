@@ -54,12 +54,12 @@ class ForgetPswdContr extends ForgetPswd {
             exit();
         } else {
             $mail = require_once home_path("mail/emailSetup.php");
-            $mail->setFrom('help@prodriver.local', 'Help Desk');
+            $mail->setFrom('noreply@prodriver.local', 'Help Desk');
             $mail->addAddress($this->email);
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset.php?token=$this->token_hash">here</a> to forget password.
+                    Click <a href="http://prodriver.local/reset?token=$this->token_hash">here</a> to forget password.
 
                     END;
             try {
@@ -77,8 +77,8 @@ class ForgetPswdContr extends ForgetPswd {
     public function resetDriverToken() {
         if ($this->invalidEmail() === false) {
             $alert = new Flash();
-            $alert::setMsg('warning', 'Please re-enter your email.');
-            header("Location: /forget?warning=invalid"); //emailnotvalid
+            $alert::setMsg('danger', 'Please re-enter your email.');
+            header("Location: /forget?danger=invalid"); //emailnotvalid
             exit();
         }
         if ($this->checkDriverToken() === false) {
@@ -90,8 +90,8 @@ class ForgetPswdContr extends ForgetPswd {
         elseif ($this->checkDriverToken() === true) {
             if ($this->isTokenExpired() === true) {
                 $alert = new Flash();
-                $alert::setMsg('info', 'Token has expired! Please click button to generate a new token.');
-                header("Location: /forget?info=expired");
+                $alert::setMsg('validate', 'Token has expired! Please click button to generate a new token.');
+                header("Location: /forget?validate=expired");
                 exit();
             }
         }

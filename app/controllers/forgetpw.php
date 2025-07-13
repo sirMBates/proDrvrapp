@@ -21,7 +21,7 @@ if (isset($_POST['forget-pswd'])) {
     $alert::setMsg('info', 'Email sent! Please check your inbox to complete the reset.');
     header("Location: /forget?info=email+sent");
     exit();
-} elseif ($_GET['info'] === "expired") {
+} elseif (isset($_GET['validate']) && $_GET['validate'] === "expired") {
     $email = htmlspecialchars($_POST['email']);
     $token = bin2hex(random_bytes(16));
     $token_hash = hash('sha256', $token);
