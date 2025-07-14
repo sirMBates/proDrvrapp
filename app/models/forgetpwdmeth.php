@@ -80,33 +80,7 @@ class ForgetPswd extends ConnectDatabase {
         return $resultCheck;
     }
 
-    protected function checkExpToken($email) {
-        $alert = new Flash();
-        $sql = "SELECT reset_token_hash, token_exp_at FROM driver
-                WHERE email = ?";                
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->bindParam(1, $token_hash);
-        $stmt->bindParam(2, $tokenExpTime);
-        $stmt->bindParam(3, $email);
-
-        if (!$stmt->execute(array($token_hash, $tokenExpTime))) {
-            $stmt = null;
-            $alert::setMsg('info', 'Token not found. Please try again.');
-            header("Location: /reset?info=try+again"); //stmtfailed
-            exit();
-        }
-
-        $driver = $stmt->execute(array($tokenExpTime));
-        $expired;
-        if (strtotime($driver["token_exp_at"]) <= time()) {
-            $expired = true;
-        } else {
-            $expired = false;
-        }
-        return $expired;
-    }
-
-    protected function resetToken($token_hash, $tokenExpTime, $email) {
+    /*protected function resetToken($token_hash, $tokenExpTime, $email) {
         $alert = new Flash();
         $sql = "UPDATE driver
                 SET reset_token_hash = ?, token_exp_at = ?
@@ -124,5 +98,5 @@ class ForgetPswd extends ConnectDatabase {
         }
 
         $stmt = null;
-    }
+    }*/
 }
