@@ -3,21 +3,21 @@
 use core\Flash;
 
 class ResetPwd extends ConnectDatabase {
-    protected function checkTokenExpiration($token_hash) {
+    protected function checkTokenExpiration($token) {
         $alert = new Flash();
         $sql = "SELECT * From driver
                 WHERE reset_token_hash = ?";                
         $stmt = $this->connect()->prepare($sql);
-        $stmt->bindParam(1, $token_hash);
+        $stmt->bindParam(1, $token);
 
-        if (!$stmt->execute(array($token_hash))) {
+        if (!$stmt->execute(array($token))) {
             $stmt = null;
-            $alert::setMsg('info', 'Token not found. Please try again.');
+            $alert::setMsg('info', 'There was a problem. Please try again.');
             header("Location: /reset?info=try+again"); //stmtfailed
             exit();
         }
 
-        $driver = $stmt->execute(array($tokenExpTime));
+        $driver = $stmt->execute(array($token));
         $expired;
         if (strtotime($driver["token_exp_at"]) <= time()) {
             $expired = true;
@@ -27,17 +27,43 @@ class ResetPwd extends ConnectDatabase {
         return $expired;
     }
 
-    /*protected function getResetToken() {
+    protected function checkEmailExist($token) {
         $alert = new Flash();
-        $sql = "SELECT * FROM driver 
+        $sql = "SELECT email FROM driver 
                 WHERE reset_token_hash = ?";
         $stmt = $this->connect()->prepare($sql);
 
-        $stmt->bindParam(1, $token_hash);
+        $stmt->bindParam(1, $token);
 
-        if (!$stmt->execute(array($token_hash))) {
+        if (!$stmt->execute(array($token))) {
             $stmt = null;
-            $alert::setMsg('error', 'There was a problem. Try again');
+            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
+            header("Location: /reset?error=try+again"); //stmtfailed
+            exit();
+        } 
+
+        $resultCheck;
+        if ($stmt->rowCount() === 0) {
+            $resultCheck = false;
+        } else {
+            $resultCheck = true;
+        }
+        return $resultCheck;
+    }
+
+    protected function getNewToken($token, $tokenExpTime) {
+        $alert = new Flash();
+        $sql = "UPDATE driver
+                SET reset_token_hash = ?, token_exp_at = ? 
+                WHERE reset_token_hash = ?";
+        $stmt = $this->connect()->prepare($sql);
+
+        $stmt->bindParam(1, $token);
+        $stmt->bindParam(2, $tokenExpTime);
+
+        if (!$stmt->execute(array($token, $tokenExpTime))) {
+            $stmt = null;
+            $alert::setMsg('error', 'There was a problem, Try again!');
             header("Location: /forget?error=not+available"); //stmtfailed
             exit();
         }
@@ -50,5 +76,5 @@ class ResetPwd extends ConnectDatabase {
             $resultCheck = true;
         }
         return $resultCheck;
-    }*/
+    }
 }
