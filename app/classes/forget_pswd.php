@@ -74,7 +74,7 @@ class ForgetPswdContr extends ForgetPswd {
         }
     }
     
-    public function resetDriverToken() {
+    /*public function resetDriverToken() {
         if ($this->invalidEmail() === false) {
             $alert = new Flash();
             $alert::setMsg('danger', 'Please re-enter your email.');
@@ -96,7 +96,7 @@ class ForgetPswdContr extends ForgetPswd {
             }
         }
         $this->resetToken($this->token_hash, $this->tokenExpTime, $this->email);
-    }
+    }*/
 
     private function isEmpty() {
         $result;
