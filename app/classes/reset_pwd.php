@@ -39,10 +39,10 @@ class ResetPwdContr extends ResetPwd {
             try {
                 $mail->send();
             } catch (Exception $e) {
-                $alert = new Flash(); //remove(comment out if need to check mailer errors).
+                //remove(comment out if need to check mailer errors).
                 //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
                 $alert::setMsg('danger', "Message not sent. Try again. {$mail->ErrorInfo}");
-                header("Location: /forget?danger=system+error");
+                header("Location: /reset?danger=system+error");
                 exit();
             }
         }
