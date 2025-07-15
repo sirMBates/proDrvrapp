@@ -12,8 +12,8 @@ class ResetPwd extends ConnectDatabase {
 
         if (!$stmt->execute(array($token))) {
             $stmt = null;
-            $alert::setMsg('info', 'There was a problem. Please try again.');
-            header("Location: /reset?info=try+again"); //stmtfailed
+            $alert::setMsg('error', 'Token not found! Please generate a token to reset password.');
+            header("Location: /reset?error=not+found"); //stmtfailed
             exit();
         }
 
