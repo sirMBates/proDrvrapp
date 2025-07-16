@@ -4,30 +4,28 @@ use core\Flash;
 
 class ForgetPswd extends ConnectDatabase {
     protected function setForgetToken($token_hash, $tokenExpTime, $email) {
-        $alert = new Flash();
-        // Prepare the SQL statement to update the reset token and its expiration time.
-        // Note: The SQL syntax is corrected to use the SET clause properly.
-        $sql = "UPDATE driver 
-                SET reset_token_hash = ?, token_exp_at = ?
-                WHERE email = ?";
+        $alert = new Flash(); 
+        // Note: Can not use an INSERT stmt to add to an empty column of an existing row.
+        $sql = "UPDATE driver
+                SET resetToken = :resetToken, tokenExpTime = :tokenExpTime
+                WHERE email = :email";
         $stmt = $this->connect()->prepare($sql);
         /* Bind the parameters to the prepared statement.
         *  The first two parameters are bound to the token and its expiration time.
-        *  The third parameter is bound to the email.
-        *  Note: The email parameter is bound using a named placeholder (:email).
         *  This allows for better readability and maintainability of the code.
         */
-        $stmt->bindParam(1, $token_hash);
-        $stmt->bindParam(2, $tokenExpTime);
-        $stmt->bindParam(3, $email);
+        $result = $stmt->execute([
+            ':resetToken' => $token_hash,
+            ':tokenExpTime' => $tokenExpTime,
+            ':email' => $email
+        ]);
         
-        if (!$stmt->execute(array($token_hash, $tokenExpTime, $email))) {
+        if (!$result) {
             $stmt = null;
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /reset?error=try+again"); //stmtfailed
+            header("Location: /forget?error=try+again"); //stmtfailed
             exit();
         }
-
         $stmt = null;
     }
 
@@ -36,16 +34,13 @@ class ForgetPswd extends ConnectDatabase {
         $sql = "SELECT email FROM driver 
                 WHERE email = ?";
         $stmt =$this->connect()->prepare($sql);
-
-        $stmt->bindParam(1, $email);
-
-        if (!$stmt->execute(array($email))) {
+        if (!$stmt->execute([$email])) {
             $stmt = null;
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /reset?error=try+again"); //stmtfailed
+            header("Location: /forget?error=try+again"); //stmtfailed
             exit();
         } 
-
+ 
         $resultCheck;
         if ($stmt->rowCount() === 0) {
             $resultCheck = false;
@@ -55,48 +50,27 @@ class ForgetPswd extends ConnectDatabase {
         return $resultCheck;
     }
 
-    protected function getResetToken() {
+    protected function checkTokenExist($email) {
         $alert = new Flash();
-        $sql = "SELECT * FROM driver 
-                WHERE reset_token_hash = ?";
+        $sql = "SELECT resetToken FROM driver 
+                WHERE email = :email";
         $stmt = $this->connect()->prepare($sql);
 
-        $stmt->bindParam(1, $token_hash);
-
-        if (!$stmt->execute(array($token_hash))) {
+        $stmt->bindParam(':email', $email);
+        if (!$stmt->execute([':email' => $email])) {
             $stmt = null;
-            $alert::setMsg('error', 'There was a problem. Try again');
+            $alert::setMsg('error', 'Sorry, something went wrong. try again.');
             header("Location: /forget?error=not+available"); //stmtfailed
             exit();
         }
 
-        $result = $stmt->rowCount();
-        $resultCheck;
-        if ($result === 0) {
-            $resultCheck = false;
+        $doesTokenAlreadyExist = $stmt->fetch();
+        $result;
+        if ($doesTokenAlreadyExist && !empty($doesTokenAlreadyExist['resetToken'])) {
+            $result = true;
         } else {
-            $resultCheck = true;
+            $result = false;
         }
-        return $resultCheck;
+        return $result;
     }
-
-    /*protected function resetToken($token_hash, $tokenExpTime, $email) {
-        $alert = new Flash();
-        $sql = "UPDATE driver
-                SET reset_token_hash = ?, token_exp_at = ?
-                WHERE email = ?";
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->bindParam(1, $token_hash);
-        $stmt->bindParam(2, $tokenExpTime);
-        $stmt->bindParam(3, $email);
-
-        if (!$stmt->execute(array($token_hash, $tokenExpTime, $email))){
-            $stmt = null;
-            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /reset?error=try+again"); //stmtfailed
-            exit();
-        }
-
-        $stmt = null;
-    }*/
 }

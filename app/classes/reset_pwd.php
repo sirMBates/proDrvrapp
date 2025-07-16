@@ -4,20 +4,13 @@ use core\Flash;
 
 class ResetPwdContr extends ResetPwd {
     private $token;
-    private $tokenExp;
 
-    public __construct($token, $tokenExp) {
+    public function __construct($token) {
         $this->token = $token;
-        $this->tokenExp = $tokenExp;
     }
 
     public function isTokenExpired() {
-        $alert = new Flash();
-        if($this->checkTokenExpiration($this->token) === true) {
-            $alert::setMsg('validate', 'Token has expired! Please click button to generate a new token.');
-            header("Location: /reset?validate=expired");
-            exit();
-        }
+        $this->checkTokenExpiration($this->token);
     }
 
     public function createNewToken() {
@@ -33,7 +26,7 @@ class ResetPwdContr extends ResetPwd {
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset?token=$this->token_hash">here</a> to forget password.
+                    Click <a href="http://prodriver.local/reset?token=$this->token">here</a> to forget password.
 
                     END;
             try {
@@ -48,3 +41,4 @@ class ResetPwdContr extends ResetPwd {
         }
     }
 }
+?>
