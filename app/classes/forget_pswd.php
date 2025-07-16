@@ -28,17 +28,17 @@ class ForgetPswdContr extends ForgetPswd {
             exit();
         }
 
-        if($this->emailExistandSend() === false) {
+        if ($this->emailExistandSend() === false) {
             $alert = new Flash();
-            $alert::setMsg('danger', 'Please create an account to continue.');
-            header("Location: /forget?danger=invalid");
+            $alert::setMsg('error', 'Please create an account to continue.');
+            header("Location: /forget?error=invalid");
             exit();
         }
 
-        if($this->checkDriverToken() === true) {
+        if ($this->tokenExistAlready() === true) {
             $alert = new Flash();
-            $alert::setMsg('info', 'Please check your email for reset link.');
-            header("Location: /forget?info=already+sent");
+            $alert::setMsg('info', 'Email sent already. Please check your inbox!');
+            header("Location: /forget?info=sent+already");
             exit();
         }
         // Example: Store token hash and expiration time in the database for the user
@@ -59,7 +59,7 @@ class ForgetPswdContr extends ForgetPswd {
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset?token=$this->token_hash">here</a> to forget password.
+                    Click <a href="http://prodriver.local/resetpwd?token=$this->token_hash">here</a> to forget password.
 
                     END;
             try {
@@ -73,30 +73,6 @@ class ForgetPswdContr extends ForgetPswd {
             }
         }
     }
-    
-    /*public function resetDriverToken() {
-        if ($this->invalidEmail() === false) {
-            $alert = new Flash();
-            $alert::setMsg('danger', 'Please re-enter your email.');
-            header("Location: /forget?danger=invalid"); //emailnotvalid
-            exit();
-        }
-        if ($this->checkDriverToken() === false) {
-            $alert = new Flash();
-            $alert::setMsg('info', 'Please click on button to have token sent to your email.');
-            header("Location: /forget?info=get+token");
-            exit();
-        }
-        elseif ($this->checkDriverToken() === true) {
-            if ($this->isTokenExpired() === true) {
-                $alert = new Flash();
-                $alert::setMsg('validate', 'Token has expired! Please click button to generate a new token.');
-                header("Location: /forget?validate=expired");
-                exit();
-            }
-        }
-        $this->resetToken($this->token_hash, $this->tokenExpTime, $this->email);
-    }*/
 
     private function isEmpty() {
         $result;
@@ -132,24 +108,14 @@ class ForgetPswdContr extends ForgetPswd {
         return $result;
     }
 
-    private function checkDriverToken() {
+    private function tokenExistAlready() {
         $result;
-        if (!$this->getResetToken()) {
-            $result = false;
-        } else {
+        if ($this->checkTokenExist($this->email)) {
             $result = true;
+        } else {
+            $result = false;
         }
         return $result;
-    }
-
-    private function isTokenExpired() {
-        $isExpired;
-        if ($this->checkExpToken($this->email) === true) {
-            $isExpired = true;
-        } else {
-            $isExpired = false;
-        }
-        return $isExpired;
     }
 }
 ?>

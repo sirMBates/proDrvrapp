@@ -18,7 +18,7 @@ function getClockandMainOrNav($value) {
             return;
             break;
 
-        case '/reset':
+        case '/compreset':
             return;
             break;
 
@@ -52,7 +52,7 @@ function pageScripts($value) {
                 echo "<script type='module' src='js/forget.js'></script>\n";
                 break;
 
-            case "/reset":
+            case "/compreset":
                 echo "<script type='module' src='js/reset.js'></script>\n";
                 break;
 
