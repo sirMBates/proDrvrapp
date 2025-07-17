@@ -57,6 +57,16 @@ class AddDrvrContr extends AddedDrvr {
         $this->setDriver($this->username, $this->email, $this->password, $this->firstname, $this->lastname, $this->mobileNum, $this->birthdate);
     }
 
+    public function enterIntoPwdReset () {
+        if ($this->invalidEmail() === false) {
+            $alert::setMsg('warning', 'Please re-enter your email.');
+            header("Location: /?warning=invalid"); //emailnotvalid
+            exit();
+        }
+
+        $this->addToReset($this->email);
+    }
+
     private function isEmpty() {
         $result;
         if (empty($this->username) || empty($this->email) || empty($this->password)) {
@@ -113,5 +123,16 @@ class AddDrvrContr extends AddedDrvr {
         }
         return $result;
     }
+
+    /*private function doesEmailExist() {
+        $result;
+        if (!$this->checkIfEmailExist($this->email)) {
+            $result = false;
+        }
+        else {
+            $result = true;
+        }
+        return $result;
+    }*/
 }
 ?>
