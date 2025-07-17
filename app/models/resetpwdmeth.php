@@ -4,47 +4,53 @@ use core\Flash;
 
 class ResetPwd extends ConnectDatabase {
     protected function checkTokenExpiration($token) {
-        $alert = new Flash();
         $sql = "SELECT * From driver
                 WHERE resetToken = :resetToken";                
         $stmt = $this->connect()->prepare($sql);
         $stmt->bindParam(':resetToken', $token);
-
         $stmt->execute();
-        $driver = $stmt->fetchAll();
+        $driver = $stmt->fetch();
 
-        if (!$driver) {
-            $stmt = null;
+        if ($driver === null) {
+            $alert = new Flash();
             $alert::setMsg('error', 'Uh-oh! An unexpected error occurred, please try again.');
-            header("Location: /resetpwd?error=not+found"); //stmtfailed
+            header("Location: /forget?error=not+found"); //stmtfailed
             exit();
         }
-        
+
         if (strtotime($driver["tokenExpTime"]) <= time()) {
+            $alert = new Flash();
             $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
             header("Location: /compreset?validate=expired");
             exit();
         }
     }
 
-    protected function getNewToken($token, $tokenExpTime) {
-        $alert = new Flash();
+    protected function updateToken($newToken, $tokenExpTime, $oldToken) {
         $sql = "UPDATE driver
-                SET resetToken = ?, tokenExpTime = ? 
-                WHERE resetToken = ?";
+                SET resetToken = :newToken, tokenExpTime = :tokenExpTime 
+                WHERE resetToken = :oldToken";
         $stmt = $this->connect()->prepare($sql);
 
         $newTokenSetup = $stmt->execute([
-            ':resetToken' => $token,
-            ':tokenExpTime' => $tokenExpTime
+            ':newToken' => $newToken,
+            ':tokenExpTime' => $tokenExpTime,
+            ':oldToken' => $oldToken
         ]);
 
-        if (!$newTokenSetup) {
-            $stmt = null;
+        if ($newTokenSetup === null) {
+            $alert = new Flash();
             $alert::setMsg('error', 'Uh-oh! An unexpected error occurred, please try again.');
-            header("Location: /forget?error=not+available"); //stmtfailed
+            header("Location: /forget?error=not+available");
             exit();
         }
+
+        /*if (!$newTokenSetup) {
+            $alert = new Flash();
+            $alert::setMsg('error', 'No new token! Token has been sent or already used.');
+            header("Location: /forget?error=not+available"); //stmtfailed
+            exit();
+        }*/
 
         $result = $stmt->rowCount();
         $resultCheck;
