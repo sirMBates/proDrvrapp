@@ -11,7 +11,7 @@ if (isset($_POST['forget-pswd'])) {
     $email = htmlspecialchars($_POST['email']);
     $token = bin2hex(random_bytes(16));
     $token_hash = hash('sha256', $token);
-    $tokenExpTime = date("Y-m-d H:i:s", time() + 60 * 30); // 30 minutes expiration time
+    $tokenExpTime = date("Y-m-d H:i:s", time() + 60 * 30); // 30 minutes expire
     include_once base_path("app/models/database.php");
     include_once base_path("app/models/forgetpwdmeth.php");
     include_once base_path("app/classes/forget_pswd.php");

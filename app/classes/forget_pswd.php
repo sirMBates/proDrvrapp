@@ -59,7 +59,7 @@ class ForgetPswdContr extends ForgetPswd {
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/resetpwd?token=$this->token_hash">here</a> to forget password.
+                    Click <a href="http://prodriver.local/reset?token=$this->token_hash">here</a> to forget password.
 
                     END;
             try {
