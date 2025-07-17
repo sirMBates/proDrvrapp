@@ -3,52 +3,49 @@
 use core\Flash;
 
 class ForgetPswdContr extends ForgetPswd {
-    private $token_hash;
+    private $token;
     private $tokenExpTime;
     private $email;
 
-    public function __construct($token_hash, $tokenExpTime, $email) {
-        $this->token_hash = $token_hash;
+    public function __construct($token, $tokenExpTime, $email) {
+        $this->token = $token;
         $this->tokenExpTime = $tokenExpTime;
         $this->email = $email;
     }
 
-    public function checkEmailandAddTokenAndExpireTime() {
+    public function addTokenAndExpireTime() {
+        $alert = new Flash();
         if ($this->isEmpty() === false) {
-            $alert = new Flash();
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /forget?warning=empty"); //emptyinput
             exit();
         }
 
         if ($this->invalidEmail() === false) {
-            $alert = new Flash();
             $alert::setMsg('warning', 'Please re-enter your email.');
             header("Location: /forget?warning=invalid"); //emailnotvalid
             exit();
         }
 
         if ($this->emailExistandSend() === false) {
-            $alert = new Flash();
             $alert::setMsg('error', 'Please create an account to continue.');
             header("Location: /forget?error=invalid");
             exit();
         }
 
         if ($this->tokenExistAlready() === true) {
-            $alert = new Flash();
             $alert::setMsg('info', 'Email sent already. Please check your inbox!');
             header("Location: /forget?info=sent+already");
             exit();
         }
         // Example: Store token hash and expiration time in the database for the user
         // Assuming you have a method in the parent class to handle DB operations
-        $this->setForgetToken($this->token_hash, $this->tokenExpTime, $this->email);
+        $this->setForgetToken($this->token, $this->tokenExpTime, $this->email);
     }
 
     public function sendForgetEmail() {
+        $alert = new Flash();
         if ($this->emailExistandSend() === false) {
-            $alert = new Flash();
             $alert::setMsg('error', 'Email not sent. Please try again.');
             header('Location: /forget?error=try+again');
             exit();
@@ -59,13 +56,13 @@ class ForgetPswdContr extends ForgetPswd {
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset?token=$this->token_hash">here</a> to forget password.
+                    Click <a href="http://prodriver.local/reset?token=$this->token">here</a> to forget password.
 
                     END;
             try {
                 $mail->send();
             } catch (Exception $e) {
-                $alert = new Flash(); //remove(comment out if need to check mailer errors).
+                //remove(comment out if need to check mailer errors).
                 //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
                 $alert::setMsg('danger', "Message not sent. Try again. {$mail->ErrorInfo}");
                 header("Location: /forget?danger=system+error");
