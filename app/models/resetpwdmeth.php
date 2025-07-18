@@ -20,7 +20,7 @@ class ResetPwd extends ConnectDatabase {
             exit();
         }
 
-        if (strtotime($driver["tokenExpTime"]) <= time()) {
+        if (strtotime($driver["tokenExpTime"]) <= time() - (60 * 30)) {
             $alert = new Flash();
             $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
             header("Location: /compreset?validate=expired");
