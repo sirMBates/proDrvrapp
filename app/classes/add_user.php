@@ -57,7 +57,7 @@ class AddDrvrContr extends AddedDrvr {
         $this->setDriver($this->username, $this->email, $this->password, $this->firstname, $this->lastname, $this->mobileNum, $this->birthdate);
     }
 
-    public function enterIntoPwdReset () {
+    /*public function enterIntoPwdReset () {
         if ($this->invalidEmail() === false) {
             $alert::setMsg('warning', 'Please re-enter your email.');
             header("Location: /?warning=invalid"); //emailnotvalid
@@ -65,7 +65,7 @@ class AddDrvrContr extends AddedDrvr {
         }
 
         $this->addToReset($this->email);
-    }
+    }*/
 
     private function isEmpty() {
         $result;

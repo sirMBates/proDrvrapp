@@ -4,15 +4,17 @@ use core\Flash;
 
 class ResetPwd extends ConnectDatabase {
     protected function checkTokenExpiration($token) {
-        $sql = "SELECT * From driver
+        $alert = new Flash();
+        $sql = "SELECT resetToken From pwdreset
                 WHERE resetToken = :resetToken";                
         $stmt = $this->connect()->prepare($sql);
-        $stmt->bindParam(':resetToken', $token);
-        $stmt->execute();
+        $stmt->execute([
+            ':resetToken' => $token
+        ]);
+
         $driver = $stmt->fetch();
 
         if ($driver === null) {
-            $alert = new Flash();
             $alert::setMsg('error', 'Uh-oh! An unexpected error occurred, please try again.');
             header("Location: /forget?error=not+found"); //stmtfailed
             exit();
