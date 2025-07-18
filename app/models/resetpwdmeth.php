@@ -5,7 +5,7 @@ use core\Flash;
 class ResetPwd extends ConnectDatabase {
     protected function checkTokenExpiration($token) {
         $alert = new Flash();
-        $sql = "SELECT resetToken From pwdreset
+        $sql = "SELECT * From pwdreset
                 WHERE resetToken = :resetToken";                
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([
@@ -20,8 +20,8 @@ class ResetPwd extends ConnectDatabase {
             exit();
         }
 
-        if (strtotime($driver["tokenExpTime"]) <= time() - (60 * 30)) {
-            $alert = new Flash();
+        if (strtotime($driver["tokenExpTime"]) <= date('Y-m-d H:i:s', time())) {
+            $alert = new Flash(); 
             $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
             header("Location: /compreset?validate=expired");
             exit();
@@ -29,7 +29,7 @@ class ResetPwd extends ConnectDatabase {
     }
 
     protected function updateToken($newToken, $tokenExpTime, $oldToken) {
-        $sql = "UPDATE driver
+        $sql = "UPDATE pwdreset
                 SET resetToken = :newToken, tokenExpTime = :tokenExpTime 
                 WHERE resetToken = :oldToken";
         $stmt = $this->connect()->prepare($sql);
