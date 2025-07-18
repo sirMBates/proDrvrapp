@@ -32,17 +32,17 @@ class ForgetPswd extends ConnectDatabase {
         $sql = "SELECT drvr_email FROM pwdreset 
                 WHERE drvr_email = :email";
         $stmt =$this->connect()->prepare($sql);
-        $result = $stmt-execute([
+        $result = $stmt->execute([
             ':email' => $email
         ]);
-        if (!$result) {
+        if ($result === null) {
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
             header("Location: /forget?error=try+again"); //stmtfailed
             exit();
         } 
- 
+        
         $resultCheck;
-        if ($result->rowCount() === 0) {
+        if (!$result) {
             $resultCheck = false;
         } else {
             $resultCheck = true;
@@ -57,14 +57,12 @@ class ForgetPswd extends ConnectDatabase {
         $stmt = $this->connect()->prepare($sql);
 
         $result = $stmt->execute([':email' => $email]);
-        if (!$result) {
-            $stmt = null;
+        if ($result === null) {
             $alert::setMsg('error', 'Sorry, something went wrong. try again.');
             header("Location: /forget?error=not+available"); //stmtfailed
             exit();
         }
 
-        $doesTokenAlreadyExist = $result->fetch();
         $checkResult;
         if ($doesTokenAlreadyExist && !empty($doesTokenAlreadyExist['resetToken'])) {
             $checkResult = true;
