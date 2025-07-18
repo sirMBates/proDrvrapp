@@ -63,8 +63,10 @@ class ForgetPswd extends ConnectDatabase {
             exit();
         }
 
+        $doesTokenAlreadyExist = $stmt->fetch();
         $checkResult;
-        if ($doesTokenAlreadyExist && !empty($doesTokenAlreadyExist['resetToken'])) {
+        //if ($doesTokenAlreadyExist && !empty($doesTokenAlreadyExist['resetToken'])) {
+        if ($doesTokenAlreadyExist > 0 && !empty($doesTokenAlreadyExist['resetToken'])) {
             $checkResult = true;
         } else {
             $checkResult = false;
