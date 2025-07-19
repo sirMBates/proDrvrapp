@@ -17,7 +17,7 @@
             <?php if (isset($_GET['validate']) && $_GET['validate'] === 'expired') { ?>
                     <button id="generate" type="submit" class="btn btn-secondary my-2 fs-5" name="generate">Generate token</button><?php } else {?>
             <div class="d-flex flex-column justify-content-center mb-3">
-                <button id="forget-pwd" type="submit" class="btn btn-primary my-2 p-2 fs-5" name="forget-pswd">Send email</button><?php}?>
+                <button id="forget-pwd" type="submit" class="btn btn-primary my-2 p-2 fs-5" name="forget-pswd">Send email</button><?php } ?>
                 <a href="/signin" class="btn btn-lg btn-primary my-2" role="button">Go back</a>
             </div>
         </form>

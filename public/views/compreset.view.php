@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="input-group">
-                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?= htmlspecialchars($token_hash)?>">
+                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?= htmlspecialchars($_GET['cleared'])?>">
                     </div>
 
                     <div class="input-group my-1">

@@ -2,10 +2,14 @@
 
 use core\Flash;
 
-class CompPwdProcessContr extends CompPwdProcess {
+class CompleteResetContr extends CompleteReset {
     private $password;
+    private $token;
 
-    public __construct($password) {
+    public function __construct($password, $token) {
         $this->password = $password;
+        $this->token = $token;
     }
+
+    public function isTokenCleared() {}
 }

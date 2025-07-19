@@ -6,11 +6,10 @@ if (session_status() !== 2) {
     session_start();
 }
 
-if (isset($_POST['generate'])) {
+if (isset($_POST['reset-pswd'])) {
     // Create new token to send to email of driver
-    $newToken = bin2hex(random_bytes(16));
-    $token = hash('sha256', $newToken);
-    $tokenExpTime = date("Y-m-d H:i:s", time() + 60 * 30); // 30 minutes expire
+    $password = htmlspecialchars($_POST['password']);
+    $token = $_POST['resetToken'];
     // Instantiate the reset token controller class. ↓
     include_once base_path("app/models/database.php");
     include_once base_path("app/models/resetpwdmeth.php");
