@@ -8,11 +8,11 @@ class ResetPwd extends ConnectDatabase {
         $sql = "SELECT * From pwdreset
                 WHERE resetToken = :resetToken";                
         $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([
-            ':resetToken' => $token
-        ]);
+        $stmt->bindParam(':resetToken', $token);
+        $stmt->execute();
 
         $driver = $stmt->fetch();
+        //$currentTime = date("Y-m-d H:i:s" time());
 
         if ($driver === null) {
             $alert::setMsg('error', 'Uh-oh! An unexpected error occurred, please try again.');
@@ -20,15 +20,20 @@ class ResetPwd extends ConnectDatabase {
             exit();
         }
 
-        if (strtotime($driver["tokenExpTime"]) <= date('Y-m-d H:i:s', time())) {
-            $alert = new Flash(); 
+        if ($stmt->rowCount() > 0) {
+            if (strtotime($driver["tokenExpTime"]) <= time()) {
+                echo "current time is less than timestamp in database.";
+            /*$alert = new Flash(); 
             $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
             header("Location: /compreset?validate=expired");
-            exit();
+            exit();*/
+            } else {
+                echo "The time is less than.";
+            }
         }
     }
 
-    protected function updateToken($newToken, $tokenExpTime, $oldToken) {
+    /*protected function updateToken($newToken, $tokenExpTime, $oldToken) {
         $sql = "UPDATE pwdreset
                 SET resetToken = :newToken, tokenExpTime = :tokenExpTime 
                 WHERE resetToken = :oldToken";
@@ -52,7 +57,7 @@ class ResetPwd extends ConnectDatabase {
             $alert::setMsg('error', 'No new token! Token has been sent or already used.');
             header("Location: /forget?error=not+available"); //stmtfailed
             exit();
-        }*/
+        }
 
         $result = $stmt->rowCount();
         $resultCheck;
@@ -62,5 +67,5 @@ class ResetPwd extends ConnectDatabase {
             $resultCheck = true;
         }
         return $resultCheck;
-    }
+    }*/
 }
