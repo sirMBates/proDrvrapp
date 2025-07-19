@@ -5,14 +5,13 @@ use core\Flash;
 class ResetPwd extends ConnectDatabase {
     protected function checkTokenExpiration($token) {
         $alert = new Flash();
-        $sql = "SELECT * From pwdreset
+        $sql = "SELECT * FROM pwdreset
                 WHERE resetToken = :resetToken";                
         $stmt = $this->connect()->prepare($sql);
-        $stmt->bindParam(':resetToken', $token);
-        $stmt->execute();
-
-        $driver = $stmt->fetch();
-        //$currentTime = date("Y-m-d H:i:s" time());
+        $stmt->execute([
+            ':resetToken' => $token
+        ]);
+        $driver = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($driver === null) {
             $alert::setMsg('error', 'Uh-oh! An unexpected error occurred, please try again.');
@@ -21,16 +20,20 @@ class ResetPwd extends ConnectDatabase {
         }
 
         if ($stmt->rowCount() > 0) {
-            if (strtotime($driver["tokenExpTime"]) <= time()) {
+            echo $driver['resetid'];
+            /*if (strtotime($driver["tokenExpTime"]) <= time()) {
                 echo "current time is less than timestamp in database.";
-            /*$alert = new Flash(); 
+            $alert = new Flash(); 
             $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
             header("Location: /compreset?validate=expired");
-            exit();*/
+            exit();
             } else {
                 echo "The time is less than.";
-            }
+            }*/
+        } else {
+            echo "nothing is returning.";
         }
+        $driver = null;
     }
 
     /*protected function updateToken($newToken, $tokenExpTime, $oldToken) {
