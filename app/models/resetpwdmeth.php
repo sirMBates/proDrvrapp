@@ -20,18 +20,12 @@ class ResetPwd extends ConnectDatabase {
         }
 
         if ($stmt->rowCount() > 0) {
-            echo $driver['resetid'];
-            /*if (strtotime($driver["tokenExpTime"]) <= time()) {
-                echo "current time is less than timestamp in database.";
-            $alert = new Flash(); 
-            $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
-            header("Location: /compreset?validate=expired");
-            exit();
-            } else {
-                echo "The time is less than.";
-            }*/
-        } else {
-            echo "nothing is returning.";
+            if (strtotime($driver["tokenExpTime"]) <= time()) {
+                $alert = new Flash(); 
+                $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
+                header("Location: /forget?validate=expired");
+                exit();
+            } 
         }
         $driver = null;
     }
@@ -39,7 +33,7 @@ class ResetPwd extends ConnectDatabase {
     /*protected function updateToken($newToken, $tokenExpTime, $oldToken) {
         $sql = "UPDATE pwdreset
                 SET resetToken = :newToken, tokenExpTime = :tokenExpTime 
-                WHERE resetToken = :oldToken";
+                WHERE resetToken = :oldtoken";
         $stmt = $this->connect()->prepare($sql);
 
         $newTokenSetup = $stmt->execute([

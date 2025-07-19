@@ -18,8 +18,8 @@ class AddedDrvr extends ConnectDatabase {
             exit();
         }
 
-        $drvrIdMainTab = $this->connect()->lastInsertId();
-        $sql2 = "INSERT INTO pwdreset (resetid, drvr_email)
+        /*$drvrIdMainTab = $this->connect()->lastInsertId();
+        $sql2 = "INSERT INTO pwdreset (resetid, email)
                 VALUES (:resetid, :email)";
         $stmt2 = $this->connect()->prepare($sql2);
         $result = $stmt2->execute([
@@ -31,7 +31,7 @@ class AddedDrvr extends ConnectDatabase {
             $alert::setMsg('error', 'There was a problem. Try again.');
             header("Location: /error?=try+again");  //stmtfailed
             exit();
-        }
+        }*/
     }
 
     /*protected function addToReset($email) {
