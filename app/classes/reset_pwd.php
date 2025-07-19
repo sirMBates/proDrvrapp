@@ -11,6 +11,7 @@ class ResetPwdContr extends ResetPwd {
 
     public function isTokenExpired() {
         return $this->checkTokenExpiration($this->token);
+        //echo "Is this page being executed.";
     }
 
     public function createNewToken() {

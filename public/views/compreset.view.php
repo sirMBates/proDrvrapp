@@ -31,9 +31,6 @@
                     <div class="input-group">
                             <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                     </div>
-
-                    <?php if (isset($_GET['validate']) && $_GET['validate'] === 'expired') { ?>
-                    <button id="generate" type="submit" class="btn btn-secondary my-2 fs-5" name="generate">Generate token</button><?php }?>
                     
                     <div class="d-flex justify-content-center mb-3">
                             <button id="reset" type="submit" name="reset-pswd" class="btn btn-lg btn-outline-primary my-2" disabled>Reset Password</button>
