@@ -30,7 +30,7 @@ function getClockandMainOrNav($value) {
             echo "<script type='module' src='js/clock.js'></script>\n\n";
             echo "<script type='module' src='js/main.js'></script>\n\n";
             break;
-        }
+    }
 };
 
 function pageScripts($value) {
@@ -56,13 +56,13 @@ function pageScripts($value) {
                 echo "<script type='module' src='js/reset.js'></script>\n";
                 break;
 
-            case "/contact":
-                echo "<script type='module' src='js/messagevalidation.js'></script>";
-                break;
-
             case "/home":
                 echo "<script src='https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js'></script>\n\n";
                 echo "<script type='module' src='js/home.js'></script>\n";
+                break;
+
+            case "/contact":
+                echo "<script type='module' src='js/messagevalidation.js'></script>";
                 break;
 
             case "/joborder":

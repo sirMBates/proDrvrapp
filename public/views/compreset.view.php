@@ -18,7 +18,10 @@
                     </div>
 
                     <div class="input-group">
-                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?= htmlspecialchars($_GET['cleared'])?>">
+                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?php if(isset($_GET['cleared'])){ 
+                                $_SESSION['reset'] = $_GET['cleared'];
+                                echo $_SESSION['reset'];
+                            } ?>" required>
                     </div>
 
                     <div class="input-group my-1">

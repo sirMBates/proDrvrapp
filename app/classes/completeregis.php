@@ -17,29 +17,26 @@ class RegProContr extends RegProInfo {
     }
 
     public function processProfile () {
+        $alert = new Flash();
         if ($this->isEmpty() === false) {
-            $alert = new Flash();
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /register?warning=empty"); //emptyinputs
             exit();
         }
 
         if ($this->drvrNameInvalid() === false) {
-            $alert = new Flash();
             $alert::setMsg('warning', 'Please re-enter your first or last name.');
             header("Location: /register?warning=invalid"); //FirstorLastnameNotValid
             exit();
         }
 
         if ($this->drvrInvalidMobileNumber() === false) {
-            $alert = new Flash();
             $alert::setMsg('warning', 'Please re-enter your mobile number.');
             header("Location: /register?warning=invalid"); //mobileNumberNotValid
             exit();
         }
 
         if ($this->drvrInvalidBirthDate() === false) {
-            $alert = new Flash();
             $alert::setMsg('warning', 'Please re-enter your date of birth.');
             header("Location: /register?warning=invalid"); //birthdateNotValid
             exit();
@@ -52,7 +49,6 @@ class RegProContr extends RegProInfo {
         }*/
 
         if ($this->enterDrvrInfo() === false) {
-            $alert = new Flash();
             $alert::setMsg('danger', 'We\'re very sorry but please, try again!');
             header("Location: /register?danger=invalid"); //userNotValid
             exit();
@@ -63,7 +59,12 @@ class RegProContr extends RegProInfo {
 
     private function isEmpty() {
         $result;
-        $dataEntry = [$this->firstname, $this->lastname, $this->mobileNum, $this->birthdate];
+        $dataEntry = [
+            $this->firstname, 
+            $this->lastname, 
+            $this->mobileNum, 
+            $this->birthdate
+        ];
         function cleanData($array) {
             $clean_data = [];
             foreach($array as $value) {
