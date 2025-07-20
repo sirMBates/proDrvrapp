@@ -8,7 +8,7 @@ class ForgetPswd extends ConnectDatabase {
         // Note: Can not use an INSERT stmt to add to an empty column of an existing row.
         $sql = "UPDATE pwdreset
                 SET resetToken = :resetToken, tokenExpTime = :tokenExpTime
-                WHERE drvr_email = :email";
+                WHERE email = :email";
         $stmt = $this->connect()->prepare($sql);
         /* Bind the parameters to the prepared statement.
         *  The first two parameters are bound to the token and its expiration time.
@@ -29,8 +29,8 @@ class ForgetPswd extends ConnectDatabase {
 
     protected function checkEmailExist($email) {
         $alert = new Flash();
-        $sql = "SELECT drvr_email FROM pwdreset 
-                WHERE drvr_email = :email";
+        $sql = "SELECT email FROM pwdreset 
+                WHERE email = :email";
         $stmt =$this->connect()->prepare($sql);
         $result = $stmt->execute([
             ':email' => $email
@@ -53,7 +53,7 @@ class ForgetPswd extends ConnectDatabase {
     protected function checkTokenExist($email) {
         $alert = new Flash();
         $sql = "SELECT resetToken FROM pwdreset 
-                WHERE drvr_email = :email";
+                WHERE email = :email";
         $stmt = $this->connect()->prepare($sql);
 
         $result = $stmt->execute([':email' => $email]);
