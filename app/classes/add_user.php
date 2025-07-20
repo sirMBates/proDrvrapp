@@ -6,19 +6,11 @@ class AddDrvrContr extends AddedDrvr {
     private $username;
     private $email;
     private $password;
-    private $firstname;
-    private $lastname;
-    private $mobileNum;
-    private $birthdate;
     
-    public function __construct($username, $email, $password, $firstname, $lastname, $mobileNum, $birthdate) {
+    public function __construct($username, $email, $password) {
         $this->username = $username;
         $this->email = $email;
-        $this->password = $password;
-        $this->firstname = $firstname;
-        $this->lastname = $lastname;
-        $this->mobileNum = $mobileNum;
-        $this->birthdate = $birthdate;  
+        $this->password = $password;  
     }
 
     public function addDriver() {
@@ -54,18 +46,8 @@ class AddDrvrContr extends AddedDrvr {
             exit();
         }
 
-        $this->setDriver($this->username, $this->email, $this->password, $this->firstname, $this->lastname, $this->mobileNum, $this->birthdate);
+        $this->setDriver($this->username, $this->email, $this->password);
     }
-
-    /*public function enterIntoPwdReset () {
-        if ($this->invalidEmail() === false) {
-            $alert::setMsg('warning', 'Please re-enter your email.');
-            header("Location: /?warning=invalid"); //emailnotvalid
-            exit();
-        }
-
-        $this->addToReset($this->email);
-    }*/
 
     private function isEmpty() {
         $result;
@@ -123,16 +105,5 @@ class AddDrvrContr extends AddedDrvr {
         }
         return $result;
     }
-
-    /*private function doesEmailExist() {
-        $result;
-        if (!$this->checkIfEmailExist($this->email)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }*/
 }
 ?>

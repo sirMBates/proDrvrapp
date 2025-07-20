@@ -11,15 +11,11 @@ if (isset($_POST['createAccount'])) {
     $username = htmlspecialchars($_POST['username']);
     $email = htmlspecialchars($_POST['email']);
     $password = htmlspecialchars($_POST['password']);
-    $firstname = htmlspecialchars('blank');
-    $lastname = htmlspecialchars('blanked');
-    $mobileNum = htmlspecialchars('0009998765');
-    $birthdate = htmlspecialchars('2010-03-30');
     // Instantiate the add user controller class. ↓
     include_once base_path("app/models/database.php");
     include_once base_path("app/models/addusermeth.php");
     include_once base_path("app/classes/add_user.php");
-    $signup = new AddDrvrContr($username, $email, $password, $firstname, $lastname, $mobileNum, $birthdate);
+    $signup = new AddDrvrContr($username, $email, $password);
     // Running error handlers and user signup.
     $signup->addDriver();
     //$signup->enterIntoPwdReset();

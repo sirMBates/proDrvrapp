@@ -20,7 +20,7 @@ if (isset($_POST['reginfo'])) {
     $enterData->processProfile();
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
     $alert::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');
-    header("Location: /signin?success=profileupdated");
+    header("Location: /signin?success=profile+updated");
     exit();
 };
 ?>
