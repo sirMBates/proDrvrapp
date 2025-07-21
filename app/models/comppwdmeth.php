@@ -39,18 +39,18 @@ class CompleteReset extends ConnectDatabase {
             ':resetToken' => $token
         ]);
 
-        if ($stmt === null) {
-            $alert::setMsg('error', 'There was an issue completing the reset. Please, try again.');
-            header("Location: /compreset?error=try+again");
+        $driver = $stmt->fetch();
+
+        if (!$driver || $stmt->rowCount() === 0) {
+            $alert::setMsg('error', 'Invalid or expired token.');
+            header("Location: /compreset?error=invalid+token");
             exit();
         }
 
-        $driver = $stmt->fetch();
-
         if ($stmt->rowCount() > 0) {
             if (strtotime($driver["tokenExpTime"]) <= time()) { 
-                $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
-                header("Location: /forget?validate=expired");
+                $alert::setMsg('validate', 'Invalid or unauthorized token. Please generate a new token below.');
+                header("Location: /forget?validate=invalid+token");
                 exit();
             } 
         }
@@ -59,8 +59,8 @@ class CompleteReset extends ConnectDatabase {
         $newHashPwd = password_hash($password, PASSWORD_BCRYPT);
 
         $sql2 = "UPDATE driver
-                SET password = ?
-                WHERE email = ?";
+                SET password = :password
+                WHERE email = :email";
         $stmt2 = $this->connect()->prepare($sql2);
         $stmt2->execute([
             ':password' => $newHashPwd,
@@ -74,7 +74,7 @@ class CompleteReset extends ConnectDatabase {
         }
 
         $result;
-        if (!$stmt) {
+        if ($stmt2->rowCount() === 0) {
             $result = false;
         } else {
             $result = true;

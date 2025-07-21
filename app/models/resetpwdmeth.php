@@ -3,7 +3,7 @@
 use core\Flash;
 
 class ResetPwd extends ConnectDatabase {
-    protected function checkTokenExpiration($token) {
+    protected function checkTokenandExpiration($token) {
         $alert = new Flash();
         $sql = "SELECT * FROM pwdreset
                 WHERE resetToken = :resetToken";                
@@ -20,12 +20,19 @@ class ResetPwd extends ConnectDatabase {
         }
 
         if ($stmt->rowCount() > 0) {
-            if (strtotime($driver["tokenExpTime"]) <= time()) {
-                $alert = new Flash(); 
+            if (strtotime($driver["tokenExpTime"]) <= time()) { 
                 $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
                 header("Location: /forget?validate=expired");
                 exit();
             } 
+        }
+
+        if ($stmt->rowCount() > 0) {
+            if ($driver['resetToken'] !== $token) {
+                $alert::setMsg('danger', 'You\'re not authorized!');
+                header("Location: forget/danger=token+not+permitted");
+                exit();
+            }
         }
         $driver = null;
     }

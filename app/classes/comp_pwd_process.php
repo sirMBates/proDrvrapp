@@ -24,9 +24,9 @@ class CompleteResetContr extends CompleteReset {
         }
 
         if ($this->invalidPsword() === false) {
-            $alert::setMsg('danger', 'Please re-type your password.');
+            /*$alert::setMsg('danger', 'Please re-type your password.');
             header("Location: /compreset?danger=fix");
-            exit();
+            exit();*/
         }
 
         $this->updatePassword($this->token, $this->password);
