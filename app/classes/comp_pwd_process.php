@@ -25,18 +25,18 @@ class CompleteResetContr extends CompleteReset {
 
         if ($this->invalidPsword() === false) {
             $alert::setMsg('danger', 'Please re-type your password.');
-            header("Location: /compreset?danger=fix&");
+            header("Location: /compreset?danger=fix");
             exit();
         }
 
-        $this->updatePassword($this->password, $this->token);
+        $this->updatePassword($this->token, $this->password);
     }
 
     public function hasTokenCleared() {
         if ($this->clearToken() === false) {
             $alert = new Flash();
             $alert::setMsg('error', 'There was a problem. Please try reset again!');
-            header("Location: /signin?error=not+cleared");
+            header("Location: /forget?error=not+cleared");
             exit();
         }
     }
@@ -54,7 +54,7 @@ class CompleteResetContr extends CompleteReset {
 
     private function invalidPsword() {
         $result;
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
+        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
             $result = false;
         }
         else {

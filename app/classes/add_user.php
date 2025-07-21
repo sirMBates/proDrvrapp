@@ -86,7 +86,7 @@ class AddDrvrContr extends AddedDrvr {
 
     private function invalidPsword() {
         $result;
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z]*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
+        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
             $result = false;
         }
         else {

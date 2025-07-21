@@ -2,6 +2,9 @@
     require "partials/outhead.php";
     $alert = new \core\Flash;
     include "includes/flashmessage.php";
+    if (isset($_GET['cleared'])) {
+        $_SESSION['reset'] = $_GET['cleared'];
+    }
 ?>
 
     <main class="container-fluid d-flex justify-content-center">
@@ -18,10 +21,7 @@
                     </div>
 
                     <div class="input-group">
-                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?php if(isset($_GET['cleared'])){ 
-                                $_SESSION['reset'] = $_GET['cleared'];
-                                echo $_SESSION['reset'];
-                            } ?>" required>
+                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?= $_SESSION['reset']; ?>" required>
                     </div>
 
                     <div class="input-group my-1">
