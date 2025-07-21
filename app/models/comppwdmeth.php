@@ -33,7 +33,7 @@ class CompleteReset extends ConnectDatabase {
     protected function updatePassword($token, $password) {
         $alert = new Flash();
         $sql = "SELECT * FROM pwdreset
-                WHERE resetToken = ?";
+                WHERE resetToken = :resetToken";
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([
             ':resetToken' => $token
@@ -45,7 +45,7 @@ class CompleteReset extends ConnectDatabase {
             exit();
         }
 
-        $driver = $stmt->fetch(PDO::FETCH_ASSOC);
+        $driver = $stmt->fetch();
 
         if ($stmt->rowCount() > 0) {
             if (strtotime($driver["tokenExpTime"]) <= time()) { 

@@ -2,6 +2,9 @@
 require "partials/outhead.php";
 $alert = new \core\Flash;
 include "includes/flashmessage.php";
+if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
+        unset($_SESSION['reset']);
+}
 ?>
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
         <div id="form-container" class="d-flex flex-column my-auto">
