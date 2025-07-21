@@ -7,7 +7,7 @@ if (session_status() !== 2) {
 }
 // Get the token from the queryString using GET
 $token = $_GET['token'];
-//$getToken = hash('sha256', $token);
+$getToken = hash('sha256', $token);
 //echo $token;
 //$tokenExpTime = date("Y-m-d H:i:s", time() + 60 * 30); // 30 minutes expire
 include_once base_path("app/models/database.php");
@@ -18,7 +18,7 @@ $isResetValid->isTokenExpired();
 //echo "This page is live.";
 $alert = new Flash();
 $alert::setMsg('success', 'Please fill out form below to complete the reset');
-header("Location: /compreset?cleared=$token");
+header("Location: /compreset?cleared=$getToken");
 exit();
 
 ?>
