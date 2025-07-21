@@ -10,7 +10,7 @@ if (isset($_POST['forget-pswd'])) {
 // Getting the EMAIL value from the form using POST method from the name attribute.
     $email = htmlspecialchars($_POST['email']);
     $createToken = bin2hex(random_bytes(16));
-    $token = hash('sha256', $createToken);
+    $token = hash("sha256", $createToken);
     // The time() method gives you the current time in seconds.
     $token_expires = date('Y-m-d H:i:s', time() + 60 * 30); // 30 minutes expiration
     include_once base_path("app/models/database.php");
