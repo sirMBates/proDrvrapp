@@ -33,7 +33,7 @@ class AddedDrvr extends ConnectDatabase {
 
         $token = '';
         $tokenExpTime = NULL;
-        $sql2 = "INSERT INTO pwdreset (email, token, tokenExpTime)
+        $sql2 = "INSERT INTO pwdreset (email, resetToken, tokenExpTime)
                 VALUES (?,?,?)";
         $stmt2 = $this->connect()->prepare($sql2);
         $stmt2->bindParam(1, $email);

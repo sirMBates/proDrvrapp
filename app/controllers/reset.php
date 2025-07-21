@@ -17,6 +17,8 @@ $isResetValid = new ResetPwdContr($getToken);
 $isResetValid->isTokenExpired();
 //echo "This page is live.";
 $alert = new Flash();
+//echo $getToken;
+//echo $token;
 $alert::setMsg('success', 'Please fill out form below to complete the reset');
 header("Location: /compreset?cleared=$getToken");
 exit();
