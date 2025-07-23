@@ -57,7 +57,7 @@ class ForgetPswd extends ConnectDatabase {
         $stmt = $this->connect()->prepare($sql);
 
         $result = $stmt->execute([':email' => $email]);
-        if ($result === null) {
+        if (!$result) {
             $alert::setMsg('error', 'Sorry, something went wrong. try again.');
             header("Location: /forget?error=not+available"); //stmtfailed
             exit();

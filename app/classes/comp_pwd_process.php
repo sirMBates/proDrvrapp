@@ -3,16 +3,12 @@
 use core\Flash;
 
 class CompleteResetContr extends CompleteReset {
-    private $password;
     private $token;
+    private $password;
 
-    public function __construct($password, $token) {
-        $this->password = $password;
+    public function __construct($token, $password) {
         $this->token = $token;
-    }
-
-    public function isTokenCleared() {
-        return $this->checkTokenIsValid($this->token);
+        $this->password = $password;
     }
 
     public function changeDrvrPassword() {
@@ -24,17 +20,17 @@ class CompleteResetContr extends CompleteReset {
         }
 
         if ($this->invalidPsword() === false) {
-            /*$alert::setMsg('danger', 'Please re-type your password.');
-            header("Location: /compreset?danger=fix");
-            exit();*/
+            $alert::setMsg('warning', 'Please re-type your password.');
+            header("Location: /compreset?warning=fix");
+            exit();
         }
 
         $this->updatePassword($this->token, $this->password);
     }
 
     public function hasTokenCleared() {
-        if ($this->clearToken() === false) {
-            $alert = new Flash();
+        $alert = new Flash();
+        if ($this->removedToken() === false) {
             $alert::setMsg('error', 'There was a problem. Please try reset again!');
             header("Location: /forget?error=not+cleared");
             exit();
@@ -61,5 +57,15 @@ class CompleteResetContr extends CompleteReset {
             $result = true;
         }
         return $result;
+    }
+
+    private function removedToken() {
+        $removed;
+        if ($this->clearToken($this->token) === false) {
+            $removed = false;
+        } else {
+            $removed = true;
+        }
+        return $removed;
     }
 }

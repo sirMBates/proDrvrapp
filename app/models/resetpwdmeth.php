@@ -11,28 +11,20 @@ class ResetPwd extends ConnectDatabase {
         $stmt->execute([
             ':resetToken' => $token
         ]);
-        $driver = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($driver === null) {
-            $alert::setMsg('error', 'Uh-oh! An unexpected error occurred, please try again.');
-            header("Location: /forget?error=not+found"); //stmtfailed
+        if (!$stmt || $stmt->rowCount() === 0) {
+            $alert::setMsg('error', 'You have an invalid token. Please generate a new token below.');
+            header("Location: /forget?error=not+found"); //no token found
             exit();
         }
 
-        if ($stmt->rowCount() > 0) {
-            if (strtotime($driver["tokenExpTime"]) <= time()) { 
-                $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
-                header("Location: /forget?validate=expired");
-                exit();
-            } 
-        }
-
-        if ($stmt->rowCount() > 0) {
-            if ($driver['resetToken'] !== $token) {
-                $alert::setMsg('danger', 'You\'re not authorized!');
-                header("Location: forget/danger=token+not+permitted");
-                exit();
-            }
+        $driver = $stmt->fetchAll();
+        $dbTimeStamp = strtotime($driver[0]["tokenExpTime"]);
+        $currentTime = time();
+        if ($dbTimeStamp <= $currentTime) {
+            $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
+            header("Location: /forget?validate=expired");
+            exit();
         }
         $driver = null;
     }
