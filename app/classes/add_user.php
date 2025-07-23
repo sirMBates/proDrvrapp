@@ -41,8 +41,8 @@ class AddDrvrContr extends AddedDrvr {
         }
 
         if ($this->nameOrEmailExist() === false) {
-            $alert::setMsg('danger', 'Please choose a different username or email.');
-            header("Location: /?danger=exist+already"); //nameexistalready
+            $alert::setMsg('warning', 'Please choose a different username or email.');
+            header("Location: /?warning=exist+already"); //nameexistalready
             exit();
         }
 
