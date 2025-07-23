@@ -6,12 +6,12 @@ if ($msg = $alert::getMsg('success')) { ?>
 <?php
 } 
 elseif ($msg = $alert::getMsg('warning')) { ?>
-        <div id="flash-alert" class="my-2 alert alert-warning alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-triangle-radiation"></i><span class="fs-5"><?= $msg;?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div id="flash-alert" class="my-2 alert alert-warning alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-circle-radiation"></i><span class="fs-5"><?= $msg;?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
 } 
 elseif ($msg = $alert::getMsg('danger')) { ?>
-        <div id="flash-alert" class="my-2 alert alert-danger alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-circle-radiation"></i><span class="fs-5"><?= $msg;?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div id="flash-alert" class="my-2 alert alert-danger alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-radiation"></i><span class="fs-5"><?= $msg;?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
 } 

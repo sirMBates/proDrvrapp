@@ -19,6 +19,7 @@ if (isset($_POST['forget-pswd'])) {
     $startReset = new ForgetPswdContr($token, $token_expires, $email);
     $startReset->addTokenAndExpireTime();
     $startReset->sendForgetEmail();
+    //echo $createToken."<br>";
     //echo $token;
     $alert::setMsg('info', 'Email sent! Please check your inbox to complete the reset.');
     header("Location: /forget?info=email+sent");

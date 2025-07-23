@@ -17,7 +17,7 @@ class ResetPwdContr extends ResetPwd {
         $alert = new Flash();
         if ($this->checkNewToken() === false) {
             $alert::setMsg('error', 'No new token! Token has been sent or already used.');
-            header("Location: /compreset?error=token+set+already");
+            header("Location: /forget?error=token+set+already");
             exit();
         } else {
             $mail = require_once home_path("mail/emailSetup.php");
@@ -35,7 +35,7 @@ class ResetPwdContr extends ResetPwd {
                 //remove(comment out if need to check mailer errors).
                 //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
                 $alert::setMsg('danger', "Message not sent. Try again. {$mail->ErrorInfo}");
-                header("Location: /compreset?danger=system+error");
+                header("Location: /forget?danger=system+error");
                 exit();
             }
         }
@@ -51,4 +51,5 @@ class ResetPwdContr extends ResetPwd {
         return $result;
     }
 }
+
 ?>
