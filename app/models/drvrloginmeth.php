@@ -4,17 +4,15 @@ use core\Flash;
 class Login extends ConnectDatabase {
     protected function getDriver($username, $password) {
         $alert = new Flash();
-        $stmt =$this->connect()->prepare("SELECT password FROM driver WHERE username = ? OR email = ?;");
+        $sql = "SELECT password FROM driver
+        WHERE username = :username OR email = :email";
+        $stmt = $this->connect()->prepare();
+        $stmt->execute([
+             ':username' => $username,
+             ':password' => $password
+        ]);
 
-        if (!$stmt->execute(array($username, $password))) {
-            $stmt = null;
-            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /signin?error=try+again"); // unexpectedError
-            exit();
-        }
-
-        if ($stmt->rowCount() === 0) {
-            $stmt = null;
+        if (!$stmt || $stmt->rowCount === 0) {
             $alert::setMsg('error', 'User not found. Please check your username or email.');
             header("Location: /signin?error=not+found"); // noRegisteredUseraccount
             exit();
