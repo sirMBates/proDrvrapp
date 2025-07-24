@@ -6,7 +6,7 @@
         $alert = new \core\Flash;
         include "includes/flashmessage.php";
 ?>
-        <main class="container-fluid d-flex flex-row flex-wrap justify-content-evenly mb-1 p-1">
+        <main class="container-fluid d-flex flex-row flex-wrap justify-content-evenly mb-1 p-1 overflow-x-auto">
                 <div class="card mb-auto" style="width: 90rem;">
                         <div class="card-header bg-besttrailsclr text-btd-white-off">
                                 <p class='h3 text-center text-capitalize'>driver information</p>
@@ -40,49 +40,17 @@
                                                 <td>08:00</td>
                                                 <td><?php if (!isset($_GET['status']) && !isset($_SESSION['status'])) {
                                                         echo "N/A";
-                                                } elseif (isset($_GET['status']) && !isset($_SESSION['status'])) {
+                                                } elseif (isset($_GET['status'])) {
                                                         $_SESSION['status'] = $_GET['status'];
                                                 }
                                                 
                                                 if (isset($_SESSION['status'])) {
                                                         $currentStatus = ucwords($_SESSION['status']);
                                                         echo $currentStatus;
-                                                } /*elseif (isset($_GET['status'])) {
-                                                        $_SESSION['status'] = $_GET['status'];
-                                                        $currentStatus = ucwords($_SESSION['status']);
-                                                        echo $currentStatus;  
-                                                } elseif (isset($_GET['status']) && $_SESSION['status'] === "enroute") {
-                                                        $currentStatus = ucwords($_SESSION['status']);
-                                                        echo "Enroute to Garage/Yard";
-                                                } elseif (isset($_SESSION['status']) && $_SESSION['status'] === "checkedin") {
-                                                        echo "Checked-In at Garage/Yard";
-                                                } elseif (isset($_SESSION['status']) && $_SESSION['status'] === "arrived") {
-                                                        echo "Arrived at Pickup Location";
-                                                } else {
-                                                        echo "N/A";
-                                                }*/?></td>  
+                                                }
+                                                ?></td>  
                                                 </tr>
                                         </tbody>
-                                        <!--<div class="input-group my-1">
-                                                <span class="input-group-text" id="identitylab">Full Name:</span>
-                                                <input type="text" aria-label="full name" class="form-control" aria-describedby="#identitylab" disabled>
-                                        </div>
-                                        <div class="input-group my-1">
-                                                <span class="input-group-text" id="idnumlab">Driver ID#:</span>
-                                                <input type="number" aria-label="id num" class="form-control" aria-describedby="#idnumlab" disabled>
-                                        </div>
-                                        <div class="input-group my-1">
-                                                <span class="input-group-text" id="reporttimelab">Report Time:</span>
-                                                <input type="time" aria-label="report time" class="form-control" aria-describedby="#reporttimelab" disabled>
-                                        </div>
-                                        <div class="input-group my-1">
-                                                <span class="input-group-text" id="spottimelab">Spot Time:</span>
-                                                <input type="time" aria-label="spot time" class="form-control" aria-describedby="#spottimelab" disabled>
-                                        </div>
-                                        <div class="input-group my-1">
-                                                <span class="input-group-text" id="drvrstatus">Status</span>
-                                                <input type="text" aria-label="status" class="form-control" aria-describedby="#drvrstatus" disabled>
-                                        </div>-->
                                         <form>
                                         <div class="input-group">
                                                 <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
