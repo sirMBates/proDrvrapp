@@ -5,12 +5,12 @@ class Login extends ConnectDatabase {
     protected function getDriver($username, $password) {
         $alert = new Flash();
         $sql = "SELECT password FROM driver
-        WHERE username = :username OR email = :email";
-        $stmt = $this->connect()->prepare();
-        $stmt->execute([
-             ':username' => $username,
-             ':password' => $password
-        ]);
+                WHERE username = :username OR email = :email";
+        $stmt = $this->connect()->prepare($sql);
+        
+        $stmt->bindParam(1, $username);
+        $stmt->bindParam(2, $password);
+        $stmt->execute();        
 
         if (!$stmt || $stmt->rowCount === 0) {
             $alert::setMsg('error', 'User not found. Please check your username or email.');
@@ -22,24 +22,19 @@ class Login extends ConnectDatabase {
         $checkPsw = password_verify($password, $hashedPsw[0]["password"]);
         
         if ($checkPsw === false) {
-            $stmt = null;
             $alert::setMsg('danger', 'Incorrect password. Please try again.');
             header("Location: /signin?danger=invalid"); // wrongPassword
             exit();
-        }
+        } elseif ($checkPsw === true) {
+            $sql2 = "SELECT * FROM driver
+                    WHERE username = ? OR email = ? and PASSWORD = ?";
+            $stmt = $this->connect()->prepare($sql2);
+            $stmt->bindParam(1, $username);
+            $stmt->bindParam(2, $email);
+            $stmt->bindParam(3, $password);
+            $stmt->execute();
 
-        elseif ($checkPsw === true) {
-            $stmt =$this->connect()->prepare("SELECT * FROM driver WHERE username = ? OR email = ? AND password = ?;");
-
-            if (!$stmt->execute(array($username, $username, $password))) {
-                $stmt = null;
-                $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-                header("Location: /signin?error=try+again"); // unexpectedError
-                exit();
-            }
-
-            if ($stmt->rowCount() === 0) {
-                $stmt = null;
+            if (!$stmt || $stmt->rowCount() === 0) {
                 $alert::setMsg('error', 'User not found. Please check your username or email.');
                 header("Location: /signin?error=not+found"); // noRegisteredUseraccount
                 exit();

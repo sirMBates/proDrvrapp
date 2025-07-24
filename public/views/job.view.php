@@ -2,8 +2,8 @@
         require "partials/head.php";
         require "partials/nav.php";
         require "partials/banner.php";
-        include "includes/cus-modal.php";
-        include "includes/errormsgs.php";
+        $alert = new \core\Flash;
+        include "includes/flashmessage.php";
 ?>       
         <main class="container-fluid my-3">
                 <form class="" action="" method="">
@@ -11,91 +11,58 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
                                 </div>
-
                                 <div class="input-group">
                                         <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                 </div>
-                                
-                                <div class="card-body d-sm-inline-flex justify-content-between">                        
-                                        <div id="sub_head_1" class="p-2 overflow-x-auto">
-                                                <div>
-                                                        <div class="input-group mb-2">
-                                                                <label for="coach_id" class="h5 col-form-label">Coach ID:</label>
-                                                                <input type="number" id="coach_id" class="form-control bg-transparent border-0" name="coachid" placeholder="1800" disabled>
-                                                        </div>
-                                                </div>
-                                                <div>
-                                                        <div class="input-group mb-2">
-                                                                <label for="driver_id" class="h5 col-form-label">Driver ID:</label>
-                                                                <input type="number" id="driver_id" class="form-control bg-transparent border-0" name="driverid" placeholder="1000" disabled>
-                                                        </div>
-                                                </div>
-                                                <div>
-                                                        <div class="input-group mb-2">
-                                                                <label for="driver_name" class="h5 col-form-label">Name:</label>
-                                                                <input type="text" id="driver_name" class="form-control bg-transparent border-0" name="drivername" placeholder="John Doe" disabled>
-                                                        </div>
-                                                </div>
-                                                <div>
-                                                        <div class="input-group mb-2">
-                                                                <label for="order_id" class="h5 col-form-label">Order #:</label>
-                                                                <input type="number" id="order_id" class="form-control bg-transparent border-0" name="orderid" placeholder="99999" disabled>
-                                                        </div>
-                                                </div>
-                                                <div>
-                                                        <div class="input-group mb-2">
-                                                                <label for="number_of_coaches" class="h5 col-form-label"># Coaches:</label>
-                                                                <input type="text" id="number_of_coaches" class="form-control bg-transparent border-0" name="numOfCoaches" placeholder="1" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
+                                <div class="card-body d-flex justify-content-between align-items-center">                        
+                                        <table id="sub_head_1" class="table">
+                                                <thead class="table-info text-capitalize">
+                                                        <tr>
+                                                                <th scope="col">coach id</th>
+                                                                <th scope="col">driver id</th>
+                                                                <th scope="col">name</th>
+                                                                <th scope="col">order#</th>
+                                                                <th scope="col">num of coaches</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody class="table-group-divider">
+                                                        <tr>
+                                                                <td scope="row">1800</td>
+                                                                <td><?= $_SESSION['driver_id']; ?></td>
+                                                                <td><?= $_SESSION['last_name'].', '.$_SESSION['first_name']; ?></td>
+                                                                <td>99999</td>
+                                                                <td>1</td>
+                                                        </tr>
+                                                </tbody>
+                                        </table>
+                                </div>
                         </section>
 
                         <section id="dispatch_start_block" class="card my-3">
                                 <div class="card-header bg-besttrailsclr">
                                         <h4 class="text-center text-capitalize text-light">dispatch start</h4>
                                 </div>
-                                <div class="card-body d-sm-inline-flex justify-content-evenly flex-sm-wrap">
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="start_date" class="form-label text-capitalize pe-2">start date</label>
-                                                        <div class="col-lg-6">                                          
-                                                                <input type="date" id="start_date" class="form-control" name="startdate" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="garage_time" class="form-label text-capitalize pe-2">garage time</label>
-                                                        <div class="col-lg-5">                                          
-                                                                <input type="time" id="garage_time" class="form-control" name="garagetime" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="leave_date" class="form-label text-capitalize pe-2">leave date</label>
-                                                        <div class="">                                          
-                                                                <input type="date" id="leave_date" class="form-control" name="leavedate" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="spot_time" class="form-label text-capitalize pe-2">spot time</label>
-                                                        <div class="col-lg-5">                                          
-                                                                <input type="time" id="spot_time" class="form-control" name="spottime" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="leave_time" class="form-label text-capitalize pe-2">leave time</label>
-                                                        <div class="col-lg-5">                                          
-                                                                <input type="time" id="leave_time" class="form-control" name="leavetime" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
+                                <div class="card-body d-flex justify-content-center align-items-center">
+                                        <table class="table">
+                                                <thead class="table-info text-capitalize">
+                                                        <tr>
+                                                                <th scope="col">start date</th>
+                                                                <th scope="col">garage time</th>
+                                                                <th scope="col">leave date</th>
+                                                                <th scope="col">spot time</th>
+                                                                <th scope="col">leave time</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody class="table-group-divider">
+                                                        <tr>
+                                                                <td scope="row"><?= date("m-d-Y", strtotime("2025-06-15")) ?></td>
+                                                                <td><?= date("h:i A", strtotime('06:00')); ?></td>
+                                                                <td><?= date("m-d-Y", strtotime("2025-06-15"))?></td>
+                                                                <td><?= date("h:i A", strtotime('08:00')); ?></td>
+                                                                <td><?= date("h:i A", strtotime('08:30')); ?></td>
+                                                        </tr>
+                                                </tbody>
+                                        </table>
                                 </div>
                         </section>
 
@@ -103,76 +70,33 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h4 class="text-center text-capitalize text-light">dispatch end</h4>
                                 </div>
-                                <div class="card-body d-sm-inline-flex justify-content-evenly flex-sm-wrap">
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="return_date" class="form-label text-capitalize pe-2">return date</label>
-                                                        <div class="col">                                          
-                                                                <input type="date" id="return_date" class="form-control" name="returndate" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="drop_time" class="form-label text-capitalize pe-2">drop time</label>
-                                                        <div class="col">                                          
-                                                                <input type="time" id="drop_time" class="form-control" name="droptime" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="actual_drop_time" class="form-label text-capitalize pe-1">act. drop time</label>
-                                                        <div class="col">                                          
-                                                                <input type="time" id="actual_drop_time" class="form-control" name="actualdroptime">
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="end_date" class="form-label text-capitalize pe-2">end date</label>
-                                                        <div class="col">                                          
-                                                                <input type="date" id="end_date" class="form-control" name="enddate" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="mb-1 p-1">
-                                                <div class="input-group">
-                                                        <label for="end_time" class="form-label text-capitalize pe-2">end time</label>
-                                                        <div class="col">                                          
-                                                                <input type="time" id="end_time" class="form-control" name="endtime" disabled>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                </div>
-
-                                <div id="end-shift-times" class="d-flex justify-content-sm-center">
-                                        <div class="d-sm-inline-flex">
-                                                <div class="mb-1 p-2">
-                                                        <div class="input-group">
-                                                                <label for="actual_end_time" class="form-label text-capitalize pe-2">actual end time</label>
-                                                                <div class="col">                                          
-                                                                        <input type="time" id="actual_end_time" class="form-control" name="actualendtime">
-                                                                </div>
-                                                        </div>
-                                                </div>
-                                                <div class="mb-1 p-2">
-                                                        <div class="input-group">
-                                                                <label for="total_hours" class="form-label text-capitalize pe-2">total hrs.</label>
-                                                                <div class="col">                                          
-                                                                        <input type="text" id="total_hours" class="form-control" name="totalhours" placeholder="0.00 hrs" readonly>
-                                                                </div>
-                                                        </div>
-                                                </div>
-                                                <div class="mb-1 p-2">
-                                                        <div class="input-group">
-                                                                <label for="drive_time" class="form-label text-capitalize pe-2">driving time</label>
-                                                                <div class="col">                                          
-                                                                        <input type="text" id="drive_time" class="form-control" name="drivetime" placeholder="0.00 hrs" disabled>
-                                                                </div>
-                                                        </div>
-                                                </div>
-                                        </div>
+                                <div class="card-body d-flex justify-content-center align-items-center">
+                                        <table class="table">
+                                                <thead class="table-info text-capitalize">
+                                                        <tr>
+                                                                <th class="col">return date</th>
+                                                                <th class="col">drop time</th>
+                                                                <th class="col">act. drop time</th>
+                                                                <th class="col">end date</th>
+                                                                <th class="col">end time</th>
+                                                                <th class="col">actual end time</th>
+                                                                <th class="col">total hrs</th>
+                                                                <th class="col">driving time</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody class="table-group-divider">
+                                                        <tr>
+                                                                <td scope="row"><?= date("m-d-Y", strtotime("2025-06-15")); ?></td>
+                                                                <td><?= date("h:i A", strtotime('21:00')); ?></td>
+                                                                <td><?= date("h:i A", strtotime('21:15')); ?></td>
+                                                                <td><?= date("m-d-Y", strtotime("2025-06-15")); ?></td>
+                                                                <td><?= date("h:i A", strtotime('22:30')); ?></td>
+                                                                <td><?= date("h:i A", strtotime('22:40')); ?></td>
+                                                                <td>11:00</td>
+                                                                <td>08.00</td>
+                                                        </tr>
+                                                </tbody>
+                                       </table>
                                 </div>
                         </section>
 
@@ -203,43 +127,35 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h4 class="text-center text-capitalize text-light">customer details</h4>
                                 </div>
-                                <div class="card-body d-flex flex-row flex-wrap justify-content-center">
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">origin:</span>
-                                                <input type="text" class="form-control" aria-label="Origin" disabled>
-                                        </div>
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">destination:</span>
-                                                <input type="text" class="form-control" aria-label="Destination" disabled>
-                                        </div>                                
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">group name:</span>
-                                                <input type="text" class="form-control" aria-label="Group leader" disabled>
-                                        </div>
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">group leader(gL):</span>
-                                                <input type="text" class="form-control" aria-label="Group leader name" disabled>
-                                        </div>
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">gL mobile number:</span>
-                                                <input type="text" class="form-control" aria-label="Group leader mobile" disabled>
-                                        </div>
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">customer name:</span>
-                                                <input type="text" class="form-control" aria-label="Customer name" disabled>
-                                        </div>
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">customer phone:</span>
-                                                <input type="text" class="form-control" aria-label="Customer phone" disabled>
-                                        </div>
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">contact name:</span>
-                                                <input type="text" class="form-control" aria-label="Contact name" disabled>
-                                        </div>
-                                        <div class="input-group my-2">
-                                                <span class="input-group-text text-capitalize">contact mobile:</span>
-                                                <input type="text" class="form-control" aria-label="Contact mobile" disabled>
-                                        </div>
+                                <div class="card-body d-flex flex-row justify-content-center align-items-center">
+                                        <table class="table">
+                                                <thead class="table-info text-capitalize">
+                                                        <tr>
+                                                                <th scope="col">origin</th>
+                                                                <th scope="col">destination</th>
+                                                                <th scope="col">group name</th>
+                                                                <th scope="col">group leader(gL)</th>
+                                                                <th scope="col">gL mobile number</th>
+                                                                <th scope="col">customer name</th>
+                                                                <th scope="col">customer phone</th>
+                                                                <th scope="col">contact name</th>
+                                                                <th scope="col">contact mobile</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody class="table-group-divider">
+                                                        <tr>
+                                                                <td scope="row"></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                        </tr>
+                                                </tbody>
+                                        </table>
                                 </div>
                         </section>
 
@@ -248,7 +164,7 @@
                                         <h4 class="text-center text-capitalize text-light">driver trip notes</h4>
                                 </div>
                                 <div class="card-body">
-                                        <div class="d-block w-100 mb-2 p-1">
+                                        <div class="d-block mb-2 p-1">
                                                 <label for="drvrNotes" class="h6 label-form text-capitalize">notes:</label>
                                                 <textarea class="form-control bg-btd-textarea-clr text-dark" style="height: 200px;" id="drvrNotes" name="drvrNotes"></textarea>
                                         </div>
