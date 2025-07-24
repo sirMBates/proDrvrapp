@@ -6,20 +6,21 @@
         $alert = new \core\Flash;
         include "includes/flashmessage.php";
 ?>
-        <main class="container-fluid d-flex flex-row flex-wrap justify-content-evenly mb-1 p-1 overflow-x-auto">
+        <main class="w-100 d-flex flex-row justify-content-center mb-1 p-1">
                 <div class="card mb-auto" style="width: 90rem;">
                         <div class="card-header bg-besttrailsclr text-btd-white-off">
                                 <p class='h3 text-center text-capitalize'>driver information</p>
                         </div>
-                        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                        <div class="card-body container table-responsive-md">
                                 <table id="dashboard-info" class="table">
-                                        <thead class="table-info">
+                                        <thead class="table-info text-capitalize">
                                                 <tr>
-                                                        <th scope="col">Driver Name</th>
-                                                        <th scope="col">Driver ID#</th>
-                                                        <th scope="col">Garage<br>Report Time</th>
-                                                        <th scope="col">Spot Time<br>(PU Location)</th>
-                                                        <th scope="col">Status</th>
+                                                        <th scope="col">driver name</th>
+                                                        <th scope="col">driver id</th>
+                                                        <th scope="col">garage report date</th>
+                                                        <th scope="col">garage report time</th>
+                                                        <th scope="col">loc. spot time</th>
+                                                        <th scope="col">status</th>
                                                 </tr>
                                         </thead>
                                         <tbody class="table-group-divider">
@@ -36,6 +37,7 @@
                                                 } else {
                                                         echo $_SESSION['driver_id'];
                                                 } ?></td>
+                                                <td>06-15-2025</td>
                                                 <td>06:00</td>
                                                 <td>08:00</td>
                                                 <td><?php if (!isset($_GET['status']) && !isset($_SESSION['status'])) {
@@ -62,9 +64,9 @@
                                 </table>
                                 <div id="check-in-btns" class="btn-group btn-group-sm" role="group" aria-label="Large button group">
                                         <button type="button" class="btn btn-outline-primary">Enroute to Garage/Yard</button>
-                                        <button type="button" class="btn btn-outline-primary">Check-In at Garage/Yard</button>
-                                        <button type="button" class="btn btn-outline-primary">Enroute to pickup location</button>
-                                        <button type="button" class="btn btn-outline-primary">Arrived at pickup location</button>
+                                        <button type="button" class="btn btn-outline-primary">Check-In Garage/Yard</button>
+                                        <button type="button" class="btn btn-outline-primary">Enroute to Loc</button>
+                                        <button type="button" class="btn btn-outline-primary">Arrived at Loc</button>
                                 </div>
                         </div>
                 </div>

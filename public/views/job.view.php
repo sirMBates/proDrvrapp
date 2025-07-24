@@ -5,16 +5,16 @@
         $alert = new \core\Flash;
         include "includes/flashmessage.php";
 ?>       
-        <main class="container-fluid my-3">
+        <main class="w-100 d-flex flex-column justify-content-center p-1">
                 <form class="" action="" method="">
-                        <section id="top-header" class="card">
+                        <section id="top-header" class="card mb-auto">
                                 <div class="card-header bg-besttrailsclr">
                                         <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
                                 </div>
                                 <div class="input-group">
                                         <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                 </div>
-                                <div class="card-body d-flex justify-content-between align-items-center">                        
+                                <div class="card-body container table-responsive-md">                        
                                         <table id="sub_head_1" class="table">
                                                 <thead class="table-info text-capitalize">
                                                         <tr>
@@ -42,7 +42,7 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h4 class="text-center text-capitalize text-light">dispatch start</h4>
                                 </div>
-                                <div class="card-body d-flex justify-content-center align-items-center">
+                                <div class="card-body container table-responsive-md">
                                         <table class="table">
                                                 <thead class="table-info text-capitalize">
                                                         <tr>
@@ -70,7 +70,7 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h4 class="text-center text-capitalize text-light">dispatch end</h4>
                                 </div>
-                                <div class="card-body d-flex justify-content-center align-items-center">
+                                <div class="card-body container table-responsive-md">
                                         <table class="table">
                                                 <thead class="table-info text-capitalize">
                                                         <tr>
@@ -104,7 +104,7 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h4 class="text-center text-capitalize text-light">location details</h4>
                                 </div>
-                                <div class="card-body d-sm-inline-flex">
+                                <div class="card-body conatiner">
                                         <div class="d-block w-100 mb-2 p-1">
                                                 <label for="pickup_details" class="h6 form-label text-capitalize"><u>pickup details:</u></label>
                                                 <div class="col">
@@ -127,7 +127,7 @@
                                 <div class="card-header bg-besttrailsclr">
                                         <h4 class="text-center text-capitalize text-light">customer details</h4>
                                 </div>
-                                <div class="card-body d-flex flex-row justify-content-center align-items-center">
+                                <div class="card-body container table-responsive-md">
                                         <table class="table">
                                                 <thead class="table-info text-capitalize">
                                                         <tr>
