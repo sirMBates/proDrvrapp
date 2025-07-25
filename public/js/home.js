@@ -36,7 +36,7 @@ function handleCelebration () {
 handleCelebration();
 
 window.addEventListener('resize', () => {
-        let btnGrp = document.querySelector('#check-in-btns');
+        let btnGrp = document.querySelector('#status-btns');
         const screenSize = window.innerWidth;
         if (screenSize >= 900) {
                 $(btnGrp).removeClass('btn-group-sm');
@@ -50,7 +50,7 @@ window.addEventListener('resize', () => {
 }, false);
 
 window.addEventListener('load', () => {
-        let btnGrp = document.querySelector('#check-in-btns');
+        let btnGrp = document.querySelector('#status-btns');
         const screenSize = window.innerWidth;
         if (screenSize >= 900) {
                 $(btnGrp).removeClass('btn-group-sm');
@@ -63,4 +63,18 @@ window.addEventListener('load', () => {
         }
 }, false);
         
+const statusBtnsCon = document.querySelector('#status-btns');
+const statusBtns = statusBtnsCon.querySelectorAll('button');
+localStorage.setItem('status', 'official');
+/*const enrouteGarageBtn = statusBtns[0];
+const checkInGarageBtn = statusBtns[1];
+const enrouteLocBtn = statusBtns[2];
+const atLocationBtn = statusBtns[3];*/
+
+statusBtns.addEventListener('click', function(e) {
+        if (e.target === statusBtns[0]) {
+                localStorage.setItem('status', 'Enroute to the yard.');
+        }
+})
+
 
