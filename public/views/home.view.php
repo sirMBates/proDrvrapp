@@ -40,17 +40,7 @@
                                                 <td>06-15-2025</td>
                                                 <td>06:00</td>
                                                 <td>08:00</td>
-                                                <td><?php if (!isset($_GET['status']) && !isset($_SESSION['status'])) {
-                                                        echo "N/A";
-                                                } elseif (isset($_GET['status'])) {
-                                                        $_SESSION['status'] = $_GET['status'];
-                                                }
-                                                
-                                                if (isset($_SESSION['status'])) {
-                                                        $currentStatus = ucwords($_SESSION['status']);
-                                                        echo $currentStatus;
-                                                }
-                                                ?></td>  
+                                                <td></td>  
                                         </tr>
                                 </tbody>
                                 <form>
@@ -62,7 +52,7 @@
                                         </div>
                                 </form>
                         </table>
-                        <div id="status-btns" class="d-block w-100 mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
+                        <div id="update-status-con" class="d-block w-100 mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
                                 <button type="button" class="btn btn-outline-primary">Enroute to Garage/Yard</button>
                                 <button type="button" class="btn btn-outline-primary">Check-In Garage/Yard</button>
                                 <button type="button" class="btn btn-outline-primary">Enroute to Loc</button>

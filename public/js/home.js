@@ -63,18 +63,40 @@ window.addEventListener('load', () => {
         }
 }, false);
         
-const statusBtnsCon = document.querySelector('#status-btns');
-const statusBtns = statusBtnsCon.querySelectorAll('button');
+const updateStatusBtns = document.querySelector('#update-status-con');
 localStorage.setItem('status', 'official');
-/*const enrouteGarageBtn = statusBtns[0];
-const checkInGarageBtn = statusBtns[1];
-const enrouteLocBtn = statusBtns[2];
-const atLocationBtn = statusBtns[3];*/
-
-statusBtns.addEventListener('click', function(e) {
-        if (e.target === statusBtns[0]) {
-                localStorage.setItem('status', 'Enroute to the yard.');
+updateStatusBtns.addEventListener('click', (e) => {
+        if (e.target === statBtns.childNodes[1]) {
+                localStorage.setItem('status', 'Enroute to garage.');
+                console.log('this is btn 1.');
         }
-})
 
+        if (e.target === statBtns.childNodes[3]) {
+                localStorage.setItem('status', 'Arrived at garage.');
+                console.log('this is btn 2.');
+        }
+
+        if (e.target === statBtns.childNodes[5]) {
+                localStorage.setItem('status', 'Enroute to customer location.');
+                console.log('this is btn 3.');
+        }
+
+        if (e.target === statBtns.childNodes[7]) {
+                localStorage.setItem('status', 'Arrived at location.');
+                console.log('this is btn 4.');
+        }
+}, false);
+
+const qString = window.location.search;
+const urlParams = new URLSearchParams(qString);
+const paramValue = urlParams.get('status');
+const changeStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11].childNodes;
+
+if (paramValue === 'official') {
+        window.location.href = 'home';
+}
+
+window.addEventListener('load', () => {
+        changeStatusValue.innerHTML = localStorage.getItem('status');
+}) 
 
