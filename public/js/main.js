@@ -6,7 +6,11 @@ const driverMenu = document.querySelector(".offcanvas-body");
 let viewPayCard = driverMenu.childNodes[5];
 let themeBtn = document.querySelector("#themeBtn");
 let themeBtnText = themeBtn.nextElementSibling;
+const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
+const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
+//console.log(changeStatusCon);
 let isDarkMode;
+
 // Set the theme.
 const themeSet = {
         // Set dark theme.
@@ -61,7 +65,7 @@ const themeSet = {
 };
 
 // Button switcher for themes.
-function themeSwitcher (e) {
+function themeSwitcher(e) {
         e.preventDefault();
         if (!isDarkMode) {
                 themeSet.darkTheme();
@@ -196,6 +200,59 @@ $(profileInput).on('change', (e) => {
                 } else {
                         alert("Please select a valid image file.");
                 }*/
+        }
+});
+
+export const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
+window.addEventListener('load', () => {
+        if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
+                sessionStorage.setItem('status', 'Official');
+                let startUpStatus = sessionStorage.getItem('status');
+                bannerMsg.textContent = startUpStatus;                
+        } else if (localStorage.getItem('status') !== null) {
+                sessionStorage.clear;
+                let drvrStatus = localStorage.getItem('status');
+                bannerMsg.textContent = drvrStatus;
+        } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
+                let drvrStatus = sessionStorage.getItem('status');
+                bannerMsg.textContent = drvrStatus;
+        }
+}, false);
+
+$(logoutLink).on('click', () => {
+        if (localStorage.getItem('status') !== null) {
+                localStorage.removeItem('status');
+        }
+});
+
+if (window.location.pathname !== '/home') {
+        $(changeStatusCon).removeClass('d-none');
+}
+
+const changeStatusBtns = changeStatusCon.childNodes[3];
+$(changeStatusBtns).on('click', (e) => {
+        if (e.target === changeStatusBtns.childNodes[1].firstChild) {
+                localStorage.setItem('status', 'Enroute to garage');
+                let changeStatus = localStorage.getItem('status');
+                bannerMsg.textContent = changeStatus;
+        }
+
+        if (e.target === changeStatusBtns.childNodes[3].firstChild) {
+                localStorage.setItem('status', 'Arrived at garage');
+                let changeStatus = localStorage.getItem('status');
+                bannerMsg.textContent = changeStatus;
+        }
+
+        if (e.target === changeStatusBtns.childNodes[5].firstChild) {
+                localStorage.setItem('status', 'Enroute to pickup location');
+                let changeStatus = localStorage.getItem('status');
+                bannerMsg.textContent = changeStatus;
+        }
+
+        if (e.target === changeStatusBtns.childNodes[7].firstChild) {
+                localStorage.setItem('status', 'Arrived at location');
+                let changeStatus = localStorage.getItem('status');
+                bannerMsg.textContent = changeStatus;
         }
 });
         
