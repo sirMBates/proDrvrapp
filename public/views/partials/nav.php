@@ -41,6 +41,15 @@
                 <div class="dropdown mt-3">
                         <a href="#" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Help</a>
                 </div>
+                <div class="dropdown mt-3 d-none">                        
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="px-2 fa-solid fa-square-poll-horizontal"></i>Switch Status</button>
+                        <ul class="dropdown-menu">
+                                <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Yard</a></li>
+                                <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-map-pin"></i>At Yard</a></li>
+                                <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Loc</a></li>
+                                <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-location-dot"></i>At Location</a></li>
+                        </ul>
+                </div>
                 <div class="dropdown mt-3">
                         <a href="/logout" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-right-from-bracket"></span>Sign Out</a>
                 </div>

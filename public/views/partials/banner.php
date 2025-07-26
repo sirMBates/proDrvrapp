@@ -18,6 +18,6 @@
                                 <div class="container-xs mx-1 text-light"></div>
                         </div>
                 </div>
-                <p class="text-btd-white-floral fs-3">Hello, <?= !isset($_SESSION['first_name']) ? 'Driver': $_SESSION['first_name'];?></p>
+                <p class="text-btd-white-floral fs-3"></p>
         </div>
 </header>

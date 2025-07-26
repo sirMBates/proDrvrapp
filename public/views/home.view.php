@@ -11,7 +11,7 @@
                 <div class="card-header bg-besttrailsclr text-btd-white-off">
                         <p class='h3 text-center text-capitalize'>driver information</p>
                 </div>
-                <div class="card-body table-responsive-md">
+                <div class="card-body overflow-auto">
                         <table id="dashboard-info" class="table">
                                 <thead class="table-info text-capitalize">
                                         <tr>
@@ -52,11 +52,13 @@
                                         </div>
                                 </form>
                         </table>
-                        <div id="update-status-con" class="d-block w-100 mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
-                                <button type="button" class="btn btn-outline-primary">Enroute to Garage/Yard</button>
-                                <button type="button" class="btn btn-outline-primary">Check-In Garage/Yard</button>
-                                <button type="button" class="btn btn-outline-primary">Enroute to Loc</button>
-                                <button type="button" class="btn btn-outline-primary">Arrived at Loc</button>
+                        <div class="container d-flex justify-content-lg-center">
+                                <div id="update-status-con" class="mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
+                                        <button type="button" class="btn btn-outline-primary">Enroute to Garage/Yard</button>
+                                        <button type="button" class="btn btn-outline-primary">Check-In Garage/Yard</button>
+                                        <button type="button" class="btn btn-outline-primary">Enroute to Loc</button>
+                                        <button type="button" class="btn btn-outline-primary">Arrived at Loc</button>
+                                </div>
                         </div>
                 </div>
         </div>
