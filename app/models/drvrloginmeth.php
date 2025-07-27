@@ -12,7 +12,7 @@ class Login extends ConnectDatabase {
         $stmt->bindParam(2, $password);
         $stmt->execute();        
 
-        if (!$stmt || $stmt->rowCount === 0) {
+        if (!$stmt || $stmt->rowCount() === 0) {
             $alert::setMsg('error', 'User not found. Please check your username or email.');
             header("Location: /signin?error=not+found"); // noRegisteredUseraccount
             exit();

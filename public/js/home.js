@@ -1,11 +1,22 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { bannerMsg } from "./main.js";
-let celebrationOccured = true;
+let celebrationOccured = false;
+if (localStorage.getItem('birthdate') === null) {
+        let drvrBirthday = document.querySelector('#drvrbday');
+        localStorage.setItem('birthdate', $(drvrBirthday).val());
+};
+
 function timeCelebrationHandler() {
         let dateNow = new Date();
-        let timeNow = dateNow.toLocaleDateString();
-        const drvrbirthday = document.querySelector('#drvrbday');
-        if (typeof(drvrbirthday.value) === "string" && drvrbirthday.value === timeNow) {
+        //const drvrBirthday = document.querySelector('#drvrbday');
+        let drvrSavedBDay = localStorage.getItem('birthdate');
+        const birthdate = new Date(drvrSavedBDay);       
+        let bDayMonth = birthdate.getMonth();
+        let bDayDate = birthdate.getDate();
+        let todayMon = dateNow.getMonth();
+        let todayDate = dateNow.getDate();
+        //console.log(bDayDate);
+        if (bDayMonth === todayMon && bDayDate === todayDate) {
                 let bdaySong = document.createElement("audio");
                 let mainContent = document.querySelector('main');
                 mainContent.insertAdjacentElement('afterbegin', bdaySong);
@@ -19,8 +30,9 @@ function timeCelebrationHandler() {
         }
         return setTimeout(() => {
                 if (celebrationOccured) {
-                        drvrbirthday.value = "";
-                        celebrationOccured = false;
+                        drvrBirthday.value = "";
+                        localStorage.removeItem('birthdate');
+                        celebrationOccured = true;
                 }
         }, 34500)
 };
@@ -29,11 +41,15 @@ function timeCelebrationHandler() {
 function handleCelebration () {
         let time = new Date();
         let timeHour = time.getHours();
-        if (timeHour >= 6 || timeHour <= 23) {
+        if (timeHour >= 4 || timeHour <= 23) {
                 window.addEventListener('load', timeCelebrationHandler, false);
         }
 };
 handleCelebration();
+
+if (celebrationOccured === true) {
+        localStorage.removeItem('birthdate');
+};
 
 window.addEventListener('resize', () => {
         let btnGrp = document.querySelector('#update-status-con');

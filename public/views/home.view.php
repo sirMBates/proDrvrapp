@@ -37,9 +37,9 @@
                                                 } else {
                                                         echo $_SESSION['driver_id'];
                                                 } ?></td>
-                                                <td>06-15-2025</td>
-                                                <td>06:00</td>
-                                                <td>08:00</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
                                                 <td></td>  
                                         </tr>
                                 </tbody>
@@ -48,7 +48,10 @@
                                                 <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                         </div>
                                         <div class="input-group">
-                                                <input id="drvrbday" type="hidden" class="form-control" disabled>
+                                                <input id="drvrbday" type="hidden" class="form-control" value="<?php if (isset($_SESSION['birth_date'])) {
+                                                        $formatDate = date('m-d-Y', strtotime($_SESSION['birth_date']));
+                                                        echo $formatDate;
+                                                }; ?>" disabled>
                                         </div>
                                 </form>
                         </table>
