@@ -10,7 +10,7 @@ const timeMins = timeCon.childNodes[5];
 //const timeSecs = timeCon.childNodes[7];
 const meridiem = timeCon.childNodes[9]; 
 //console.log(timeSecs);
-const headerClock = setInterval(() => {
+const bannerClock = setInterval(() => {
         let dateTime = new Date(); 
         let dt = dateTime;
         let dthrs = dt.getHours();
@@ -117,4 +117,4 @@ const headerClock = setInterval(() => {
 
 }, 1000);
 
-$(window).on('load', headerClock, false);
+$(window).on('load', bannerClock, false);
