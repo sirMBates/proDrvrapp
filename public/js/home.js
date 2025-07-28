@@ -2,6 +2,8 @@ import { bdayCelebrationHandler } from "./celebration.js";
 import { bannerMsg } from "./main.js";
 
 const drvrBirthDate = document.querySelector('#drvrbday');
+const mainContent = document.querySelector('main');
+
 window.addEventListener('load', () => {
         let dvrBirthday = $(drvrBirthDate).val();
         if ($.trim(dvrBirthday) !== '') {
@@ -75,7 +77,9 @@ function removeDrvrGov() {
         }
 
 };
-window.addEventListener('load', removeDrvrGov(), false); 
+window.addEventListener('load', removeDrvrGov, false);
+
+
 
 window.addEventListener('resize', () => {
         let btnGrp = document.querySelector('#update-status-con');
