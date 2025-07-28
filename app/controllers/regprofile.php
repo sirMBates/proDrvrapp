@@ -7,11 +7,11 @@ if (session_status() !== 2) {
 }
 if (isset($_POST['reginfo'])) {
     // Getting the info from the form using POST method from the name attribute.
-    $firstname = $_POST['forename'];
-    $lastname = $_POST['surname'];
-    $mobileNum = $_POST['mobilenum'];
-    $birthdate = $_POST['dateofbirth'];
-    $formToken = $_POST['drvrtoken'];
+    $firstname = htmlspecialchars($_POST['forename']);
+    $lastname = htmlspecialchars($_POST['surname']);
+    $mobileNum = htmlspecialchars($_POST['mobilenum']);
+    $birthdate = htmlspecialchars($_POST['dateofbirth']);
+    $formToken = htmlspecialchars($_POST['drvrtoken']);
     // Instantiate the add user controller class. ↓
     include_once base_path("app/models/database.php");
     include_once base_path("app/models/regprofilemeth.php");
@@ -20,7 +20,7 @@ if (isset($_POST['reginfo'])) {
     $enterData->processProfile();
     // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
     $alert::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');
-    header("Location: /signin?success=profile+updated");
+    header("Location: /signin?success=profile+updated", true, 303);
     exit();
 };
 ?>

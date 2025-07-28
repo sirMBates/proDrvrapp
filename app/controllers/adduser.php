@@ -11,6 +11,7 @@ if (isset($_POST['createAccount'])) {
     $username = htmlspecialchars($_POST['username']);
     $email = htmlspecialchars($_POST['email']);
     $password = htmlspecialchars($_POST['password']);
+    $formToken = htmlspecialchars($_POST['drvrtoken']);
     // Instantiate the add user controller class. ↓
     include_once base_path("app/models/database.php");
     include_once base_path("app/models/addusermeth.php");
@@ -22,7 +23,7 @@ if (isset($_POST['createAccount'])) {
     //dd($_SESSION['username']);
     // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page with success alert.
     $alert::setMsg('success', 'Account created successfully! Please complete your profile.');
-    header("Location: /register?success=acct+created");
+    header("Location: /register?success=acct+created", true, 303);
     exit();
 }
 ?>
