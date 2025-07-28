@@ -223,6 +223,10 @@ $(logoutLink).on('click', () => {
         if (localStorage.getItem('status') !== null) {
                 localStorage.removeItem('status');
         }
+
+        if (sessionStorage.getItem('status') !== null) {
+                sessionStorage.removeItem('status');
+        }
 });
 
 if (window.location.pathname !== '/home') {

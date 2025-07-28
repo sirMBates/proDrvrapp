@@ -46,7 +46,11 @@ class Login extends ConnectDatabase {
             $_SESSION['username'] = $driver[0]['username'];
             $_SESSION['first_name'] = $driver[0]['firstName'];
             $_SESSION['last_name'] = $driver[0]['lastName'];
-            $_SESSION['birth_date'] = $driver[0]['birthdate'];
+            $currentDate = date('md');
+            $drvrDate = date('md', strtotime($driver[0]['birthdate']));
+            if ($currentDate === $drvrDate) {
+                $_SESSION['birth_date'] = $driver[0]['birthdate'];
+            }
             $_SESSION['mobile_number'] = $driver[0]['mobileNumber'];
 
             $stmt = null;

@@ -1,55 +1,81 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { bannerMsg } from "./main.js";
-let celebrationOccured = false;
-if (localStorage.getItem('birthdate') === null) {
-        let drvrBirthday = document.querySelector('#drvrbday');
-        localStorage.setItem('birthdate', $(drvrBirthday).val());
-};
+
+const drvrBirthDate = document.querySelector('#drvrbday');
+window.addEventListener('load', () => {
+        let dvrBirthday = $(drvrBirthDate).val();
+        if ($.trim(dvrBirthday) !== '') {
+                localStorage.setItem('birthdate', $(drvrBirthDate).val());
+        };
+        const drvrTable = document.querySelector('table');
+        let idCell = drvrTable.childNodes[3].childNodes[1].childNodes[1];
+        let separateNames = idCell.textContent.split(" ");
+        let firstName = separateNames[0];
+        localStorage.setItem('driverName', firstName);
+});
 
 function timeCelebrationHandler() {
-        let dateNow = new Date();
-        //const drvrBirthday = document.querySelector('#drvrbday');
-        let drvrSavedBDay = localStorage.getItem('birthdate');
-        const birthdate = new Date(drvrSavedBDay);       
-        let bDayMonth = birthdate.getMonth();
-        let bDayDate = birthdate.getDate();
-        let todayMon = dateNow.getMonth();
-        let todayDate = dateNow.getDate();
-        //console.log(bDayDate);
-        if (bDayMonth === todayMon && bDayDate === todayDate) {
-                let bdaySong = document.createElement("audio");
-                let mainContent = document.querySelector('main');
-                mainContent.insertAdjacentElement('afterbegin', bdaySong);
-                $(bdaySong).attr('src', '../audio/happy-birthday-clip.mp3');
-                bdaySong.play();
-                const celebration = new JSConfetti();
-                bdayCelebrationHandler(celebration);
-                bdaySong.addEventListener('ended', () => {
-                        bdaySong.remove();
-                })
-        }
-        return setTimeout(() => {
-                if (celebrationOccured) {
-                        drvrBirthday.value = "";
-                        localStorage.removeItem('birthdate');
-                        celebrationOccured = true;
+        let currentTime = new Date();
+        if (!sessionStorage.getItem('celebrationOccured') && !localStorage.getItem('themePlayedAlready')) {
+                let dateNow = new Date();
+                let drvrSavedBDay = localStorage.getItem('birthdate');
+                const birthdate = new Date(drvrSavedBDay);       
+                let bDayMonth = birthdate.getMonth();
+                let bDayDate = birthdate.getDate();
+                let todayMon = dateNow.getMonth();
+                let todayDate = dateNow.getDate();
+                //console.log(bDayDate);
+                if (bDayMonth === todayMon && bDayDate === todayDate) {
+                        let bdaySong = document.createElement("audio");
+                        let mainContent = document.querySelector('main');
+                        mainContent.insertAdjacentElement('afterbegin', bdaySong);
+                        $(bdaySong).attr('src', '../audio/happy-birthday-clip.mp3');
+                        bdaySong.play();
+                        const celebration = new JSConfetti();
+                        bdayCelebrationHandler(celebration);
+                        bdaySong.addEventListener('ended', () => {
+                                bdaySong.remove();
+                        })
                 }
-        }, 34500)
+        }
+        sessionStorage.setItem('celebrationOccured', 'true');
+        localStorage.setItem('themePlayedAlready', 'true');
+        const dateOptions = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+        };
+        localStorage.setItem('dateOfThemePlayed', currentTime.toLocaleString('en-us', dateOptions));
 };
-
 
 function handleCelebration () {
         let time = new Date();
         let timeHour = time.getHours();
-        if (timeHour >= 4 || timeHour <= 23) {
+        if (timeHour >= 6 && timeHour <= 23) {
                 window.addEventListener('load', timeCelebrationHandler, false);
         }
 };
 handleCelebration();
 
-if (celebrationOccured === true) {
-        localStorage.removeItem('birthdate');
+function removeDrvrGov() {
+        const dateOptions = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+        };
+        let currentDate = new Date().toLocaleString('en-us', dateOptions);
+        let birthdayStamp;
+        let checkStamp;
+        if (localStorage.getItem('dateOfThemePlayed') !== null) {
+                birthdayStamp = localStorage.getItem('dateOfThemePlayed');
+                checkStamp = birthdayStamp.toLocaleString('en-us', dateOptions);
+        }
+        if (currentDate !== checkStamp) {
+                localStorage.removeItem('driverName');
+        }
+
 };
+window.addEventListener('load', removeDrvrGov(), false); 
 
 window.addEventListener('resize', () => {
         let btnGrp = document.querySelector('#update-status-con');
@@ -87,7 +113,7 @@ window.addEventListener('load', () => {
                 let startUpStatus = sessionStorage.getItem('status');
                 changeStatusValue.textContent = startUpStatus;                
         } else if (localStorage.getItem('status') !== null) {
-                sessionStorage.clear;
+                sessionStorage.removeItem('status');
                 let drvrStatus = localStorage.getItem('status');
                 changeStatusValue.textContent = drvrStatus;
         } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
