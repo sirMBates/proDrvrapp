@@ -2,7 +2,7 @@
         require "partials/head.php";
         require "partials/nav.php";
         require "partials/banner.php";
-        //include "includes/cus-modal.php";
+        include "includes/cus-modal.php";
         $alert = new \core\Flash;
         include "includes/flashmessage.php";
 ?>
