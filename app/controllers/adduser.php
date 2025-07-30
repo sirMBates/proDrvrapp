@@ -19,7 +19,7 @@ if (isset($_POST['createAccount'])) {
     $signup = new AddDrvrContr($username, $email, $password);
     // Running error handlers and user signup.
     $signup->addDriver();
-    $_SESSION['username'] = $username;
+    $_SESSION['user_name'] = $username;
     //dd($_SESSION['username']);
     // If the user is successfully added to the database (username, email and password has been entered), redirect to the register page with success alert.
     $alert::setMsg('success', 'Account created successfully! Please complete your profile.');
