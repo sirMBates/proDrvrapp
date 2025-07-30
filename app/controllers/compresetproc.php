@@ -19,7 +19,7 @@ if (isset($_POST['reset-pswd'])) {
     $createNewPwd = new CompleteResetContr($token, $password);
     $createNewPwd->changeDrvrPassword();
     $createNewPwd->hasTokenCleared();
-    $alert::setMsg('success', 'You\'ve completed the reset. Please log in to your account.');
+    $alert::setMsg('success', 'Please log in to your account.');
     header("Location: /signin?success=reset+complete");
     exit();
 }
