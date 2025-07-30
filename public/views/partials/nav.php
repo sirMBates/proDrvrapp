@@ -48,6 +48,7 @@
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-map-pin"></i>At Yard</a></li>
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Loc</a></li>
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-location-dot"></i>At Location</a></li>
+                                <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-briefcase"></i>On Assignment</a></li>
                         </ul>
                 </div>
                 <div class="dropdown mt-3">
@@ -70,7 +71,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                 <li class="nav-item">
-                                        <a class="nav-link" href="/home"><span class="px-2 fa-solid fa-house"></span>Home</a>
+                                        <a class="nav-link" href="/"><span class="px-2 fa-solid fa-house"></span>Home</a>
                                 </li>
                                 <li class="nav-item">
                                         <a class="nav-link" href="/orders"><span class="px-2 fa-solid fa-file"></span>Job Order</a>

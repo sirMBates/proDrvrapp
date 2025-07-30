@@ -8,6 +8,7 @@ let themeBtn = document.querySelector("#themeBtn");
 let themeBtnText = themeBtn.nextElementSibling;
 const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
+//const mainPageEl = document.querySelector('html');
 //console.log(changeStatusCon);
 let isDarkMode;
 
@@ -96,12 +97,16 @@ function updateHr() {
 };
 
 function enableDarkMode () {
-        if (updateHr() >= 20 || updateHr <= 6) {
-                themeSet.darkTheme();
-                localStorage.isDarkMode = true;
+        if (localStorage.getItem('isDarkMode') !== true) {
+                if (updateHr() >= 20 || updateHr <= 6) {
+                        themeSet.darkTheme();
+                        localStorage.isDarkMode = true;
+                }
+                return themeSet.setThemeLocally();
         }
-        return themeSet.setThemeLocally();
 };
+
+window.addEventListener('load', enableDarkMode, false);
 
 // Highlight the active link of the current page.
 function activeLink () {
@@ -229,7 +234,7 @@ $(logoutLink).on('click', () => {
         }
 });
 
-if (window.location.pathname !== '/home') {
+if (window.location.pathname !== '/') {
         $(changeStatusCon).removeClass('d-none');
 }
 
@@ -248,13 +253,19 @@ $(changeStatusBtns).on('click', (e) => {
         }
 
         if (e.target === changeStatusBtns.childNodes[5].firstChild) {
-                localStorage.setItem('status', 'Enroute to pickup location');
+                localStorage.setItem('status', 'Enroute to location');
                 let changeStatus = localStorage.getItem('status');
                 bannerMsg.textContent = changeStatus;
         }
 
         if (e.target === changeStatusBtns.childNodes[7].firstChild) {
                 localStorage.setItem('status', 'Arrived at location');
+                let changeStatus = localStorage.getItem('status');
+                bannerMsg.textContent = changeStatus;
+        }
+
+        if (e.target === changeStatusBtns.childNodes[9].firstChild) {
+                localStorage.setItem('status', 'On assignment');
                 let changeStatus = localStorage.getItem('status');
                 bannerMsg.textContent = changeStatus;
         }

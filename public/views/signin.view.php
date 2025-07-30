@@ -28,7 +28,7 @@ if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
                                         <button type="submit" id="signin" name="loginAcct" class="btn btn-lg btn-primary text-center text-capitalize" disabled>sign in</button>
                                 </div>
 
-                                <p class="text-center"><a href="/" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover" id="linkCreateAcct">Don't have an account? Create account</a></p>
+                                <p class="text-center"><a href="/signup" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover" id="linkCreateAcct">Don't have an account? Create account</a></p>
 
                                 <p class="text-center"><a href="/forget" class="link-btd-white-floral link-opacity-50-hover link-offset-2 link-underline-opacity-50-hover" id="linkResetPass">Forgot password?</a></p>
                         </div>

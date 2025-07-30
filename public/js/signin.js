@@ -54,7 +54,7 @@ $(function() {
 
 const qString = window.location.search;
 const urlParams = new URLSearchParams(qString);
-const paramValue = urlParams.get('info');
+const paramValue = urlParams.get('success');
 if (paramValue === 'logged out') {
     setInterval(() => {
         window.location.href = '/signin';

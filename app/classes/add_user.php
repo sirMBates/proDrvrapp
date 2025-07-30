@@ -18,31 +18,31 @@ class AddDrvrContr extends AddedDrvr {
 
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
-            header("Location: /?warning=empty"); //emptyinput
+            header("Location: /signup?warning=empty"); //emptyinput
             exit();
         }
 
         if ($this->invalidUserName() === false) {
             $alert::setMsg('warning', 'Please re-enter your username.');
-            header("Location: /?warning=invalid"); //namenotvalid
+            header("Location: /signup?warning=invalid"); //namenotvalid
             exit();
         }
 
         if ($this->invalidEmail() === false) {
             $alert::setMsg('warning', 'Please re-enter your email.');
-            header("Location: /?warning=invalid"); //emailnotvalid
+            header("Location: /signup?warning=invalid"); //emailnotvalid
             exit();
         }
 
         if ($this->invalidPsword() === false) {
             $alert::setMsg('warning', 'Please re-enter your password.');
-            header("Location: /?warning=invalid"); //passwordnotvalid
+            header("Location: /signup?warning=invalid"); //passwordnotvalid
             exit();
         }
 
         if ($this->nameOrEmailExist() === false) {
             $alert::setMsg('warning', 'Please choose a different username or email.');
-            header("Location: /?warning=exist+already"); //nameexistalready
+            header("Location: /signup?warning=exist+already"); //nameexistalready
             exit();
         }
 

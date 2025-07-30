@@ -2,7 +2,7 @@
 $url = parse_url($_SERVER['REQUEST_URI'])['path'];
 function getClockandMainOrNav($value) {
     switch($value) {
-        case '/': 
+        case '/signup': 
             return;
             break;
 
@@ -35,7 +35,7 @@ function getClockandMainOrNav($value) {
 
 function pageScripts($value) {
         switch($value) {
-            case "/":
+            case "/signup":
                 echo "<script type='module' src='js/signup.js'></script>\n";
                 break;
 
@@ -56,7 +56,7 @@ function pageScripts($value) {
                 echo "<script type='module' src='js/reset.js'></script>\n";
                 break;
 
-            case "/home":
+            case "/":
                 echo "<script src='https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js'></script>\n\n";
                 echo "<script type='module' src='js/home.js'></script>\n";
                 break;
