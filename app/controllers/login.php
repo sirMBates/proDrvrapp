@@ -1,5 +1,5 @@
 <?php
-$alert = new \core\Flash();
+$alert = new core\Flash();
 
 if (session_status() !== 2) {
     session_start();
