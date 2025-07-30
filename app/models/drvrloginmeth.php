@@ -43,7 +43,7 @@ class Login extends ConnectDatabase {
             $driver = $stmt->fetchAll();
             //session_start();
             $_SESSION['driver_id'] = $driver[0]['driverid'];
-            $_SESSION['username'] = $driver[0]['username'];
+            $_SESSION['user_name'] = $driver[0]['username'];
             $_SESSION['first_name'] = $driver[0]['firstName'];
             $_SESSION['last_name'] = $driver[0]['lastName'];
             $currentDate = date('md');

@@ -18,8 +18,8 @@ if (isset($_POST['loginAcct'])) {
     // Running error handlers and user signin.
     $signin->loginDriver();
     // Redirect to home page upon successful login with valid message.
-    $alert::setMsg('success', 'Logged in. Hello there, '. $_SESSION['first_name'] . '!');
-    header("Location: /home", true, 303);
+    $alert::setMsg('success', 'Hello there, '. $_SESSION['first_name'] . '!');
+    header("Location: /", true, 303);
     exit();
 }
 

@@ -3,7 +3,7 @@ $url = parse_url($_SERVER['REQUEST_URI'])['path'];
 
 function pageStyle($value) {
         switch($value) {
-                case "/":
+                case "/signup":
                         echo "<link rel='stylesheet' href='styles/style.css'>\n";
                         break;
                 
@@ -23,7 +23,7 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='styles/style.css'>\n";
                         break;
 
-                case "/home":
+                case "/":
                         echo "<link rel='stylesheet' href='styles/home.css'>\n";
                         break;
 

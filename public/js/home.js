@@ -8,46 +8,48 @@ window.addEventListener('load', () => {
         let dvrBirthday = $(drvrBirthDate).val();
         if ($.trim(dvrBirthday) !== '') {
                 localStorage.setItem('birthdate', $(drvrBirthDate).val());
+                const drvrTable = document.querySelector('table');
+                let idCell = drvrTable.childNodes[3].childNodes[1].childNodes[1];
+                let separateNames = idCell.textContent.split(" ");
+                let firstName = separateNames[0];
+                localStorage.setItem('driverName', firstName);
         };
-        const drvrTable = document.querySelector('table');
-        let idCell = drvrTable.childNodes[3].childNodes[1].childNodes[1];
-        let separateNames = idCell.textContent.split(" ");
-        let firstName = separateNames[0];
-        localStorage.setItem('driverName', firstName);
 });
 
 function timeCelebrationHandler() {
         let currentTime = new Date();
-        if (!sessionStorage.getItem('celebrationOccured') && !localStorage.getItem('themePlayedAlready')) {
-                let dateNow = new Date();
-                let drvrSavedBDay = localStorage.getItem('birthdate');
-                const birthdate = new Date(drvrSavedBDay);       
-                let bDayMonth = birthdate.getMonth();
-                let bDayDate = birthdate.getDate();
-                let todayMon = dateNow.getMonth();
-                let todayDate = dateNow.getDate();
-                //console.log(bDayDate);
-                if (bDayMonth === todayMon && bDayDate === todayDate) {
-                        let bdaySong = document.createElement("audio");
-                        let mainContent = document.querySelector('main');
-                        mainContent.insertAdjacentElement('afterbegin', bdaySong);
-                        $(bdaySong).attr('src', '../audio/happy-birthday-clip.mp3');
-                        bdaySong.play();
-                        const celebration = new JSConfetti();
-                        bdayCelebrationHandler(celebration);
-                        bdaySong.addEventListener('ended', () => {
-                                bdaySong.remove();
-                        })
+        if ($(drvrBirthDate).val() !== '') {
+                if (!sessionStorage.getItem('celebrationOccured') && !localStorage.getItem('themePlayedAlready')) {
+                        let dateNow = new Date();
+                        let drvrSavedBDay = localStorage.getItem('birthdate');
+                        const birthdate = new Date(drvrSavedBDay);       
+                        let bDayMonth = birthdate.getMonth();
+                        let bDayDate = birthdate.getDate();
+                        let todayMon = dateNow.getMonth();
+                        let todayDate = dateNow.getDate();
+                        //console.log(bDayDate);
+                        if (bDayMonth === todayMon && bDayDate === todayDate) {
+                                let bdaySong = document.createElement("audio");
+                                let mainContent = document.querySelector('main');
+                                mainContent.insertAdjacentElement('afterbegin', bdaySong);
+                                $(bdaySong).attr('src', '../audio/happy-birthday-clip.mp3');
+                                bdaySong.play();
+                                const celebration = new JSConfetti();
+                                bdayCelebrationHandler(celebration);
+                                bdaySong.addEventListener('ended', () => {
+                                        bdaySong.remove();
+                                })
+                        }
                 }
+                sessionStorage.setItem('celebrationOccured', 'true');
+                localStorage.setItem('themePlayedAlready', 'true');
+                const dateOptions = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                };
+                localStorage.setItem('dateOfThemePlayed', currentTime.toLocaleString('en-us', dateOptions));
         }
-        sessionStorage.setItem('celebrationOccured', 'true');
-        localStorage.setItem('themePlayedAlready', 'true');
-        const dateOptions = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-        };
-        localStorage.setItem('dateOfThemePlayed', currentTime.toLocaleString('en-us', dateOptions));
 };
 
 function handleCelebration () {
@@ -132,6 +134,9 @@ updateStatusBtns.addEventListener('click', (e) => {
                 let changeStatus = localStorage.getItem('status');
                 changeStatusValue.textContent = changeStatus;
                 bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
                 //console.log(changeStatusValue);
         }
 
@@ -140,14 +145,20 @@ updateStatusBtns.addEventListener('click', (e) => {
                 let changeStatus = localStorage.getItem('status');
                 changeStatusValue.textContent = changeStatus;
                 bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
                 //console.log(changeStatusValue);
         }
 
         if (e.target === updateStatusBtns.childNodes[5]) {
-                localStorage.setItem('status', 'Enroute to pickup location');
+                localStorage.setItem('status', 'Enroute to location');
                 let changeStatus = localStorage.getItem('status');
                 changeStatusValue.textContent = changeStatus;
                 bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
                 //console.log(changeStatusValue);
         }
 
@@ -156,6 +167,9 @@ updateStatusBtns.addEventListener('click', (e) => {
                 let changeStatus = localStorage.getItem('status');
                 changeStatusValue.textContent = changeStatus;
                 bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
                 //console.log(changeStatusValue);
         }
 }, false);

@@ -27,7 +27,7 @@ class AddedDrvr extends ConnectDatabase {
 
         if (!$result) {
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /?error=try+again"); //stmtfailed
+            header("Location: /signup?error=try+again"); //stmtfailed
             exit();
         }
 
@@ -44,7 +44,7 @@ class AddedDrvr extends ConnectDatabase {
 
         if (!$result2) {
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /error?=try+again");  //stmtfailed
+            header("Location: /signup?error=try+again");  //stmtfailed
             exit();
         }
     }
@@ -60,7 +60,7 @@ class AddedDrvr extends ConnectDatabase {
 
         if (!$result) {
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /?error=try+again"); //stmtfailed
+            header("Location: /signup?error=try+again"); //stmtfailed
             exit();
         }
 
