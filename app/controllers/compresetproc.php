@@ -1,13 +1,12 @@
 <?php
 
-use core\Flash;
+$alert = new \core\Flash();
 
 if (session_status() !== 2) {
     session_start();
 }
 
 if (isset($_POST['reset-pswd'])) {
-    $alert = new Flash();
     // Create new token to send to email of driver
     $token = htmlspecialchars($_POST['resetToken']);
     $password = htmlspecialchars($_POST['password']);
