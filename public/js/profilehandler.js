@@ -75,22 +75,16 @@ $(updateTelEmailBtn).on('submit', () => {
 
 window.addEventListener('load', () => {
     fetch("http://prodriver.local/drvrs")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
             }
-            return response.json();
-        })
+            return res.json();
+         })
         .then(data => {
             console.log('JSON response data:', data);
             //here's where we'll get the values of data and display them to the client
-            try {
-                const jsonData = JSON.parse(data);
-                console.log(jsonData);
-            } catch (error) {
-                console.error('Error parsing JSON:', error);
-            }
-        })
+         })
         .catch(error => {
             console.error('Error fetching data: ', error);
         })
