@@ -13,7 +13,7 @@ if (isset($_POST['reginfo'])) {
     $birthdate = htmlspecialchars($_POST['dateofbirth']);
     $formToken = htmlspecialchars($_POST['drvrtoken']);
     // Instantiate the add user controller class. ↓
-    include_once base_path("app/models/database.php");
+    include_once base_path("core/database.php");
     include_once base_path("app/models/regprofilemeth.php");
     include_once base_path("app/classes/completeregis.php");
     $enterData = new RegProContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);

@@ -1,6 +1,6 @@
 <?php
 
-if (!isset($_SESSION['driver_id']) {
+if (!isset($_SESSION['driver_id'])) {
     header("Location: /signup");
     die();
 }

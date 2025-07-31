@@ -1,5 +1,6 @@
 <?php
-use core\Flash;
+
+$alert = new core\Flash();
 
 class RegProContr extends RegProInfo {
     private $firstname;
@@ -17,7 +18,6 @@ class RegProContr extends RegProInfo {
     }
 
     public function processProfile () {
-        $alert = new Flash();
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /register?warning=empty"); //emptyinputs

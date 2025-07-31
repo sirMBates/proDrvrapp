@@ -1,6 +1,6 @@
 <?php
 
-use core\Flash;
+$alert = new core\Flash();
 
 class ResetPwdContr extends ResetPwd {
     private $token;
@@ -14,7 +14,6 @@ class ResetPwdContr extends ResetPwd {
     }
 
     public function createNewToken() {
-        $alert = new Flash();
         if ($this->checkNewToken() === false) {
             $alert::setMsg('error', 'No new token! Token has been sent or already used.');
             header("Location: /forget?error=token+set+already");

@@ -1,8 +1,9 @@
 <?php
 
 require_once "../vendor/autoload.php";
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, '../../.local.env');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, '../.local.env');
 $dotenv->load();
+
 class ConnectDatabase {
     protected function connect() {
         $type = $_ENV['DB_TYPE'];

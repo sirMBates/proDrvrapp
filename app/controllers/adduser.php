@@ -13,7 +13,7 @@ if (isset($_POST['createAccount'])) {
     $password = htmlspecialchars($_POST['password']);
     $formToken = htmlspecialchars($_POST['drvrtoken']);
     // Instantiate the add user controller class. ↓
-    include_once base_path("app/models/database.php");
+    include_once base_path("core/database.php");
     include_once base_path("app/models/addusermeth.php");
     include_once base_path("app/classes/add_user.php");
     $signup = new AddDrvrContr($username, $email, $password);

@@ -1,6 +1,6 @@
 <?php
 
-use core\Flash;
+$alert = new core\Flash();
 
 class CompleteResetContr extends CompleteReset {
     private $token;
@@ -12,7 +12,6 @@ class CompleteResetContr extends CompleteReset {
     }
 
     public function changeDrvrPassword() {
-        $alert = new Flash();
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please enter your new password.');
             header("Location: /compreset?warning=left+blank");
@@ -29,7 +28,6 @@ class CompleteResetContr extends CompleteReset {
     }
 
     public function hasTokenCleared() {
-        $alert = new Flash();
         if ($this->removedToken() === false) {
             $alert::setMsg('error', 'There was a problem. Please try reset again!');
             header("Location: /forget?error=not+cleared");
