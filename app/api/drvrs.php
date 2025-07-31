@@ -1,7 +1,7 @@
 <?php
 
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
+//header("Access-Control-Allow-Origin: *");
 include_once base_path("core/database.php");
 $db = new ConnectDatabase();
 
@@ -9,18 +9,13 @@ $sql = "SELECT username, email, firstname, lastname, mobileNum, birthdate
         FROM driver
         WHERE driverid = :driverid";
 $stmt = $db->connect()->prepare($sql);
-$stmt->execute([
-    "driverid" =>  $_SESSION['driver_id'] 
-])
+$stmt->bindParam(":driverid", $_SESSION['driver_id']);
+$stmt->execute();
 
-$data = [];
-if ($stmt->rowCount() > 0) {
-    while($row = $stmt->fetch()) {
-        $data[] = $row;
-    }
-}
+$result = $stmt->fetch();
 
-echo json_encode($data);
+echo json_encode($result);
 
 $stmt = null;
+
 ?>
