@@ -13,7 +13,7 @@ if (isset($_POST['reset-pswd'])) {
     //echo $token;
     //echo $password;
     // Instantiate the reset token controller class. ↓
-    include_once base_path("app/models/database.php");
+    include_once base_path("core/database.php");
     include_once base_path("app/models/comppwdmeth.php");
     include_once base_path("app/classes/comp_pwd_process.php");
     $createNewPwd = new CompleteResetContr($token, $password);

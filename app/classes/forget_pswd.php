@@ -1,6 +1,6 @@
 <?php
 
-use core\Flash;
+$alert = new core\Flash();
 
 class ForgetPswdContr extends ForgetPswd {
     private $token;
@@ -14,7 +14,6 @@ class ForgetPswdContr extends ForgetPswd {
     }
 
     public function addTokenAndExpireTime() {
-        $alert = new Flash();
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /forget?warning=empty"); //emptyinput
@@ -44,7 +43,6 @@ class ForgetPswdContr extends ForgetPswd {
     }
 
     public function sendForgetEmail() {
-        $alert = new Flash();
         if ($this->emailExistandSend() === false) {
             $alert::setMsg('error', 'Email not sent. Please try again.');
             header('Location: /forget?error=try+again');

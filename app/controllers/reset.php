@@ -9,7 +9,7 @@ if (session_status() !== 2) {
 $token = htmlspecialchars($_GET['token']);
 $formToken = htmlspecialchars($_POST['drvrtoken']);
 //$getToken = hash("sha256", $token);
-include_once base_path("app/models/database.php");
+include_once base_path("core/database.php");
 include_once base_path("app/models/resetpwdmeth.php");
 include_once base_path("app/classes/reset_pwd.php");
 $isResetValid = new ResetPwdContr($token);

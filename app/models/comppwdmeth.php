@@ -1,10 +1,9 @@
 <?php
 
-use core\Flash;
+$alert = new core\Flash();
 
 class CompleteReset extends ConnectDatabase {
     protected function checkValidToken($token) {
-        $alert = new flash();
         $sql = "SELECT * FROM pwdreset
                 WHERE resetToken = :resetToken";
         $stmt = $this->connect()->prepare($sql);
@@ -27,7 +26,6 @@ class CompleteReset extends ConnectDatabase {
     }
 
     protected function updatePassword($token, $password) {
-        $alert = new Flash();
         $driverResetToken = $this->checkValidToken($token);
         if ($driverResetToken === null) {
             $alert::setMsg('danger', 'Token is invalid! Please generate a new token.');
@@ -62,7 +60,6 @@ class CompleteReset extends ConnectDatabase {
     }
     
     protected function clearToken($token) {
-        $alert = new Flash();
         $resetData = $this->checkValidToken($token);
         if ($resetData === null) {
             $alert::setMsg('warning', 'Token not found. Please try again!');

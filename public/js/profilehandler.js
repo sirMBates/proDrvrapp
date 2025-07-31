@@ -1,4 +1,6 @@
 import { buildModal } from './appmodal.js';
+import { Validation } from './validation.js';
+import formValidation from './messagevalidation.js';
 const inputs = document.querySelectorAll('.form-control');
 const openUpdateInputBtn = document.querySelector('#changeinfo');
 const emailInput = inputs[2];
@@ -31,4 +33,65 @@ pswordInput.addEventListener('focus', (e) => {
     if (e.target.hasAttribute('readonly')) {
         $(e.target).removeAttr('readonly');
     }
+});
+
+$(emailInput).on('input', () => {
+    let isValid = Validation.validate($(emailInput).val(), $(emailInput).attr('type'));
+    if (!isValid) {
+        $(emailInput).addClass('is-invalid');
+    } else {
+        $(emailInput).removeClass('is-invalid');
+        $(emailInput).addClass('is-valid');
+    }
+})
+
+$(phoneInput).on('input', () => {
+    let isValid = Validation.validate($(phoneInput).val(), $(phoneInput).attr('type'));
+    if (!isValid) {
+        $(phoneInput).addClass('is-invalid');
+    } else {
+        $(phoneInput).removeClass('is-invalid');
+        $(phoneInput).addClass('is-valid');
+    }
+})
+
+$(pswordInput).on('input', () => {
+    let isValid = Validation.validate($(pswordInput).val(), $(pswordInput).attr('type'));
+    if (!isValid) {
+        $(pswordInput).addClass('is-invalid');
+    } else {
+        $(pswordInput).removeClass('is-invalid');
+        $(pswordInput).addClass('is-valid');
+    }
+})
+
+$(updatePswordBtn).on('submit', () => {
+    return formValidation();
+})
+
+$(updateTelEmailBtn).on('submit', () => {
+    return formValidation();
+})
+
+window.addEventListener('load', () => {
+    fetch("http://prodriver.local/drvrs")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log('Raw response data:', data);
+            //here's where we'll get the values of data and display them to the client
+            try {
+                const jsonData = JSON.parse(data);
+                console.log(jsonData);
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching data: ', error);
+        })
 });

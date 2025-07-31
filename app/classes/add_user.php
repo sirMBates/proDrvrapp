@@ -1,6 +1,6 @@
 <?php
 
-use core\Flash;
+$alert = new core\Flash();
 
 class AddDrvrContr extends AddedDrvr {
     private $username;
@@ -14,8 +14,6 @@ class AddDrvrContr extends AddedDrvr {
     }
 
     public function addDriver() {
-        $alert = new Flash();
-
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /signup?warning=empty"); //emptyinput

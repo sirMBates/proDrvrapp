@@ -1,5 +1,6 @@
 <?php
-use core\Flash;
+
+$alert = new core\Flash();
 
 class Logincontr extends Login {
     private $username;
@@ -13,7 +14,6 @@ class Logincontr extends Login {
 
     public function loginDriver() {
         if ($this->isEmpty() === false) {
-            $alert = new Flash();
             $alert::setMsg('error', 'Please fill in all fields.');
             header("Location: /signin?error=empty"); // emptyInputs
             exit();
