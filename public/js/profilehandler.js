@@ -79,10 +79,10 @@ window.addEventListener('load', () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return response.text();
+            return response.json();
         })
         .then(data => {
-            console.log('Raw response data:', data);
+            console.log('JSON response data:', data);
             //here's where we'll get the values of data and display them to the client
             try {
                 const jsonData = JSON.parse(data);
