@@ -12,6 +12,7 @@ $router->get('/profile', 'app/controllers/profile.php');
 $router->get('/payroll', 'app/controllers/payroll.php');
 $router->get('/contact', 'app/controllers/contact.php');
 $router->get('/logout', 'app/controllers/logout.php');
+$router->get('/getprofile', 'app/api/getprofile.php');
 
 $router->post('/signup', 'app/controllers/adduser.php');
 $router->post('/register', 'app/controllers/regprofile.php');

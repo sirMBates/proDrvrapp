@@ -73,7 +73,19 @@ $(updateTelEmailBtn).on('submit', () => {
     return formValidation();
 })
 
-/*window.addEventListener('load', () => {
-    fetch("http://prodriver.local/drvrs.php")
-        .then(res => res.json())
-});*/
+window.addEventListener('load', () => {
+    fetch("http://prodriver.local/getprofile")
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log('Driver:', data);
+            // Process and display the retrieved data
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        })
+});
