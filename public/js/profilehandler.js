@@ -73,19 +73,7 @@ $(updateTelEmailBtn).on('submit', () => {
     return formValidation();
 })
 
-window.addEventListener('load', () => {
-    fetch("http://prodriver.local/drvrs")
-        .then(res => {
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-            return res.json();
-         })
-        .then(data => {
-            console.log('JSON response data:', data);
-            //here's where we'll get the values of data and display them to the client
-         })
-        .catch(error => {
-            console.error('Error fetching data: ', error);
-        })
-});
+/*window.addEventListener('load', () => {
+    fetch("http://prodriver.local/drvrs.php")
+        .then(res => res.json())
+});*/

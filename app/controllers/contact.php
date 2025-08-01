@@ -1,7 +1,7 @@
 <?php
 
-if (!isset($_SESSION['driver_id'])) {
-    header("Location: /signup");
+if (!isset($_SESSION['logged_in']) && $_SESSION['logged_in'] !== true) {
+    header("Location: /signin");
     die();
 }
 
