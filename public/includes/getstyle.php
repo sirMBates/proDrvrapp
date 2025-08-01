@@ -46,6 +46,10 @@ function pageStyle($value) {
                 case "/prodrvrapp/public/views/printable.php":
                         echo "<link rel='stylesheet' href='styles/payroll.css'>\n";
                         break;
+
+                case "/views/404.php":
+                        return;
+                        break;
                         
                 default:
                         return;

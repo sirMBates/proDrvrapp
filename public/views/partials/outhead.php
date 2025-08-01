@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex">
         <?php
-                require "includes/getstyle.php";
+                require_once "includes/getstyle.php";
         ?>
         <link rel="stylesheet" href="styles/main.css">
         <link rel="stylesheet" href="styles/bootstrap.css">
