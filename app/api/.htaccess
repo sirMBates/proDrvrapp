@@ -5,6 +5,6 @@ RewriteBase /api/
 <Files getprofile.php>
 AuthName "Access to GetProfile End Point"
 AuthType Basic
-AuthUserFile D:\webapps\prodrvrapp\app\api\.htpasswd
+AuthUserFile D:/webapps/prodrvrapp/app/api/.htpasswd
 Require valid-user
 </Files>
