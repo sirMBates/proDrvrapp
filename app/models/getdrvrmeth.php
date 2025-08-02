@@ -8,7 +8,7 @@ class GetDriver extends ConnectDatabase {
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->execute();
 
-        $result = $stmt->fetch();        
+        $result = $stmt->fetchAll();        
         return $result;
     }
 

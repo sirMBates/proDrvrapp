@@ -74,12 +74,12 @@ $(updateTelEmailBtn).on('submit', () => {
 })
 
 window.addEventListener('load', () => {
-    fetch("http://prodriver.local/getprofile")
-        .then(res => {
-            if (!res.ok) {
+    fetch("http://prodriver.local/getprofile", { mode: 'cors'})
+        .then(response => {
+            if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return res.json();
+            return response.json();
         })
         .then(data => {
             console.log('Driver:', data);
