@@ -82,8 +82,24 @@ window.addEventListener('load', () => {
             return response.json();
         })
         .then(data => {
-            console.log('Driver:', data);
-            // Process and display the retrieved data
+            const driver = data;
+            const profileInputs = document.querySelectorAll('input');
+            const foreName = profileInputs[1];
+            const surName = profileInputs[2];
+            const email = profileInputs[3];
+            const birthDate = profileInputs[4];
+            const phoneNum = profileInputs[5];
+            const userName = profileInputs[6];
+            const status = profileInputs[8];
+            if (driver) {
+                foreName.value = driver['firstname'];
+                surName.value = driver['lastname'];
+                email.value = driver['email'];
+                birthDate.value = driver['birthdate'];
+                phoneNum.value = driver['mobileNumber'];
+                userName.value = driver['username'];
+                status.value = localStorage.getItem('status') ? localStorage.getItem('status') : sessionStorage.getItem('status');
+            }
         })
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
