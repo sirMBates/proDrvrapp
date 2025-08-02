@@ -11,24 +11,15 @@ include "includes/flashmessage.php";
         <form id="acctinfo" action="" method="">
                 <div class="card">
                         <div class="card-header bg-besttrailsclr">
-                                <h2 class="text-capitalize text-center text-light"><button type="button" id="changeinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-user fs-3 text-light"></i></button>account information</h2>
+                                <h2 class="text-capitalize text-center text-light"><button type="button" id="changeinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-user fs-3 text-light"></i></button>profile information</h2>
                         </div>
                         <div class="card-body">
                                 <fieldset>
                                         <legend class="h4">My Info</legend>
                                         <div class="input-group mb-2">
                                                 <span class="input-group-text"><i class="fa-solid fa-id-card-clip fs-4 text-primary"></i></span>
-                                                <div class="form-floating">
-                                                        <input type="text" id="fname" class="form-control" name="firstname" placeholder="first name" disabled>
-                                                        <label for="fname" class="text-capitalize"><b>first name</b></label>
-                                                </div>
-                                        </div>
-                                        <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="fa-solid fa-id-card-clip fs-4 text-primary"></i></span>
-                                                <div class="form-floating">
-                                                        <input type="text" id="lname" class="form-control" name="lastname" placeholder="last name" disabled>
-                                                        <label for="lname" class="text-capitalize"><b>last name</b></label>
-                                                </div>
+                                                <input type="text" id="forename" aria-label="First name" class="form-control py-3" disabled>
+                                                <input type="text" id="surname" aria-label="Last name" class="form-control py-3" disabled>
                                         </div>
                                         <div class="input-group mb-2">
                                                 <span class="input-group-text"><i class="fa-regular fa-envelope fs-4 text-primary"></i></span>
@@ -45,7 +36,7 @@ include "includes/flashmessage.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="material-symbols-outlined fs-4 text-primary">smartphone</i></span>
+                                                <span class="input-group-text"><i class="fa-solid fa-mobile fs-4 text-primary"></i></span>
                                                 <div class="form-floating">
                                                         <input type="tel" id="mobileDev" inputmode="tel" class="form-control" name="mobile device" placeholder="Mobile number" readonly>
                                                         <label for="mobileDev" class="text-capitalize"><b>mobile number</b></label>

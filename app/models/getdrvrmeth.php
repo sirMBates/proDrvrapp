@@ -2,18 +2,18 @@
 
 class GetDriver extends ConnectDatabase {
     protected function retrieveDriver($drvrid) {
-        $sql = "SELECT * FROM driver
+        $sql = "SELECT username, email, firstname, lastname, mobileNumber, birthdate FROM driver
                 WHERE driverid = :driverid";
         $stmt = $this->connect()->prepare($sql);
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->execute();
 
-        $result = $stmt->fetchAll();        
+        $result = $stmt->fetch();
         return $result;
     }
 
     public function getDrvrStats($drvrid) {
-        $this->retrieveDriver($drvrid);
+        return $this->retrieveDriver($drvrid);
     }
 }
 
