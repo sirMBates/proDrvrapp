@@ -1,6 +1,6 @@
 <?php
 require "partials/outhead.php";
-$alert = new \core\Flash;
+$alert = new core\Flash();
 include "includes/flashmessage.php";
 if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
         unset($_SESSION['reset']);

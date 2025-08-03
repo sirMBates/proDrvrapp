@@ -1,9 +1,10 @@
 <?php
 
-$alert = new core\Flash();
+use core\Flash;
 
 class RegProInfo extends ConnectDatabase {
     protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
+        $alert = new Flash();
         $sql = "UPDATE driver 
                 SET firstName = ?, lastName = ?, mobileNumber = ?, birthdate = ? 
                 WHERE username = ?";

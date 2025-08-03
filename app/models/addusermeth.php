@@ -1,6 +1,6 @@
 <?php
 
-$alert = new core\Flash();
+use core\Flash;
 
 class AddedDrvr extends ConnectDatabase {
     protected function setDriver($username, $email, $password) {

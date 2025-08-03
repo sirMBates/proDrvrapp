@@ -2,8 +2,9 @@
         require "partials/head.php";
         require "partials/nav.php";
         require "partials/banner.php";
-        include "includes/cus-modal.php";
-        include "includes/errormsgs.php";
+        $alert = new core\Flash();
+        include "includes/flashmessage.php";
+        include "includes/info-modal.php";
 ?>
         <main class="container-fluid p-3 d-flex flex-column">
                 <form id="" action="" method="">
