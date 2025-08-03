@@ -1,9 +1,8 @@
 RewriteEngine On
 RewriteBase /api/
 
-## Protect A File
-<Files getprofile.php>
-AuthName "Access to GetProfile End Point"
+<Files getprofile>
+AuthName "Restricted Area"
 AuthType Basic
 AuthUserFile D:/webapps/prodrvrapp/app/api/.htpasswd
 Require valid-user
