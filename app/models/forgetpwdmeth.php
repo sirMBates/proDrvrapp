@@ -1,9 +1,10 @@
 <?php
 
-$alert = new core\Flash();
+use core\Flash;
 
 class ForgetPswd extends ConnectDatabase {
-    protected function setForgetToken($token, $tokenExpTime, $email) { 
+    protected function setForgetToken($token, $tokenExpTime, $email) {
+        $alert = new Flash(); 
         // Note: Can not use an INSERT stmt to add to an empty column of an existing row.
         $sql = "UPDATE pwdreset
                 SET resetToken = :resetToken, tokenExpTime = :tokenExpTime
@@ -27,6 +28,7 @@ class ForgetPswd extends ConnectDatabase {
     }
 
     protected function checkEmailExist($email) {
+        $alert = new Flash();
         $sql = "SELECT email FROM pwdreset 
                 WHERE email = :email";
         $stmt =$this->connect()->prepare($sql);
@@ -49,6 +51,7 @@ class ForgetPswd extends ConnectDatabase {
     }
 
     protected function checkTokenExist($email) {
+        $alert = new Flash();
         $sql = "SELECT resetToken FROM pwdreset 
                 WHERE email = :email";
         $stmt = $this->connect()->prepare($sql);

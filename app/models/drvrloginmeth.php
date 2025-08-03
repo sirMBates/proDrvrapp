@@ -1,9 +1,10 @@
 <?php
 
-$alert = new core\Flash();
+use core\Flash;
 
 class Login extends ConnectDatabase {
     protected function getDriver($username, $password) {
+        $alert = new Flash();
         $sql = "SELECT password FROM driver
                 WHERE username = :username OR email = :email";
         $stmt = $this->connect()->prepare($sql);

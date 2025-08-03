@@ -2,9 +2,9 @@
         require "partials/head.php";
         require "partials/nav.php";
         require "partials/banner.php";
-        include "includes/cus-modal.php";
-        $alert = new \core\Flash;
+        $alert = new core\Flash();
         include "includes/flashmessage.php";
+        include "includes/custom-modal.php";
 ?>
 <main class="container-fluid mb-1 p-1">
         <div class="card mb-auto">

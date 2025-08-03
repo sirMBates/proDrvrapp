@@ -2,9 +2,9 @@
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
-require "includes/cus-modal.php";
-$alert = new \core\Flash;
+$alert = new core\Flash();
 include "includes/flashmessage.php";
+include "includes/info-modal.php";
 ?>
 
 <main class="container-fluid my-3">
@@ -18,8 +18,10 @@ include "includes/flashmessage.php";
                                         <legend class="h4">My Info</legend>
                                         <div class="input-group mb-2">
                                                 <span class="input-group-text"><i class="fa-solid fa-id-card-clip fs-4 text-primary"></i></span>
-                                                <input type="text" id="forename" aria-label="First name" class="form-control py-3" disabled>
-                                                <input type="text" id="surname" aria-label="Last name" class="form-control py-3" disabled>
+                                                <div class="form-floating">
+                                                        <input type="text" id="fullname" class="form-control" name="fullname" placeholder="full name" disabled>
+                                                        <label for="fullname" class="text-capitalize"><b>full name</b></label>
+                                                </div>
                                         </div>
                                         <div class="input-group mb-2">
                                                 <span class="input-group-text"><i class="fa-regular fa-envelope fs-4 text-primary"></i></span>

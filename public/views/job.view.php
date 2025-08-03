@@ -4,6 +4,7 @@
         require "partials/banner.php";
         $alert = new \core\Flash;
         include "includes/flashmessage.php";
+        include "includes/info-modal.php"
 ?>       
         <main class="w-100 d-flex flex-column justify-content-center p-1">
                 <form class="" action="" method="">
