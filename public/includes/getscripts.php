@@ -65,11 +65,11 @@ function pageScripts($value) {
                 echo "<script type='module' src='js/messagevalidation.js'></script>";
                 break;
 
-            case "/joborder":
+            case "/orders":
                 //echo "<!--<script src='brinley/libs/flashcanvas.js'></script>-->\n\n";
                 //echo "<script src='brinley/libs/jSignature.min.js'></script>\n\n";
                 //echo "<script type='module' src='js/sign.js'></script>\n\n";
-                echo "<!--<script type='module' src='js/orderpage.js'></script>-->\n";
+                echo "<script type='module' src='js/orderpage.js'></script>\n";
                 break;
 
             case "/profile":

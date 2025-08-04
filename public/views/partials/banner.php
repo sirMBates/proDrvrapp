@@ -2,7 +2,7 @@
         <div class="flex-shrink-0" style="width: 20%;">                                
                 <img src="../images-videos/prodrvrbkgd.png" class="img-fluid m-3" width="250" id="logo" alt="companylogo">                       
         </div>
-        <div class="d-flex flex-column flex-grow-1 ms-3 justify-content-start align-items-end">
+        <div class="d-flex flex-column flex-grow-1 ms-3 mt-3 justify-content-start align-items-end">
                 <div id="clock_container" class="z-3 d-flex flex-column text-capitalize">
                         <div id="dateCon" class="container-sm d-flex flex-row" style="margin-right: -5%;">
                                 <div class="text-btd-blue-bright mx-1"></div>
