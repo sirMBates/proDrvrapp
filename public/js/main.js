@@ -97,13 +97,11 @@ function updateHr() {
 };
 
 function enableDarkMode () {
-        if (localStorage.getItem('isDarkMode') !== true) {
-                if (updateHr() >= 20 || updateHr <= 6) {
-                        themeSet.darkTheme();
-                        localStorage.isDarkMode = true;
-                }
-                return themeSet.setThemeLocally();
+        if (updateHr() >= 20 || updateHr() <= 6) {
+                themeSet.darkTheme();
+                localStorage.isDarkMode = true;
         }
+        return themeSet.setThemeLocally();
 };
 
 window.addEventListener('load', enableDarkMode, false);
