@@ -8,15 +8,16 @@ const phoneInput = inputs[5];
 const pswordInput = inputs[7];
 const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
-const infoMsg = document.querySelector('#info-modal');
+const infoModal = document.querySelector('#info-modal');
+const infoModalMsg = buildModal;
 const infoBtn = document.querySelector('#info-ok'); 
 openUpdateInputBtn.addEventListener('click', () => {
-    $(infoMsg).modal('toggle');
-    infoMsg.addEventListener('shown.bs.modal', () => {
-        buildModal.info('You can only update your email, mobile number and password. If you would like to update any of the 3, click/touch on the field you would like to update.', 'Ok');
+    $(infoModal).modal('toggle');
+    infoModal.addEventListener('shown.bs.modal', () => {
+        infoModalMsg.info('You can only update your email, mobile number and password. If you would like to update any of the 3, click/touch on the field you would like to update.', 'Ok');
     })
     $(infoBtn).on('click', () => {
-        $(infoMsg).modal('toggle');
+        $(infoModal).modal('toggle');
     })
 })
 emailInput.addEventListener('focus', (e) => {

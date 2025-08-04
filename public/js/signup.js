@@ -2,6 +2,9 @@ import { Validation } from './validation.js';
 import  formValidation  from './messagevalidation.js';
 import { buildModal } from './appmodal.js';
 // Set variables to the inputs from the form control class.
+const infoModal = document.querySelector('#info-modal');
+const infoModalMsg = buildModal;
+const infoModBtn = document.querySelector('#info-ok');
 const checkInputs = document.querySelectorAll('.form-control');
 const usernameInput = checkInputs[0]; 
 const emailInput = checkInputs[1]; 
@@ -108,16 +111,14 @@ $(function () {
 });
 
 /*window.addEventListener('load', () => {
-    const infoMsg = document.querySelector('#info-modal');
-    const infoModBtn = document.querySelector('#info-ok');
     setTimeout(() => {
-        $(infoMsg).modal('toggle'),
-        infoMsg.addEventListener('shown.bs.modal', () => {
-            buildModal.info(`This application uses storage cookies for functioning and performance purposes <strong><u>only</u></strong>. Continued use of this application beyond this point is your consent of agreement of said usage.`, 'I Agree');
+        $(infoModal).modal('toggle'),
+        infoModal.addEventListener('shown.bs.modal', () => {
+            infoModalMsg.info(`This application uses storage cookies for functioning and performance purposes <strong><u>only</u></strong>. Continued use of this application beyond this point is your consent of agreement of said usage.`, 'I Agree');
         })
     }, 2000)
     infoModBtn.addEventListener('click', () => {
-        $(infoMsg).modal('toggle');
+        $(infoModal).modal('toggle');
     })
 });*/
 
