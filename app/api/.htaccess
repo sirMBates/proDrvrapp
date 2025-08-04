@@ -1,11 +1,9 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /api/
+RewriteEngine On
+RewriteBase /api/
 
-    <Files "getprofile.php">
-        AuthType Basic
-        AuthName "Restricted Area"
-        AuthUserFile "D:\webapps\prodrvrapp\.htpasswd"
-        Require valid-user
-    </Files>
-</IfModule>
+<Files "getprofile.php">
+     AuthType Basic
+     AuthName "Restricted Area"
+     AuthUserFile "D:\webapps\prodrvrapp\.htpasswd"
+     Require valid-user
+ </Files>
