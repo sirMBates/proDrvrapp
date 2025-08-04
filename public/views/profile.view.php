@@ -24,9 +24,9 @@ include "includes/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="fa-regular fa-envelope fs-4 text-primary"></i></span>
+                                                <button id="email-change" type="button" class="btn btn-outline-secondary input-group-text"><i class="fa-regular fa-envelope fs-4 text-primary"></i></button>
                                                 <div class="form-floating">
-                                                        <input type="email" id="email" class="form-control" name="email" placeholder="email" readonly>
+                                                        <input type="email" id="email" class="form-control" name="email" placeholder="email" disabled>
                                                         <label for="email" class="text-capitalize"><b>email</b></label>
                                                 </div>
                                         </div>
@@ -38,9 +38,9 @@ include "includes/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="fa-solid fa-mobile fs-4 text-primary"></i></span>
+                                                <button id="phone-change" type="button" class="btn btn-outline-secondary input-group-text"><i class="fa-solid fa-mobile fs-4 text-primary"></i></button>
                                                 <div class="form-floating">
-                                                        <input type="tel" id="mobileDev" inputmode="tel" class="form-control" name="mobile device" placeholder="Mobile number" readonly>
+                                                        <input type="tel" id="mobileDev" inputmode="tel" class="form-control" name="mobiledevice" placeholder="Mobile number" disabled>
                                                         <label for="mobileDev" class="text-capitalize"><b>mobile number</b></label>
                                                 </div>
                                         </div>
@@ -52,9 +52,9 @@ include "includes/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="fa-solid fa-lock fs-4 text-primary"></i></span>
+                                                <button id="pwd-change" type="button" class="btn btn-outline-secondary input-group-text"><i class="fa-solid fa-lock fs-4 text-primary"></i></button>
                                                 <div class="form-floating">
-                                                        <input type="password" id="password" class="form-control" name="password" placeholder="Password" readonly>
+                                                        <input type="password" id="password" class="form-control" name="password" placeholder="Password" disabled>
                                                         <label for="password" class="text-capitalize"><b>password</b></label>
                                                 </div>
                                         </div>
@@ -73,10 +73,10 @@ include "includes/info-modal.php";
 
                         <div class="card-footer">
                                 <div class="row my-2">                        
-                                        <button id="updatePswd" type="button" class="btn btn-primary text-capitalize" name="updatepswd">update<br>password</button>
+                                        <button id="updatePswd" type="submit" class="btn btn-primary text-capitalize" name="updatepswd">update<br>password</button>
                                 </div>
                                 <div class="row my-2">
-                                        <button id="updateTel-email" type="button" class="btn btn-outline-secondary text-capitalize" name="update tel/email" formaction="">update<br>email/phone</button>
+                                        <button id="updateTel-email" type="submit" class="btn btn-outline-secondary text-capitalize" name="update tel/email" formaction="">update<br>email/phone</button>
                                 </div>                        
                         </div>
                 </div>

@@ -1,38 +1,48 @@
 import { buildModal } from './appmodal.js';
 import { Validation } from './validation.js';
 import formValidation from './messagevalidation.js';
-const inputs = document.querySelectorAll('.form-control');
-const openUpdateInputBtn = document.querySelector('#changeinfo');
+const inputs = document.querySelectorAll('input');
+const openInfoUpdateBtn = document.querySelector('#changeinfo');
+const emailChangeBtn = document.querySelector('#email-change');
+const phoneChangeBtn = document.querySelector('#phone-change');
+const pwdChangeBtn = document.querySelector('#pwd-change');
 const emailInput = inputs[2];
-const phoneInput = inputs[5];
-const pswordInput = inputs[7];
+const phoneInput = inputs[4];
+const pswordInput = inputs[6];
 const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
 const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
-const infoBtn = document.querySelector('#info-ok'); 
-openUpdateInputBtn.addEventListener('click', () => {
+const infoBtn = document.querySelector('#info-ok');
+
+openInfoUpdateBtn.addEventListener('click', () => {
     $(infoModal).modal('toggle');
     infoModal.addEventListener('shown.bs.modal', () => {
-        infoModalMsg.info('You can only update your email, mobile number and password. If you would like to update any of the 3, click/touch on the field you would like to update.', 'Ok');
+        infoModalMsg.info('You can only update your email, mobile number and password. If you would like to update any of the 3, click the button next to the field you would like to update.', 'Ok');
     })
     $(infoBtn).on('click', () => {
         $(infoModal).modal('toggle');
     })
 })
-emailInput.addEventListener('focus', (e) => {
-    if (e.target.hasAttribute('readonly')) {
-        $(e.target).removeAttr('readonly');
+emailChangeBtn.addEventListener('click', (e) => {
+    if (emailInput.hasAttribute('disabled')) {
+        $(emailInput).prop('disabled', false);
+    } else if (emailInput.setAttribute('disabled', 'false')) {
+        $(emailInput).attr('disabled');
     }
 });
-phoneInput.addEventListener('focus', (e) => {
-    if (e.target.hasAttribute('readonly')) {
-        $(e.target).removeAttr('readonly');
+phoneChangeBtn.addEventListener('click', (e) => {
+    if (phoneInput.hasAttribute('disabled')) {
+        $(phoneInput).prop('disabled', false);
+    } else if (phoneInput.setAttribute('disabled', 'false')) {
+        $(phoneInput).attr('disabled');
     }
 });
-pswordInput.addEventListener('focus', (e) => {
-    if (e.target.hasAttribute('readonly')) {
-        $(e.target).removeAttr('readonly');
+pwdChangeBtn.addEventListener('click', (e) => {
+    if (pswordInput.hasAttribute('disabled')) {
+        $(pswordInput).prop('disabled', false);
+    } else if (pswordInput.setAttribute('disabled', 'false')) {
+        $(pswordInput).attr('disabled');
     }
 });
 
