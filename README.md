@@ -1,6 +1,6 @@
 <h1>ProDriver</h1>   
 
-This web app is design to be a dispatch companion app to <mark>over-the-road</mark> professional drivers. It will help in faster delivery of updated information to and from driver/dipatch operations.
+This web app is design to be a dispatch companion app to <mark>professional drivers</mark>. It will help in faster delivery of updated information to and from driver/dipatch operations.
 
 <h2>Features</h2>
 
@@ -10,11 +10,11 @@ The app can connect with the current dispatch system and,
 + Update current trip/work order to the driver.
 + Check the driver's current status.
 + Driver can keep track of each trip/work order with own trip/work sheet.
-+ Driver can add comments/details for the current work/trip assignment for future reference.
++ Driver can add comments/details for the current work/trip assignment.
 + Driver can get signature from customer (if required).
 
 <h2>How to use</h2>
-Each driver will create an account with there own details. Once the driver creates there account, the driver will be able to access there own personal page showing information related only to that driver.  
+Each driver will create an account with there own details. Once the driver creates there account, the driver will be able to access there personal information and any work assignments related only to that driver.  
 
 Once signed into the app, the driver will be able to update there status and sending it to dispatch. Dispatch will know whether
 
