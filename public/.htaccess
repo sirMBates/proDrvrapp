@@ -2,5 +2,7 @@
     RewriteEngine On
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^(.*)$ /index.php?/$1 [L,QSA]
+    RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif)$ [NC]
+    RewriteRule ^(.*)$ index.php [QSA,L]
+#   RewriteRule ^(.*)$ /index.php?/$1 [L,QSA]
 </IfModule>

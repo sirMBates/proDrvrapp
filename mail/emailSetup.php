@@ -6,7 +6,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once base_path("vendor/autoload.php");
 
-$envPath = '../../.local.env';
+$envPath = '../.local.env';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__, $envPath);
 $dotenv->load();
 
