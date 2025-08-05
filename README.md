@@ -16,13 +16,13 @@ The app can connect with the current dispatch system and,
 <h2>How to use</h2>
 Each driver will create an account with there own details. Once the driver creates there account, the driver will be able to access there personal information and any work assignments related only to that driver.  
 
-Once signed into the app, the driver will be able to update there status and sending it to dispatch. Dispatch will know whether
+Once signed into the app, the driver will be able update dispatch with there current status. Dispatch will know whether
 
-+ The driver is reporting to the garage.
-+ The driver is currently at garage.
-+ The driver is enroute to start of trip/work location.
-+ The driver is currently working the trip/work order.
-+ The driver has finished the trip/work order.
++ Driver is reporting to the garage.
++ Driver is currently at garage.
++ Driver is enroute to start of trip/work location.
++ Driver is currently working the trip/work order.
++ Driver has finished the trip/work order.
 
 As well as other status updates.  
 The driver will see all information pertaining to the current trip/work order that they've been assign to. They will complete any and all details needed, review the trip/work order and submit back to dispatch for finalizing. The driver can also add details from the trip/work order to there trip/work sheet, which can also be submitted to payroll department (if necessary).   
