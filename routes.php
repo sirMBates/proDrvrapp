@@ -20,3 +20,5 @@ $router->post('/signin', 'app/controllers/login.php');
 $router->post('/forget', 'app/controllers/forgetpw.php');
 $router->post('/compreset', 'app/controllers/compresetproc.php');
 $router->post('/reset', 'app/controllers/reset.php');
+
+$router->patch('/profile', 'app/controllers/update-acct-profile.php');

@@ -35,11 +35,13 @@ class ForgetPswd extends ConnectDatabase {
         $result = $stmt->execute([
             ':email' => $email
         ]);
-        if ($result === null) {
-            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
-            header("Location: /forget?error=try+again"); //stmtfailed
+
+        $result->fetch();
+        if (!$result || $result->rowCount() === 0) {
+            $alert::setMsg('error', 'There seems to be a problem with server. Please try again!');
+            header("Location: /forget?error=try+again");
             exit();
-        } 
+        }
         
         $resultCheck;
         if (!$result) {
@@ -57,11 +59,6 @@ class ForgetPswd extends ConnectDatabase {
         $stmt = $this->connect()->prepare($sql);
 
         $result = $stmt->execute([':email' => $email]);
-        if (!$result) {
-            $alert::setMsg('error', 'Sorry, something went wrong. try again.');
-            header("Location: /forget?error=not+available"); //stmtfailed
-            exit();
-        }
 
         $doesTokenAlreadyExist = $stmt->fetch();
         $checkResult;
