@@ -28,13 +28,13 @@ class ForgetPswdContr extends ForgetPswd {
         }
 
         if ($this->emailExistandSend() === false) {
-            $alert::setMsg('error', 'Please create an account to continue.');
+            $alert::setMsg('error', 'Please use the email you created the account with to continue.');
             header("Location: /forget?error=invalid");
             exit();
         }
 
         if ($this->tokenExistAlready() === true) {
-            $alert::setMsg('info', 'Email sent already. Please check your inbox!');
+            $alert::setMsg('info', 'Email sent already. Please chk your inbox!');
             header("Location: /forget?info=sent+already");
             exit();
         }
