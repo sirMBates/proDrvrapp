@@ -27,8 +27,8 @@ function getClockandMainOrNav($value) {
             break;
         
         default:
-            echo "<script type='module' src='js/clock.js'></script>\n\n";
-            echo "<script type='module' src='js/main.js'></script>\n\n";
+            echo "<script type='module' src='js/clock.js'></script>\n";
+            echo "<script type='module' src='js/main.js'></script>\n";
             break;
     }
 };
@@ -65,11 +65,13 @@ function pageScripts($value) {
                 break;
 
             case "/orders":
+                if (isset($_SESSION['signatureRequired']) && $_SESSION['signatureRequired'] === true) {
+                    echo "<script src='brinley/libs/flashcanvas.js'></script>\n";
+                    echo "<script src='brinley/libs/jSignature.min.js'></script>\n";
+                    echo "<script type='module' src='js/sign.js'></script>\n";
+                }
                 echo "<script type='module' src='js/orderpage.js'></script>\n";
                 break;
-                //echo "<!--<script src='brinley/libs/flashcanvas.js'></script>-->\n\n";
-                //echo "<script src='brinley/libs/jSignature.min.js'></script>\n\n";
-                //echo "<script type='module' src='js/sign.js'></script>\n\n";
 
             case "/profile":
                 echo "<script type='module' src='js/profilehandler.js'></script>\n";

@@ -1,4 +1,5 @@
 import { buildModal } from './appmodal.js';
+const signatureBoxBtn = document.querySelector('#signature-widget-buttons')
 const openSignBoxBtn = document.querySelector('#open-sign-box');
 const getPostSignatureBtn = document.querySelector('#get-next-signature');
 const closeSignPadBtn = document.querySelector('#close-sign-pad');
@@ -11,11 +12,13 @@ const signatureCheck = document.querySelector('#rendered');
 const imgInspBox = document.querySelector('#insp_img_box');
 const preInspSign = document.querySelector('#pre-trip');
 const postInspSign = document.querySelector('#post-trip');
-const customConfirmAlert = document.querySelector('#confirm-modal');
-const customWarnAlert = document.querySelector('#warn-modal');
-const customWarnModBtn = customWarnAlert.childNodes[1].childNodes[1].childNodes[5].childNodes[1];
-const confirmOptBtn = document.querySelector('#confirm');
-const unconfirmOptBtn = document.querySelector('#unconfirm');
+const warnModalMsg = buildModal;
+const confirmModalMsg = buildModal;
+const confirmModal = document.querySelector('#confirm-modal');
+const warnModal = document.querySelector('#warn-modal');
+const warnModalBtn = warnModal.childNodes[1].childNodes[1].childNodes[5].childNodes[1];
+const confirmModalOptBtn = document.querySelector('#confirm');
+const unconfirmModalOptBtn = document.querySelector('#unconfirm');
 const signBtnContainer = signBox.childNodes[3];
 //const completedInspBox = document.querySelector('#inspect-signature-box');
 let signature;
@@ -24,13 +27,14 @@ let secondSignature;
 // Warn and inform for signature capture.
 $(window).on('load', () => {
     setTimeout(() => {
-        $(customWarnAlert).modal('show');
-    }, 3000);
-    customWarnAlert.addEventListener('shown.bs.modal', () => {
-        buildModal.warning('You\'re required to have a rep from the client sign both for pre & post trip inspections. Please when signing, turn device on side for better signature capture.', 'Understood & agree');
+        $(warnModal).modal('show');
+    }, 2500);
+    warnModal.addEventListener('shown.bs.modal', () => {
+        warnModalMsg.warning('You\'re required to have a rep from the client sign both for pre & post trip inspections. Please when signing, turn device on side for better signature capture.', 'Understood & agree');
     });
-    $(customWarnModBtn).on('click', () => {
-        $(customWarnAlert).modal('toggle');
+    $(warnModalBtn).on('click', () => {
+        $(signatureBoxBtn).removeClass('d-none');
+        $(warnModal).modal('toggle');
     });
 });
 
@@ -76,18 +80,18 @@ function unConfirmPostSignHandler () {
 // Open signature widget.
 $(openSignBoxBtn).on('click', () => {
     signBox.classList.remove('d-none');
-});    
+});   
 
 // show confirm dialog modal for signature handlers.
 getPostSignatureBtn.addEventListener('click', () => {
-    $(customConfirmAlert).modal('toggle'); 
-    customConfirmAlert.addEventListener('shown.bs.modal', () => {
-        buildModal.confirm('You already have a signature on file. Would you like to add a different signature?', 'Yes', 'No');
+    $(confirmModal).modal('toggle'); 
+    confirmModal.addEventListener('shown.bs.modal', () => {
+        confirmModalMsg.confirm('You already have a signature on file. Would you like to add a different signature?', 'Yes', 'No');
     });
 
     // confirm button on modal to record new signature.
-    $(confirmOptBtn).on('click', () => {
-        $(customConfirmAlert).modal('hide');
+    $(confirmModalOptBtn).on('click', () => {
+        $(confirmModal).modal('hide');
         signpad.classList.remove('d-none');
         signBtnContainer.classList.remove('d-none');
         confirmPostSignHandler();
@@ -98,8 +102,8 @@ getPostSignatureBtn.addEventListener('click', () => {
     });
 
     // unconfirm button on modal to reuse recorded signature. 
-    $(unconfirmOptBtn).on('click', () => {
-        $(customConfirmAlert).modal('hide');
+    $(unconfirmModalOptBtn).on('click', () => {
+        $(confirmModal).modal('hide');
         signBtnContainer.classList.remove('d-none');
         unConfirmPostSignHandler();
         setTimeout(() => {

@@ -29,8 +29,8 @@ include "includes/info-modal.php"
                                         <tbody class="table-group-divider">
                                                 <tr>
                                                         <td scope="row">1800</td>
-                                                        <td><?= $_SESSION['driver_id']; ?></td>
-                                                        <td><?= $_SESSION['last_name'].', '.$_SESSION['first_name']; ?></td>
+                                                        <td></td>
+                                                        <td></td>
                                                         <td>99999</td>
                                                         <td>1</td>
                                                 </tr>
@@ -56,11 +56,11 @@ include "includes/info-modal.php"
                                         </thead>
                                         <tbody class="table-group-divider">
                                                 <tr>
-                                                        <td scope="row"><?= date("m-d-Y", strtotime("2025-06-15")) ?></td>
-                                                        <td><?= date("h:i A", strtotime('06:00')); ?></td>
-                                                        <td><?= date("m-d-Y", strtotime("2025-06-15"))?></td>
-                                                        <td><?= date("h:i A", strtotime('08:00')); ?></td>
-                                                        <td><?= date("h:i A", strtotime('08:30')); ?></td>
+                                                        <td scope="row"></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
                                                 </tr>
                                         </tbody>
                                 </table>
@@ -87,14 +87,14 @@ include "includes/info-modal.php"
                                         </thead>
                                         <tbody class="table-group-divider">
                                                 <tr>
-                                                        <td scope="row"><?= date("m-d-Y", strtotime("2025-06-15")); ?></td>
-                                                        <td><?= date("h:i A", strtotime('21:00')); ?></td>
-                                                        <td><?= date("h:i A", strtotime('21:15')); ?></td>
-                                                        <td><?= date("m-d-Y", strtotime("2025-06-15")); ?></td>
-                                                        <td><?= date("h:i A", strtotime('22:30')); ?></td>
-                                                        <td><?= date("h:i A", strtotime('22:40')); ?></td>
-                                                        <td>11:00</td>
-                                                        <td>08.00</td>
+                                                        <td scope="row"></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
                                                 </tr>
                                         </tbody>
                                 </table>
@@ -121,8 +121,9 @@ include "includes/info-modal.php"
                         </div>
                 </section>
 <?php
-        // Will only be avaiable if signature is needed.
-        //include_once "includes/signpad.php";
+        if (isset($_SESSION['signatureRequired']) && $_SESSION['signatureRequired'] === true) {
+                require_once "partials/signpad.php";
+        }
 ?>
                 <section id="customer_details" class="card my-3">
                         <div class="card-header bg-besttrailsclr">

@@ -1,4 +1,5 @@
 import { buildModal } from "./appmodal";
+import { fetchDrvr } from "./getDrvr";
 const infoBtn = document.querySelector('#notifyinfo');
 const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
@@ -11,8 +12,24 @@ const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
 const editBtn = document.querySelector('#edit');
 const completeBtn = document.querySelector('#submit-order');
+const fetchDriver = fetchDrvr;
 
-
+window.addEventListener('load', () => {
+    fetchDriver("http://prodriver.local/getprofile", { mode: 'cors'})
+    .then(data => {
+        const driver = data;
+        const primaryTable = document.querySelector('#tableA');
+        const primaryDrvrId = primaryTable.childNodes[3].childNodes[1].childNodes[3];
+        const primaryDrvrName = primaryTable.childNodes[3].childNodes[1].childNodes[5];
+        if (driver) {
+            primaryDrvrId.textContent = driver['driverid'];
+            primaryDrvrName.textContent = `${driver['lastname']}, ${driver['firstname']}`;
+        }
+    })
+    .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+    })
+})
 $(infoBtn).on('click', () => {
     $(infoModal).modal('toggle'),
     infoModal.addEventListener('shown.bs.modal', () => {

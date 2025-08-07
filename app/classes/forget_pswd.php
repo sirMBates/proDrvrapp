@@ -1,6 +1,6 @@
 <?php
 
-$alert = new core\Flash();
+use core\Flash;
 
 class ForgetPswdContr extends ForgetPswd {
     private $token;
@@ -14,6 +14,7 @@ class ForgetPswdContr extends ForgetPswd {
     }
 
     public function addTokenAndExpireTime() {
+        $alert = new Flash();
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /forget?warning=empty"); //emptyinput
@@ -48,7 +49,7 @@ class ForgetPswdContr extends ForgetPswd {
             header('Location: /forget?error=try+again');
             exit();
         } else {
-            $mail = require_once home_path("mail/emailSetup.php");
+            $mail = require_once base_path("mail/emailSetup.php");
             $mail->setFrom('noreply@prodriver.local', 'Help Desk');
             $mail->addAddress($this->email);
             $mail->Subject = "Forget Password";

@@ -5,7 +5,7 @@ use core\Flash;
 class GetDriver extends ConnectDatabase {
     protected function retrieveDriver($drvrid) {
         $alert = new Flash();
-        $sql = "SELECT username, email, firstname, lastname, mobileNumber, birthdate FROM driver
+        $sql = "SELECT driverid, username, email, firstname, lastname, mobileNumber, birthdate FROM driver
                 WHERE driverid = :driverid";
         $stmt = $this->connect()->prepare($sql);
         $stmt->bindParam(':driverid', $drvrid);

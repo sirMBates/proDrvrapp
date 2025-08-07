@@ -25,18 +25,8 @@
                                 </thead>
                                 <tbody class="table-group-divider">
                                         <tr>
-                                                <td scope="row"><?php if(!isset($_SESSION['first_name']) && !isset($_SESSION['last_name'])) {
-                                                        $clientName = ucwords('pro driver');
-                                                        echo $clientName;
-                                                } else {
-                                                        $clientName = ucwords($_SESSION['first_name'] . " " . $_SESSION['last_name']);
-                                                        echo $clientName;
-                                                }  ?></td>
-                                                <td><?php if (!isset($_SESSION['driver_id'])) {
-                                                        echo "0000";
-                                                } else {
-                                                        echo $_SESSION['driver_id'];
-                                                } ?></td>
+                                                <td scope="row"></td>
+                                                <td></td>
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>
