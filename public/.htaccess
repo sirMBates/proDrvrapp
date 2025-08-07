@@ -3,6 +3,8 @@
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif)$ [NC]
+#    RewriteCond %{REQUEST_URI} !^/api/getprofile\.php$ [NC]
+#    RewriteRule ^getprofile$ /api/getprofile\.php
     RewriteRule ^(.*)$ index.php [QSA,L]
-#   RewriteRule ^(.*)$ /index.php?/$1 [L,QSA]
+#    RewriteRule ^(.*)$ /index.php?/$1 [L,QSA]
 </IfModule>

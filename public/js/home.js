@@ -1,8 +1,10 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { bannerMsg } from "./main.js";
+import { fetchDrvr } from "./getDrvr.js";
 
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
+const fetchDriver = fetchDrvr;
 
 window.addEventListener('load', () => {
         let dvrBirthday = $(drvrBirthDate).val();
@@ -14,6 +16,21 @@ window.addEventListener('load', () => {
                 let firstName = separateNames[0];
                 localStorage.setItem('driverName', firstName);
         };
+
+        fetchDriver("http://prodriver.local/getprofile", { mode: 'cors'})
+        .then(data => {
+            const driver = data;
+            const drvrMainTable = document.querySelector('#dashboard-info');
+            const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
+            const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
+            if (driver) {
+                fullname.textContent = `${driver['firstname']} ${driver['lastname']}`;
+                drvrId.textContent = driver['driverid'];
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        })
 });
 
 function timeCelebrationHandler() {
@@ -30,7 +47,6 @@ function timeCelebrationHandler() {
                         //console.log(bDayDate);
                         if (bDayMonth === todayMon && bDayDate === todayDate) {
                                 let bdaySong = document.createElement("audio");
-                                let mainContent = document.querySelector('main');
                                 mainContent.insertAdjacentElement('afterbegin', bdaySong);
                                 $(bdaySong).attr('src', '../audio/happy-birthday-clip.mp3');
                                 bdaySong.play();

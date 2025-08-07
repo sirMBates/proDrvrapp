@@ -3,6 +3,7 @@
 // This file is part of the ProDrvrApp project.
 // ProDrvrApp is a web application for managing driver profiles and related functionalities.
 const namePattern = /^[a-zA-Z]{1,}$/;
+const statusPattern = /^[a-zA-Z\s]{1,}$/;
 const numberPattern = /^[0-9]{1,}$/;
 const phoneNumberPattern = /^\d{10}$/
 const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])$/;
@@ -50,6 +51,15 @@ export class Validation {
         }
     }
 
+    static validateStatus(input, type) {
+        switch(type) {
+            case 'text':
+                return this.validateDrvrStatus(input);
+            default:
+                throw new Error('Invalid validation type');
+        }
+    }
+
     static validateName(input) {
         return namePattern.test(input);
     }
@@ -80,5 +90,9 @@ export class Validation {
 
     static validatePhoto(input) {
         return photoPattern.test(input);
+    }
+
+    static validateDrvrStatus(input) {
+        return statusPattern.test(input);
     }
 }

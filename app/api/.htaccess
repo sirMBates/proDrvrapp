@@ -1,8 +1,9 @@
 RewriteEngine On
+RewriteBase /api/
 
 <Files "getprofile.php">
      AuthType Basic
      AuthName "Restricted Area"
-     AuthUserFile "D:/webapps/prodrvrapp/app/api/.htpasswd"
+     AuthUserFile "D:/webapps/prodrvrapp/.htpasswd"
      Require valid-user
 </Files>
