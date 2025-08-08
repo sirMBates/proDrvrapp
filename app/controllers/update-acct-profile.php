@@ -12,5 +12,18 @@ if ($method === 'POST' && isset($_POST['__method'])) {
     $method = strtoupper($_POST['__method']);
 }
 
-if ($method === 'PATCH') {}
+if ($method === 'PATCH') {
+    if (isset($_POST['updatepswd'])) {
+        $drvrid = htmlspecialchars($_SESSION['driver_id']);
+        $password = htmlspecialchars($_POST['password']);
+        include_once base_path("core/database.php");
+        include_once base_path("app/models/updatedrvrpwdmeth.php");
+        include_once base_path("app/classes/update_profile_pwd.php");
+        $newDrvrPwd = new UpdateDrvrPwdContr($drvrid, $password);
+        $newDrvrPwd->changeDrvrPwd();
+        $alert::setMsg('success', 'Yov\'ve successfully updated your password!');
+        header("Location: /profile?success=password+updated");
+        exit();
+    }
+}
 ?>
