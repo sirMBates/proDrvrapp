@@ -17,8 +17,8 @@ if ($method === 'PATCH') {
         $drvrid = htmlspecialchars($_SESSION['driver_id']);
         $password = htmlspecialchars($_POST['password']);
         include_once base_path("core/database.php");
-        include_once base_path("app/models/updatedrvrpwdmeth.php");
-        include_once base_path("app/classes/update_profile_pwd.php");
+        include_once base_path("app/models/updateprofilemeth.php");
+        include_once base_path("app/classes/update_profile.php");
         $newDrvrPwd = new UpdateDrvrPwdContr($drvrid, $password);
         $newDrvrPwd->changeDrvrPwd();
         $alert::setMsg('success', 'Yov\'ve successfully updated your password!');
