@@ -5,10 +5,14 @@ use core\Flash;
 class UpdateDrvrPwdContr extends UpdateDrvrPwd {
     private $drvrid;
     private $password;
+    private $email;
+    private $mobileNum;
 
-    public function __construct($drvrid, $password) {
+    public function __construct($drvrid, $password /*$email, $mobileNum*/) {
         $this->drvrid = $drvrid;
         $this->password = $password;  
+        /*$this->email = $email;  
+        $this->mobileNum = $mobileNum;*/  
     }
 
     public function changeDrvrPwd() {
@@ -34,6 +38,28 @@ class UpdateDrvrPwdContr extends UpdateDrvrPwd {
         $this->drvrPwdUpdate($this->drvrid, $this->password);
     }
 
+    /*public function changeDrvrData() {
+        if ($this->isInputEmpty() === false) {
+            $alert::setMsg('warning', 'You must enter a email or number.');
+            header("Location: /profile?warning=empty");
+            exit();
+        }
+
+        if ($this->isEmailValid() === false) {
+            $alert::setMsg('warning', 'Please enter a email address.');
+            header("Location: /profile?warning=invalid+email");
+            exit();
+        }
+
+        if ($this->isMobileNumberValid() === false) {
+            $alert::setMsg('warning', 'Please enter a mobile number.');
+            header("Location: /profile?warning=invalid+number");
+            exit();
+        }
+
+        $this->drvrUpdateData($this->drvrid, $this->email, $this->mobileNum);
+    }*/
+
     private function doesDrvrExist() {
         $doesExist;
         if (!$this->drvrExist($this->drvrid)) {
@@ -46,7 +72,7 @@ class UpdateDrvrPwdContr extends UpdateDrvrPwd {
 
     private function isInputEmpty() {
         $result;
-        if (empty($this->password)) {
+        if (empty($this->password) || empty($this->email) || empty($this->mobileNum)) {
             $result = false;
         }
         else {
@@ -58,6 +84,35 @@ class UpdateDrvrPwdContr extends UpdateDrvrPwd {
     private function isPswordValid() {
         $result;
         if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
+            $result = false;
+        }
+        else {
+            $result = true;
+        }
+        return $result;
+    }
+
+    private function isEmailValid() {
+        $result;
+        $cleanEmail = filter_var($this->email, FILTER_SANITIZE_EMAIL);
+        if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
+            $result = false;
+        }
+        else {
+            $result = true;
+        }
+        return $result;
+    }
+
+    private function isMobileNumberValid() {
+        $result;
+        $mobNumber = $this->mobileNum;
+        function cleanMobileNumber($number) {
+            $cleanMobNum = filter_var($number, FILTER_SANITIZE_NUMBER_INT);
+            return $cleanMobNum;
+        }
+
+        if (!preg_match("/^[0-9]{10}$/", cleanMobileNumber($mobNumber))) {
             $result = false;
         }
         else {

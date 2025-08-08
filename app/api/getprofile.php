@@ -6,7 +6,7 @@ if (session_status() !== 2) {
 
 include_once base_path("core/database.php");
 include_once base_path("app/models/getdrvrmeth.php");
-include_once base_path("app/classes/drvrs.php");
+include_once base_path("app/classes/get_drvr.php");
 
 $requestUri = $_SERVER['REQUEST_URI'];
 if ($requestUri === '/getprofile') {
