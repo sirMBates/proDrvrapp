@@ -21,7 +21,7 @@ if ($method === 'PATCH') {
         include_once base_path("app/classes/update_profile.php");
         $newDrvrPwd = new UpdateDrvrPwdContr($drvrid, $password);
         $newDrvrPwd->changeDrvrPwd();
-        $alert::setMsg('success', 'Yov\'ve successfully updated your password!');
+        $alert::setMsg('success', 'You\'ve successfully updated your password!');
         header("Location: /profile?success=password+updated");
         exit();
     }
