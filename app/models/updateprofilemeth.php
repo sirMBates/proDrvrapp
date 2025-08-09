@@ -2,7 +2,7 @@
 
 use core\Flash;
 
-class UpdateDrvrPwd extends ConnectDatabase {
+class UpdateDrvr extends ConnectDatabase {
     protected function drvrPwdUpdate($drvrid, $password) {
         $alert = new Flash();
         $sql = "UPDATE driver
