@@ -2,17 +2,17 @@
 
 use core\Flash;
 
-class UpdateDrvrPwdContr extends UpdateDrvrPwd {
+class UpdateDrvrContr extends UpdateDrvr {
     private $drvrid;
     private $password;
     private $email;
     private $mobileNum;
 
-    public function __construct($drvrid, $password /*$email, $mobileNum*/) {
+    public function __construct($drvrid, $password, $email, $mobileNum) {
         $this->drvrid = $drvrid;
         $this->password = $password;  
-        /*$this->email = $email;  
-        $this->mobileNum = $mobileNum;*/  
+        $this->email = $email;  
+        $this->mobileNum = $mobileNum;  
     }
 
     public function changeDrvrPwd() {
@@ -38,27 +38,27 @@ class UpdateDrvrPwdContr extends UpdateDrvrPwd {
         $this->drvrPwdUpdate($this->drvrid, $this->password);
     }
 
-    /*public function changeDrvrData() {
-        if ($this->isInputEmpty() === false) {
+    public function changeDrvrData() {
+        $alert = new Flash();
+        if ($this->isInputEmpty() === true) {
             $alert::setMsg('warning', 'You must enter a email or number.');
             header("Location: /profile?warning=empty");
             exit();
         }
 
-        if ($this->isEmailValid() === false) {
+        if (!empty($this->email) && $this->isEmailValid() === false) {
             $alert::setMsg('warning', 'Please enter a email address.');
             header("Location: /profile?warning=invalid+email");
             exit();
         }
 
-        if ($this->isMobileNumberValid() === false) {
+        if (!empty($this->mobileNum) && $this->isMobileNumberValid() === false) {
             $alert::setMsg('warning', 'Please enter a mobile number.');
             header("Location: /profile?warning=invalid+number");
             exit();
         }
-
         $this->drvrUpdateData($this->drvrid, $this->email, $this->mobileNum);
-    }*/
+    }
 
     private function doesDrvrExist() {
         $doesExist;
@@ -72,7 +72,7 @@ class UpdateDrvrPwdContr extends UpdateDrvrPwd {
 
     private function isInputEmpty() {
         $result;
-        if (empty($this->password) || empty($this->email) || empty($this->mobileNum)) {
+        if (!empty($this->password) || !empty($this->email) || !empty($this->mobileNum)) {
             $result = false;
         }
         else {

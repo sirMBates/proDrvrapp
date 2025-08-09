@@ -19,20 +19,25 @@ if ($method === 'PATCH') {
         include_once base_path("core/database.php");
         include_once base_path("app/models/updateprofilemeth.php");
         include_once base_path("app/classes/update_profile.php");
-        $newDrvrPwd = new UpdateDrvrPwdContr($drvrid, $password);
+        $newDrvrPwd = new UpdateDrvrContr($drvrid, $password);
         $newDrvrPwd->changeDrvrPwd();
         $alert::setMsg('success', 'You\'ve successfully updated your password!');
         header("Location: /profile?success=password+updated");
         exit();
-    }/*
+    }
     elseif (isset($_POST['updateTelEmail'])) {
         $driver = htmlspecialchars(Trim($_SESSION['driver_id']));
+        $drvrPassword = null; 
         $drvrEmail = isset($_POST['email'])? htmlspecialchars(trim($_POST['email'])) : null;
         $drvrMobile = isset($_POST['mobile'])? htmlspecialchars(trim($_POST['mobile'])) : null;        
         include_once base_path("core/database.php");
         include_once base_path("app/models/updateprofilemeth.php");
         include_once base_path("app/classes/update_profile.php");
-        $changeData = new 
-    }*/
+        $changeData = new UpdateDrvrContr($driver, $drvrPassword, $drvrEmail, $drvrMobile);
+        $changeData->changeDrvrData();
+        $alert::setMsg('info', 'Your information has been updated.');
+        header("Location: /profile?info=data+saved");
+        exit();
+    }
 }
 ?>
