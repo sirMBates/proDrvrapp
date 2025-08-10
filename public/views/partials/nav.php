@@ -80,7 +80,7 @@
                                         <a class="nav-link" href="/profile"><span class="px-2 fa-solid fa-user"></span>My Profile</a>
                                 </li>
                                 <li class="nav-item">
-                                        <a class="nav-link" href="/payroll"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>Payroll</a>
+                                        <a class="nav-link" href="/timesheet"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>Summary</a>
                                 </li>                                                                
                         </ul>
                 </div>

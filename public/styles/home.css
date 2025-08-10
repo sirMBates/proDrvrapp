@@ -1,8 +1,3 @@
-.tiles:hover {
-        cursor: pointer;
-}
-
-.tiles:active {
-        transform: scale(0.9);
-        box-shadow: 0 0 0;
+.card-body::-webkit-scrollbar {
+        display: none;
 }

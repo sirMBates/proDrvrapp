@@ -7,12 +7,14 @@ include "includes/flashmessage.php";
 include "includes/info-modal.php";
 ?>
 <main class="container-fluid p-3 d-flex flex-column">
-        <form id="" action="" method="">
-                <div class="input-group">
-                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                </div>
-                        
-                <div id="drvrEntryData" class="w-100 carousel slide carousel-fade mb-3">
+        <form id="" action="" method="POST">                        
+                <div id="tsheet-data" class="card mb-auto">
+                        <div class="card-header bg-besttrailsclr">
+                                <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>time sheet information</h3>
+                        </div>
+                        <div class="card-body overflow-x-auto">
+                                <table class="table m-auto" style="width: 1200px;"></table>
+                        </div>
                         <div class="carousel-inner">
                                 <div class="carousel-item active">
                                         <div class="card">

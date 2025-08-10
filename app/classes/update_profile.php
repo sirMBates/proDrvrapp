@@ -23,7 +23,7 @@ class UpdateDrvrContr extends UpdateDrvr {
             exit();
         }
 
-        if ($this->isInputEmpty() === false) {
+        if ($this->isInputEmpty() === true) {
             $alert::setMsg('warning', 'Please enter your new password.');
             header("Location: /profile?warning=empty");
             exit();
