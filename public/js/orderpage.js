@@ -4,10 +4,11 @@ const infoBtn = document.querySelector('#notifyinfo');
 const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
 const infoModBtn = document.querySelector('#info-ok');
-const headingA = document.querySelector('#tableA');
-const dispatchB = document.querySelector('#tableB');
-const dispatchC = document.querySelector('#tableC');
-const customerDetailsD = document.querySelector('#tableD');
+const primaryA = document.querySelector('#tableA');
+const groupB = document.querySelector('#tableB');
+const groupC = document.querySelector('#tableC');
+const groupD = document.querySelector('#tableD');
+const clickCells = document.querySelectorAll('.editable-data');
 const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
 const editBtn = document.querySelector('#edit');
@@ -18,12 +19,11 @@ window.addEventListener('load', () => {
     fetchDriver("http://prodriver.local/getprofile", { mode: 'cors'})
     .then(data => {
         const driver = data;
-        const primaryTable = document.querySelector('#tableA');
-        const primaryDrvrId = primaryTable.childNodes[3].childNodes[1].childNodes[3];
-        const primaryDrvrName = primaryTable.childNodes[3].childNodes[1].childNodes[5];
+        const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
+        const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
         if (driver) {
             primaryDrvrId.textContent = driver['driverid'];
-            primaryDrvrName.textContent = `${driver['lastname']}, ${driver['firstname']}`;
+            primaryDrvrName.textContent = `${driver['firstname']} ${driver['lastname']}`;
         }
     })
     .catch(error => {
@@ -38,4 +38,32 @@ $(infoBtn).on('click', () => {
     infoModBtn.addEventListener('click', () => {
         $(infoModal).modal('toggle');
     })
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    clickCells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            if (!cell.querySelector('input')) {
+                const currentValue = cell.textContent.trim();
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.classList.add('form-control');
+                input.value = currentValue;
+                cell.textContent = '';
+                cell.appendChild(input);
+
+                input.focus();
+                input.addEventListener('blur', () => {
+                    const newValue = input.value.trim();
+                    cell.textContent = newValue || currentValue;
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        input.blur();
+                    }
+                });
+            }
+        });
+    });
 });

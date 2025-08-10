@@ -16,10 +16,12 @@ if ($method === 'PATCH') {
     if (isset($_POST['updatepswd'])) {
         $drvrid = htmlspecialchars(trim($_SESSION['driver_id']));
         $password = htmlspecialchars(trim($_POST['password']));
+        $email = htmlspecialchars(trim(null));
+        $phoneNumber = htmlspecialchars(trim(null));
         include_once base_path("core/database.php");
         include_once base_path("app/models/updateprofilemeth.php");
         include_once base_path("app/classes/update_profile.php");
-        $newDrvrPwd = new UpdateDrvrContr($drvrid, $password);
+        $newDrvrPwd = new UpdateDrvrContr($drvrid, $password, $email, $phoneNumber);
         $newDrvrPwd->changeDrvrPwd();
         $alert::setMsg('success', 'You\'ve successfully updated your password!');
         header("Location: /profile?success=password+updated");

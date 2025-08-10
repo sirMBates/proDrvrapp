@@ -126,7 +126,7 @@ activeLink();
 //View pay card link in driver menu when on payroll page.
 function viewablePayCard () {
         let currentView = window.location.pathname;
-        if (currentView === '/payroll') {
+        if (currentView === '/timesheet') {
                 viewPayCard.classList.remove('d-none');        
         } else {
                 viewPayCard.classList.add('d-none');

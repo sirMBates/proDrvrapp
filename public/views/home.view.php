@@ -6,13 +6,13 @@
         include "includes/flashmessage.php";
         include "includes/custom-modal.php";
 ?>
-<main class="container-fluid mb-1 p-1">
+<main class="container-fluid mb-1">
         <div class="card mb-auto">
                 <div class="card-header bg-besttrailsclr text-btd-white-off">
                         <p class='h3 text-center text-capitalize'>driver information</p>
                 </div>
-                <div class="card-body overflow-auto">
-                        <table id="dashboard-info" class="table">
+                <div class="card-body overflow-x-auto">
+                        <table id="dashboard-info" class="table m-auto" style="width: 1000px;">
                                 <thead class="table-info text-capitalize">
                                         <tr>
                                                 <th scope="col">driver name</th>
@@ -45,7 +45,9 @@
                                         </div>
                                 </form>
                         </table>
-                        <div class="container d-flex justify-content-lg-center">
+                </div>
+                <div class="card-footer d-inline-flex justify-content-center">
+                        <div class="my-2">
                                 <div id="update-status-con" class="mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
                                         <button type="button" class="btn btn-outline-primary">Enroute to Garage/Yard</button>
                                         <button type="button" class="btn btn-outline-primary">Check-In Garage/Yard</button>

@@ -35,8 +35,8 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='styles/profile.css'>\n";
                         break;
 
-                case "/payroll":
-                        echo "<link rel='stylesheet' href='styles/payroll.css'>\n";
+                case "/timesheet":
+                        echo "<link rel='stylesheet' href='styles/tsheet.css'>\n";
                         break;
 
                 case "/prodrvrapp/public/mail/sendmail.php":

@@ -5,6 +5,6 @@ if (!isset($_SESSION['logged_in']) && $_SESSION['logged_in'] !== true) {
     die();
 }
 
-view('payroll.view.php', ['title' => 'Work week summary',]);
+view('timesheet.view.php', ['title' => 'Work week summary',]);
 
 ?>

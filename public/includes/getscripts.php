@@ -77,8 +77,8 @@ function pageScripts($value) {
                 echo "<script type='module' src='js/profilehandler.js'></script>\n";
                 break;
 
-            case "/payroll":
-                echo "<script type='module' src='js/payroll.js'></script>\n";
+            case "/timesheet":
+                echo "<script type='module' src='js/tsheet.js'></script>\n";
                 break;
             
             case "/printable":
