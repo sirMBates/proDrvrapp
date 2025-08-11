@@ -1,16 +1,5 @@
-<<<<<<< HEAD
-.card-body::-webkit-scrollbar {
-        display: none;  
-=======
-/*.carousel-control-prev,
-.carousel-control-next{
-        margin-top: 10rem;
-        margin-right: 1rem;
-}*/
-
 .card-body::-webkit-scrollbar {
         display: none;
->>>>>>> fab14b08a45834e377c11c15bac6e33cfbaffeb4
 }
 
 .editable-data {
