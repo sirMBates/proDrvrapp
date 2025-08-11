@@ -97,9 +97,6 @@ function removeDrvrGov() {
 };
 window.addEventListener('load', removeDrvrGov, false);
 
-let viewer = window.innerWidth;
-console.log(viewer);
-
 window.addEventListener('resize', () => {
         let btnGrp = document.querySelector('#update-status-con');
         const screenSize = window.innerWidth;
