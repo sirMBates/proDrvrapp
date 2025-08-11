@@ -12,7 +12,7 @@
                         <p class='h3 text-center text-capitalize'>driver information</p>
                 </div>
                 <div class="card-body overflow-x-auto">
-                        <table id="dashboard-info" class="table m-auto" style="width: 1000px;">
+                        <table id="dashboard-info" class="table m-auto" style="width: 1200px;">
                                 <thead class="table-info text-capitalize">
                                         <tr>
                                                 <th scope="col">driver name</th>

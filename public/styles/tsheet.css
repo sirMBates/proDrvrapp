@@ -1,23 +1,13 @@
-.carousel-control-prev,
-.carousel-control-next{
-        margin-top: 10rem;
-        margin-right: 1rem;
+.card-body::-webkit-scrollbar {
+        display: none;  
 }
 
-.card {
-        padding-bottom: 1.25rem;  
-}
-
-#entriesDataCon::-webkit-scrollbar {
-        display: none;
+.editable-data {
+        cursor: pointer;
 }
 
 #paySheetCardCon .card-body::-webkit-scrollbar {
         display: none;
-}
-
-.plain-bkgd {
-        background-image: none;
 }
 
 @media only screen and (width <= 765px) {
