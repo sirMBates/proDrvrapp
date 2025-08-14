@@ -2,9 +2,16 @@
 
 use core\Database;
 use core\Flash;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
+use Dotenv\Dotenv;
+require_once "../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
 
 class Login {
     protected function getDriver($username, $password) {
+        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
         $sql = "SELECT password FROM driver
@@ -15,9 +22,9 @@ class Login {
         $stmt->execute();        
 
         if (!$stmt || $stmt->rowCount() === 0) {
-            $alert::setMsg('error', 'User not found. Please check your username or email.');
+            /*$alert::setMsg('error', 'User not found. Please check your username or email.');
             header("Location: /signin?error=not+found"); // noRegisteredUseraccount
-            exit();
+            exit();*/
         }
 
         $hashedPsw = $stmt->fetchAll();
@@ -29,27 +36,33 @@ class Login {
             exit();
         } elseif ($checkPsw === true) {
             $sql2 = "SELECT * FROM driver
-                    WHERE username = ? OR email = ? and PASSWORD = ?";
+                    WHERE username = :username AND PASSWORD = :password";
             $stmt = $db->connect()->prepare($sql2);
-            $stmt->bindParam(1, $username);
-            $stmt->bindParam(2, $email);
-            $stmt->bindParam(3, $password);
+            $stmt->bindParam(":username", $username);
+            $stmt->bindParam(":password", $password);
             $stmt->execute();
 
             if (!$stmt || $stmt->rowCount() === 0) {
-                $alert::setMsg('error', 'User not found. Please check your username or email.');
+                /*$alert::setMsg('error', 'User not found. Please check your username or email.');
                 header("Location: /signin?error=not+found"); // noRegisteredUseraccount
-                exit();
+                exit();*/
             }
 
             $driver = $stmt->fetchAll();
+            if ($stmt->rowCount() > 0) {
+                print_r($stmt);
+            }
             //session_start();
-            $_SESSION['driver_id'] = $driver[0]['driverid'];
-            $_SESSION['first_name'] = $driver[0]['firstName'];
+            $encryptedBirthdate = $driver['birthdate'];
+            $encryptedFirstName = $driver['firstName'];
+            $dbBirthdate = Crypto::decrypt($encryptedBirthdate, $key);
+            $dbFirstName = Crypto::decrypt($encryptedFirstName, $key);
+            $_SESSION['driver_id'] = $driver['driverid'];
+            $_SESSION['first_name'] = $dbFirstName;
             $currentDate = date('md');
-            $drvrDate = date('md', strtotime($driver[0]['birthdate']));
+            $drvrDate = date('md', strtotime($dbBirthdate));
             if ($currentDate === $drvrDate) {
-                $_SESSION['birth_date'] = $driver[0]['birthdate'];
+                $_SESSION['birth_date'] = $dbBirthdate;
             }
             $_SESSION['logged_in'] = true;
 

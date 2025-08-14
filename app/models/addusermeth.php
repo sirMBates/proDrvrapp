@@ -8,7 +8,6 @@ use Dotenv\Dotenv;
 require_once "../vendor/autoload.php";
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
 $dotenv->load();
-/*$keyAscii = $_ENV['SECRET_KEY'];*/
 
 class AddedDrvr {
     protected function setDriver($username, $email, $password) {

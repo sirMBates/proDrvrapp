@@ -18,7 +18,7 @@ class RegProContr extends RegProInfo {
     }
 
     public function processProfile () {
-        if ($this->isEmpty() === false) {
+        if ($this->isEmpty() === true) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /register?warning=empty"); //emptyinputs
             exit();
@@ -42,19 +42,13 @@ class RegProContr extends RegProInfo {
             exit();
         }
 
-        /*if ($this->cleanToken() !== $_SESSION['drvr_token']) {
-            // echo "<p class='text-capitalize fs-3'>problem with form submission</p>";
-            header("Location: ../../public/views/drvrinfo.php?error=problemwithsubmission");
-            exit();
-        }*/
-
         if ($this->enterDrvrInfo() === false) {
-            $alert::setMsg('danger', 'We\'re very sorry but please, try again!');
+            $alert::setMsg('danger', 'There seems to be a problem with your submission. Please try again!');
             header("Location: /register?danger=invalid"); //userNotValid
             exit();
         }
 
-        $this->addDriverDetails($this->firstname, $this->lastname, $this->mobileNum, $this->birthdate, $_SESSION['username']);
+        $this->addDriverDetails($this->firstname, $this->lastname, $this->mobileNum, $this->birthdate, $_SESSION['user_name']);
     }
 
     private function isEmpty() {
@@ -73,10 +67,10 @@ class RegProContr extends RegProInfo {
             return $clean_data;
         }
         if (empty(cleanData($dataEntry))) {
-            $result = false;
+            $result = true;
         }
         else {
-            $result = true;
+            $result = false;
         }
         return $result;
     }
@@ -138,14 +132,14 @@ class RegProContr extends RegProInfo {
 
     private function enterDrvrInfo() {
         $result;
-        $drvrSpecToken = $this->formToken;
+        $drvrToken = $this->formToken;
         function cleanToken($token) {
             $sanitizedToken = htmlspecialchars($token, ENT_QUOTES);
             return $sanitizedToken;
         }
-        $username = $_SESSION['username'];
+        $username = $_SESSION['user_name'];
         $secretToken = $_SESSION['drvr_token'];
-        if (cleanToken($drvrSpecToken) !== $secretToken && !isset($username)) {
+        if (cleanToken($drvrToken) !== $secretToken && !isset($username)) {
             $result = false;
         }
         else {
