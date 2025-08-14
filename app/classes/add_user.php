@@ -15,7 +15,7 @@ class AddDrvrContr extends AddedDrvr {
 
     public function addDriver() {
         $alert = new Flash();
-        if ($this->isEmpty() === false) {
+        if ($this->isEmpty() === true) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /signup?warning=empty"); //emptyinput
             exit();
