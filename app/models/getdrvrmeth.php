@@ -14,7 +14,7 @@ class GetDriver {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT driverid, username, email, firstName, lastName, mobileNumber, birthdate FROM driver
+        $sql = "SELECT * FROM driver
                 WHERE driverid = :driverid";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':driverid', $drvrid);
