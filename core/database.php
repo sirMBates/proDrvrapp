@@ -33,7 +33,6 @@ class Database {
         ];
         try {
             $this->connection = new \PDO($dsn, $this->username, $this->password, $options);
-            //echo "Connected successfully";
         }
         catch (\PDOException $error) {
             print "Error: " . $error->getMessage() . "<br>";
