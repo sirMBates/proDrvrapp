@@ -2,12 +2,19 @@
 
 use core\Database;
 use core\Flash;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
+use Dotenv\Dotenv;
+require_once "../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
 
 class GetDriver {
     protected function retrieveDriver($drvrid) {
+        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT driverid, username, email, firstname, lastname, mobileNumber, birthdate FROM driver
+        $sql = "SELECT driverid, username, email, firstName, lastName, mobileNumber, birthdate FROM driver
                 WHERE driverid = :driverid";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':driverid', $drvrid);
@@ -21,7 +28,20 @@ class GetDriver {
             exit();
         }
 
-        return $result;
+        $encryptedEmail = $result['email'];
+        $encryptedFirstName = $result['firstName'];
+        $encryptedLastName = $result['lastName'];
+        $encryptedMobileNum = $result['mobileNumber'];
+        $encryptedBirthdate = $result['birthdate'];
+        return {
+            $drvrid = $result['driverid'];
+            $username = $result['username'];
+            $dbEmail = Crypto::decrypt($encryptedEmail, $key);
+            $dbFirstName = Crypto::decrypt($encryptedFirstName, $key);
+            $dbLastName = Crypto::decrypt($encryptedLastName, $key);
+            $dbMobileNum = Crypto::decrypt($encryptedMobileNum, $key);
+            $dbBirthdate = Crypto::decrypt($encryptedBirthdate, $key);
+        }
     }
 
     public function getDrvrStats($drvrid) {
