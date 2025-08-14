@@ -20,7 +20,7 @@ class GetDriver {
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->execute();
 
-        $result = $stmt->fetch();
+        $result = $stmt->fetchAll();
 
         if (!$stmt || $stmt->rowCount() === 0) {
             $alert::setMsg('error', 'There seems to be a problem. Try again later.');
