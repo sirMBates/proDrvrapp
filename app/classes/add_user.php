@@ -51,10 +51,10 @@ class AddDrvrContr extends AddedDrvr {
     private function isEmpty() {
         $result;
         if (empty($this->username) || empty($this->email) || empty($this->password)) {
-            $result = false;
+            $result = true;
         }
         else {
-            $result = true;
+            $result = false;
         }
         return $result;
     }
