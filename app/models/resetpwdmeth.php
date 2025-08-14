@@ -1,13 +1,15 @@
 <?php
 
+use core\Database;
 use core\Flash;
 
-class ResetPwd extends ConnectDatabase {
+class ResetPwd {
     protected function checkTokenandExpiration($token) {
+        $db = new Database;
         $alert = new Flash();
         $sql = "SELECT * FROM pwdreset
                 WHERE resetToken = :resetToken";                
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
         $stmt->execute([
             ':resetToken' => $token
         ]);

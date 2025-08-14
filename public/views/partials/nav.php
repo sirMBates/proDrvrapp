@@ -4,13 +4,7 @@
                         <label for="profile-upload"><img id="profile-pic" src="../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="mx-1 my-1"></label>
                         <input type="file" id="profile-upload" accept="image/jpg, image/jpeg, image/png, image/gif" capture="user">
                 </div>
-                <h5 class="offcanvas-title text-light" id="useraccessLabel"><?php
-                        if (!isset($_SESSION['first_name']) && !isset($_SESSION['last_name'])) {
-                                echo "Pro Driver";
-                        }
-                        else {
-                                echo $_SESSION['first_name'] . " " . $_SESSION['last_name'];
-                        }?></h5>
+                <h5 class="offcanvas-title text-light" id="useraccessLabel"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="close"></button>
         </div>
         <div class="offcanvas-body">

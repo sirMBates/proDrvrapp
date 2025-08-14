@@ -8,12 +8,11 @@ if (session_status() !== 2) {
 
 if (isset($_POST['createAccount'])) {
     // Getting the info from the form using POST method from the name attribute.
-    $username = htmlspecialchars($_POST['username']);
-    $email = htmlspecialchars($_POST['email']);
-    $password = htmlspecialchars($_POST['password']);
-    $formToken = htmlspecialchars($_POST['drvrtoken']);
+    $username = htmlspecialchars(trim($_POST['username']));
+    $email = htmlspecialchars(trim($_POST['email']));
+    $password = htmlspecialchars(trim($_POST['password']));
+    $formToken = htmlspecialchars(trim($_POST['drvrtoken']));
     // Instantiate the add user controller class. ↓
-    include_once base_path("core/database.php");
     include_once base_path("app/models/addusermeth.php");
     include_once base_path("app/classes/add_user.php");
     $signup = new AddDrvrContr($username, $email, $password);

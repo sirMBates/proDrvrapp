@@ -1,16 +1,17 @@
 <?php
 
+use core\Database;
 use core\Flash;
 
-class Login extends ConnectDatabase {
+class Login {
     protected function getDriver($username, $password) {
+        $db = new Database;
         $alert = new Flash();
         $sql = "SELECT password FROM driver
-                WHERE username = :username OR email = :email";
-        $stmt = $this->connect()->prepare($sql);
+                WHERE username = :username";
+        $stmt = $db->connect()->prepare($sql);
         
-        $stmt->bindParam(1, $username);
-        $stmt->bindParam(2, $password);
+        $stmt->bindParam(":username", $username);
         $stmt->execute();        
 
         if (!$stmt || $stmt->rowCount() === 0) {
@@ -29,7 +30,7 @@ class Login extends ConnectDatabase {
         } elseif ($checkPsw === true) {
             $sql2 = "SELECT * FROM driver
                     WHERE username = ? OR email = ? and PASSWORD = ?";
-            $stmt = $this->connect()->prepare($sql2);
+            $stmt = $db->connect()->prepare($sql2);
             $stmt->bindParam(1, $username);
             $stmt->bindParam(2, $email);
             $stmt->bindParam(3, $password);
@@ -44,15 +45,12 @@ class Login extends ConnectDatabase {
             $driver = $stmt->fetchAll();
             //session_start();
             $_SESSION['driver_id'] = $driver[0]['driverid'];
-            $_SESSION['user_name'] = $driver[0]['username'];
             $_SESSION['first_name'] = $driver[0]['firstName'];
-            $_SESSION['last_name'] = $driver[0]['lastName'];
             $currentDate = date('md');
             $drvrDate = date('md', strtotime($driver[0]['birthdate']));
             if ($currentDate === $drvrDate) {
                 $_SESSION['birth_date'] = $driver[0]['birthdate'];
             }
-            $_SESSION['mobile_number'] = $driver[0]['mobileNumber'];
             $_SESSION['logged_in'] = true;
 
             $stmt = null;

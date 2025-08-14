@@ -7,8 +7,8 @@ include "includes/flashmessage.php";
         <main class="container-fluid my-auto">
                 <div id="form_container" class="container">
                         <form id="acct_info" action="" method="POST" class="needs-validation" novalidate>
-                                <!--<input type="hidden" name="__method" value="UPDATE">-->
-                                <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['username'];?></h2>
+                                <input type="hidden" name="__method" value="patch">
+                                <h2 class="text-center text-capitalize text-dark">hello, <?= $_SESSION['user_name'];?></h2>
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>
 
                                 <div class="input-group mb-2">

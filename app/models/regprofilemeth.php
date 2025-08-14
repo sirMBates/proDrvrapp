@@ -1,14 +1,16 @@
 <?php
 
+use core\Database;
 use core\Flash;
 
-class RegProInfo extends ConnectDatabase {
+class RegProInfo {
     protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
+        $db = new Database;
         $alert = new Flash();
         $sql = "UPDATE driver 
                 SET firstName = ?, lastName = ?, mobileNumber = ?, birthdate = ? 
                 WHERE username = ?";
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(1, $firstname);
         $stmt->bindParam(2, $lastname);
         $stmt->bindParam(3, $mobileNum);

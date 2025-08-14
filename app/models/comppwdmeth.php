@@ -1,13 +1,15 @@
 <?php
 
+use core\Database;
 use core\Flash;
 
-class CompleteReset extends ConnectDatabase {
+class CompleteReset {
     protected function checkValidToken($token) {
+        $db = new Database;
         $alert = new Flash();
         $sql = "SELECT * FROM pwdreset
                 WHERE resetToken = :resetToken";
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
         //var_dump($token);
         $stmt->execute([
             ':resetToken' => $token
@@ -27,6 +29,7 @@ class CompleteReset extends ConnectDatabase {
     }
 
     protected function updatePassword($token, $password) {
+        $db = new Database;
         $alert = new Flash();
         $driverResetToken = $this->checkValidToken($token);
         if ($driverResetToken === null) {
@@ -47,7 +50,7 @@ class CompleteReset extends ConnectDatabase {
         $sql = "UPDATE driver
                 SET password = :password
                 WHERE email = :email";
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
         $stmt->execute([
             ':password' => $newHashPwd,
             ':email' => $driverEmail
@@ -62,6 +65,7 @@ class CompleteReset extends ConnectDatabase {
     }
     
     protected function clearToken($token) {
+        $db = new Database;
         $alert = new Flash();
         $resetData = $this->checkValidToken($token);
         if ($resetData === null) {
@@ -71,7 +75,7 @@ class CompleteReset extends ConnectDatabase {
         $sql = "UPDATE pwdreset
                 SET resetToken = '', tokenExpTime = null
                 WHERE resetToken = :resetToken";
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
         $stmt->execute([
             ':resetToken' => $token
         ]);

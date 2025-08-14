@@ -2,3 +2,4 @@
 config.php
 tmp
 .htpasswd
+getkey.php

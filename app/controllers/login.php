@@ -11,7 +11,6 @@ if (isset($_POST['loginAcct'])) {
     $password = htmlspecialchars($_POST['password']);
     $formToken = htmlspecialchars($_POST['drvrtoken']);
     // Instantiate the sign in user controller class. ↓
-    include_once base_path("core/database.php");
     include_once base_path("app/models/drvrloginmeth.php");
     include_once base_path("app/classes/drvrlogin.php");
     $signin = new Logincontr($username, $password);
@@ -19,7 +18,7 @@ if (isset($_POST['loginAcct'])) {
     $signin->loginDriver();
     // Redirect to home page upon successful login with valid message.
     $alert::setMsg('success', 'Hello there, '. $_SESSION['first_name'] . '!');
-    header("Location: /", true, 303);
+    header("Location: /");
     exit();
 }
 
