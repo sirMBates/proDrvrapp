@@ -4,7 +4,6 @@ if (session_status() !== 2) {
     session_start();
 }
 
-include_once base_path("core/database.php");
 include_once base_path("app/models/getdrvrmeth.php");
 include_once base_path("app/classes/get_drvr.php");
 
