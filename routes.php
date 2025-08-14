@@ -15,10 +15,10 @@ $router->get('/logout', 'app/controllers/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
 
 $router->post('/signup', 'app/controllers/adduser.php');
-$router->post('/register', 'app/controllers/regprofile.php');
 $router->post('/signin', 'app/controllers/login.php');
 $router->post('/forget', 'app/controllers/forgetpw.php');
 $router->post('/compreset', 'app/controllers/compresetproc.php');
 $router->post('/reset', 'app/controllers/reset.php');
 
+$router->patch('/register', 'app/controllers/regprofile.php');
 $router->patch('/profile', 'app/controllers/updateprofileacct.php');

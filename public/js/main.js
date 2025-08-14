@@ -1,3 +1,4 @@
+import { fetchDrvr } from './getDrvr.js';
 const myCurrentView = window.location.pathname;
 const profCon = document.querySelector("#profilecon");
 const getMenuItems = document.querySelectorAll(".nav-item");
@@ -8,9 +9,28 @@ let themeBtn = document.querySelector("#themeBtn");
 let themeBtnText = themeBtn.nextElementSibling;
 const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
-//const mainPageEl = document.querySelector('html');
-//console.log(changeStatusCon);
+const retrieveMyDrvr = fetchDrvr;
 let isDarkMode;
+
+window.addEventListener('DOMContentLoaded', () => {
+        retrieveMyDrvr("http://prodriver.local/getprofile", { mode: 'cors'})
+        .then(data => {
+            const driver = data;
+            const drvrMainMenu = document.querySelector('#useraccess');
+            const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
+            if (driver) {
+                drvrMainHeader.textContent = `${driver['firstname']} ${driver['lastname']}`;
+            }
+        })
+        .catch(error => {
+                if (error) {
+                        const drvrMainMenu = document.querySelector('#useraccess');
+                        const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3];
+                        drvrMainHeader.textContent = 'Pro Driver';
+                }
+                console.error('There was a problem with the fetch operation:', error);
+        })
+})
 
 // Set the theme.
 const themeSet = {

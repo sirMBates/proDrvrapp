@@ -29,7 +29,14 @@ window.addEventListener('load', () => {
             }
         })
         .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
+                const drvrMainTable = document.querySelector('#dashboard-info');
+                const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
+                const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
+                if (error) {
+                        fullname.textContent = 'Pro Driver';
+                        drvrId.textContent = '0000';
+                }
+                console.error('There was a problem with the fetch operation:', error);
         })
 });
 

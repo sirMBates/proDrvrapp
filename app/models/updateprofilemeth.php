@@ -1,14 +1,16 @@
 <?php
 
+use core\Database;
 use core\Flash;
 
-class UpdateDrvr extends ConnectDatabase {
+class UpdateDrvr {
     protected function drvrPwdUpdate($drvrid, $password) {
+        $db = new Database;
         $alert = new Flash();
         $sql = "UPDATE driver
                 SET password = :password
                 WHERE driverid = :driverid";
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
         $hashPwd = password_hash($password, PASSWORD_BCRYPT);
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->bindParam(':password', $hashPwd);
@@ -24,6 +26,7 @@ class UpdateDrvr extends ConnectDatabase {
     }
 
     protected function drvrUpdateData($drvrid, $drvrEmail, $drvrMobile) {
+        $db = new Database;
         $alert = new Flash();
         $fields = [];
         $params = [];
@@ -43,7 +46,7 @@ class UpdateDrvr extends ConnectDatabase {
             implode(", ", $fields). " 
             WHERE driverid = :driverid";
             $params[':driverid'] = $drvrid;
-            $stmt = $this->connect()->prepare($sql);
+            $stmt = $db->connect()->prepare($sql);
             foreach ($params as $key => $value) {
                 $stmt->bindValue($key, $value);
             }
@@ -62,10 +65,11 @@ class UpdateDrvr extends ConnectDatabase {
     }
 
     protected function drvrExist($drvrid) {
+        $db = new Database;
         $alert = new Flash();
         $sql = "SELECT * FROM driver
                 WHERE driverid = :driverid";
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->execute();
 

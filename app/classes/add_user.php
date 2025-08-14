@@ -1,6 +1,6 @@
 <?php
 
-$alert = new core\Flash();
+use core\Flash;
 
 class AddDrvrContr extends AddedDrvr {
     private $username;
@@ -14,6 +14,7 @@ class AddDrvrContr extends AddedDrvr {
     }
 
     public function addDriver() {
+        $alert = new Flash();
         if ($this->isEmpty() === false) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /signup?warning=empty"); //emptyinput
@@ -38,7 +39,7 @@ class AddDrvrContr extends AddedDrvr {
             exit();
         }
 
-        if ($this->nameOrEmailExist() === false) {
+        if ($this->nameOrEmailExist() === true) {
             $alert::setMsg('warning', 'Please choose a different username or email.');
             header("Location: /signup?warning=exist+already"); //nameexistalready
             exit();
@@ -97,8 +98,7 @@ class AddDrvrContr extends AddedDrvr {
         $result;
         if (!$this->checkDriver($this->username, $this->email)) {
             $result = false;
-        }
-        else {
+        } else {
             $result = true;
         }
         return $result;

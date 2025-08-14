@@ -1,22 +1,33 @@
 <?php
 
+use core\Database;
 use core\Flash;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
+use Dotenv\Dotenv;
+require_once "../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
+/*$keyAscii = $_ENV['SECRET_KEY'];*/
 
-class AddedDrvr extends ConnectDatabase {
+class AddedDrvr {
     protected function setDriver($username, $email, $password) {
+        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+        $db = new Database;
         $alert = new Flash();
         $sql = "INSERT INTO driver (
                 username, email, password, firstName, lastName, mobileNumber, birthdate) 
                 VALUES (?,?,?,?,?,?,?)";
-        $stmt = $this->connect()->prepare($sql);
+        $stmt = $db->connect()->prepare($sql);
 
+        $encryptedEmail = Crypto::encrypt($email, $key);
         $hashPsW = password_hash($password, PASSWORD_BCRYPT);
         $tmpFirstName = '';
         $tmpLastName = '';
         $tmpMobileNum = '';
         $tmpBirthDate = NULL;
         $stmt->bindParam(1, $username);
-        $stmt->bindParam(2, $email);
+        $stmt->bindParam(2, $encryptedEmail);
         $stmt->bindParam(3, $hashPsW);
         $stmt->bindParam(4, $tmpFirstName);
         $stmt->bindParam(5, $tmpLastName);
@@ -35,8 +46,8 @@ class AddedDrvr extends ConnectDatabase {
         $tokenExpTime = NULL;
         $sql2 = "INSERT INTO pwdreset (email, resetToken, tokenExpTime)
                 VALUES (?,?,?)";
-        $stmt2 = $this->connect()->prepare($sql2);
-        $stmt2->bindParam(1, $email);
+        $stmt2 = $db->connect()->prepare($sql2);
+        $stmt2->bindParam(1, $encryptedEmail);
         $stmt2->bindParam(2, $token);
         $stmt2->bindParam(3, $tokenExpTime);
         
@@ -50,28 +61,39 @@ class AddedDrvr extends ConnectDatabase {
     }
 
     protected function checkDriver($username, $email) {
+        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+        $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT driverid FROM driver
-                WHERE username = ? OR email = ?";
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->bindParam(1, $username);
-        $stmt->bindParam(2, $email);
+        $sql = "SELECT username, email FROM driver
+                WHERE username = :username OR email = :email";
+        $stmt = $db->connect()->prepare($sql);
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':email', $email);
         $result = $stmt->execute();
 
-        if (!$result) {
+        $stmt->fetch();
+
+        if (!$stmt) {
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
             header("Location: /signup?error=try+again"); //stmtfailed
             exit();
         }
 
+        $dbUsername;
+        $dbEmail;
         $resultCheck;
-        if ($stmt->rowCount() > 0) {
-            $resultCheck = false;
-        }
-        else {
-            $resultCheck = true;
-        }
+
+        if ($stmt > 0) {
+            $dbUsername = $stmt['username'];
+            $encryptedEmail = $stmt['email'];
+            $dbEmail = Crypto::decrypt($encryptedEmail, $key);
+            if ($username === $dbUsername || $email === $dbEmail) {
+                $resultCheck = true;
+            } else {
+                $resultCheck = false;
+            }
         return $resultCheck;
+        }
     }
 }
 
