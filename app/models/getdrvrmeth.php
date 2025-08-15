@@ -20,11 +20,11 @@ class GetDriver {
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->execute();
 
-        $result = $stmt->fetchAll();
+        $result = $stmt->fetch();
 
         if (!$stmt || $stmt->rowCount() === 0) {
-            $alert::setMsg('error', 'There seems to be a problem. Try again later.');
-            header("location: /?error=try+again");
+            http_response_code(404);
+            echo json_encode(['error' => 'Driver not found']);
             exit();
         }
 
@@ -33,15 +33,15 @@ class GetDriver {
         $encryptedLastName = $result['lastName'];
         $encryptedMobileNum = $result['mobileNumber'];
         $encryptedBirthdate = $result['birthdate'];
-        return {
-            $drvrid = $result['driverid'];
-            $username = $result['username'];
-            $dbEmail = Crypto::decrypt($encryptedEmail, $key);
-            $dbFirstName = Crypto::decrypt($encryptedFirstName, $key);
-            $dbLastName = Crypto::decrypt($encryptedLastName, $key);
-            $dbMobileNum = Crypto::decrypt($encryptedMobileNum, $key);
-            $dbBirthdate = Crypto::decrypt($encryptedBirthdate, $key);
-        }
+        return [
+            $drvrid = $result['driverid'],
+            $username = $result['username'],
+            $dbEmail = Crypto::decrypt($encryptedEmail, $key),
+            $dbFirstName = Crypto::decrypt($encryptedFirstName, $key),
+            $dbLastName = Crypto::decrypt($encryptedLastName, $key),
+            $dbMobileNum = Crypto::decrypt($encryptedMobileNum, $key),
+            $dbBirthdate = Crypto::decrypt($encryptedBirthdate, $key),
+        ];
     }
 
     public function getDrvrStats($drvrid) {

@@ -22,4 +22,4 @@
         <link rel="icon" type="image/png" href="images-videos/logoandicons/bus-driver-icon-png-14404.png">                
         <title><?= $title;?></title>
 </head>
-<body class="d-flex flex-column align-items-center vh-100 overflow-x-hidden noprint">
+<body class="d-flex flex-column overflow-x-hidden vh-100 <?= urlIs('/printable') ? 'plain-bkgd' : 'align-items-center noprint';?>">

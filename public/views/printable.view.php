@@ -1,18 +1,12 @@
 <?php
-    $title = "Pro Driver - WWS Sheet";
-    require_once '../includes/head.php';
+    require "partials/head.php";
+    require "partials/nav.php";
 ?>
-
-<body class="d-flex flex-column vh-100 overflow-x-hidden plain-bkgd">
-<?php
-    require_once '../includes/navbar.php';
-?>
-
     <main class="container-fluid p-3 d-flex flex-column flex-nowrap">
         <div class="container-fluid">
             <div class="w-100 d-inline-flex align-items-center justify-content-center" style="height: 75px;">
-                <img src="/public/images-videos/logoandicons/BestTrailsTravels_Logo.png" alt="N/A" width="60" height="60" class="mx-2">
-                <h4 class="text-capitalize">best trails driver</h4>
+                <img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" alt="N/A" width="60" height="60" class="mx-2">
+                <h4 class="text-capitalize">best trails and travel</h4>
             </div>
             <div class="w-100 my-2">
                 <div class="d-flex justify-content-between">
@@ -28,8 +22,8 @@
 
         <div id="paySheetCardCon" class="container-fluid">
             <div class="card border-0">
-                <div class="card-body">
-                    <table class="table table-striped table-bordered">
+                <div class="card-body overflow-x-auto">
+                    <table class="table table-striped table-bordered m-auto" style="width: 1200px;">
                         <thead class="text-capitalize text-center align-middle">
                             <tr>
                                 <th scope="col">motorcoach<br>order#</th>
@@ -51,7 +45,5 @@
         </div>
     </main>
 <?php
-    require '../includes/getscripts.php';
+    require 'partials/footer.php';
 ?>
-</body>
-</html>
