@@ -22,7 +22,7 @@ class Login {
         $stmt->execute();        
 
         if (!$stmt || $stmt->rowCount() === 0) {
-            $alert::setMsg('error', 'User not found. Please check your username or email.');
+            $alert::setMsg('error', 'User not found. Please check your username.');
             header("Location: /signin?error=not+found"); // noRegisteredUseraccount
             exit();
         }
@@ -40,12 +40,6 @@ class Login {
             $stmt = $db->connect()->prepare($sql2);
             $stmt->bindParam(":username", $username);
             $stmt->execute();
-
-            if (!$stmt || $stmt->rowCount() === 0) {
-                $alert::setMsg('error', 'User not found. Please check your username or email.');
-                header("Location: /signin?error=not+found"); // noRegisteredUseraccount
-                exit();
-            }
 
             $driver = $stmt->fetch();
             //session_start();
