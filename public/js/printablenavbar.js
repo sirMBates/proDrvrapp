@@ -8,7 +8,7 @@ const btnTheme = document.querySelector('#themeBtn');
 
 function changeDrvrMenu () {
     let currentPage = window.location.pathname;
-    if (currentPage === '/public/views/printable.php') {
+    if (currentPage === '/printable') {
         menuCardOpts.classList.remove('d-none');
         btnTheme.style.display = 'none';
     } else {

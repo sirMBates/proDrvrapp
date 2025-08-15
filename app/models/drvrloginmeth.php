@@ -22,9 +22,9 @@ class Login {
         $stmt->execute();        
 
         if (!$stmt || $stmt->rowCount() === 0) {
-            /*$alert::setMsg('error', 'User not found. Please check your username or email.');
+            $alert::setMsg('error', 'User not found. Please check your username or email.');
             header("Location: /signin?error=not+found"); // noRegisteredUseraccount
-            exit();*/
+            exit();
         }
 
         $hashedPsw = $stmt->fetchAll();
@@ -36,22 +36,18 @@ class Login {
             exit();
         } elseif ($checkPsw === true) {
             $sql2 = "SELECT * FROM driver
-                    WHERE username = :username AND PASSWORD = :password";
+                    WHERE username = :username";
             $stmt = $db->connect()->prepare($sql2);
             $stmt->bindParam(":username", $username);
-            $stmt->bindParam(":password", $password);
             $stmt->execute();
 
             if (!$stmt || $stmt->rowCount() === 0) {
-                /*$alert::setMsg('error', 'User not found. Please check your username or email.');
+                $alert::setMsg('error', 'User not found. Please check your username or email.');
                 header("Location: /signin?error=not+found"); // noRegisteredUseraccount
-                exit();*/
+                exit();
             }
 
-            $driver = $stmt->fetchAll();
-            if ($stmt->rowCount() > 0) {
-                print_r($stmt);
-            }
+            $driver = $stmt->fetch();
             //session_start();
             $encryptedBirthdate = $driver['birthdate'];
             $encryptedFirstName = $driver['firstName'];

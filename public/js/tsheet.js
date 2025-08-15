@@ -5,14 +5,23 @@ const infoModalMsg = buildModal;
 const infoModBtn = document.querySelector('#info-ok');
 const clickCells = document.querySelectorAll('.editable-data');
 
-$(infoBtn).on('click', () => {
-    $(infoModal).modal('toggle'),
+$(document).ready(() => {
+    const modalInstance = new bootstrap.Modal(infoModal, {
+        backdrop: 'static',
+        keyboard: false
+    });
+
+    infoBtn.addEventListener('click', () => {
+        modalInstance.show();
+    });
+
     infoModal.addEventListener('shown.bs.modal', () => {
         infoModalMsg.info('This is your timesheet (cha`ching`💰). This sheet will hold a record of each job/order you\'ve done for the week. Once the week is over, a new sheet will be made available for you to utilize. If your payroll dept requests, you may send this sheet to them as is, print it out or download a copy for yourself.', 'Ok');
-    })
+    });
+    
     infoModBtn.addEventListener('click', () => {
-        $(infoModal).modal('toggle');
-    })
+        modalInstance.hide();
+    });
 });
 
 window.addEventListener('DOMContentLoaded', () => {

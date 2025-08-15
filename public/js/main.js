@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainMenu = document.querySelector('#useraccess');
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
-                drvrMainHeader.textContent = `${driver['firstname']} ${driver['lastname']}`;
+                drvrMainHeader.textContent = `${driver[3]} ${driver[4]}`;
             }
         })
         .catch(error => {

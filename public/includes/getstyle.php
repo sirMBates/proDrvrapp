@@ -39,11 +39,11 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='styles/tsheet.css'>\n";
                         break;
 
-                case "/prodrvrapp/public/mail/sendmail.php":
+                case "/contact":
                         return;
                         break;
 
-                case "/prodrvrapp/public/views/printable.php":
+                case "/printable":
                         echo "<link rel='stylesheet' href='styles/payroll.css'>\n";
                         break;
 

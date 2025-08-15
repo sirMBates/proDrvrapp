@@ -24,7 +24,7 @@
                         </ul>
                 </div>
                 <div class="dropdown mt-3 d-none">
-                        <a href="../views/printable.php" class="btn btn-secondary d-none" role="button"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</a>
+                        <a href="/printable" class="btn btn-secondary d-none" role="button"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</a>
                                 
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</button>
                         <ul class="dropdown-menu">
