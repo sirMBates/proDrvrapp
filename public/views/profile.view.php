@@ -12,7 +12,7 @@ include "includes/info-modal.php";
                 <input type="hidden" name="__method" value="patch">
                 <div class="card">
                         <div class="card-header bg-besttrailsclr">
-                                <h2 class="text-capitalize text-center text-light"><button type="button" id="changeinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-user fs-3 text-light"></i></button>profile information</h2>
+                                <h2 class="text-capitalize text-center text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-user fs-3 text-light"></i></button>profile information</h2>
                         </div>
                         <div class="card-body">
                                 <fieldset>

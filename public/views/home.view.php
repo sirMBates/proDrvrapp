@@ -4,12 +4,13 @@
         require "partials/banner.php";
         $alert = new core\Flash();
         include "includes/flashmessage.php";
+        include "includes/info-modal.php";
         include "includes/custom-modal.php";
 ?>
 <main class="container-fluid mb-1">
         <div class="card mb-auto">
                 <div class="card-header bg-besttrailsclr text-btd-white-off">
-                        <p class='h3 text-center text-capitalize'>driver information</p>
+                        <h3 class='text-center text-capitalize'><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>driver information</h3>
                 </div>
                 <div class="card-body overflow-x-auto">
                         <table id="dashboard-info" class="table m-auto" style="width: 1200px;">
@@ -53,6 +54,7 @@
                                         <button type="button" class="btn btn-outline-primary">Check-In Garage/Yard</button>
                                         <button type="button" class="btn btn-outline-primary">Enroute to Loc</button>
                                         <button type="button" class="btn btn-outline-primary">Arrived at Loc</button>
+                                        <button type="button" class="btn btn-danger">Emergency</button>
                                 </div>
                         </div>
                 </div>
