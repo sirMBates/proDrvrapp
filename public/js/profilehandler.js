@@ -1,4 +1,3 @@
-import { buildModal } from "./appmodal.js";
 import { Validation } from "./validation.js";
 import formValidation from "./messagevalidation.js";
 import { fetchDrvr } from "./getDrvr.js";
@@ -17,9 +16,6 @@ const drvrPsword = profileInputs[7];
 const drvrStatus = profileInputs[8];
 const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
-const infoModal = document.querySelector('#info-modal');
-const infoModalMsg = buildModal;
-const infoBtn = document.querySelector('#info-ok');
 const fetchDriver = fetchDrvr;
 
 window.addEventListener('load', () => {
@@ -40,15 +36,6 @@ window.addEventListener('load', () => {
         })
 });
 
-openInfoUpdateBtn.addEventListener('click', () => {
-    $(infoModal).modal('toggle');
-    infoModal.addEventListener('shown.bs.modal', () => {
-        infoModalMsg.info('You can only update your email, mobile number and password. If you would like to update any of the 3, click the button next to the field you would like to update.', 'Ok');
-    })
-    $(infoBtn).on('click', () => {
-        $(infoModal).modal('toggle');
-    })
-})
 emailChangeBtn.addEventListener('click', () => {
     if (drvrEmail.hasAttribute('disabled')) {
         $(drvrEmail).prop('disabled', false);
@@ -56,6 +43,7 @@ emailChangeBtn.addEventListener('click', () => {
         $(drvrEmail).attr('disabled');
     }
 });
+
 phoneChangeBtn.addEventListener('click', () => {
     if (drvrPhoneNumber.hasAttribute('disabled')) {
         $(drvrPhoneNumber).prop('disabled', false);
@@ -63,6 +51,7 @@ phoneChangeBtn.addEventListener('click', () => {
         $(drvrPhoneNumber).attr('disabled');
     }
 });
+
 pwdChangeBtn.addEventListener('click', () => {
     if (drvrPsword.hasAttribute('disabled')) {
         $(drvrPsword).prop('disabled', false);

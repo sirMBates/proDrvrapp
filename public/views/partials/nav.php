@@ -43,6 +43,7 @@
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Loc</a></li>
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-location-dot"></i>At Location</a></li>
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger" role="button"><i class="px-2 fa-solid fa-briefcase"></i>On Assignment</a></li>
+                                <li><a href='#' class="dropdown-item btn text-danger text-center" role="button">Emergency</a></li>
                         </ul>
                 </div>
                 <div class="dropdown mt-3">

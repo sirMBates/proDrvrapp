@@ -193,4 +193,16 @@ updateStatusBtns.addEventListener('click', (e) => {
                 }
                 //console.log(changeStatusValue);
         }
+
+        if (e.target === updateStatusBtns.childNodes[9]) {
+                localStorage.setItem('status', 'Emergency');
+                let changeStatus = localStorage.getItem('status');
+                changeStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+                alert('Dispatch has been notified.');
+                //console.log(changeStatusValue);
+        }
 }, false);
