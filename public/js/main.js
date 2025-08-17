@@ -1,6 +1,6 @@
 import { buildModal } from './appmodal.js';
 import { fetchDrvr } from './drvrapi.js';
-import { statusBtns, changeStatus } from './changestatus.js';
+import { statusBtns, ChangeStatus } from './changestatus.js';
 const infoBtn = document.querySelector('#notifyinfo');
 const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
@@ -10,13 +10,15 @@ const profCon = document.querySelector("#profilecon");
 const getMenuItems = document.querySelectorAll(".nav-item");
 const textLink = document.querySelector("#useraccess");
 const driverMenu = document.querySelector(".offcanvas-body");
-let viewPayCard = driverMenu.childNodes[5];
-let themeBtn = document.querySelector("#themeBtn");
-let themeBtnText = themeBtn.nextElementSibling;
+const viewPayCard = driverMenu.childNodes[5];
+const themeBtn = document.querySelector("#themeBtn");
+const themeBtnText = themeBtn.nextElementSibling;
 const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
 const retrieveMyDrvr = fetchDrvr;
-const DSC = statusBtns; // (D)river(S)tatus(C)ontrol :) 
+const DSC = statusBtns; // (D)river(S)tatus(C)ontrol :)
+const drvrTokenValue = document.querySelector('#drvrToken');
+export const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3]; 
 let isDarkMode;
 
 $(document).ready(() => {
@@ -73,6 +75,8 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 // The status controls and the connection to the DB api
+const driverStatus = new ChangeStatus(DSC, 'http://prodriver.local/setstatus', drvrTokenValue, bannerMsg);
+driverStatus.init();
 
 // Set the theme.
 const themeSet = {
@@ -268,7 +272,6 @@ $(profileInput).on('change', (e) => {
         }
 });
 
-export const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
 window.addEventListener('load', () => {
         if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
                 sessionStorage.setItem('status', 'Official');
@@ -298,7 +301,7 @@ if (window.location.pathname !== '/') {
         $(changeStatusCon).removeClass('d-none');
 }
 
-const changeStatusBtns = changeStatusCon.childNodes[3];
+/*const changeStatusBtns = changeStatusCon.childNodes[3];
 $(changeStatusBtns).on('click', (e) => {
         if (e.target === changeStatusBtns.childNodes[1].firstChild) {
                 localStorage.setItem('status', 'Enroute to garage');
@@ -336,7 +339,7 @@ $(changeStatusBtns).on('click', (e) => {
                 bannerMsg.textContent = changeStatus;
                 alert('Dispatch has been notified.');
         }
-});
+});*/
         
 /*const dropdownElementList = document.querySelectorAll('.dropdown-toggle')
 const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl))*/

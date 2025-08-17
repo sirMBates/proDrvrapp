@@ -1,15 +1,36 @@
 import { fetchDrvr } from './drvrapi.js';
 export const statusBtns = document.querySelectorAll('.set-status');
-export class changeStatus {
-    constructor(array, endpoint, drvrToken) {
+export class ChangeStatus {
+    constructor(array, endpoint, drvrToken, bannerMsg) {
         this.array = array;
         this.endpoint = endpoint;
         this.drvrToken = drvrToken;
-        this.drvrStatus = drvrStatus;
-        this.timeStamp = timeStamp;
+        this.bannerMsg = bannerMsg;
+        this.drvrStatus = '';
+        this.timeStamp = '';
     }
 
-    static updateDrvrStatusControl() {
+    init() {
+        this.array.forEach(button => {
+            button.addEventListener('click', (e) => this.updateDrvrStatusControl(e));
+        });
+    }
+
+    updateDrvrStatusControl(e) {
+        const statusMap = {
+            'status-enroute-garage': 'Enroute to garage',
+            'status-checkedin-garage': 'Arrived at garage',
+            'status-enroute-location': 'Enroute to location',
+            'status-onlocation': 'Arrived at location',
+            'status-working-assignment': 'On assignment',
+            'status-emergency': 'Emergency'
+        };
+
+        const clickedClass = [...e.target.classList].find(cls => statusMap[cls]);
+        if (!clickedClass) return;
+
+        const newStatus = statusMap[clickedClass];
+        const newTime = new Date();
         const timeOptions = {
             year: 'numeric',
             month: 'numeric',
@@ -19,74 +40,27 @@ export class changeStatus {
             second: '2-digit',
             hour12: false 
         }
-        this.array.forEach(button => {
-            button.addEventListener('click', (e) => {
-                if (e.target.classList.contains('.status-enroute-garage')) {
-                    localStorage.setItem('status', 'Enroute to garage');
-                    let changeStatus = localStorage.getItem('status');
-                    bannerMsg.textContent = changeStatus;
-                    this.drvrStatus = changeStatus;
-                    const newTime = new Date();
-                    this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
-                }
 
-                if (e.target.classList.contains('.status-checkedin-garage')) {
-                    localStorage.setItem('status', 'Arrived at garage');
-                    let changeStatus = localStorage.getItem('status');
-                    bannerMsg.textContent = changeStatus;
-                    this.drvrStatus = changeStatus;
-                    const newTime = new Date();
-                    this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
-                }
+        this.drvrStatus = newStatus;
+        this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
 
-                if (e.target.classList.contains('.status-enroute-location')) {
-                    localStorage.setItem('status', 'Enroute to location');
-                    let changeStatus = localStorage.getItem('status');
-                    bannerMsg.textContent = changeStatus;
-                    this.drvrStatus = changeStatus;
-                    const newTime = new Date();
-                    this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
-                }
+        localStorage.setItem('status', this.drvrStatus);
+        this.bannerMsg.textContent = this.drvrStatus;
 
-                if (e.target.classList.contains('.status-onlocation')) {
-                    localStorage.setItem('status', 'Arrived at location');
-                    let changeStatus = localStorage.getItem('status');
-                    bannerMsg.textContent = changeStatus;
-                    this.drvrStatus = changeStatus;
-                    const newTime = new Date();
-                    this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
-                }
-
-                if (e.target.classList.contains('.status-working-assignment')) {
-                    localStorage.setItem('status', 'On assignment');
-                    let changeStatus = localStorage.getItem('status');
-                    bannerMsg.textContent = changeStatus;
-                    this.drvrStatus = changeStatus;
-                    const newTime = new Date();
-                    this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
-                }
-
-                if (e.target.classList.contains('.status-emergency')) {
-                    localStorage.setItem('status', 'Emergency');
-                    let changeStatus = localStorage.getItem('status');
-                    bannerMsg.textContent = changeStatus;
-                    this.drvrStatus = changeStatus;
-                    const newTime = new Date();
-                    this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
-                }
-            })
-        });
+        this.updateDBStatus();        
     };
 
-    static updateStatusDB() {
-        const sendStatus = fetchDrvr;
-        sendStatus(endpoint, {
+    updateDBStatus() {
+        fetchDrvr(endpoint, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-Token": this.drvrToken
             },
-            body: JSON.stringify(this.drvrStatus, this.timeStamp),
+            body: JSON.stringify({
+                drvrStatus: this.drvrStatus, 
+                timeStamp: this.timeStamp
+            }),
         })
         .then((res) => {
             if (!res.ok) {
