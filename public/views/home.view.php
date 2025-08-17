@@ -36,7 +36,7 @@
                                 </tbody>
                                 <form>
                                         <div class="input-group">
-                                                <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                         </div>
                                         <div class="input-group">
                                                 <input id="drvrbday" type="hidden" class="form-control" value="<?php if (isset($_SESSION['birth_date'])) {
@@ -48,13 +48,14 @@
                         </table>
                 </div>
                 <div class="card-footer d-inline-flex justify-content-center">
-                        <div class="my-2">
+                        <div class="my-2 overflow-x-auto">
                                 <div id="update-status-con" class="mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
-                                        <button type="button" class="btn btn-outline-primary">Enroute to Garage/Yard</button>
-                                        <button type="button" class="btn btn-outline-primary">Check-In Garage/Yard</button>
-                                        <button type="button" class="btn btn-outline-primary">Enroute to Loc</button>
-                                        <button type="button" class="btn btn-outline-primary">Arrived at Loc</button>
-                                        <button type="button" class="btn btn-danger">Emergency</button>
+                                        <button type="button" class="btn btn-outline-primary set-status status-enroute-garage">Enroute to Garage/Yard</button>
+                                        <button type="button" class="btn btn-outline-primary set-status status-checkedin-garage">Check-In Garage/Yard</button>
+                                        <button type="button" class="btn btn-outline-primary set-status status-enroute-location">Enroute to Loc</button>
+                                        <button type="button" class="btn btn-outline-primary set-status status-onlocation">Arrived at Loc</button>
+                                        <button type="button" class="btn btn-outline-primary set-status status-working-assignment">On Assignment</button>
+                                        <button type="button" class="btn btn-danger set-status status-emergency">Emergency</button>
                                 </div>
                         </div>
                 </div>

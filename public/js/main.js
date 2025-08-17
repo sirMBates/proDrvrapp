@@ -1,5 +1,6 @@
 import { buildModal } from './appmodal.js';
-import { fetchDrvr } from './getDrvr.js';
+import { fetchDrvr } from './drvrapi.js';
+import { statusBtns, changeStatus } from './changestatus.js';
 const infoBtn = document.querySelector('#notifyinfo');
 const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
@@ -15,6 +16,7 @@ let themeBtnText = themeBtn.nextElementSibling;
 const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
 const retrieveMyDrvr = fetchDrvr;
+const DSC = statusBtns; // (D)river(S)tatus(C)ontrol :) 
 let isDarkMode;
 
 $(document).ready(() => {
@@ -69,6 +71,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 console.error('There was a problem with the fetch operation:', error);
         })
 })
+
+// The status controls and the connection to the DB api
 
 // Set the theme.
 const themeSet = {
