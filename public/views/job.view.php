@@ -13,7 +13,7 @@ include "includes/info-modal.php"
                                 <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
                         </div>
                         <div class="input-group">
-                                <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                         </div>
                         <div class="card-body overflow-x-auto">                        
                                 <table id="tableA" class="table m-auto" style="width: 1200px;">

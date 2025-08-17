@@ -1,6 +1,6 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { bannerMsg } from "./main.js";
-import { fetchDrvr } from "./getDrvr.js";
+import { fetchDrvr } from "./drvrapi.js";
 
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
@@ -195,6 +195,17 @@ updateStatusBtns.addEventListener('click', (e) => {
         }
 
         if (e.target === updateStatusBtns.childNodes[9]) {
+                localStorage.setItem('status', 'On assignment');
+                let changeStatus = localStorage.getItem('status');
+                changeStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+                //console.log(changeStatusValue);
+        }
+
+        if (e.target === updateStatusBtns.childNodes[11]) {
                 localStorage.setItem('status', 'Emergency');
                 let changeStatus = localStorage.getItem('status');
                 changeStatusValue.textContent = changeStatus;

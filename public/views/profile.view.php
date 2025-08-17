@@ -67,7 +67,7 @@ include "includes/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group">
-                                                <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                         </div>
                                 </fieldset>
                         </div>

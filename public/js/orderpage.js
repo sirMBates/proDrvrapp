@@ -1,4 +1,4 @@
-import { fetchDrvr } from "./getDrvr";
+import { fetchDrvr } from "./drvrapi.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');
