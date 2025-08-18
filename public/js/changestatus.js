@@ -1,10 +1,10 @@
-export const statusBtns = document.querySelectorAll('.set-status');
 export class ChangeStatus {
-    constructor(array, endpoint, drvrToken, bannerMsg) {
+    constructor(array, endpoint, drvrToken, bannerMsg, homeTableStatusValue) {
         this.array = array;
         this.endpoint = endpoint;
         this.drvrToken = drvrToken;
         this.bannerMsg = bannerMsg;
+        this.homeTableStatusValue = homeTableStatusValue;
         this.drvrStatus = '';
         this.timeStamp = '';
     }
@@ -30,61 +30,33 @@ export class ChangeStatus {
 
         const newStatus = statusMap[clickedClass];
         const newTime = new Date();
-        const timeOptions = {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false 
-        }
 
         this.drvrStatus = newStatus;
-        this.timeStamp = newTime.toLocaleString('en-us', timeOptions);
+        this.timeStamp = newTime.toISOString().slice(0, 19).replace('T', ' ');
 
         localStorage.setItem('status', this.drvrStatus);
         this.bannerMsg.textContent = this.drvrStatus;
+        this.homeTableStatusValue.textContent = this.drvrStatus;
         console.log(`Driver status currently: ${this.drvrStatus} \n Switched at: ${this.timeStamp} \n Location point: ${this.endpoint} \n Driver access: ${this.drvrToken}`);
-        this.updateDBStatus(this.drvrToken, this.endpoint, this.drvrStatus, this.timeStamp);        
+        this.updateDBStatus();        
     };
 
-    async updateDBStatus(token, endpoint, status, stamp) {
-        try {
-            const response = await fetch(endpoint, {
-                mode: 'cors',
-                credentials: 'include',
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-Token": token
-                },
-                body: JSON.stringify({ 
-                    drvrStatus: status, 
-                    timeStamp: stamp 
-                }),
-            });
-
-            const contentLength = response.headers.get("content-length");
-            const contentType = response.headers.get("content-type");
-
-            let result = null;
-
-            if (response.ok) {
-                if (contentLength !== "0" && contentType && contentType.includes("application/json")) {
-                    const text = await response.text();
-                    result = text ? JSON.parse(text) : null;
-                    console.log(`Status updated successfully: ${result?.message || 'No message returned.'}`);
-                } else {
-                    console.log("Status updated successfully (no response body).");
-                }
-            } else {
-                console.log(`Error: ${result?.error || 'Unknown error occurred.'}`);
-            }
-        } catch (error){
-            console.error("Error: ", error);
-            console.log('An unexpected error occurred.');
-        }
+    updateDBStatus() {
+        fetch("http://prodriver.local/setstatus", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': this.drvrToken
+            },
+            body: JSON.stringify({
+                drvrStatus: this.drvrStatus,
+                drvrStamp: this.timeStamp
+            })
+        })
+            .then(res => {
+                return res.json()
+            })
+            .then(data => console.log(data))
+            .catch (error => console.log('Error', error))
     }
-
 }

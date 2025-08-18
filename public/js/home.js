@@ -1,5 +1,4 @@
 import { bdayCelebrationHandler } from "./celebration.js";
-import { bannerMsg } from "./main.js";
 import { fetchDrvr } from "./drvrapi.js";
 
 const drvrBirthDate = document.querySelector('#drvrbday');
@@ -132,20 +131,18 @@ window.addEventListener('load', () => {
         }
 }, false);
 
-const changeStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
-const updateStatusBtns = document.querySelector('#update-status-con');
-window.addEventListener('load', () => {
+/*window.addEventListener('load', () => {
         if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
                 sessionStorage.setItem('status', 'Official');
                 let startUpStatus = sessionStorage.getItem('status');
-                changeStatusValue.textContent = startUpStatus;                
+                homeTableStatusValue.textContent = startUpStatus;                
         } else if (localStorage.getItem('status') !== null) {
                 sessionStorage.removeItem('status');
                 let drvrStatus = localStorage.getItem('status');
-                changeStatusValue.textContent = drvrStatus;
+                homeTableStatusValue.textContent = drvrStatus;
         } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
                 let drvrStatus = sessionStorage.getItem('status');
-                changeStatusValue.textContent = drvrStatus;
+                homeTableStatusValue.textContent = drvrStatus;
         }
-}, false);
+}, false);*/
 //console.log(changeStatusValue);

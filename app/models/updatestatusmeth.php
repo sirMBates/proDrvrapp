@@ -14,9 +14,9 @@ class UpdateDrvrStatus {
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->bindParam(':status', $drvrStatus);
         $stmt->bindParam(':updated_status_at', $drvrTimeStamp);
-        error_log("Preparing SQL Update for Driver ID: $drvrid");
-        error_log("Status: $drvrStatus");
-        error_log("Timestamp: $drvrTimeStamp");
+        //error_log("Preparing SQL Update for Driver ID: $drvrid");
+        //error_log("Status: $drvrStatus");
+        //error_log("Timestamp: $drvrTimeStamp");
 
         $stmt->execute();
 
