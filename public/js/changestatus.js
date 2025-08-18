@@ -1,4 +1,3 @@
-import { fetchDrvr } from './drvrapi.js';
 export const statusBtns = document.querySelectorAll('.set-status');
 export class ChangeStatus {
     constructor(array, endpoint, drvrToken, bannerMsg) {
@@ -46,33 +45,46 @@ export class ChangeStatus {
 
         localStorage.setItem('status', this.drvrStatus);
         this.bannerMsg.textContent = this.drvrStatus;
-
-        this.updateDBStatus();        
+        console.log(`Driver status currently: ${this.drvrStatus} \n Switched at: ${this.timeStamp} \n Location point: ${this.endpoint} \n Driver access: ${this.drvrToken}`);
+        this.updateDBStatus(this.drvrToken, this.endpoint, this.drvrStatus, this.timeStamp);        
     };
 
-    updateDBStatus() {
-        fetchDrvr(endpoint, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-Token": this.drvrToken
-            },
-            body: JSON.stringify({
-                drvrStatus: this.drvrStatus, 
-                timeStamp: this.timeStamp
-            }),
-        })
-        .then((res) => {
-            if (!res.ok) {
-                throw new Error("Network response unsuccessful.");
+    async updateDBStatus(token, endpoint, status, stamp) {
+        try {
+            const response = await fetch(endpoint, {
+                mode: 'cors',
+                credentials: 'include',
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": token
+                },
+                body: JSON.stringify({ 
+                    drvrStatus: status, 
+                    timeStamp: stamp 
+                }),
+            });
+
+            const contentLength = response.headers.get("content-length");
+            const contentType = response.headers.get("content-type");
+
+            let result = null;
+
+            if (response.ok) {
+                if (contentLength !== "0" && contentType && contentType.includes("application/json")) {
+                    const text = await response.text();
+                    result = text ? JSON.parse(text) : null;
+                    console.log(`Status updated successfully: ${result?.message || 'No message returned.'}`);
+                } else {
+                    console.log("Status updated successfully (no response body).");
+                }
+            } else {
+                console.log(`Error: ${result?.error || 'Unknown error occurred.'}`);
             }
-            return res.json();
-        })
-        .then((data) => {
-            console.log("Success:", data);
-        })
-        .catch((error) => {
+        } catch (error){
             console.error("Error: ", error);
-        });
+            console.log('An unexpected error occurred.');
+        }
     }
+
 }

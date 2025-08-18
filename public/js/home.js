@@ -149,7 +149,7 @@ window.addEventListener('load', () => {
         }
 }, false);
 //console.log(changeStatusValue);
-updateStatusBtns.addEventListener('click', (e) => {
+/*updateStatusBtns.addEventListener('click', (e) => {
         if (e.target === updateStatusBtns.childNodes[1]) {
                 localStorage.setItem('status', 'Enroute to garage');
                 let changeStatus = localStorage.getItem('status');
@@ -216,4 +216,4 @@ updateStatusBtns.addEventListener('click', (e) => {
                 alert('Dispatch has been notified.');
                 //console.log(changeStatusValue);
         }
-}, false);
+}, false);*/
