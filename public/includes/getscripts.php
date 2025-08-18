@@ -1,5 +1,5 @@
 <?php
-$url = parse_url($_SERVER['REQUEST_URI'])['path'];
+$url = $_SERVER['REQUEST_URI'];
 function getClockandMainOrNav($value) {
     switch($value) {
         case '/signup': 
