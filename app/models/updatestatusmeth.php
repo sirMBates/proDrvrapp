@@ -4,23 +4,43 @@ use core\Database;
 use core\Flash;
 
 class UpdateDrvrStatus {
-    protected function modifyStatus($drvrid, $drvrStatus, $drvrTimeStamp) {
+    private function modifyStatus($drvrid, $drvrStatus, $drvrTimeStamp) {
         $db = new Database;
         $alert = new Flash();
         $sql = "UPDATE driver
                 SET status = :status, updated_status_at = :updated_status_at
                 WHERE driverid = :driverid";
         $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':drvrid', $drvrid);
+        $stmt->bindParam(':driverid', $drvrid);
         $stmt->bindParam(':status', $drvrStatus);
         $stmt->bindParam(':updated_status_at', $drvrTimeStamp);
+        error_log("Preparing SQL Update for Driver ID: $drvrid");
+        error_log("Status: $drvrStatus");
+        error_log("Timestamp: $drvrTimeStamp");
+
         $stmt->execute();
 
         if (!$stmt || $stmt->rowCount() === 0) {
+            error_log("No rows updated. Possible invalid driver ID.");
             http_response_code(404);
-            echo json_encode(['error' => 'Status not updated']);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'error' => 'Status not updated',
+                'driverid' => $drvrid,
+                'status' => $drvrStatus,
+                'timestamp' => $drvrTimeStamp
+            ]);
             exit();
         }
+
+        return [
+            'success' => 'true',
+            'message' => 'Status updated successfully'
+        ];
+    }
+
+    protected function processUpdateStatus($drvrid, $drvrStatus, $drvrTimeStamp) {
+        return $this->modifyStatus($drvrid, $drvrStatus, $drvrTimeStamp);
     }
 }
 ?>

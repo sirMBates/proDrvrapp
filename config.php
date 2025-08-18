@@ -1,9 +1,11 @@
 <?php
-ini_set('date.timezone', 'America/New_York');
+date_default_timezone_set('America/New_York');
+//ini_set('date.timezone', 'America/New_York');
 ini_set('session.use_only_cookies', 1);
 ini_set('session.use_strict_mode', 1);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
+ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.save_path', __DIR__ . '/tmp');
 error_reporting(E_ALL);
 
@@ -41,10 +43,6 @@ else {
 # store inside the database along with user info
 # update token dynamically after a specific time has passed.↓
 
-# $token = bin2hex(random_bytes(32));
-# $expiration_time = time() + 1000;
-# $_SESSION['token'] = $token;
-
 function generateToken() {
     $token = bin2hex(random_bytes(32));
     return $token;
@@ -64,7 +62,7 @@ else {
     }
 }
 
-if (session_status() === 2 && !isset($_SESSION['username'])) {
+if (session_status() === PHP_SESSION_ACTIVE && !isset($_SESSION['username'])) {
     $_SESSION['username'] = 'Guest';
 }
 

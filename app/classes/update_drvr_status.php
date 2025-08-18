@@ -18,20 +18,29 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
     public function checkAndUpdateDrvrStatus() {
         if ($this->drvrStatusInvalid() === false) {
             http_response_code(401);
-            echo 'Unauthorized request';
+            header("Content-Type: application/json");
+            echo json_encode(['error' => 'Unauthorized request']);
+            exit();
         }
 
         if ($this->checkDrvrTimeStamp() === false) {
             http_response_code(415);
-            echo 'Not acceptable';
+            header("Content-Type: application/json");
+            echo json_encode(['error' => 'Not acceptable']);
+            exit();
         }
 
         if ($this->checkDrvrAccess() === false) {
             http_response_code(401);
-            echo 'Unauthorized access';
+            header("Content-Type: application/json");
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit();
         }
 
-        $this->modifyStatus($this->drvrId, $this->drvrStatus, $this->drvrTimeStamp);
+        $result = $this->processUpdateStatus($this->drvrid, $this->drvrStatus, $this->drvrTimeStamp);
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        exit();
     }
 
     private function drvrStatusInvalid() {
@@ -42,8 +51,10 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
             return $clean_Status;
         }
         
-        $cleanedDrvrStatus = cleanStatus(trim($currentStatus));
-        if (!preg_match("/^[a-zA-Z]{10,}$/", $cleanedDrvrStatus)) {
+        $cleanedDrvrStatus = cleanStatus($currentStatus);
+        error_log("Sanitized Driver Status: " . $cleanedDrvrStatus);
+
+        if (!preg_match("/^[a-zA-Z]{5,}$/", $cleanedDrvrStatus)) {
             $result = false;
         } 
         else {
@@ -60,6 +71,7 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
             return $cleanStamp;
         }
 
+        error_log("Sanitized Timestamp: " . cleanDateOfBirth($getStamp));
         if (DateTime::createFromFormat('Y-m-d H:i:s', cleanDateOfBirth($getStamp)) === false) {
             $result = false;
         }
@@ -76,9 +88,12 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
             $sanitizedToken = htmlspecialchars($token, ENT_QUOTES);
             return $sanitizedToken;
         }
-        $drvrId = $_SESSION['driver_id'];
+        error_log("Sanitized Token: " . cleanToken($getToken));
+        error_log("Session Token: " . $secretToken);
+        error_log("Driver ID in Session: " . $drvrId);
+
         $secretToken = $_SESSION['drvr_token'];
-        if (cleanToken($getToken) !== $secretToken && !isset($drvrId)) {
+        if (cleanToken($getToken) !== $secretToken) {
             $result = false;
         }
         else {

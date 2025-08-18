@@ -17,7 +17,8 @@ const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]/
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
 const retrieveMyDrvr = fetchDrvr;
 const DSC = statusBtns; // (D)river(S)tatus(C)ontrol :)
-const drvrTokenValue = document.querySelector('#drvrToken');
+const statusEndpoint = "http://prodriver.local/setstatus";
+const drvrTokenValue = document.getElementById('drvrToken').value;
 export const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3]; 
 let isDarkMode;
 
@@ -75,7 +76,7 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 // The status controls and the connection to the DB api
-const driverStatus = new ChangeStatus(DSC, 'http://prodriver.local/setstatus', drvrTokenValue, bannerMsg);
+const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrTokenValue, bannerMsg);
 driverStatus.init();
 
 // Set the theme.
@@ -300,46 +301,6 @@ $(logoutLink).on('click', () => {
 if (window.location.pathname !== '/') {
         $(changeStatusCon).removeClass('d-none');
 }
-
-/*const changeStatusBtns = changeStatusCon.childNodes[3];
-$(changeStatusBtns).on('click', (e) => {
-        if (e.target === changeStatusBtns.childNodes[1].firstChild) {
-                localStorage.setItem('status', 'Enroute to garage');
-                let changeStatus = localStorage.getItem('status');
-                bannerMsg.textContent = changeStatus;
-        }
-
-        if (e.target === changeStatusBtns.childNodes[3].firstChild) {
-                localStorage.setItem('status', 'Arrived at garage');
-                let changeStatus = localStorage.getItem('status');
-                bannerMsg.textContent = changeStatus;
-        }
-
-        if (e.target === changeStatusBtns.childNodes[5].firstChild) {
-                localStorage.setItem('status', 'Enroute to location');
-                let changeStatus = localStorage.getItem('status');
-                bannerMsg.textContent = changeStatus;
-        }
-
-        if (e.target === changeStatusBtns.childNodes[7].firstChild) {
-                localStorage.setItem('status', 'Arrived at location');
-                let changeStatus = localStorage.getItem('status');
-                bannerMsg.textContent = changeStatus;
-        }
-
-        if (e.target === changeStatusBtns.childNodes[9].firstChild) {
-                localStorage.setItem('status', 'On assignment');
-                let changeStatus = localStorage.getItem('status');
-                bannerMsg.textContent = changeStatus;
-        }
-
-        if (e.target === changeStatusBtns.childNodes[11].firstChild) {
-                localStorage.setItem('status', 'Emergency');
-                let changeStatus = localStorage.getItem('status');
-                bannerMsg.textContent = changeStatus;
-                alert('Dispatch has been notified.');
-        }
-});*/
         
 /*const dropdownElementList = document.querySelectorAll('.dropdown-toggle')
 const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl))*/
