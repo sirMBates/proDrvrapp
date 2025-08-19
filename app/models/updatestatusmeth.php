@@ -8,12 +8,12 @@ class UpdateDrvrStatus {
         $db = new Database;
         $alert = new Flash();
         $sql = "UPDATE driver
-                SET status = :status, updated_status_at = :updated_status_at
+                SET status = :status, status_timestamp = :status_timestamp
                 WHERE driverid = :driverid";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->bindParam(':status', $drvrStatus);
-        $stmt->bindParam(':updated_status_at', $drvrTimeStamp);
+        $stmt->bindParam(':status_timestamp', $drvrTimeStamp);
         //error_log("Preparing SQL Update for Driver ID: $drvrid");
         //error_log("Status: $drvrStatus");
         //error_log("Timestamp: $drvrTimeStamp");
