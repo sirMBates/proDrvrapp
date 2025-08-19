@@ -1,10 +1,9 @@
 export class ChangeStatus {
-    constructor(array, endpoint, drvrToken, bannerMsg, homeTableStatusValue) {
+    constructor(array, endpoint, drvrToken, bannerMsg) {
         this.array = array;
         this.endpoint = endpoint;
         this.drvrToken = drvrToken;
         this.bannerMsg = bannerMsg;
-        this.homeTableStatusValue = homeTableStatusValue;
         this.drvrStatus = '';
         this.timeStamp = '';
     }
@@ -36,7 +35,6 @@ export class ChangeStatus {
 
         localStorage.setItem('status', this.drvrStatus);
         this.bannerMsg.textContent = this.drvrStatus;
-        this.homeTableStatusValue.textContent = this.drvrStatus;
         console.log(`Driver status currently: ${this.drvrStatus} \n Switched at: ${this.timeStamp} \n Location point: ${this.endpoint} \n Driver access: ${this.drvrToken}`);
         this.updateDBStatus();        
     };

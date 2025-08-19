@@ -1,6 +1,6 @@
 <?php
-date_default_timezone_set('America/New_York');
-//ini_set('date.timezone', 'America/New_York');
+//date_default_timezone_set('America/New_York');
+ini_set('date.timezone', 'America/New_York');
 ini_set('session.use_only_cookies', 1);
 ini_set('session.use_strict_mode', 1);
 ini_set('display_errors', 1);

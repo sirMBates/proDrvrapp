@@ -4,6 +4,9 @@ import { fetchDrvr } from "./drvrapi.js";
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
 const fetchDriver = fetchDrvr;
+const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
+const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
+const dashboardStatusBtns = document.querySelector('#update-status-con');
 
 window.addEventListener('load', () => {
         let dvrBirthday = $(drvrBirthDate).val();
@@ -131,18 +134,74 @@ window.addEventListener('load', () => {
         }
 }, false);
 
-/*window.addEventListener('load', () => {
+window.addEventListener('load', () => {
         if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
                 sessionStorage.setItem('status', 'Official');
                 let startUpStatus = sessionStorage.getItem('status');
-                homeTableStatusValue.textContent = startUpStatus;                
+                dashBoardStatusValue.textContent = startUpStatus;                
         } else if (localStorage.getItem('status') !== null) {
                 sessionStorage.removeItem('status');
                 let drvrStatus = localStorage.getItem('status');
-                homeTableStatusValue.textContent = drvrStatus;
+                dashBoardStatusValue.textContent = drvrStatus;
         } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
                 let drvrStatus = sessionStorage.getItem('status');
-                homeTableStatusValue.textContent = drvrStatus;
+                dashBoardStatusValue.textContent = drvrStatus;
         }
-}, false);*/
-//console.log(changeStatusValue);
+}, false);
+
+dashboardStatusBtns.addEventListener('click', (e) => {
+        if (e.target === dashboardStatusBtns.childNodes[1]) {
+                localStorage.setItem('status', 'Enroute to garage');
+                let changeStatus = localStorage.getItem('status');
+                dashBoardStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+        }
+        if (e.target === dashboardStatusBtns.childNodes[3]) {
+                localStorage.setItem('status', 'Arrived at garage');
+                let changeStatus = localStorage.getItem('status');
+                dashBoardStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+        }
+        if (e.target === dashboardStatusBtns.childNodes[5]) {
+                localStorage.setItem('status', 'Enroute to location');
+                let changeStatus = localStorage.getItem('status');
+                dashBoardStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+        }
+        if (e.target === dashboardStatusBtns.childNodes[7]) {
+                localStorage.setItem('status', 'Arrived at location');
+                let changeStatus = localStorage.getItem('status');
+                dashBoardStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+        }
+        if (e.target === dashboardStatusBtns.childNodes[9]) {
+                localStorage.setItem('status', 'On assignment');
+                let changeStatus = localStorage.getItem('status');
+                dashBoardStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+        }
+        if (e.target === dashboardStatusBtns.childNodes[11]) {
+                localStorage.setItem('status', 'Emergency');
+                let changeStatus = localStorage.getItem('status');
+                dashBoardStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+        }
+}, false);
