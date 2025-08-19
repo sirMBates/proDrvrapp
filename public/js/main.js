@@ -17,11 +17,11 @@ const themeBtnText = themeBtn.nextElementSibling;
 const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
 const retrieveMyDrvr = fetchDrvr;
-const DSC = document.querySelectorAll('.set-status');; // (D)river(S)tatus(C)ontrol :)
+const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontrol :)
 const statusEndpoint = "http://prodriver.local/setstatus";
 const drvrTokenValue = document.getElementById('drvrToken').value;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
-let homeTableStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
+
 
 $(document).ready(() => {
     const modalInstance = new bootstrap.Modal(infoModal, {
@@ -77,7 +77,7 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 // The status controls and the connection to the DB api
-const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrTokenValue, bannerMsg, homeTableStatusValue);
+const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrTokenValue, bannerMsg);
 driverStatus.init();
 
 // Set the theme.
