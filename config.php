@@ -10,7 +10,7 @@ ini_set('session.save_path', __DIR__ . '/tmp');
 error_reporting(E_ALL);
 
 session_set_cookie_params([
-    //↓lifetime is set in seconds.
+    //↓lifetime is set in seconds (1 hr).
     'lifetime' => 3600,
     'domain' => 'prodriver.local',
     'path' => '/',
@@ -48,13 +48,13 @@ function generateToken() {
     return $token;
 }
 
-if (!isset($_SESSION['user_token'])){
+if (!isset($_SESSION['drvr_token'])){
     $getToken = generateToken();
     $_SESSION['drvr_token'] = $getToken;
     $_SESSION['token_time'] = time(); 
 }
 else {
-    $expiration_time = 60 * 15;
+    $expiration_time = 60 * 30;
     if (time() - $_SESSION['token_time'] >= $expiration_time){
         $newToken = generateToken();
         $_SESSION['drvr_token'] = $newToken;

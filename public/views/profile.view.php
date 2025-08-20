@@ -8,7 +8,7 @@ include "includes/info-modal.php";
 ?>
 
 <main class="container-fluid my-3">
-        <form id="acctinfo" action="" method="POST">
+        <form id="acctinfo" action="" method="POST" class="needs-validation" novalidate>
                 <input type="hidden" name="__method" value="patch">
                 <div class="card">
                         <div class="card-header bg-besttrailsclr">

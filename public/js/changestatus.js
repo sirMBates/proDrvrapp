@@ -29,26 +29,39 @@ export class ChangeStatus {
 
         const newStatus = statusMap[clickedClass];
         const newTime = new Date();
+        const timeOptions = {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        }
 
         this.drvrStatus = newStatus;
-        this.timeStamp = newTime.toISOString().slice(0, 19).replace('T', ' ');
+        let viewedTimeStamp = newTime.toLocaleString('en-us', timeOptions);
+        //this.timeStamp = newTime.toISOString().slice(0, 19).replace('T', ' ');
+        this.timeStamp = newTime.toISOString();
 
         localStorage.setItem('status', this.drvrStatus);
         this.bannerMsg.textContent = this.drvrStatus;
-        console.log(`Driver status currently: ${this.drvrStatus} \n Switched at: ${this.timeStamp} \n Location point: ${this.endpoint} \n Driver access: ${this.drvrToken}`);
-        this.updateDBStatus();        
+        console.log(`Driver status currently: ${this.drvrStatus} \n Switched at: ${viewedTimeStamp} \n Location point: ${this.endpoint} \n Driver access: ${this.drvrToken}`);
+        this.updateDBStatus(this.endpoint, this.drvrToken, this.drvrStatus, this.timeStamp);        
     };
 
-    updateDBStatus() {
-        fetch("http://prodriver.local/setstatus", {
+    updateDBStatus(endpoint, token, drvrstatus, stamp) {
+        fetch(endpoint, {
+            mode: 'cors',
+            credentials: 'include',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': this.drvrToken
+                'X-CSRF-Token': token
             },
             body: JSON.stringify({
-                drvrStatus: this.drvrStatus,
-                drvrStamp: this.timeStamp
+                drvrStatus: drvrstatus,
+                drvrStamp: stamp
             })
         })
             .then(res => {
