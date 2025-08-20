@@ -1,3 +1,7 @@
 .card-body::-webkit-scrollbar {
         display: none;
 }
+
+.card-footer::-webkit-scrollbar {
+        display: none;
+}

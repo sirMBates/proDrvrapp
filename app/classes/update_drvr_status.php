@@ -16,31 +16,37 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
     }
 
     public function checkAndUpdateDrvrStatus() {
-        /*if ($this->drvrStatusInvalid() === false) {
-            http_response_code(401);
+        if ($this->drvrStatusInvalid() === false) {
             header("Content-Type: application/json");
-            echo json_encode(['error' => 'Unauthorized request']);
+            http_response_code(401);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Unauthorized request'
+            ]);
             exit();
-        }*/
+        }
 
-        /*if ($this->checkDrvrTimeStamp() === false) {
+        if ($this->checkDrvrTimeStamp() === false) {
+            header("Content-Type: application/json");
             http_response_code(415);
-            header("Content-Type: application/json");
-            echo json_encode(['error' => 'Not acceptable']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Not acceptable'
+            ]);
             exit();
-        }*/
+        }
 
-        /*if ($this->checkDrvrAccess() === false) {
-            http_response_code(401);
+        if ($this->checkDrvrAccess() === false) {
             header("Content-Type: application/json");
-            echo json_encode(['error' => 'Unauthorized access']);
+            http_response_code(401);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Unauthorized access'
+            ]);
             exit();
-        }*/
+        }
 
         $this->processUpdateStatus($this->drvrid, $this->drvrStatus, $this->drvrTimeStamp);
-        /*header('Content-Type: application/json');
-        echo json_encode($result);
-        exit();*/
     }
 
     private function drvrStatusInvalid() {
@@ -50,14 +56,10 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
             $clean_Status = filter_var($drvrStatus, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW);            
             return $clean_Status;
         }
-        
         $cleanedDrvrStatus = cleanStatus($currentStatus);
-        error_log("Sanitized Driver Status: " . $cleanedDrvrStatus);
-
-        if (!preg_match("/^[a-zA-Z]{5,}$/", $cleanedDrvrStatus)) {
+        if (!preg_match("/^[a-zA-Z ]{5,}$/", $cleanedDrvrStatus)) {
             $result = false;
-        } 
-        else {
+        } else {
             $result = true;
         }
         return $result;
@@ -66,16 +68,13 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
     private function checkDrvrTimeStamp() {
         $result;
         $getStamp = $this->drvrTimeStamp;
-        function cleanDateOfBirth($stamp) {
+        function cleanDrvrTimeStamp($stamp) {
             $cleanStamp = filter_var($stamp, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
             return $cleanStamp;
         }
-
-        error_log("Sanitized Timestamp: " . cleanDateOfBirth($getStamp));
-        if (DateTime::createFromFormat('Y-m-d H:i:s', cleanDateOfBirth($getStamp)) === false) {
+        if (DateTime::createFromFormat('Y-m-d H:i:s', cleanDrvrTimeStamp($getStamp)) === false) {
             $result = false;
-        }
-        else {
+        } else {
             $result = true;
         }
         return $result;
@@ -88,18 +87,18 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
             $sanitizedToken = htmlspecialchars($token, ENT_QUOTES);
             return $sanitizedToken;
         }
-        error_log("Sanitized Token: " . cleanToken($getToken));
-        error_log("Session Token: " . $secretToken);
-        error_log("Driver ID in Session: " . $drvrId);
-
         $secretToken = $_SESSION['drvr_token'];
         if (cleanToken($getToken) !== $secretToken) {
             $result = false;
-        }
-        else {
+        } else {
             $result = true;
         }
         return $result;
     }
 }
+//error_log("Sanitized Driver Status: " . $cleanedDrvrStatus);
+//error_log("Sanitized Timestamp: " . cleanDateOfBirth($getStamp));
+//error_log("Sanitized Token: " . cleanToken($getToken));
+//error_log("Session Token: " . $secretToken);
+//error_log("Driver ID in Session: " . $drvrId);
 ?>

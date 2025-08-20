@@ -48,7 +48,7 @@ include "includes/flashmessage.php";
                                 </div>
 
                                 <div class="input-group">
-                                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                 </div>
 
                                 <div id="save_btn_box" class="col-12 row mx-auto mb-3">
