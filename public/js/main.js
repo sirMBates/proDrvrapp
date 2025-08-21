@@ -318,8 +318,7 @@ $(logoutLink).on('click', () => {
         }
 
         if (localStorage.getItem('isActiveEmergency') !== null) {
-
-localStorage.removeItem('isActiveEmergency');
+      localStorage.removeItem('isActiveEmergency');
         }
 
         if (sessionStorage.getItem('status') !== null) {
