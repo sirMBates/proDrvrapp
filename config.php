@@ -62,15 +62,5 @@ else {
     }
 }
 
-if (session_status() === PHP_SESSION_ACTIVE && !isset($_SESSION['username'])) {
-    $_SESSION['username'] = 'Guest';
-}
-
-/*if (!isset($_SESSION['counter'])) {
-    $_SESSION['counter'] = 1;
-} else {
-    $_SESSION['counter']++;
-}
-echo "Session counter: " . $_SESSION['counter'];
-phpinfo();*/
+//phpinfo();
 ?>

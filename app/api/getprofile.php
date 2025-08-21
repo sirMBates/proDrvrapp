@@ -12,6 +12,7 @@ if ($requestUri === '/getprofile') {
     $getDriversProfile = new GetDrvrController();
     $getDriversProfile->driverInfo();
 } else {
+    headers('Content-Type: application/json');
     http_response_code(404);
     echo 'Not Found';
 }
