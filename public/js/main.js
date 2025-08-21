@@ -16,7 +16,9 @@ const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn.nextElementSibling;
 const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
-const retrieveMyDrvr = fetchDrvr;
+const emergencyBtn = document.querySelectorAll('.status-emergency');
+let isActiveEmergency;
+const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
 const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontrol :)
 const statusEndpoint = "http://prodriver.local/setstatus";
 const drvrTokenValue = document.getElementById('drvrToken').value;
@@ -57,7 +59,7 @@ $(document).ready(() => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-        retrieveMyDrvr("http://prodriver.local/getprofile", { mode: 'cors'})
+        fetchDrvr("http://prodriver.local/getprofile", { mode: 'cors'})
         .then(data => {
             const driver = data;
             const drvrMainMenu = document.querySelector('#useraccess');
@@ -73,12 +75,33 @@ window.addEventListener('DOMContentLoaded', () => {
                         drvrMainHeader.textContent = 'Pro Driver';
                 }
                 console.error('There was a problem with the fetch operation:', error);
-        })
-})
+        });
+});
 
 // The status controls and the connection to the DB api
 const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrTokenValue, bannerMsg);
 driverStatus.init();
+
+emergencyBtn.forEach(btn => {
+        btn.addEventListener('click', () => {
+                localStorage.setItem('isActiveEmergency', true);
+                emergencyBackground.forEach(background => {
+                        background.classList.remove('bg-besttrailsclr');
+                        background.classList.add('bg-danger');
+                        return isActiveEmergency = localStorage.getItem('isActiveEmergency');
+                })
+        })
+});
+
+window.addEventListener('load', () => {
+        isActiveEmergency = localStorage.getItem('isActiveEmergency');
+        if (isActiveEmergency === 'true') {
+                emergencyBackground.forEach(background => {
+                        background.classList.remove('bg-besttrailsclr');
+                        background.classList.add('bg-danger');
+                })
+        }
+})
 
 // Set the theme.
 const themeSet = {
@@ -301,7 +324,7 @@ $(logoutLink).on('click', () => {
 
 if (window.location.pathname !== '/') {
         $(changeStatusCon).removeClass('d-none');
-}
+};
         
 /*const dropdownElementList = document.querySelectorAll('.dropdown-toggle')
 const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl))*/

@@ -2,6 +2,6 @@
         display: none;
 }
 
-.card-footer::-webkit-scrollbar {
+.card-footer > div::-webkit-scrollbar {
         display: none;
 }
