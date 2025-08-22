@@ -1,4 +1,4 @@
-//import { fetchDrvr } from "./drvrapi.js";
+import { fetchDrvr } from "./drvrapi.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');
@@ -8,10 +8,10 @@ const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
 const editBtn = document.querySelector('#edit');
 const completeBtn = document.querySelector('#submit-order');
-//const fetchDriver = fetchDrvr;
+const fetchDriver = fetchDrvr;
 
 window.addEventListener('load', () => {
-    fetch("https://127.0.0.1/getprofile")
+    fetchDriver("https://prodriver.local/getprofile")
     .then(data => {
         const driver = data;
         const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];

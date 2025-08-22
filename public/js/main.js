@@ -1,5 +1,5 @@
 import { buildModal } from './appmodal.js';
-//import { fetchDrvr } from './drvrapi.js';
+import { fetchDrvr } from './drvrapi.js';
 import { ChangeStatus } from './changestatus.js';
 let isDarkMode;
 const infoBtn = document.querySelector('#notifyinfo');
@@ -20,7 +20,7 @@ const emergencyBtn = document.querySelectorAll('.status-emergency');
 let isActiveEmergency;
 const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
 const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontrol :)
-const statusEndpoint = "https://127.0.0.1/setstatus";
+const statusEndpoint = "https://prodriver.local/setstatus";
 const drvrTokenValue = document.getElementById('drvrToken').value;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
 
@@ -59,7 +59,7 @@ $(document).ready(() => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-        fetch("https://127.0.0.1/getprofile")
+        fetchDrvr("https://prodriver.local/getprofile")
         .then(data => {
             const driver = data;
             const drvrMainMenu = document.querySelector('#useraccess');

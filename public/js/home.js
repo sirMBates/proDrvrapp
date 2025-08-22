@@ -1,8 +1,8 @@
 import { bdayCelebrationHandler } from "./celebration.js";
-//import { fetchDrvr } from "./drvrapi.js";
+import { fetchDrvr } from "./drvrapi.js";
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
-//const fetchDriver = fetchDrvr;
+const fetchDriver = fetchDrvr;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
@@ -18,7 +18,7 @@ window.addEventListener('load', () => {
                 localStorage.setItem('driverName', firstName);
         };
 
-        fetch("https://127.0.0.1/getprofile", { mode: 'cors' })
+        fetchDriver("https://prodriver.local/getprofile", { mode: 'cors' })
         .then(data => {
             const driver = data;
             const drvrMainTable = document.querySelector('#dashboard-info');
