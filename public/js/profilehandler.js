@@ -1,6 +1,6 @@
 import { Validation } from "./validation.js";
 import formValidation from "./messagevalidation.js";
-//import { fetchDrvr } from "./drvrapi.js";
+import { fetchDrvr } from "./drvrapi.js";
 
 const openInfoUpdateBtn = document.querySelector('#changeinfo');
 const emailChangeBtn = document.querySelector('#email-change');
@@ -16,10 +16,10 @@ const drvrPsword = profileInputs[7];
 const drvrStatus = profileInputs[8];
 const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
-//const fetchDriver = fetchDrvr;
+const fetchDriver = fetchDrvr;
 
 window.addEventListener('load', () => {
-    fetch("https://127.0.0.1/getprofile")
+    fetchDriver("https://prodriver.local/getprofile")
         .then(data => {
             const driver = data;
             if (driver) {

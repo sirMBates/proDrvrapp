@@ -1,3 +1,4 @@
+import { fetchDrvr } from "./drvrapi";
 export class ChangeStatus {
     constructor(array, endpoint, drvrToken, bannerMsg) {
         this.array = array;
@@ -51,7 +52,7 @@ export class ChangeStatus {
     };
 
     updateDBStatus(endpoint, token, drvrstatus, stamp) {
-        fetch(endpoint, {
+        fetchDrvr(endpoint, {
             credentials: 'include',
             method: 'POST',
             headers: {
@@ -63,9 +64,9 @@ export class ChangeStatus {
                 drvrStamp: stamp
             })
         })
-            .then(res => {
+            /*.then(res => {
                 return res.json()
-            })
+            })*/
             .then(data => console.log(data))
             .catch (error => console.log('Error', error))
     }
