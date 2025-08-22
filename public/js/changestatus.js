@@ -52,7 +52,6 @@ export class ChangeStatus {
 
     updateDBStatus(endpoint, token, drvrstatus, stamp) {
         fetch(endpoint, {
-            mode: 'cors',
             credentials: 'include',
             method: 'POST',
             headers: {
