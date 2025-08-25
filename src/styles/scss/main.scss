@@ -40,3 +40,13 @@ body, .offcanvas-body {
 .noprint {
     @include no-print-page();
 }
+
+.nav-link.active {
+    @include link-active-color(#8ADEFF);
+}
+
+.overflow-x-auto {
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

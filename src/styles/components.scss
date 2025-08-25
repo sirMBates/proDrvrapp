@@ -18,30 +18,6 @@ header img {
     opacity: .85;
 }
 
-/*@media only screen and (width < 1300px) {
-    video {
-        display: none;
-    }
-}*/
-
-/*@media only screen and (width >= 576px) and (width <= 737px) {
-    #logo {
-        width: 45%;
-    }
-}
-
-@media only screen and (width >= 330px) and (width <= 575px) {
-    #logo {
-        width: 55%;
-    }
-}
-
-@media only screen and (width < 330px) {
-    #logo {
-        width: 70px;
-    }
-}*/
-
 body::-webkit-scrollbar {
     width: 20px;
 }
@@ -83,8 +59,8 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes blink {
-    0% {opacity: 0}
-    100% {opacity: 1}
+    0% { opacity: 0}
+    100% { opacity: 1}
 }
 
 
