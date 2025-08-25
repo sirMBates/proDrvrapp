@@ -66,16 +66,16 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                 <li class="nav-item">
-                                        <a class="nav-link" href="/"><span class="px-2 fa-solid fa-house"></span>Home</a>
+                                        <a class="nav-link" href="/"><i class="px-2 fa-solid fa-house"></i>Home</a>
                                 </li>
                                 <li class="nav-item">
-                                        <a class="nav-link" href="/orders"><span class="px-2 fa-solid fa-file"></span>Job Order</a>
+                                        <a class="nav-link" href="/orders"><i class="px-2 fa-solid fa-file"></i>Job Order</a>
                                 </li>
                                 <li class="nav-item">
-                                        <a class="nav-link" href="/profile"><span class="px-2 fa-solid fa-user"></span>My Profile</a>
+                                        <a class="nav-link" href="/profile"><i class="px-2 fa-solid fa-user"></i>My Profile</a>
                                 </li>
                                 <li class="nav-item">
-                                        <a class="nav-link" href="/timesheet"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>Summary</a>
+                                        <a class="nav-link" href="/timesheet"><i class="px-2 fa-solid fa-file-invoice-dollar"></i>Summary</a>
                                 </li>                                                                
                         </ul>
                 </div>

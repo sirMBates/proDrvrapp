@@ -21,3 +21,7 @@
         visibility: hidden !important;
     }
 }
+
+@mixin link-active-color ($color) {
+    color: $color !important;
+}
