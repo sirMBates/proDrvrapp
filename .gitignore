@@ -3,3 +3,6 @@ config.php
 tmp
 .htpasswd
 getkey.php
+node_modules
+.parcel-cache
+dist
