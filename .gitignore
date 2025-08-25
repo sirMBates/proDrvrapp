@@ -5,4 +5,4 @@ tmp
 getkey.php
 node_modules/
 .parcel-cache/
-public/dist
+public/dist/
