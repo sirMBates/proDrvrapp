@@ -9,8 +9,8 @@ const infoModalMsg = buildModal;
 const infoModBtn = document.querySelector('#info-ok');
 const myCurrentView = window.location.pathname;
 const profCon = document.querySelector("#profilecon");
-const getMenuItems = document.querySelectorAll(".nav-item");
-const textLink = document.querySelector("#useraccess");
+const getMenuItems = document.querySelectorAll(".nav-link");
+//const textLink = document.querySelector("#useraccess");
 const driverMenu = document.querySelector(".offcanvas-body");
 const viewPayCard = driverMenu.childNodes[5];
 const themeBtn = document.querySelector("#themeBtn");
@@ -200,16 +200,14 @@ window.addEventListener('load', enableDarkMode, false);
 
 // Highlight the active link of the current page.
 function activeLink () {
-        getMenuItems.forEach(item => {
-                let currentPage = window.location.pathname;
-                let itemLink = item.firstElementChild;
-                let itemLocation = itemLink.pathname;
-                if (itemLocation !== currentPage) {
-                        itemLink.classList.remove('active');
-                        itemLink.removeAttribute('aria-current');                        
+        getMenuItems.forEach(link => {
+                let linkLocation = link.pathname;
+                if (myCurrentView === linkLocation) {
+                        link.setAttribute('aria-current', 'page'); //aria-current, page
+                        link.classList.add('active'); //active                       
                 } else {
-                        itemLink.classList.add('active');
-                        itemLink.setAttribute('aria-current', 'page');
+                        link.removeAttribute('aria-current'); //aria-current
+                        link.classList.remove('active'); //active 
                 }
         })
 }
@@ -217,14 +215,13 @@ activeLink();
 
 //View pay card link in driver menu when on payroll page.
 function viewablePayCard () {
-        let currentView = window.location.pathname;
-        if (currentView === '/timesheet') {
+        if (myCurrentView === '/timesheet') {
                 viewPayCard.classList.remove('d-none');        
         } else {
                 viewPayCard.classList.add('d-none');
         }
 
-        if (currentView === '/printable') {
+        if (myCurrentView === '/printable') {
                 viewPayCard.classList.remove('d-none', 'dropdown');
                 viewPayCard.classList.add('dropdown-center');
                 viewPayCard.childNodes[1].classList.add('d-none');
@@ -327,7 +324,7 @@ $(logoutLink).on('click', () => {
         }
 });
 
-if (window.location.pathname !== '/') {
+if (myCurrentView !== '/') {
         $(changeStatusCon).removeClass('d-none');
 };
         
