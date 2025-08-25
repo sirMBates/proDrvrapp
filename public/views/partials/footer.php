@@ -5,7 +5,7 @@
                 <p class="text-light"><a class="text-light" target="_blank" href="https://icons8.com/icon/8177/ball-point-pen" rel="noopener">Pen</a> icon by <a class="text-light" target="_blank" href="https://icons8.com">Icons8</a></p><p class="text-center"><a class="text-light" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
         </div>
 </footer>
-<!-- here's where the dist/main.js will go-->
+<script src='../../dist/js/main.js'></script>
 <!-- Load JQuery Color CDN(Content Delivery Network) -->
 <script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity='sha256-KfnxwOV3FhXN7A/28TCtqslo5fRS23cxO5XcxVO5we8=' crossorigin='anonymous'></script>
 <?php

@@ -1,0 +1,8 @@
+.card-body::-webkit-scrollbar {
+  display: none;
+}
+
+.card-footer > div::-webkit-scrollbar {
+  display: none;
+}
+/*# sourceMappingURL=home.css.map */

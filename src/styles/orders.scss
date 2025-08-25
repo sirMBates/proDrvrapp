@@ -1,0 +1,16 @@
+#signaturecon::-webkit-scrollbar {
+        display: none;
+}
+
+#signaturePad {
+        border: 2px solid black;
+        cursor: url('../images-videos/logoandicons/icons8-pen-50.png') 1 50, pointer;
+}
+
+.card-body::-webkit-scrollbar {
+        display: none;
+}
+
+.editable-data {
+        cursor: pointer;
+}

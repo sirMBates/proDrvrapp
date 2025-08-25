@@ -1,0 +1,22 @@
+{
+  "name": "prodrvrapp",
+  "version": "1.0.0",
+  "description": "<h1>ProDriver</h1>",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel watch src/js/*.js src/styles/scss/main.scss src/styles/components.scss src/styles/home.scss src/styles/orders.scss src/styles/profile.scss src/styles/register.scss src/styles/style.scss src/styles/tsheet.scss --dist-dir public/dist && shx cp -r src/images-videos public/dist",
+    "build": "parcel build src/js/*.js src/styles/scss/main.scss src/styles/components.scss src/styles/home.scss src/styles/orders.scss src/styles/profile.scss src/styles/register.scss src/styles/style.scss src/styles/tsheet.scss --dist-dir public/dist && shx cp -r src/images-videos public/dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.15.4",
+    "parcel": "^2.15.4",
+    "shx": "^0.4.0"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.7"
+  }
+}

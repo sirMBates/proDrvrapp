@@ -1,0 +1,1 @@
+{"mappings":"AAAA;;;;AAIA","sources":["src/styles/home.scss"],"sourcesContent":[".card-body::-webkit-scrollbar {\r\n        display: none;\r\n}\r\n\r\n.card-footer > div::-webkit-scrollbar {\r\n        display: none;\r\n}"],"names":[],"version":3,"file":"home.css.map","sourceRoot":"../../../"}
