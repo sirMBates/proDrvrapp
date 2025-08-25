@@ -1,6 +1,6 @@
 <header class="container-fluid d-inline-flex justify-content-between mb-2 bg-btd-gray-silver border-bottom border-1 border-black">
         <div class="flex-shrink-0" style="width: 20%;">                                
-                <img src="../images-videos/prodrvrbkgd.png" class="img-fluid m-3" width="250" id="logo" alt="companylogo">                       
+                <img src="../../dist/images-videos/prodrvrbkgd.png" class="img-fluid m-3" width="250" id="logo" alt="companylogo">                       
         </div>
         <div class="d-flex flex-column flex-grow-1 ms-3 mt-3 justify-content-start align-items-end">
                 <div id="clock_container" class="z-3 d-flex flex-column text-capitalize">
