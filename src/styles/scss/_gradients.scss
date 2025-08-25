@@ -1,0 +1,3 @@
+@mixin gradient-x-three-colors($start-color: #007FFF, $mid-color: #FFFAF0, $color-stop: 50%, $end-color: #A9A9A9) {
+    background-image: linear-gradient(to right, $start-color, $mid-color $color-stop, $end-color);
+}
