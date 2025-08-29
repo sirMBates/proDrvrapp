@@ -1,7 +1,7 @@
 <?php
     // Only required for signature widget.
-    include_once "includes/warn-modal.php";
-    include_once "includes/confirm-modal.php";
+    include_once "warn-modal.php";
+    include_once "confirm-modal.php";
 ?>
 <div id="signature-widget-buttons" class="container d-inline-flex my-3 d-none">
     <button id="open-sign-box" class="btn btn-primary text-capitalize" type="button"><i class="px-2 fa-solid fa-signature"></i>pre-inspection signature</button>

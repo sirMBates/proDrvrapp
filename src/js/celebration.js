@@ -1,21 +1,23 @@
 import { buildModal } from "./appmodal.js";
-export function bdayCelebrationHandler(initialize) {
+import JSConfetti from "js-confetti";
+export function bdayCelebrationHandler() {
     const drvrName = localStorage.getItem('driverName');
+    const jsConfetti = new JSConfetti;
     setTimeout(() => {
-        initialize.addConfetti({
+        jsConfetti.addConfetti({
             emojis: ['🎈', '🧨', '🎁', '🍾', '🎂'],
             emojiSize: 25,
             confettiRadius: 10,
             confettiNumber: 300
         }).then(() => { 
-            initialize.addConfetti({ confettiNumber: 500 })
+            jsConfetti.addConfetti({ confettiNumber: 500 })
         }).then(() => { 
             setTimeout(() => { 
-                initialize.addConfetti({ confettiNumber: 750 })
+                jsConfetti.addConfetti({ confettiNumber: 750 })
             }, 2500)
         }).then(() => { 
             setTimeout(() => { 
-                initialize.addConfetti({ confettiNumber: 1000 })
+                jsConfetti.addConfetti({ confettiNumber: 1000 })
             }, 5000)
         }).then(() => {
             setTimeout(() => {

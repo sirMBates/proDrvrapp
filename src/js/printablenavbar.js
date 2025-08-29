@@ -1,16 +1,17 @@
 import { printCurrentPage } from './print.js';
+import html2pdf from 'html2pdf.js';
 const drvrMenu = document.querySelector('#useraccess');
 const menuCardOpts = drvrMenu.childNodes[3].childNodes[5];
 const printLink = menuCardOpts.childNodes[5].childNodes[1];
 const downloadLink = printLink.nextElementSibling;
 const navbar = document.querySelector('nav');
-const btnTheme = document.querySelector('#themeBtn');
+const btnTheme = document.querySelector('#themeBtn').parentElement;
 
 function changeDrvrMenu () {
     let currentPage = window.location.pathname;
     if (currentPage === '/printable') {
         menuCardOpts.classList.remove('d-none');
-        btnTheme.style.display = 'none';
+        btnTheme.classList.add('d-none');
     } else {
         menuCardOpts.classList.add('d-none');
     }
