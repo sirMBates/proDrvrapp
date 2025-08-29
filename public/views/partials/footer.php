@@ -9,7 +9,7 @@
 <!-- Load JQuery Color CDN(Content Delivery Network) -->
 <script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity='sha256-KfnxwOV3FhXN7A/28TCtqslo5fRS23cxO5XcxVO5we8=' crossorigin='anonymous'></script>
 <?php
-        require "includes/getscripts.php";
+        require base_path("app/includes/getscripts.php");
 ?>
 </body>
 </html>

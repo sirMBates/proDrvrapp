@@ -85,8 +85,6 @@ class ComposerStaticInita48aa6ec108568f71503fb3a0cf26ca7
         'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
         'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
-        'jSignature_Tools_Base30' => __DIR__ . '/..' . '/brinley/jsignature/extras/SignatureDataConversion_PHP/core/jSignature_Tools_Base30.php',
-        'jSignature_Tools_SVG' => __DIR__ . '/..' . '/brinley/jsignature/extras/SignatureDataConversion_PHP/core/jSignature_Tools_SVG.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

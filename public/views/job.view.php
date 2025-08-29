@@ -3,8 +3,8 @@ require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
 $alert = new \core\Flash;
-include "includes/flashmessage.php";
-include "includes/info-modal.php"
+include "partials/flashmessage.php";
+include "partials/info-modal.php"
 ?>       
 <main class="w-100 d-flex flex-column justify-content-center p-1">
         <form class="" action="" method="POST" novalidate>

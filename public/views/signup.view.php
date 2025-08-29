@@ -1,8 +1,8 @@
 <?php
 require "partials/outhead.php";
 $alert = new core\Flash();
-include "includes/flashmessage.php";
-include "includes/info-modal.php";
+include "partials/flashmessage.php";
+include "partials/info-modal.php";
 ?>       
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->
         <div id="form-container" class="d-flex flex-column my-auto">

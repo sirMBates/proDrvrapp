@@ -7,7 +7,7 @@
         <meta name="robots" content="noindex">
         <link rel="stylesheet" href="../../dist/styles/components.css">
         <?php
-                require "includes/getstyle.php";
+                require base_path("app/includes/getstyle.php");
         ?>
         <link rel="stylesheet" href="../../dist/styles/scss/main.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">

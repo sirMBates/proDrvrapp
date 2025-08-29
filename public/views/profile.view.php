@@ -3,8 +3,8 @@ require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
 $alert = new core\Flash();
-include "includes/flashmessage.php";
-include "includes/info-modal.php";
+include "partials/flashmessage.php";
+include "partials/info-modal.php";
 ?>
 
 <main class="container-fluid my-3">

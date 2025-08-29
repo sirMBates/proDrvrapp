@@ -3,9 +3,9 @@
         require "partials/nav.php";
         require "partials/banner.php";
         $alert = new core\Flash();
-        include "includes/flashmessage.php";
-        include "includes/info-modal.php";
-        include "includes/custom-modal.php";
+        include "partials/flashmessage.php";
+        include "partials/info-modal.php";
+        include "partials/custom-modal.php";
 ?>
 <main class="container-fluid mb-1">
         <div class="card mb-auto">

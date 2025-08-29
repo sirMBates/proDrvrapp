@@ -6,3 +6,4 @@ getkey.php
 node_modules/
 .parcel-cache/
 public/dist/
+vendor/
