@@ -58,8 +58,7 @@ function timeCelebrationHandler() {
                                 mainContent.insertAdjacentElement('afterbegin', bdaySong);
                                 $(bdaySong).attr('src', '../audio/happy-birthday-clip.mp3');
                                 bdaySong.play();
-                                const celebration = new JSConfetti();
-                                bdayCelebrationHandler(celebration);
+                                bdayCelebrationHandler();
                                 bdaySong.addEventListener('ended', () => {
                                         bdaySong.remove();
                                 })

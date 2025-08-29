@@ -56,7 +56,6 @@ function pageScripts($value) {
                 break;
 
             case "/":
-                echo "<script src='https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js'></script>\n\n";
                 echo "<script type='module' src='../dist/js/home.js'></script>\n";
                 break;
 
@@ -66,8 +65,6 @@ function pageScripts($value) {
 
             case "/orders":
                 if (isset($_SESSION['signatureRequired']) && $_SESSION['signatureRequired'] === true) {
-                    echo "<script src='brinley/libs/flashcanvas.js'></script>\n";
-                    echo "<script src='brinley/libs/jSignature.min.js'></script>\n";
                     echo "<script type='module' src='../dist/js/sign.js'></script>\n";
                 }
                 echo "<script type='module' src='../dist/js/orderpage.js'></script>\n";
@@ -79,12 +76,6 @@ function pageScripts($value) {
 
             case "/timesheet":
                 echo "<script type='module' src='../dist/js/tsheet.js'></script>\n";
-                break;
-            
-            case "/printable":
-                echo "<!-- This is used to convert page to pdf -->\n";
-                echo "<script src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js' integrity='sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>\n\n";
-                echo "<script type='module' src='../dist/js/payroll.js'></script>\n";
                 break;
 
             default:

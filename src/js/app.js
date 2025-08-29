@@ -221,16 +221,11 @@ function viewablePayCard () {
                 viewPayCard.classList.add('d-none');
         }
 
-        if (myCurrentView === '/printable') {
-                viewPayCard.classList.remove('d-none', 'dropdown');
-                viewPayCard.classList.add('dropdown-center');
-                viewPayCard.childNodes[1].classList.add('d-none');
-                viewPayCard.childNodes[3].classList.remove('d-none');        
-        } else {
+        if (myCurrentView !== '/printable') {
                 viewPayCard.childNodes[3].classList.add('d-none');
                 viewPayCard.childNodes[1].classList.remove('d-none');
                 viewPayCard.classList.remove('dropdown-center');
-                viewPayCard.classList.add('dropdown');
+                viewPayCard.classList.add('dropdown');        
         }
 };
 $(window).on('load', viewablePayCard);
