@@ -1,7 +1,7 @@
 <?php
 require "partials/outhead.php";
 $alert = new core\Flash();
-include "includes/flashmessage.php";
+include "partials/flashmessage.php";
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-auto">

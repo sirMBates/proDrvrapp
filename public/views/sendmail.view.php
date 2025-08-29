@@ -2,6 +2,7 @@
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
+include "partials/flashmessage.php";
 ?>
     <main class="container-fluid">
         <div class="card my-3" style="width: 100%;">

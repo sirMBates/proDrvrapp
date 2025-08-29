@@ -1,4 +1,5 @@
 import { buildModal } from './appmodal.js';
+import 'jSignature';
 const signatureBoxBtn = document.querySelector('#signature-widget-buttons')
 const openSignBoxBtn = document.querySelector('#open-sign-box');
 const getPostSignatureBtn = document.querySelector('#get-next-signature');

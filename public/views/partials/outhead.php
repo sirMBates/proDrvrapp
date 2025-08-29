@@ -8,7 +8,7 @@
         <?php
         $url = $_SERVER['REQUEST_URI'];
         if ($url !== '/views/404.php') {
-                require_once "includes/getstyle.php";
+                require_once base_path("app/includes/getstyle.php");
         }
         ?>
         <link rel="stylesheet" href="../../dist/styles/scss/main.css">

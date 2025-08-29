@@ -12,6 +12,4 @@ return array(
     'Stringable' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
     'UnhandledMatchError' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
     'ValueError' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
-    'jSignature_Tools_Base30' => $vendorDir . '/brinley/jsignature/extras/SignatureDataConversion_PHP/core/jSignature_Tools_Base30.php',
-    'jSignature_Tools_SVG' => $vendorDir . '/brinley/jsignature/extras/SignatureDataConversion_PHP/core/jSignature_Tools_SVG.php',
 );

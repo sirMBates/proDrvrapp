@@ -1,7 +1,7 @@
 <?php
     require "partials/outhead.php";
     $alert = new core\Flash();
-    include "includes/flashmessage.php";
+    include "partials/flashmessage.php";
 ?>
     <main class="w-50 my-5 align-self-center">
         <h1 class="text-center text-light text-bg-dark font-monospace"><u>Reset your password here!</u></h1>
