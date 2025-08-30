@@ -25,6 +25,10 @@ const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontr
 const statusEndpoint = "https://prodriver.local/setstatus";
 const drvrToken = document.getElementById('drvrToken').value;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
+// Profile image display in navbar.
+// [default image is firstChild.nextElementSibling] & [file selector is 3]
+const profileImage = profCon.childNodes[1].childNodes[0];
+const profileInput = profCon.childNodes[3];
 
 
 $(document).ready(() => {
@@ -68,6 +72,11 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
                 drvrMainHeader.textContent = `${driver[3]} ${driver[4]}`;
+                if (driver.profilePicture) {
+                    profileImage.setAttribute('src', driver.profilePicture);  // Assuming profilePicture contains the image URL
+                } else {
+                    profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png"); // Default image if no profile picture is found
+                }
             }
         })
         .catch(error => {
@@ -234,8 +243,7 @@ $(window).on('load', viewablePayCard);
 // Profile image display in navbar.
 // console.log(profCon.childNodes);
 // [default image is firstChild.nextElementSibling] & [file selector is 3]
-const profileImage = profCon.childNodes[1].childNodes[0];
-const profileInput = profCon.childNodes[3];
+
 $(profileInput).on('change', (e) => {
         //profileImage.setAttribute('src', URL.createObjectURL(profileInput.files[0]));
         const file = e.target.files[0]; // Get the first selected file
