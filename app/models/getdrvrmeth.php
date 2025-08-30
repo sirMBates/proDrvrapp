@@ -28,7 +28,6 @@ class GetDriver {
             exit();
         }
 
-        $encryptedEmail = $result['email'];
         $encryptedFirstName = $result['firstName'];
         $encryptedLastName = $result['lastName'];
         $encryptedMobileNum = $result['mobileNumber'];
@@ -36,7 +35,7 @@ class GetDriver {
         return [
             $drvrid = $result['driverid'],
             $username = $result['username'],
-            $dbEmail = Crypto::decrypt($encryptedEmail, $key),
+            $dbEmail = $result['email'],
             $dbFirstName = Crypto::decrypt($encryptedFirstName, $key),
             $dbLastName = Crypto::decrypt($encryptedLastName, $key),
             $dbMobileNum = Crypto::decrypt($encryptedMobileNum, $key),
