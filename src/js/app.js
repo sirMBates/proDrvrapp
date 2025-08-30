@@ -2,6 +2,7 @@ import 'bootstrap';
 import { buildModal } from './appmodal.js';
 import { fetchDrvr } from './drvrapi.js';
 import { ChangeStatus } from './changestatus.js';
+import { Validation } from './validation.js';
 let isDarkMode;
 const infoBtn = document.querySelector('#notifyinfo');
 const infoModal = document.querySelector('#info-modal');
@@ -22,7 +23,7 @@ let isActiveEmergency;
 const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
 const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontrol :)
 const statusEndpoint = "https://prodriver.local/setstatus";
-const drvrTokenValue = document.getElementById('drvrToken').value;
+const drvrToken = document.getElementById('drvrToken').value;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
 
 
@@ -80,7 +81,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // The status controls and the connection to the DB api
-const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrTokenValue, bannerMsg);
+const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrToken, bannerMsg);
 driverStatus.init();
 
 emergencyBtn.forEach(btn => {
@@ -239,54 +240,56 @@ $(profileInput).on('change', (e) => {
         //profileImage.setAttribute('src', URL.createObjectURL(profileInput.files[0]));
         const file = e.target.files[0]; // Get the first selected file
         if (file) {
-                const reader = new FileReader();
+                // Validate image type
+                const isValid = Validation.validate(file, 'file');
+                if (isValid) {
+                        alert('Please select a valid image file (JPG, PNG, GIF) and ensure it is within the size limit.');
+                        profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
+                        return;
+                }
 
+                const reader = new FileReader();
                 // Define what happens when the file is successfully read
                 reader.onload = (e) => {
                         profileImage.setAttribute('src', e.target.result); // Display file content
                 };
-
                 // Handle errors
                 reader.onerror = () => {
                         console.error('Error reading file:', reader.error);
                 };
-
                 // Read the file as image URL
                 reader.readAsDataURL(file);
+                // Reset the input value to allow re-uploading the same file
+                profileInput.value = '';
 
                 // Optionally, you can also log the file name and size
                 console.log('Selected file:', file.name, 'Size:', file.size, 'bytes');
                 // You can also check the file type if needed
                 console.log('File type:', file.type);
-                // Check if the file is an image
-                if (!file.type.startsWith('image/')) {
-                        alert('Please select a valid image file.');
-                        profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
-                        return;
-                }
-                // Reset the input value to allow re-uploading the same file
-                profileInput.value = ''; // Clear the input value to allow re-uploading the same file
-                // Reset the profile image to default if no file is selected
-                if (file.name === "photo-camera-interface-symbol-for-button.png") {
-                        profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
-                }
+
                 // If you want to upload the image to the server, you can do it here
-                // For example, using fetch or XMLHttpRequest to send the file to your server
+                // For example, using fetch to send the file to your server
                 
-                /*if ($(profileImage).attr('src') !== "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png") {
+                if ($(profileImage).attr('src') !== "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png") {
                         const formData = new FormData();
                         formData.append('profileImage', file);
+                        formData.append('csrf_token', drvrToken);
 
-                        fetch('/profile-image', {
+                        fetchDrvr('/profile-image', {
+                                mode: 'cors',
+                                credentials: 'include',
                                 method: 'POST',
-                                body: formData
+                                headers: {
+                                        'X-CSRF-Token': drvrToken // Include the CSRF token in the header
+                                },
+                                body: formData,  // FormData automatically handles content-type and boundary
                         })
-                        .then(response => response.text())
-                        .then(data => alert(data))
+                        .then(response => response.text()) // Handle server response
+                        .then(data => alert(data)) // Display the server's response
                         .catch(error => console.error('Error uploading image:', error));
                 } else {
                         alert("Please select a valid image file.");
-                }*/
+                }
         }
 });
 

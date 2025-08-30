@@ -89,7 +89,21 @@ export class Validation {
     }
 
     static validatePhoto(input) {
-        return photoPattern.test(input);
+        // The 'input' parameter is a file object in this case
+        const file = input;
+        const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+
+        // Check if file type is allowed
+        if (!allowedTypes.includes(file.type)) {
+            return false;
+        }
+
+        // Optionally, you can also check for file size, e.g., 5MB limit
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            return false;
+        }
+        return true; // Valid image file
     }
 
     static validateDrvrStatus(input) {
