@@ -2,6 +2,12 @@
 
 use core\Database;
 use core\Flash;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
+use Dotenv\Dotenv;
+require_once "../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
 
 class UpdateDrvr {
     protected function drvrPwdUpdate($drvrid, $password) {
@@ -26,6 +32,7 @@ class UpdateDrvr {
     }
 
     protected function drvrUpdateData($drvrid, $drvrEmail, $drvrMobile) {
+        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
         $fields = [];
@@ -37,8 +44,9 @@ class UpdateDrvr {
         }
 
         if ($drvrMobile !== null && $drvrMobile !== '') {
+            $encryptedMobileNum = Crypto::encrypt($drvrMobile, $key);
             $fields[] = "mobileNumber = :mobileNumber";
-            $params[':mobileNumber'] = $drvrMobile;
+            $params[':mobileNumber'] = $encryptedMobileNum;
         }
 
         if (count($fields) > 0) {
