@@ -41,6 +41,10 @@ body, .offcanvas-body {
     @include no-print-page();
 }
 
+.clear-bkgd {
+    @include no-background-page();
+}
+
 .nav-link.active {
     @include link-active-color(#8ADEFF);
 }
