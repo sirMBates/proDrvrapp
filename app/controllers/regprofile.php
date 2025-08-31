@@ -22,7 +22,7 @@ if ($method === 'PATCH' && $formToken === $_SESSION['drvr_token']) {
         $birthdate = htmlspecialchars(trim($_POST['dateofbirth']));
         $formToken = htmlspecialchars(trim($_POST['drvrtoken']));
         // Instantiate the add user controller class. ↓
-        include_once base_path("app/models/regprofilemeth.php");
+        include_once base_path("app/models/regprofilemodel.php");
         include_once base_path("app/classes/completeregis.php");
         $enterData = new RegProContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
         $enterData->processProfile();

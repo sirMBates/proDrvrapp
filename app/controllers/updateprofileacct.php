@@ -18,7 +18,7 @@ if ($method === 'PATCH') {
         $password = htmlspecialchars(trim($_POST['password']));
         $email = htmlspecialchars(trim(null));
         $phoneNumber = htmlspecialchars(trim(null));
-        include_once base_path("app/models/updateprofilemeth.php");
+        include_once base_path("app/models/updateprofilemodel.php");
         include_once base_path("app/classes/update_profile.php");
         $newDrvrPwd = new UpdateDrvrContr($drvrid, $password, $email, $phoneNumber);
         $newDrvrPwd->changeDrvrPwd();
@@ -31,7 +31,7 @@ if ($method === 'PATCH') {
         $drvrPassword = null; 
         $drvrEmail = isset($_POST['email'])? htmlspecialchars(trim($_POST['email'])) : null;
         $drvrMobile = isset($_POST['mobile'])? htmlspecialchars(trim($_POST['mobile'])) : null;
-        include_once base_path("app/models/updateprofilemeth.php");
+        include_once base_path("app/models/updateprofilemodel.php");
         include_once base_path("app/classes/update_profile.php");
         $changeData = new UpdateDrvrContr($driver, $drvrPassword, $drvrEmail, $drvrMobile);
         $changeData->changeDrvrData();

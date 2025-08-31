@@ -13,7 +13,7 @@ class UpdateDrvr {
     protected function drvrPwdUpdate($drvrid, $password) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "UPDATE driver
+        $sql = "UPDATE Driver
                 SET password = :password
                 WHERE driverid = :driverid";
         $stmt = $db->connect()->prepare($sql);
@@ -50,7 +50,7 @@ class UpdateDrvr {
         }
 
         if (count($fields) > 0) {
-            $sql = "UPDATE driver SET ". 
+            $sql = "UPDATE Driver SET ". 
             implode(", ", $fields). " 
             WHERE driverid = :driverid";
             $params[':driverid'] = $drvrid;
@@ -75,7 +75,7 @@ class UpdateDrvr {
     protected function drvrExist($drvrid) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT * FROM driver
+        $sql = "SELECT * FROM Driver
                 WHERE driverid = :driverid";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':driverid', $drvrid);

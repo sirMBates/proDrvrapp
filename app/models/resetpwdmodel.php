@@ -7,7 +7,7 @@ class ResetPwd {
     protected function checkTokenandExpiration($token) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT * FROM pwdreset
+        $sql = "SELECT * FROM Pwdreset
                 WHERE resetToken = :resetToken";                
         $stmt = $db->connect()->prepare($sql);
         $stmt->execute([

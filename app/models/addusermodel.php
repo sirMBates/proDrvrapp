@@ -9,7 +9,7 @@ class AddedDrvr {
     protected function setDriver($username, $email, $password) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "INSERT INTO driver (
+        $sql = "INSERT INTO Driver (
                 username, email, password, firstName, lastName, mobileNumber, birthdate) 
                 VALUES (?,?,?,?,?,?,?)";
         $stmt = $db->connect()->prepare($sql);
@@ -37,7 +37,7 @@ class AddedDrvr {
 
         $token = '';
         $tokenExpTime = NULL;
-        $sql2 = "INSERT INTO pwdreset (email, resetToken, tokenExpTime)
+        $sql2 = "INSERT INTO Pwdreset (email, resetToken, tokenExpTime)
                 VALUES (?,?,?)";
         $stmt2 = $db->connect()->prepare($sql2);
         $stmt2->bindParam(1, $email);
@@ -56,7 +56,7 @@ class AddedDrvr {
     protected function checkDriver($username, $email) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT username, email FROM driver
+        $sql = "SELECT username, email FROM Driver
                 WHERE username = :username OR email = :email";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':username', $username);

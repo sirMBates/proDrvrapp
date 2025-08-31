@@ -8,7 +8,7 @@ class ForgetPswd {
         $db = new Database;
         $alert = new Flash(); 
         // Note: Can not use an INSERT stmt to add to an empty column of an existing row.
-        $sql = "UPDATE pwdreset
+        $sql = "UPDATE Pwdreset
                 SET resetToken = :resetToken, tokenExpTime = :tokenExpTime
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
@@ -32,7 +32,7 @@ class ForgetPswd {
     protected function checkEmailExist($email) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT email FROM pwdreset 
+        $sql = "SELECT email FROM Pwdreset 
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
         $result = $stmt->execute([
@@ -58,7 +58,7 @@ class ForgetPswd {
     protected function checkTokenExist($email) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT resetToken FROM pwdreset 
+        $sql = "SELECT resetToken FROM Pwdreset 
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
 
