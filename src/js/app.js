@@ -240,10 +240,7 @@ function viewablePayCard () {
 };
 $(window).on('load', viewablePayCard);
 
-// Profile image display in navbar.
-// console.log(profCon.childNodes);
-// [default image is firstChild.nextElementSibling] & [file selector is 3]
-
+// Insert profile image in the driver menu bar
 $(profileInput).on('change', (e) => {
         //profileImage.setAttribute('src', URL.createObjectURL(profileInput.files[0]));
         const file = e.target.files[0]; // Get the first selected file
@@ -281,15 +278,15 @@ $(profileInput).on('change', (e) => {
                 if ($(profileImage).attr('src') !== "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png") {
                         const formData = new FormData();
                         formData.append('profileImage', file);
-                        formData.append('csrf_token', drvrToken);
+                        //formData.append('csrf_token', drvrToken);
 
-                        fetchDrvr('/profile-image', {
+                        fetchDrvr('https://prodriver.local/setprofilepicture', {
                                 mode: 'cors',
                                 credentials: 'include',
                                 method: 'POST',
-                                headers: {
+                                /*headers: {
                                         'X-CSRF-Token': drvrToken // Include the CSRF token in the header
-                                },
+                                },*/
                                 body: formData,  // FormData automatically handles content-type and boundary
                         })
                         .then(response => response.text()) // Handle server response

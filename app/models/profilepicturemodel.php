@@ -9,17 +9,25 @@ $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
 $dotenv->load();
 
 class ProfileImageUpload {
-    public function uploadImage($drvrid, $file) {
+    protected function uploadImage($drvrid, $file) {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
 
         // Check for file type (image) and size
         if (!in_array($file['type'], ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'])) {
-            echo json_encode(['error' => 'Invalid image type. Only JPG, JPEG, PNG, or GIF are allowed.']);
+            http_response_code(415);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid image type. Only JPG, JPEG, PNG, or GIF are allowed.'
+            ]);
             exit();
         }
         if ($file['size'] > 5 * 1024 * 1024) { // Limit to 5MB
-            echo json_encode(['error' => 'Image size exceeds the limit of 5MB.']);
+            http_response_code(415);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Image size exceeds the limit of 5MB.'
+            ]);
             exit();
         }
 
@@ -36,7 +44,10 @@ class ProfileImageUpload {
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {
-            echo json_encode(['error' => 'Error uploading the image.']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Error uploading the image.'
+            ]);
             exit();
         }
 
@@ -48,11 +59,15 @@ class ProfileImageUpload {
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':profilePicture', $encryptedProfilePicture);
         $stmt->bindParam(':driverid', $drvrid);
+        $stmt->execute();
 
-        if ($stmt->execute()) {
-            echo json_encode(['success' => 'Profile picture uploaded successfully.']);
-        } else {
-            echo json_encode(['error' => 'Error updating profile picture.']);
+        if (!$stmt) {
+            http_response_code(401);
+            echo json_encode([
+                'status' => 'error'
+                'message' => 'There was a problem with your request.'
+            ]);
+            exit();
         }
     }
 }

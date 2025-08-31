@@ -9,6 +9,7 @@ class AddedDrvr {
     protected function setDriver($username, $email, $password) {
         $db = new Database;
         $alert = new Flash();
+        $pdo = $db->connect();
         $sql = "INSERT INTO Driver (
                 username, email, password, firstName, lastName, mobileNumber, birthdate) 
                 VALUES (?,?,?,?,?,?,?)";
@@ -35,14 +36,17 @@ class AddedDrvr {
             exit();
         }
 
+        $drvr_id = $pdo->lastInsertId();
         $token = '';
         $tokenExpTime = NULL;
-        $sql2 = "INSERT INTO Pwdreset (email, resetToken, tokenExpTime)
-                VALUES (?,?,?)";
+        $sql2 = "INSERT INTO Pwdreset (email, driverid, resetToken, tokenExpTime)
+                VALUES (?,?,?,?)";
         $stmt2 = $db->connect()->prepare($sql2);
+
         $stmt2->bindParam(1, $email);
-        $stmt2->bindParam(2, $token);
-        $stmt2->bindParam(3, $tokenExpTime);
+        $stmt2->bindParam(2, $drvr_id);
+        $stmt2->bindParam(3, $token);
+        $stmt2->bindParam(4, $tokenExpTime);
         
         $result2 = $stmt2->execute();
 

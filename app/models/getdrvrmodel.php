@@ -26,20 +26,24 @@ class GetDriver {
             exit();
         }
 
-        $dbFirstName = Crypto::decrypt($result['firstName'], $key),
-        $dbLastName = Crypto::decrypt($result['lastName'], $key),
-        $dbMobileNum = Crypto::decrypt($result['mobileNumber'], $key),
-        $dbBirthdate = Crypto::decrypt($result['birthdate'], $key),
-        $dbProfilePicture = Crypto::decrypt($result['profliePicture'], $key);
+        $dbFirstName = Crypto::decrypt($result['firstName'], $key);
+        $dbLastName = Crypto::decrypt($result['lastName'], $key);
+        $dbMobileNum = Crypto::decrypt($result['mobileNumber'], $key);
+        $dbBirthdate = Crypto::decrypt($result['birthdate'], $key);
+        if (isset($result['profilePicture'])) {
+            $dbProfilePicture = Crypto::decrypt($result['profliePicture'], $key);
+        } else {
+            $dbProfilePicture = null;
+        }
         return [
             'driverid' => $result['driverid'],
             'username' => $result['username'],
             'email' => $result['email'],
             'firstName' => $dbFirstName,
-            'lastName' => $dbLastName
-            'mobileNumber' => $dbMobileNum
+            'lastName' => $dbLastName,
+            'mobileNumber' => $dbMobileNum,
             'birthdate' => $dbBirthdate,
-            'profilePicture' => $result['profilepicture'] // This will be a relative path to the image
+            'profilePicture' => $dbProfilePicture // This will be a relative path to the image
         ];
     }
 

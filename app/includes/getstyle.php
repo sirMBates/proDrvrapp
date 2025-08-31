@@ -23,7 +23,7 @@ function pageStyle($value) {
                         break;
 
                 case "/":
-                        echo "<link rel='stylesheet' href='../dist/styles/home.css'>\n";
+                        return;
                         break;
 
                 case "/orders":
@@ -31,7 +31,7 @@ function pageStyle($value) {
                         break;
 
                 case "/profile":
-                        echo "<link rel='stylesheet' href='../dist/styles/profile.css'>\n";
+                        return;
                         break;
 
                 case "/timesheet":

@@ -11,7 +11,7 @@ $requestUri = $_SERVER['REQUEST_URI'];
 
 if ($drvrHiddenToken === $_SESSION['drvr_token']) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && $requestUri === '/setstatus') {
-        include_once base_path("app/models/updatestatusmeth.php");
+        include_once base_path("app/models/updatestatusmodel.php");
         include_once base_path("app/classes/update_drvr_status.php");
         $data = json_decode(file_get_contents("php://input"), true);
         if ($data) {
