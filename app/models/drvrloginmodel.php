@@ -14,7 +14,7 @@ class Login {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT password FROM driver
+        $sql = "SELECT password FROM Driver
                 WHERE username = :username";
         $stmt = $db->connect()->prepare($sql);
         
@@ -35,7 +35,7 @@ class Login {
             header("Location: /signin?danger=invalid"); // wrongPassword
             exit();
         } elseif ($checkPsw === true) {
-            $sql2 = "SELECT * FROM driver
+            $sql2 = "SELECT * FROM Driver
                     WHERE username = :username";
             $stmt = $db->connect()->prepare($sql2);
             $stmt->bindParam(":username", $username);

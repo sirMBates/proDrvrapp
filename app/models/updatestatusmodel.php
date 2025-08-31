@@ -5,7 +5,7 @@ use core\Database;
 class UpdateDrvrStatus {
     private function modifyStatus($drvrid, $drvrStatus, $drvrTimeStamp) {
         $db = new Database;
-        $sql = "INSERT INTO driver_status (driverid, current_status, status_timestamp)
+        $sql = "INSERT INTO DriverStatus (driverid, current_status, status_timestamp)
                 VALUES (:drvrid, :current_status, :status_timestamp)";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':drvrid', $drvrid);

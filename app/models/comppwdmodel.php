@@ -7,7 +7,7 @@ class CompleteReset {
     protected function checkValidToken($token) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT * FROM pwdreset
+        $sql = "SELECT * FROM Pwdreset
                 WHERE resetToken = :resetToken";
         $stmt = $db->connect()->prepare($sql);
         //var_dump($token);
@@ -47,7 +47,7 @@ class CompleteReset {
         $driverEmail = $driverResetToken['email'];
         $newHashPwd = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "UPDATE driver
+        $sql = "UPDATE Driver
                 SET password = :password
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
@@ -72,7 +72,7 @@ class CompleteReset {
             $alert::setMsg('warning', 'Token not found. Please try again!');
             return false;
         }
-        $sql = "UPDATE pwdreset
+        $sql = "UPDATE Pwdreset
                 SET resetToken = '', tokenExpTime = null
                 WHERE resetToken = :resetToken";
         $stmt = $db->connect()->prepare($sql);

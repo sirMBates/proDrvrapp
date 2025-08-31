@@ -14,7 +14,7 @@ class RegProInfo {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
-        $sql = "UPDATE driver 
+        $sql = "UPDATE Driver 
                 SET firstName = ?, lastName = ?, mobileNumber = ?, birthdate = ? 
                 WHERE username = ?";
         $stmt = $db->connect()->prepare($sql);
