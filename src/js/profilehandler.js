@@ -23,11 +23,11 @@ window.addEventListener('load', () => {
         .then(data => {
             const driver = data;
             if (driver) {
-                drvrFullName.value = `${driver[3]} ${driver[4]}`;
-                drvrEmail.value = driver[2];
-                drvrBirthDate.value = driver[6];
-                drvrPhoneNumber.value = driver[5];
-                drvrUserName.value = driver[1];
+                drvrFullName.value = `${driver['firstName']} ${driver['lastName']}`;
+                drvrEmail.value = driver['email'];
+                drvrBirthDate.value = driver['birthdate'];
+                drvrPhoneNumber.value = driver['mobileNumber'];
+                drvrUserName.value = driver['username'];
                 drvrStatus.value = localStorage.getItem('status') ? localStorage.getItem('status') : sessionStorage.getItem('status');
             }
         })

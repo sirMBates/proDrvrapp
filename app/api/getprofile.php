@@ -9,6 +9,7 @@ include_once base_path("app/classes/get_drvr.php");
 
 $requestUri = $_SERVER['REQUEST_URI'];
 if ($requestUri === '/getprofile') {
+    header('Content-Type: application/json');
     $getDriversProfile = new GetDrvrController();
     $getDriversProfile->driverInfo();
 } else {

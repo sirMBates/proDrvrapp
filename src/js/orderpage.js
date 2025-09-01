@@ -17,8 +17,8 @@ window.addEventListener('load', () => {
         const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
         const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
         if (driver) {
-            primaryDrvrId.textContent = driver[0];
-            primaryDrvrName.textContent = `${driver[4]}, ${driver[3]}`;
+            primaryDrvrId.textContent = driver['driverid'];
+            primaryDrvrName.textContent = `${driver['lastName']}, ${driver['firstName']}`;
         }
     })
     .catch(error => {

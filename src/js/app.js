@@ -27,7 +27,7 @@ const drvrToken = document.getElementById('drvrToken').value;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
 // Profile image display in navbar.
 // [default image is firstChild.nextElementSibling] & [file selector is 3]
-const profileImage = profCon.childNodes[1].childNodes[0];
+const profileImage = profCon.childNodes[1].childNodes[1];
 const profileInput = profCon.childNodes[3];
 
 
@@ -71,9 +71,9 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainMenu = document.querySelector('#useraccess');
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
-                drvrMainHeader.textContent = `${driver[3]} ${driver[4]}`;
-                if (driver[7]) {
-                    profileImage.setAttribute('src', driver[7]);  // Assuming profilePicture contains the image URL
+                drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
+                if (driver[7] !== 'null') {
+                    profileImage.setAttribute('src', driver['profilePicture']);  // Assuming profilePicture contains the image URL
                 } else {
                     profileImage.setAttribute('src', "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png"); // Default image if no profile picture is found
                 }
@@ -247,8 +247,8 @@ $(profileInput).on('change', (e) => {
         if (file) {
                 // Validate image type
                 const isValid = Validation.validate(file, 'file');
-                if (isValid) {
-                        alert('Please select a valid image file (JPG, PNG, GIF) and ensure it is within the size limit.');
+                if (!isValid) {
+                        alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
                         profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
                         return;
                 }
