@@ -72,7 +72,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
                 drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
-                if (driver[7] !== 'null') {
+                if (driver['profilePicture'] !== 'null') {
                     profileImage.setAttribute('src', driver['profilePicture']);  // Assuming profilePicture contains the image URL
                 } else {
                     profileImage.setAttribute('src', "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png"); // Default image if no profile picture is found
