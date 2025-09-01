@@ -10,6 +10,10 @@ const infoModalMsg = buildModal;
 const infoModBtn = document.querySelector('#info-ok');
 const myCurrentView = window.location.pathname;
 const profCon = document.querySelector("#profilecon");
+// Profile image display in navbar.
+// [default image is firstChild.nextElementSibling] & [file selector is 3]
+const profileImage = document.querySelector('#profile-pic');
+const profileInput = document.querySelector('#profile-upload');
 const getMenuItems = document.querySelectorAll(".nav-link");
 //const textLink = document.querySelector("#useraccess");
 const driverMenu = document.querySelector(".offcanvas-body");
@@ -25,10 +29,6 @@ const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontr
 const statusEndpoint = "https://prodriver.local/setstatus";
 const drvrToken = document.getElementById('drvrToken').value;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
-// Profile image display in navbar.
-// [default image is firstChild.nextElementSibling] & [file selector is 3]
-const profileImage = profCon.childNodes[1].childNodes[1];
-const profileInput = profCon.childNodes[3];
 
 
 $(document).ready(() => {
@@ -244,12 +244,12 @@ $(window).on('load', viewablePayCard);
 $(profileInput).on('change', (e) => {
         //profileImage.setAttribute('src', URL.createObjectURL(profileInput.files[0]));
         const file = e.target.files[0]; // Get the first selected file
-        if (file) {
+        if (!file) return;
                 // Validate image type
                 const isValid = Validation.validate(file, 'file');
                 if (!isValid) {
                         alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
-                        profileImage.setAttribute('src', "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
+                        profileImage.setAttribute('src', "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
                         return;
                 }
 
@@ -257,25 +257,9 @@ $(profileInput).on('change', (e) => {
                 // Define what happens when the file is successfully read
                 reader.onload = (e) => {
                         profileImage.setAttribute('src', e.target.result); // Display file content
-                };
-                // Handle errors
-                reader.onerror = () => {
-                        console.error('Error reading file:', reader.error);
-                };
-                // Read the file as image URL
-                reader.readAsDataURL(file);
-                // Reset the input value to allow re-uploading the same file
-                profileInput.value = '';
 
-                // Optionally, you can also log the file name and size
-                console.log('Selected file:', file.name, 'Size:', file.size, 'bytes');
-                // You can also check the file type if needed
-                console.log('File type:', file.type);
-
-                // If you want to upload the image to the server, you can do it here
-                // For example, using fetch to send the file to your server
-                
-                if ($(profileImage).attr('src') !== "../../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png") {
+                        // If you want to upload the image to the server, you can do it here
+                        // For example, using fetch to send the file to your server
                         const formData = new FormData();
                         formData.append('profileImage', file);
                         //formData.append('csrf_token', drvrToken);
@@ -290,12 +274,19 @@ $(profileInput).on('change', (e) => {
                                 body: formData,  // FormData automatically handles content-type and boundary
                         })
                         .then(response => response.text()) // Handle server response
-                        .then(data => alert(data)) // Display the server's response
+                        .then(data => {
+                                alert(data);
+                                 // Reset the input value to allow re-uploading the same file
+                                profileInput.value = '';
+                        }) // Display the server's response
                         .catch(error => console.error('Error uploading image:', error));
-                } else {
-                        alert("Please select a valid image file.");
-                }
-        }
+                };
+                // Handle errors
+                reader.onerror = () => {
+                        console.error('Error reading file:', reader.error);
+                };
+        // Read the file as image URL
+        reader.readAsDataURL(file);
 });
 
 window.addEventListener('load', () => {
