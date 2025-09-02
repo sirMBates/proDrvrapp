@@ -33,9 +33,9 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         $result;
         $allowedTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
         if (!in_array($this->file['type'], $allowedTypes)) {
-            $result = false;
-        } else {
             $result = true;
+        } else {
+            $result = false;
         }
         return $result;
     }
