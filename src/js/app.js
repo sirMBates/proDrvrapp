@@ -3,6 +3,7 @@ import { buildModal } from './appmodal.js';
 import { fetchDrvr } from './drvrapi.js';
 import { ChangeStatus } from './changestatus.js';
 import { Validation } from './validation.js';
+import defaultProfileImage from "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
 let isDarkMode;
 const infoBtn = document.querySelector('#notifyinfo');
 const infoModal = document.querySelector('#info-modal');
@@ -15,7 +16,7 @@ const profCon = document.querySelector("#profilecon");
 const profileImage = document.querySelector('#profile-pic');
 console.log(profileImage);
 const profileInput = document.querySelector('#profile-upload');
-const defaultProfileImage = "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
+//const defaultProfileImage = "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
 const getMenuItems = document.querySelectorAll(".nav-link");
 //const textLink = document.querySelector("#useraccess");
 const driverMenu = document.querySelector(".offcanvas-body");
@@ -74,10 +75,10 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
                 drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
-                /*if (driver['profilePicture'] !== 'null') {
+                /*if (driver['profilePicture'] && driver['profilePicture'] !== 'null') {
                     profileImage.setAttribute('src', driver['profilePicture']);  // Assuming profilePicture contains the image URL
                 } else {
-                    profileImage.setAttribute('src', "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png"); // Default image if no profile picture is found
+                    profileImage.setAttribute('src', defaultProfileImage); // Default image if no profile picture is found
                 }*/
             }
         })
@@ -90,23 +91,21 @@ window.addEventListener('DOMContentLoaded', () => {
                 console.error('There was a problem with the fetch operation:', error);
         });
 });
-// Make sure the image starts with the default if no photo is set.
-if (!profileImage.getAttribute("src")) {
-    profileImage.src = defaultProfileImage;
-};
+
 // Insert profile image in the driver menu bar
 // Listen for file selection
 profileInput.addEventListener('change', (e) => {
+        profileImage.src = defaultProfileImage;
     const file = e.target.files[0];
     if (!file) return;
 
     // Validate the file
-    /*const isValid = Validation.validate(file, 'file'); 
+    const isValid = Validation.validate(file, 'file'); 
     if (!isValid) {
         alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
-        profileImage.src = "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
+        profileImage.src = defaultProfileImage;
         return;
-    }*/
+    }
 
     // Read file for preview
     const reader = new FileReader();
@@ -115,7 +114,7 @@ profileInput.addEventListener('change', (e) => {
         profileImage.src = ev.target.result;
 
         // Prepare form data for upload
-        /*const formData = new FormData();
+        const formData = new FormData();
         formData.append('profileImage', file);
         // formData.append('csrf_token', drvrToken);
 
@@ -134,14 +133,13 @@ profileInput.addEventListener('change', (e) => {
             profileInput.value = '';
         })
         .catch(error => console.error('Error uploading image:', error));
-    };*/
+    };
 
         reader.onerror = () => {
                 console.error('Error reading file:', reader.error);
         };
         // Read as base64 to preview in <img>
         reader.readAsDataURL(file);
-        };
 });
 
 // The status controls and the connection to the DB api

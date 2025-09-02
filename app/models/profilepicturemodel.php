@@ -64,7 +64,7 @@ class ProfileImageUpload {
         if (!$stmt) {
             http_response_code(401);
             echo json_encode([
-                'status' => 'error'
+                'status' => 'error',
                 'message' => 'There was a problem with your request.'
             ]);
             exit();

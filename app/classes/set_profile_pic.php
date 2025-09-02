@@ -3,12 +3,12 @@
 class SetDrvrPictureContr extends ProfileImageUpload {
     private $file;
 
-    protected function __construct($file) {
+    public function __construct($file) {
         $this->file = $file;
     }
 
-    public setProfilePicture() {
-        if (checkPicType() === false) {
+    public function setProfilePicture() {
+        if ($this->checkPicType() === false) {
             http_response_code(415);
             echo json_encode([
                 'status' => 'error',
@@ -17,7 +17,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
             exit();
         }
 
-        if (checkPicSize() === true) {
+        if ($this->checkPicSize() === true) {
             http_response_code(415);
             echo json_encode([
                 'status' => 'error',
@@ -29,7 +29,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         $this->uploadImage($_SESSION['driverid'], $this->file);
     }
 
-    private checkPicType() {
+    private function checkPicType() {
         $result;
         $allowedTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
         if (!in_array($this->file['type'], $allowedTypes)) {
@@ -40,7 +40,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         return $result;
     }
 
-    private checkPicSize() {
+    private function checkPicSize() {
         $megabytes5 = 5 * 1024 * 1024; //5MB
         $result;
         if ($this->file['size'] > $megabytes5) {
