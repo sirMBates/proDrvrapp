@@ -8,7 +8,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
     }
 
     public function setProfilePicture() {
-        if ($this->checkPicType() === false) {
+        if ($this->checkPicType() === true) {
             http_response_code(415);
             echo json_encode([
                 'status' => 'error',
