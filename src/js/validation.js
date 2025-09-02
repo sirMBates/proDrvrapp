@@ -36,7 +36,7 @@ export class Validation {
             case 'password':
                 return this.validatePassword(input);
             case 'file':
-                return this.photoPattern.test(input);
+                return this.validatePhoto(input);
             default:
                 throw new Error('Invalid validation type');
         }

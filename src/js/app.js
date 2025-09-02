@@ -13,7 +13,9 @@ const profCon = document.querySelector("#profilecon");
 // Profile image display in navbar.
 // [default image is firstChild.nextElementSibling] & [file selector is 3]
 const profileImage = document.querySelector('#profile-pic');
+console.log(profileImage);
 const profileInput = document.querySelector('#profile-upload');
+const defaultProfileImage = "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
 const getMenuItems = document.querySelectorAll(".nav-link");
 //const textLink = document.querySelector("#useraccess");
 const driverMenu = document.querySelector(".offcanvas-body");
@@ -72,11 +74,11 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
                 drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
-                if (driver['profilePicture'] !== 'null') {
+                /*if (driver['profilePicture'] !== 'null') {
                     profileImage.setAttribute('src', driver['profilePicture']);  // Assuming profilePicture contains the image URL
                 } else {
-                    profileImage.setAttribute('src', "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png"); // Default image if no profile picture is found
-                }
+                    profileImage.setAttribute('src', "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png"); // Default image if no profile picture is found
+                }*/
             }
         })
         .catch(error => {
@@ -87,6 +89,59 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
                 console.error('There was a problem with the fetch operation:', error);
         });
+});
+// Make sure the image starts with the default if no photo is set.
+if (!profileImage.getAttribute("src")) {
+    profileImage.src = defaultProfileImage;
+};
+// Insert profile image in the driver menu bar
+// Listen for file selection
+profileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate the file
+    /*const isValid = Validation.validate(file, 'file'); 
+    if (!isValid) {
+        alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
+        profileImage.src = "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
+        return;
+    }*/
+
+    // Read file for preview
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        // Show the preview
+        profileImage.src = ev.target.result;
+
+        // Prepare form data for upload
+        /*const formData = new FormData();
+        formData.append('profileImage', file);
+        // formData.append('csrf_token', drvrToken);
+
+        // Upload to server
+        fetchDrvr('https://prodriver.local/setprofilepicture', {
+            mode: 'cors',
+            credentials: 'include',
+            method: 'POST',
+            // headers: { 'X-CSRF-Token': drvrToken }, // if needed
+            body: formData,
+        })
+        .then(response => response.text())
+        .then(data => {
+            alert(data);
+            // Reset input after successful upload
+            profileInput.value = '';
+        })
+        .catch(error => console.error('Error uploading image:', error));
+    };*/
+
+        reader.onerror = () => {
+                console.error('Error reading file:', reader.error);
+        };
+        // Read as base64 to preview in <img>
+        reader.readAsDataURL(file);
+        };
 });
 
 // The status controls and the connection to the DB api
@@ -239,55 +294,6 @@ function viewablePayCard () {
         }
 };
 $(window).on('load', viewablePayCard);
-
-// Insert profile image in the driver menu bar
-$(profileInput).on('change', (e) => {
-        //profileImage.setAttribute('src', URL.createObjectURL(profileInput.files[0]));
-        const file = e.target.files[0]; // Get the first selected file
-        if (!file) return;
-                // Validate image type
-                const isValid = Validation.validate(file, 'file');
-                if (!isValid) {
-                        alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
-                        profileImage.setAttribute('src', "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png");
-                        return;
-                }
-
-                const reader = new FileReader();
-                // Define what happens when the file is successfully read
-                reader.onload = (e) => {
-                        profileImage.setAttribute('src', e.target.result); // Display file content
-
-                        // If you want to upload the image to the server, you can do it here
-                        // For example, using fetch to send the file to your server
-                        const formData = new FormData();
-                        formData.append('profileImage', file);
-                        //formData.append('csrf_token', drvrToken);
-
-                        fetchDrvr('https://prodriver.local/setprofilepicture', {
-                                mode: 'cors',
-                                credentials: 'include',
-                                method: 'POST',
-                                /*headers: {
-                                        'X-CSRF-Token': drvrToken // Include the CSRF token in the header
-                                },*/
-                                body: formData,  // FormData automatically handles content-type and boundary
-                        })
-                        .then(response => response.text()) // Handle server response
-                        .then(data => {
-                                alert(data);
-                                 // Reset the input value to allow re-uploading the same file
-                                profileInput.value = '';
-                        }) // Display the server's response
-                        .catch(error => console.error('Error uploading image:', error));
-                };
-                // Handle errors
-                reader.onerror = () => {
-                        console.error('Error reading file:', reader.error);
-                };
-        // Read the file as image URL
-        reader.readAsDataURL(file);
-});
 
 window.addEventListener('load', () => {
         if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
