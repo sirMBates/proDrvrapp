@@ -31,8 +31,8 @@ class SetDrvrPictureContr extends ProfileImageUpload {
 
     private checkPicType() {
         $result;
-        if (!preg_match('/\.(jpg|jpeg|png|gif)$/i', $this->file['type']))
-        {
+        $allowedTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($this->file['type'], $allowedTypes)) {
             $result = false;
         } else {
             $result = true;
@@ -41,7 +41,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
     }
 
     private checkPicSize() {
-        $megabytes5 = 5 * 1024 * 1024;
+        $megabytes5 = 5 * 1024 * 1024; //5MB
         $result;
         if ($this->file['size'] > $megabytes5) {
             $result = true;
