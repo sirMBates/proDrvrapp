@@ -14,7 +14,6 @@ const profCon = document.querySelector("#profilecon");
 // Profile image display in navbar.
 // [default image is firstChild.nextElementSibling] & [file selector is 3]
 const profileImage = document.querySelector('#profile-pic');
-console.log(profileImage);
 const profileInput = document.querySelector('#profile-upload');
 //const defaultProfileImage = "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
 const getMenuItems = document.querySelectorAll(".nav-link");
@@ -96,44 +95,44 @@ window.addEventListener('DOMContentLoaded', () => {
 // Listen for file selection
 profileInput.addEventListener('change', (e) => {
         profileImage.src = defaultProfileImage;
-    const file = e.target.files[0];
-    if (!file) return;
+        const file = e.target.files[0];
+        if (!file) return;
 
-    // Validate the file
-    const isValid = Validation.validate(file, 'file'); 
-    if (!isValid) {
-        alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
-        profileImage.src = defaultProfileImage;
-        return;
-    }
+        // Validate the file
+        const isValid = Validation.validate(file, 'file'); 
+        if (!isValid) {
+                alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
+                profileImage.src = defaultProfileImage;
+                return;
+        }
 
-    // Read file for preview
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        // Show the preview
-        profileImage.src = ev.target.result;
+        // Read file for preview
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+                // Show the preview
+                profileImage.src = ev.target.result;
 
-        // Prepare form data for upload
-        const formData = new FormData();
-        formData.append('profileImage', file);
-        // formData.append('csrf_token', drvrToken);
+                // Prepare form data for upload
+                const formData = new FormData();
+                formData.append('profileImage', file);
+                // formData.append('csrf_token', drvrToken);
 
-        // Upload to server
-        fetchDrvr('https://prodriver.local/setprofilepicture', {
-            mode: 'cors',
-            credentials: 'include',
-            method: 'POST',
-            // headers: { 'X-CSRF-Token': drvrToken }, // if needed
-            body: formData,
-        })
-        .then(response => response.text())
-        .then(data => {
-            alert(data);
-            // Reset input after successful upload
-            profileInput.value = '';
-        })
-        .catch(error => console.error('Error uploading image:', error));
-    };
+                // Upload to server
+                fetchDrvr('https://prodriver.local/setprofilepicture', {
+                        mode: 'cors',
+                        credentials: 'include',
+                        method: 'POST',
+                        // headers: { 'X-CSRF-Token': drvrToken }, // if needed
+                        body: formData,
+                })
+                //.then(response => response.text())
+                .then(data => {
+                        alert(data);
+                        // Reset input after successful upload
+                        profileInput.value = '';
+                })
+                .catch(error => console.error('Error uploading image:', error));
+        };
 
         reader.onerror = () => {
                 console.error('Error reading file:', reader.error);

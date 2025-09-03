@@ -13,24 +13,6 @@ class ProfileImageUpload {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
 
-        // Check for file type (image) and size
-        if (!in_array($file['type'], ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'])) {
-            http_response_code(415);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Invalid image type. Only JPG, JPEG, PNG, or GIF are allowed.'
-            ]);
-            exit();
-        }
-        if ($file['size'] > 5 * 1024 * 1024) { // Limit to 5MB
-            http_response_code(415);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Image size exceeds the limit of 5MB.'
-            ]);
-            exit();
-        }
-
         // Create a directory for the user if it doesn't exist
         $uploadDir = '../../public/uploads/profiles/';
         if (!file_exists($uploadDir)) {
