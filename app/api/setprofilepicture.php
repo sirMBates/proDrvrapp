@@ -1,5 +1,6 @@
 <?php
-
+var_dump($_FILES);
+exit();
 if (session_status() !== 2) {
     session_start();
 }
@@ -18,7 +19,7 @@ if ($requestUri === '/setprofilepicture') {
     if (isset($_FILES['profileImage'])) {
         $file = $_FILES['profileImage'];
         $drvrPicture = new SetDrvrPictureContr($file);
-        $drvrPicture->setProfilePicture($file);
+        $drvrPicture->setProfilePicture();
         http_response_code(200);
         echo json_encode([
             'status' => 'success',
