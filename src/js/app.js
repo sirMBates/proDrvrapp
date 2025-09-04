@@ -3,7 +3,7 @@ import { buildModal } from './appmodal.js';
 import { fetchDrvr } from './drvrapi.js';
 import { ChangeStatus } from './changestatus.js';
 import { Validation } from './validation.js';
-import defaultProfileImage from "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
+
 let isDarkMode;
 const infoBtn = document.querySelector('#notifyinfo');
 const infoModal = document.querySelector('#info-modal');
@@ -15,7 +15,7 @@ const profCon = document.querySelector("#profilecon");
 // [default image is firstChild.nextElementSibling] & [file selector is 3]
 const profileImage = document.querySelector('#profile-pic');
 const profileInput = document.querySelector('#profile-upload');
-//const defaultProfileImage = "../images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
+const defaultProfileImage = "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
 const getMenuItems = document.querySelectorAll(".nav-link");
 //const textLink = document.querySelector("#useraccess");
 const driverMenu = document.querySelector(".offcanvas-body");
@@ -74,11 +74,11 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
                 drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
-                /*if (driver['profilePicture'] && driver['profilePicture'] !== 'null') {
+                if (driver['profilePicture']) {
                     profileImage.setAttribute('src', driver['profilePicture']);  // Assuming profilePicture contains the image URL
                 } else {
                     profileImage.setAttribute('src', defaultProfileImage); // Default image if no profile picture is found
-                }*/
+                }
             }
         })
         .catch(error => {

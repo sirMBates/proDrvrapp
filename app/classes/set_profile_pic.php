@@ -8,13 +8,9 @@ class SetDrvrPictureContr extends ProfileImageUpload {
     }
 
     public function setProfilePicture() {
-        if ($this->isPhotoMissing()) {
-            http_response_code(415);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'There is no image/photo available!'
-            ]);
-            exit();
+        if ($this->file['error'] !== UPLOAD_ERR_OK) {
+            $this->handleUploadError($this->file['error']);
+            return; // Stop execution
         }
 
         if (!$this->checkPicType()) {
@@ -35,7 +31,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
             exit();
         }
 
-        $this->uploadImage($_SESSION['driverid'], $this->file);
+        $this->uploadImage($_SESSION['driver_id'], $this->file);
     }
 
     private function checkPicType() {
@@ -65,9 +61,25 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         return $result;
     }
 
-    private function isPhotoMissing() {
-        // Missing if tmp_name is empty OR the file is not a valid uploaded file
-        return empty($this->file['tmp_name']) || !is_uploaded_file($this->file['tmp_name']);
+    private function handleUploadError($errorCode) {
+        $messages = [
+            UPLOAD_ERR_INI_SIZE   => "The uploaded file exceeds the server's upload_max_filesize setting.",
+            UPLOAD_ERR_FORM_SIZE  => "The uploaded file exceeds the MAX_FILE_SIZE directive in the form.",
+            UPLOAD_ERR_PARTIAL    => "The file was only partially uploaded.",
+            UPLOAD_ERR_NO_FILE    => "No file was uploaded.",
+            UPLOAD_ERR_NO_TMP_DIR => "Missing a temporary folder on the server.",
+            UPLOAD_ERR_CANT_WRITE => "Failed to write file to disk.",
+            UPLOAD_ERR_EXTENSION  => "A PHP extension stopped the upload."
+        ];
+
+        $message = $messages[$errorCode] ?? "Unknown upload error.";
+
+        http_response_code(400);
+        echo json_encode([
+            'status' => 'error',
+            'message' => $message
+        ]);
+        exit();
     }
 }
 

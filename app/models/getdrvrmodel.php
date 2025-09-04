@@ -30,10 +30,10 @@ class GetDriver {
         $dbLastName = Crypto::decrypt($result['lastName'], $key);
         $dbMobileNum = Crypto::decrypt($result['mobileNumber'], $key);
         $dbBirthdate = Crypto::decrypt($result['birthdate'], $key);
-        if (isset($result['profilePicture'])) {
-            $dbProfilePicture = Crypto::decrypt($result['profliePicture'], $key);
+        if (!empty($result['profilePicture'])) {
+            $result['profilePicture'];
         } else {
-            $dbProfilePicture = null;
+            $result['profilePicture'] = null;
         }
         return [
             'driverid' => $result['driverid'],
@@ -43,7 +43,7 @@ class GetDriver {
             'lastName' => $dbLastName,
             'mobileNumber' => $dbMobileNum,
             'birthdate' => $dbBirthdate,
-            'profilePicture' => $dbProfilePicture // This will be a relative path to the image
+            'profilePicture' => $result['profilePicture'] // This will be a relative path to the image
         ];
     }
 
