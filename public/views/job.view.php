@@ -18,16 +18,16 @@ include "partials/info-modal.php"
                         <div class="card-body overflow-x-auto">                        
                                 <table id="tableA" class="table m-auto" style="width: 1200px;">
                                         <thead class="table-info text-capitalize">
-                                                <tr>
+                                                <tr class="text-center">
                                                         <th scope="col">coach id</th>
                                                         <th scope="col">driver id</th>
                                                         <th scope="col">name</th>
                                                         <th scope="col">order#</th>
-                                                        <th scope="col">num of coaches</th>
+                                                        <th scope="col">#coaches</th>
                                                 </tr>
                                         </thead>
                                         <tbody class="table-group-divider">
-                                                <tr>
+                                                <tr class="text-center">
                                                         <td scope="row" class="editable-data">1800</td>
                                                         <td></td>
                                                         <td></td>
@@ -37,21 +37,17 @@ include "partials/info-modal.php"
                                                 <tr>
                                                         <table id="tableB" class="table m-auto" style="width: 1200px;">
                                                                 <thead class="table-info text-capitalize">
-                                                                        <tr>
-                                                                                <th>start date</th>
-                                                                                <th>garage time</th>
-                                                                                <th>leave date</th>
+                                                                        <tr class="text-center">
+                                                                                <th>start date, time</th>
                                                                                 <th>spot time</th>
-                                                                                <th>leave time</th>
+                                                                                <th>leave date, time</th>
                                                                         </tr>
                                                                 </thead>
                                                                 <tbody class="table-group-divider">
-                                                <tr>
-                                                        <td scope="row">08-15-2025</td>
-                                                        <td>06:00</td>
-                                                        <td>08-15-2025</td>
-                                                        <td>08:00</td>
-                                                        <td>08:30</td>
+                                                <tr class="text-center">
+                                                        <td scope="row">08/15/2025, 06:00am</td>
+                                                        <td>08:00am</td>
+                                                        <td>08-15-2025, 08:30am</td>
                                                 </tr>
                                         </tbody>
                                                         </table>
@@ -59,24 +55,20 @@ include "partials/info-modal.php"
                                                 <tr>
                                                         <table id="tableC" class="table m-auto" style="width: 1200px;">
                                                                 <thead class="table-info text-capitalize">
-                                                <tr>
-                                                        <th class="col">return date</th>
-                                                        <th class="col">drop time</th>
+                                                <tr class="text-center">
+                                                        <th class="col">return date, time</th>
                                                         <th class="col">act. drop time</th>
-                                                        <th class="col">end date</th>
-                                                        <th class="col">end time</th>
+                                                        <th class="col">end date, time</th>
                                                         <th class="col">actual end time</th>
                                                         <th class="col">total hrs</th>
                                                         <th class="col">driving time</th>
                                                 </tr>
                                         </thead>
                                         <tbody class="table-group-divider">
-                                                <tr>
-                                                        <td scope="row">08-15-2025</td>
-                                                        <td>19:30</td>
+                                                <tr class="text-center">
+                                                        <td scope="row">08-15-2025, 07:30pm</td>
                                                         <td class="editable-data"></td>
-                                                        <td>08-15-2025</td>
-                                                        <td>20:30</td>
+                                                        <td>08-15-2025, 08:30pm</td>
                                                         <td class="editable-data"></td>
                                                         <td class="editable-data">12.00</td>
                                                         <td class="editable-data"></td>
@@ -87,29 +79,23 @@ include "partials/info-modal.php"
                                                 <tr>
                                                         <table id="tableD" class="table m-auto" style="width: 1200px;">
                                         <thead class="table-info text-capitalize">
-                                                <tr>
+                                                <tr class="text-center">
                                                         <th scope="col">origin</th>
                                                         <th scope="col">destination</th>
-                                                        <th scope="col">group name</th>
-                                                        <th scope="col">group leader(gL)</th>
-                                                        <th scope="col">gL mobile number</th>
-                                                        <th scope="col">customer name</th>
-                                                        <th scope="col">customer phone</th>
-                                                        <th scope="col">contact name</th>
-                                                        <th scope="col">contact mobile</th>
+                                                        <th scope="col">group name, group leader</th>
+                                                        <th scope="col">group leader mobile</th>
+                                                        <th scope="col">customer name, phone</th>
+                                                        <th scope="col">contact name, mobile</th>
                                                 </tr>
                                         </thead>
                                         <tbody class="table-group-divider">
-                                                <tr>
+                                                <tr class="text-center">
                                                         <td scope="row">New York, NY</td>
                                                         <td>Philadelphia, PA</td>
-                                                        <td>New Golden Era</td>
-                                                        <td>Jane Doe</td>
+                                                        <td>New Golden Era, Jane Doe</td>
                                                         <td>917-654-9783</td>
-                                                        <td>Lazzy Tours Inc.</td>
-                                                        <td>718-231-7498</td>
-                                                        <td>John Doe</td>
-                                                        <td>347-743-5891</td>
+                                                        <td>Lazzy Tours Inc., 718-231-7498</td>
+                                                        <td>John Doe, 347-743-5891</td>
                                                 </tr>
                                         </tbody>
                                 </table>

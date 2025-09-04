@@ -1,6 +1,5 @@
 <?php
-var_dump($_FILES);
-exit();
+
 if (session_status() !== 2) {
     session_start();
 }

@@ -14,7 +14,7 @@ class ProfileImageUpload {
         $db = new Database;
 
         // Create a directory for the user if it doesn't exist
-        $uploadDir = '../../public/uploads/profiles/';
+        $uploadDir = base_path('public/uploads/profiles/');
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -23,6 +23,11 @@ class ProfileImageUpload {
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = strtolower($drvrid . '_' . time() . '.' . $extension);
         $filePath = $uploadDir . $filename;
+
+        //move_uploaded_file($file['tmp_name'], $filePath);
+
+        // Store **relative URL** in database for frontend
+        $publicPath = '/uploads/profiles/' . $filename;
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {
@@ -33,13 +38,12 @@ class ProfileImageUpload {
             exit();
         }
 
-        $encryptedProfilePicture = Crypto::encrypt($filePath, $key);
         // Update the database with the path to the profile picture
         $sql = "UPDATE Driver
                 SET profilePicture = :profilePicture
                 WHERE driverid = :driverid";
         $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':profilePicture', $encryptedProfilePicture);
+        $stmt->bindParam(':profilePicture', $publicPath);
         $stmt->bindParam(':driverid', $drvrid);
         $stmt->execute();
 
