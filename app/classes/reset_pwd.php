@@ -19,13 +19,13 @@ class ResetPwdContr extends ResetPwd {
             header("Location: /forget?error=token+set+already");
             exit();
         } else {
-            $mail = require_once home_path("mail/emailSetup.php");
+            $mail = require_once base_path("core/emailSetup.php");
             $mail->setFrom('noreply@prodriver.local', 'Help Desk');
             $mail->addAddress($this->email);
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset?token=$this->token">here</a> to forget password.
+                    Click <a href="https://prodriver.local/reset?token=$this->token">here</a> to reset password.
 
                     END;
             try {

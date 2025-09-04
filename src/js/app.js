@@ -48,6 +48,10 @@ $(document).ready(() => {
                 infoModalMsg.info('Welcome to your dashboard. From here, you can update your status (which will automatically notify dispatch) and get brief details about your job(s) (if any assignments assigned to you) for the day. If and when you need to update your status from another page, click the icon in the navigation bar and search for switch status. That is where you\'ll also find other options as well.', 'Ok');
         }
 
+        if (window.location.pathname === '/contact') {
+                infoModalMsg.info('Need help with something? Not sure of what to do next? Here, you can use this page to send an email with any problems regarding the use of the app. <u>Please and only if neccessary!</u> For account issues, please refer to your company administrator.', 'Understood');
+        }
+
         if (window.location.pathname === '/orders') {
                 infoModalMsg.info(`This is where your job orders will be viewed. You\'ll be able to edit certain times, details and add notes for dispatch and your personal reference.<br> You must confirm the job by clicking the button below once received.<br> When you\'re completing the job, click the edit button down below if there are any changes to be made.<br> If no changes, complete the dispatch order.<br> You can also cancel the job if dispatch allows.`, 'Ok');
         }

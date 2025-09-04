@@ -23,13 +23,13 @@ $mail->Port = $_ENV['MAIL_PORT'];
 ** get through the SSL socket layer 
 ** (used in a production environment).↓
 */ 
-$mail->SMTPOptions = array(
+/*$mail->SMTPOptions = array(
     'ssl' => array(
         'verify_peer' => false,
         'verify_peer_name' => false,
         'allow_self_signed' => true
     )
-);
+);*/
 $mail->Username = $_ENV['MAIL_USERNAME'];
 $mail->Password = $_ENV['MAIL_PASSWORD'];
 

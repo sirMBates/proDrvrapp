@@ -34,7 +34,7 @@ class ForgetPswdContr extends ForgetPswd {
         }
 
         if ($this->tokenExistAlready() === true) {
-            $alert::setMsg('info', 'Email sent already. Please chk your inbox!');
+            $alert::setMsg('info', 'Email sent already. Please check your inbox!');
             header("Location: /forget?info=sent+already");
             exit();
         }
@@ -49,13 +49,13 @@ class ForgetPswdContr extends ForgetPswd {
             header('Location: /forget?error=try+again');
             exit();
         } else {
-            $mail = require_once base_path("mail/emailSetup.php");
+            $mail = require_once base_path("core/emailSetup.php");
             $mail->setFrom('noreply@prodriver.local', 'Help Desk');
             $mail->addAddress($this->email);
             $mail->Subject = "Forget Password";
             $mail->Body = <<<END
 
-                    Click <a href="http://prodriver.local/reset?token=$this->token">here</a> to forget password.
+                    Click <a href="https://prodriver.local/reset?token=$this->token">here</a> to reset password.
 
                     END;
             try {

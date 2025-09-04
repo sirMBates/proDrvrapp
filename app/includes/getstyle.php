@@ -26,6 +26,10 @@ function pageStyle($value) {
                         return;
                         break;
 
+                case "/contact":
+                        return;
+                        break;
+
                 case "/orders":
                         echo "<link rel='stylesheet' href='../dist/styles/orders.css'>\n";
                         break;
@@ -36,10 +40,6 @@ function pageStyle($value) {
 
                 case "/timesheet":
                         echo "<link rel='stylesheet' href='../dist/styles/tsheet.css'>\n";
-                        break;
-
-                case "/contact":
-                        return;
                         break;
 
                 case "/printable":
