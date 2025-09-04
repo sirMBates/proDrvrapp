@@ -2,7 +2,7 @@
 
 if (!isset($_SESSION['logged_in'])) {
     header("Location: /signin");
-    die();
+    exit();
 }
 
 view('sendmail.view.php', ['title' => 'Contact Help',]);
