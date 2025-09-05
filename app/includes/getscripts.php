@@ -60,7 +60,7 @@ function pageScripts($value) {
                 break;
 
             case "/contact":
-                echo "<script type='module' src='../dist/js/messagevalidation.js'></script>";
+                echo "<script type='module' src='../dist/js/contacthandler.js'></script>";
                 break;
 
             case "/orders":

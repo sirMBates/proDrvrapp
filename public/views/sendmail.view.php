@@ -17,11 +17,11 @@ include "partials/info-modal.php";
                         <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input type="email" class="form-control" id="drvr-email" name="sendingemailaddy" placeholder="Your email address" required>
+                    <input id="drvr-email" type="email" class="form-control" name="sender" placeholder="Your email address" required>
                     <label for="drvr-email">Sender</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input type="email" class="form-control" id="dev-email" name="receivingemailaddy" placeholder="Admin email" required>
+                    <input id="dev-email" type="email" class="form-control" name="receiver" placeholder="Admin email" value="help-desk@prodriver.local" disabled>
                     <label for="dev-email">Recipient</label>
                 </div>
                 <div class="form-floating position-relative">
@@ -30,7 +30,7 @@ include "partials/info-modal.php";
                 </div>
             </div>
             <div class="card-footer text-capitalize text-center">
-                <button type="button" name="sendmsg" class="btn btn-lg btn-primary">Send</button>
+                <button id="send-msg" type="button" name="sendmsg" class="btn btn-lg btn-primary">Send</button>
             </div>
             </form>
         </div>

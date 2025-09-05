@@ -3,7 +3,7 @@
 // This file is part of the ProDrvrApp project.
 // ProDrvrApp is a web application for managing driver profiles and related functionalities.
 const namePattern = /^[a-zA-Z]{1,}$/;
-const statusPattern = /^[a-zA-Z\s]{1,}$/;
+const statusPattern = /^[a-zA-Z ]{1,}$/;
 const numberPattern = /^[0-9]{1,}$/;
 const phoneNumberPattern = /^\d{10}$/
 const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])$/;
@@ -11,6 +11,7 @@ const usernamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
 const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
 const photoPattern = /^[a-zA-Z0-9./_-]+\.(jpg|jpeg|png|gif)$/i;
+const textPattern = /^[\w\s.,!?'"()\-]{1,250}$/;
 /**
  * Validation class to validate various types of input using regular expressions.
  */
@@ -55,6 +56,15 @@ export class Validation {
         switch(type) {
             case 'text':
                 return this.validateDrvrStatus(input);
+            default:
+                throw new Error('Invalid validation type');
+        }
+    }
+
+    static validateMessage(input, type) {
+        switch(type) {
+            case 'text':
+                return this.validateText(input);
             default:
                 throw new Error('Invalid validation type');
         }
@@ -108,5 +118,9 @@ export class Validation {
 
     static validateDrvrStatus(input) {
         return statusPattern.test(input);
+    }
+
+    static validateText(input) {
+        return textPattern.test(input);
     }
 }
