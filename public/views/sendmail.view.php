@@ -12,16 +12,16 @@ include "partials/info-modal.php";
                 <h3 class="text-capitalize text-center"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>send email</h3>
             </div>
             <div class="card-body">
-            <form id="email-form" class="needs-validation" name="emailform" action="" method="" novalidate>
+            <form id="email-form" action="" method="POST" name="emailcontactform" class="needs-validation" novalidate>
                 <div class="input-group">
                         <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="drvr-email" type="email" class="form-control" name="sender" placeholder="Your email address" required>
+                    <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="sender" placeholder="Your email address" required>
                     <label for="drvr-email">Sender</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="dev-email" type="email" class="form-control" name="receiver" placeholder="Admin email" value="help-desk@prodriver.local" disabled>
+                    <input id="dev-email" type="email" class="form-control fs-4 rounded-2" name="receiver" placeholder="Admin email" disabled>
                     <label for="dev-email">Recipient</label>
                 </div>
                 <div class="form-floating position-relative">
