@@ -63,7 +63,7 @@ export class Validation {
 
     static validateMessage(input, type) {
         switch(type) {
-            case 'text':
+            case 'textarea':
                 return this.validateText(input);
             default:
                 throw new Error('Invalid validation type');
