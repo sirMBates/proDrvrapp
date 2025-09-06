@@ -6,7 +6,7 @@ const helpDeskEmail = document.querySelector('#dev-email');
 const msgBody = document.querySelector('#body-msg');
 const sendBtn = document.querySelector('#send-msg');
 const counter = document.querySelector("#charCounter");
-const maxLength = 250;
+const maxLength = 300;
 
 window.addEventListener('DOMContentLoaded', () => {
     helpDeskEmail.value = "help-desk@prodriver.local";

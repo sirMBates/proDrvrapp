@@ -7,12 +7,12 @@ class CompleteReset {
     protected function checkValidToken($token) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT * FROM Pwdreset
-                WHERE resetToken = :resetToken";
+        $sql = "SELECT * FROM pwd_reset
+                WHERE reset_token = :reset_token";
         $stmt = $db->connect()->prepare($sql);
         //var_dump($token);
         $stmt->execute([
-            ':resetToken' => $token
+            ':reset_token' => $token
         ]);
 
         if (!$stmt || $stmt->rowCount() === 0) {
@@ -20,7 +20,7 @@ class CompleteReset {
         }
 
         $driver = $stmt->fetch();
-        $dbTimeStamp = strtotime($driver['tokenExpTime']);
+        $dbTimeStamp = strtotime($driver['token_exp_time']);
         $currentTime = time();
         if ($dbTimeStamp <= $currentTime) {
             return false;
@@ -47,7 +47,7 @@ class CompleteReset {
         $driverEmail = $driverResetToken['email'];
         $newHashPwd = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "UPDATE Driver
+        $sql = "UPDATE driver
                 SET password = :password
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
@@ -72,12 +72,12 @@ class CompleteReset {
             $alert::setMsg('warning', 'Token not found. Please try again!');
             return false;
         }
-        $sql = "UPDATE Pwdreset
-                SET resetToken = '', tokenExpTime = null
-                WHERE resetToken = :resetToken";
+        $sql = "UPDATE pwd_reset
+                SET reset_token = '', token_exp_time = NULL
+                WHERE reset_token = :reset_token";
         $stmt = $db->connect()->prepare($sql);
         $stmt->execute([
-            ':resetToken' => $token
+            ':reset_token' => $token
         ]);
         
         $result;

@@ -1,7 +1,4 @@
-// File: public/js/validation.js
 // This file contains validation logic for various input types using regular expressions.
-// This file is part of the ProDrvrApp project.
-// ProDrvrApp is a web application for managing driver profiles and related functionalities.
 const namePattern = /^[a-zA-Z]{1,}$/;
 const statusPattern = /^[a-zA-Z ]{1,}$/;
 const numberPattern = /^[0-9]{1,}$/;

@@ -1,4 +1,3 @@
-import 'bootstrap';
 import { buildModal } from './appmodal.js';
 import { fetchDrvr } from './drvrapi.js';
 import { ChangeStatus } from './changestatus.js';
@@ -72,7 +71,9 @@ $(document).ready(() => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-        fetchDrvr("https://prodriver.local/getprofile")
+        fetchDrvr("https://prodriver.local/getprofile", {
+                mode: 'cors'
+        })
         .then(data => {
             const driver = data;
             const drvrMainMenu = document.querySelector('#useraccess');
