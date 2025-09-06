@@ -27,6 +27,7 @@ include "partials/info-modal.php";
                 <div class="form-floating position-relative">
                     <textarea id="body-msg" class="form-control" name="message" placeholder="Add your message here!" style="height: 200px;" required></textarea>
                     <label for="body-msg">Your message</label>
+                    <div id="charCounter">0 / 250</div>
                 </div>
             </div>
             <div class="card-footer text-capitalize text-center">

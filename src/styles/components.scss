@@ -81,3 +81,25 @@ footer h6 {
 #profilecon #profile-upload {
     display: none;
 }
+
+/* Subtle pulse for Auto mode */
+@keyframes pulseAuto {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.theme-auto {
+    font-size: 0.7em;
+    margin-left: 5px;
+    color: gray;
+    animation: pulseAuto 1.5s infinite;
+}
+
+/* Manual mode style */
+.theme-manual {
+    font-size: 0.7em;
+    margin-left: 5px;
+    color: orange !important;
+    animation: none; /* no animation for manual override */
+}
