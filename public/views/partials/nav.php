@@ -54,6 +54,7 @@
                         <i class="fa-fw fa-solid fa-moon fa-lg text-dark" aria-hidden="true"></i>
                         </button>
                         <p class="h5 align-self-center" style="margin-left: -5px; margin-top: 5px;">Dark theme</p>
+                        <span id="themeModeIndicator" class="theme-auto" style="font-size: 0.7em; margin-left:5px; color:gray;">Auto</span>
                 </div>
         </div>
 </div>

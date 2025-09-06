@@ -28,7 +28,7 @@ function getClockandMainOrNav($value) {
         
         default:
             echo "<script type='module' src='../dist/js/clock.js'></script>\n";
-            echo "<script type='module' src='../dist/js/app.js'></script>\n";
+            echo "<script type='module' src='../dist/js/main.js'></script>\n";
             break;
     }
 };
