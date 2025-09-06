@@ -5,6 +5,6 @@ if (!isset($_SESSION['logged_in'])) {
     exit();
 }
 
-view('sendmail.view.php', ['title' => 'Contact Help',]);
+view('contact.view.php', ['title' => 'Contact Help',]);
 
 ?>

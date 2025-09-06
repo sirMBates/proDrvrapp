@@ -12,10 +12,10 @@ class GetDriver {
     protected function retrieveDriver($drvrid) {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
-        $sql = "SELECT * FROM Driver
-                WHERE driverid = :driverid";
+        $sql = "SELECT * FROM driver
+                WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':driverid', $drvrid);
+        $stmt->bindParam(':driver_id', $drvrid);
         $stmt->execute();
 
         $result = $stmt->fetch();
@@ -26,24 +26,24 @@ class GetDriver {
             exit();
         }
 
-        $dbFirstName = Crypto::decrypt($result['firstName'], $key);
-        $dbLastName = Crypto::decrypt($result['lastName'], $key);
-        $dbMobileNum = Crypto::decrypt($result['mobileNumber'], $key);
-        $dbBirthdate = Crypto::decrypt($result['birthdate'], $key);
-        if (!empty($result['profilePicture'])) {
-            $result['profilePicture'];
+        $dbFirstName = Crypto::decrypt($result['first_name'], $key);
+        $dbLastName = Crypto::decrypt($result['last_name'], $key);
+        $dbMobileNum = Crypto::decrypt($result['mobile_number'], $key);
+        $dbBirthdate = Crypto::decrypt($result['birth_date'], $key);
+        if (!empty($result['profile_picture'])) {
+            $result['profile_picture'];
         } else {
-            $result['profilePicture'] = null;
+            $result['profile_picture'] = NULL;
         }
         return [
-            'driverid' => $result['driverid'],
+            'driverid' => $result['driver_id'],
             'username' => $result['username'],
             'email' => $result['email'],
             'firstName' => $dbFirstName,
             'lastName' => $dbLastName,
             'mobileNumber' => $dbMobileNum,
             'birthdate' => $dbBirthdate,
-            'profilePicture' => $result['profilePicture'] // This will be a relative path to the image
+            'profilePicture' => $result['profile_picture'] // This will be a relative path to the image
         ];
     }
 

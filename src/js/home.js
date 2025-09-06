@@ -18,7 +18,9 @@ window.addEventListener('load', () => {
                 localStorage.setItem('driverName', firstName);
         };
 
-        fetchDriver("https://prodriver.local/getprofile", { mode: 'cors' })
+        fetchDriver("https://prodriver.local/getprofile", { 
+                mode: 'cors' 
+        })
         .then(data => {
             const driver = data;
             const drvrMainTable = document.querySelector('#dashboard-info');

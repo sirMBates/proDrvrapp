@@ -39,12 +39,12 @@ class ProfileImageUpload {
         }
 
         // Update the database with the path to the profile picture
-        $sql = "UPDATE Driver
-                SET profilePicture = :profilePicture
-                WHERE driverid = :driverid";
+        $sql = "UPDATE driver
+                SET profile_picture = :profile_picture
+                WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':profilePicture', $publicPath);
-        $stmt->bindParam(':driverid', $drvrid);
+        $stmt->bindParam(':profile_picture', $publicPath);
+        $stmt->bindParam(':driver_id', $drvrid);
         $stmt->execute();
 
         if (!$stmt) {

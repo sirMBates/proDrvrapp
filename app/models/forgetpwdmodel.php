@@ -8,8 +8,8 @@ class ForgetPswd {
         $db = new Database;
         $alert = new Flash(); 
         // Note: Can not use an INSERT stmt to add to an empty column of an existing row.
-        $sql = "UPDATE Pwdreset
-                SET resetToken = :resetToken, tokenExpTime = :tokenExpTime
+        $sql = "UPDATE pwd_reset
+                SET reset_token = :reset_token, token_exp_time = :token_exp_time
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
         /* Bind the parameters to the prepared statement.
@@ -17,8 +17,8 @@ class ForgetPswd {
         *  This allows for better readability and maintainability of the code.
         */
         $result = $stmt->execute([
-            ':resetToken' => $token,
-            ':tokenExpTime' => $tokenExpTime,
+            ':reset_token' => $token,
+            ':token_exp_time' => $tokenExpTime,
             ':email' => $email
         ]);
         
@@ -32,7 +32,7 @@ class ForgetPswd {
     protected function checkEmailExist($email) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT email FROM Pwdreset 
+        $sql = "SELECT email FROM pwd_reset 
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
         $result = $stmt->execute([
@@ -58,7 +58,7 @@ class ForgetPswd {
     protected function checkTokenExist($email) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT resetToken FROM Pwdreset 
+        $sql = "SELECT reset_token FROM pwd_reset 
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
 
@@ -67,7 +67,7 @@ class ForgetPswd {
         $doesTokenAlreadyExist = $stmt->fetch();
         $checkResult;
         //if ($doesTokenAlreadyExist && !empty($doesTokenAlreadyExist['resetToken'])) {
-        if ($doesTokenAlreadyExist > 0 && !empty($doesTokenAlreadyExist['resetToken'])) {
+        if ($doesTokenAlreadyExist > 0 && !empty($doesTokenAlreadyExist['reset_token'])) {
             $checkResult = true;
         } else {
             $checkResult = false;

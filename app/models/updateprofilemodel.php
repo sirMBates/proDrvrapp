@@ -13,12 +13,12 @@ class UpdateDrvr {
     protected function drvrPwdUpdate($drvrid, $password) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "UPDATE Driver
+        $sql = "UPDATE driver
                 SET password = :password
-                WHERE driverid = :driverid";
+                WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);
         $hashPwd = password_hash($password, PASSWORD_BCRYPT);
-        $stmt->bindParam(':driverid', $drvrid);
+        $stmt->bindParam(':driver_id', $drvrid);
         $stmt->bindParam(':password', $hashPwd);
 
         $result = $stmt->execute();
@@ -45,15 +45,15 @@ class UpdateDrvr {
 
         if ($drvrMobile !== null && $drvrMobile !== '') {
             $encryptedMobileNum = Crypto::encrypt($drvrMobile, $key);
-            $fields[] = "mobileNumber = :mobileNumber";
-            $params[':mobileNumber'] = $encryptedMobileNum;
+            $fields[] = "mobile_number = :mobile_number";
+            $params[':mobile_number'] = $encryptedMobileNum;
         }
 
         if (count($fields) > 0) {
-            $sql = "UPDATE Driver SET ". 
+            $sql = "UPDATE driver SET ". 
             implode(", ", $fields). " 
-            WHERE driverid = :driverid";
-            $params[':driverid'] = $drvrid;
+            WHERE driver_id = :driver_id";
+            $params[':driver_id'] = $drvrid;
             $stmt = $db->connect()->prepare($sql);
             foreach ($params as $key => $value) {
                 $stmt->bindValue($key, $value);
@@ -75,10 +75,10 @@ class UpdateDrvr {
     protected function drvrExist($drvrid) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT * FROM Driver
-                WHERE driverid = :driverid";
+        $sql = "SELECT * FROM driver
+                WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':driverid', $drvrid);
+        $stmt->bindParam(':driver_id', $drvrid);
         $stmt->execute();
 
         $result = $stmt->fetch();

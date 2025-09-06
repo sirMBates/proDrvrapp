@@ -10,8 +10,10 @@ const editBtn = document.querySelector('#edit');
 const completeBtn = document.querySelector('#submit-order');
 const fetchDriver = fetchDrvr;
 
-window.addEventListener('load', () => {
-    fetchDriver("https://prodriver.local/getprofile")
+window.addEventListener('DOMContentLoaded', () => {
+    fetchDriver("https://prodriver.local/getprofile", {
+        mode: 'cors'
+    })
     .then(data => {
         const driver = data;
         const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
@@ -24,9 +26,7 @@ window.addEventListener('load', () => {
     .catch(error => {
         console.error('There was a problem with the fetch operation:', error);
     })
-})
 
-window.addEventListener('DOMContentLoaded', () => {
     clickCells.forEach(cell => {
         cell.addEventListener('click', () => {
             if (!cell.querySelector('input')) {

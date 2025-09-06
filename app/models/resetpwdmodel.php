@@ -7,11 +7,11 @@ class ResetPwd {
     protected function checkTokenandExpiration($token) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT * FROM Pwdreset
-                WHERE resetToken = :resetToken";                
+        $sql = "SELECT * FROM pwd_reset
+                WHERE reset_token = :reset_token";                
         $stmt = $db->connect()->prepare($sql);
         $stmt->execute([
-            ':resetToken' => $token
+            ':reset_token' => $token
         ]);
 
         if (!$stmt || $stmt->rowCount() === 0) {
@@ -21,14 +21,14 @@ class ResetPwd {
         }
 
         $driver = $stmt->fetchAll();
-        $dbTimeStamp = strtotime($driver[0]["tokenExpTime"]);
+        $dbTimeStamp = strtotime($driver[0]["token_exp_time"]);
         $currentTime = time();
         if ($dbTimeStamp <= $currentTime) {
             $alert::setMsg('validate', 'Token has expired! Please generate a new token below.');
             header("Location: /forget?validate=expired");
             exit();
         }
-        $driver = null;
+        $driver = NULL;
     }
 
     /*protected function updateToken($newToken, $tokenExpTime, $oldToken) {

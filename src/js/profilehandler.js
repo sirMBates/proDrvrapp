@@ -18,8 +18,10 @@ const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
 const fetchDriver = fetchDrvr;
 
-window.addEventListener('load', () => {
-    fetchDriver("https://prodriver.local/getprofile")
+window.addEventListener('DOMContentLoaded', () => {
+    fetchDriver("https://prodriver.local/getprofile", {
+        mode: 'cors'
+    })
         .then(data => {
             const driver = data;
             if (driver) {

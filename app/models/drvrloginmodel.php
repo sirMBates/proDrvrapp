@@ -14,7 +14,7 @@ class Login {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT password FROM Driver
+        $sql = "SELECT password FROM driver
                 WHERE username = :username";
         $stmt = $db->connect()->prepare($sql);
         
@@ -35,7 +35,7 @@ class Login {
             header("Location: /signin?danger=invalid"); // wrongPassword
             exit();
         } elseif ($checkPsw === true) {
-            $sql2 = "SELECT * FROM Driver
+            $sql2 = "SELECT * FROM driver
                     WHERE username = :username";
             $stmt = $db->connect()->prepare($sql2);
             $stmt->bindParam(":username", $username);
@@ -43,11 +43,11 @@ class Login {
 
             $driver = $stmt->fetch();
             //session_start();
-            $encryptedBirthdate = $driver['birthdate'];
-            $encryptedFirstName = $driver['firstName'];
+            $encryptedBirthdate = $driver['birth_date'];
+            $encryptedFirstName = $driver['first_name'];
             $dbBirthdate = Crypto::decrypt($encryptedBirthdate, $key);
             $dbFirstName = Crypto::decrypt($encryptedFirstName, $key);
-            $_SESSION['driver_id'] = $driver['driverid'];
+            $_SESSION['driver_id'] = $driver['driver_id'];
             $_SESSION['first_name'] = $dbFirstName;
             $currentDate = date('md');
             $drvrDate = date('md', strtotime($dbBirthdate));

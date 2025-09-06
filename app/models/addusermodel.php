@@ -10,9 +10,9 @@ class AddedDrvr {
         $db = new Database;
         $alert = new Flash();
         $pdo = $db->connect();
-        $sql = "INSERT INTO Driver (
-                username, email, password, firstName, lastName, mobileNumber, birthdate) 
-                VALUES (?,?,?,?,?,?,?)";
+        $sql = "INSERT INTO driver (
+                username, email, password, first_name, last_name, mobile_number, birth_date, profile_picture) 
+                VALUES (?,?,?,?,?,?,?,?)";
         $stmt = $db->connect()->prepare($sql);
 
         $hashPsW = password_hash($password, PASSWORD_BCRYPT);
@@ -20,6 +20,7 @@ class AddedDrvr {
         $tmpLastName = '';
         $tmpMobileNum = '';
         $tmpBirthDate = NULL;
+        $tmpProfilePicture = NULL;
         $stmt->bindParam(1, $username);
         $stmt->bindParam(2, $email);
         $stmt->bindParam(3, $hashPsW);
@@ -27,6 +28,7 @@ class AddedDrvr {
         $stmt->bindParam(5, $tmpLastName);
         $stmt->bindParam(6, $tmpMobileNum);
         $stmt->bindParam(7, $tmpBirthDate);
+        $stmt->bindParam(8, $tmpProfilePicture);
 
         $result = $stmt->execute();
 
@@ -39,7 +41,7 @@ class AddedDrvr {
         $drvr_id = $pdo->lastInsertId();
         $token = '';
         $tokenExpTime = NULL;
-        $sql2 = "INSERT INTO Pwdreset (email, driverid, resetToken, tokenExpTime)
+        $sql2 = "INSERT INTO pwd_reset (email, driver_id, reset_token, token_exp_time)
                 VALUES (?,?,?,?)";
         $stmt2 = $db->connect()->prepare($sql2);
 
@@ -60,7 +62,7 @@ class AddedDrvr {
     protected function checkDriver($username, $email) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT username, email FROM Driver
+        $sql = "SELECT username, email FROM driver
                 WHERE username = :username OR email = :email";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':username', $username);
