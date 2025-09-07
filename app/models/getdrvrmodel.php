@@ -21,9 +21,7 @@ class GetDriver {
         $result = $stmt->fetch();
 
         if (!$stmt || $stmt->rowCount() === 0) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Driver not found']);
-            exit();
+            throw new Exception("Driver not found");
         }
 
         $dbFirstName = Crypto::decrypt($result['first_name'], $key);

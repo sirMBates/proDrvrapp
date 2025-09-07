@@ -17,15 +17,15 @@ include "partials/info-modal.php";
                         <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="drvr-name" type="text" class="form-control fs-4 rounded-2" name="sender_name" placeholder="Full name" disabled>
+                    <input id="drvr-name" type="text" class="form-control fs-4 rounded-2" name="sender_name" placeholder="Full name" readonly required>
                     <label for="drvr-name">Sender Name</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="sender_email" placeholder="Your email address" disabled>
+                    <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="sender_email" placeholder="Your email address" readonly required>
                     <label for="drvr-email">Sender Email Address</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="dev-email" type="email" class="form-control fs-4 rounded-2" name="receiver" placeholder="Admin email" disabled>
+                    <input id="dev-email" type="email" class="form-control fs-4 rounded-2" name="receiver" placeholder="Admin email" readonly required>
                     <label for="dev-email">Help Desk E-Address</label>
                 </div>
                 <div class="form-floating position-relative">
@@ -35,7 +35,7 @@ include "partials/info-modal.php";
                 </div>
             </div>
             <div class="card-footer text-capitalize text-center">
-                <button id="send-msg" type="button" name="sendmsg" class="btn btn-lg btn-primary">Send</button>
+                <button id="send-msg" type="submit" name="sendmsg" class="btn btn-lg btn-primary">Send</button>
             </div>
             </form>
         </div>

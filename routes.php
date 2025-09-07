@@ -22,6 +22,7 @@ $router->post('/compreset', 'app/controllers/compresetproc.php');
 $router->post('/reset', 'app/controllers/reset.php');
 $router->post('/setstatus', 'app/api/setstatus.php');
 $router->post('/setprofilepicture', 'app/api/setprofilepicture.php');
+$router->post('/contact', 'app/controllers/contacthelp.php');
 
 $router->patch('/register', 'app/controllers/regprofile.php');
 $router->patch('/profile', 'app/controllers/updateprofileacct.php');
