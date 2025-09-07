@@ -17,12 +17,16 @@ include "partials/info-modal.php";
                         <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="sender" placeholder="Your email address" required>
-                    <label for="drvr-email">Sender</label>
+                    <input id="drvr-name" type="text" class="form-control fs-4 rounded-2" name="sender_name" placeholder="Full name" disabled>
+                    <label for="drvr-name">Sender Name</label>
+                </div>
+                <div class="form-floating mb-3 position-relative">
+                    <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="sender_email" placeholder="Your email address" disabled>
+                    <label for="drvr-email">Sender Email Address</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
                     <input id="dev-email" type="email" class="form-control fs-4 rounded-2" name="receiver" placeholder="Admin email" disabled>
-                    <label for="dev-email">Recipient</label>
+                    <label for="dev-email">Help Desk E-Address</label>
                 </div>
                 <div class="form-floating position-relative">
                     <textarea id="body-msg" class="form-control" name="message" placeholder="Add your message here!" style="height: 200px;" required></textarea>
