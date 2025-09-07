@@ -1,11 +1,13 @@
 import { Validation } from "./validation";
 import formValidation from "./messagevalidation";
 import { fetchDrvr } from "./drvrapi";
+const senderFullName = document.querySelector('#drvr-name');
 const senderEmail = document.querySelector('#drvr-email');
 const helpDeskEmail = document.querySelector('#dev-email');
 const msgBody = document.querySelector('#body-msg');
 const sendBtn = document.querySelector('#send-msg');
 const counter = document.querySelector("#charCounter");
+const emailForm = document.querySelector("#email-form");
 const maxLength = 300;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -16,6 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
     .then(data => {
         const driver = data;
         if (driver) {
+            senderFullName.value = `${driver['firstName']} ${driver['lastName']}`;
             senderEmail.value = driver['email'];
         }
     })
@@ -23,6 +26,17 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error('Sorry, we had a problem: ', error);
     });
 });
+
+$(senderFullName).on('input', () => {
+    let getDrvrName = senderFullName.value;
+    let unSpacedFullName = getDrvrName.replace(/\s+/g, ""); // removes space between names 
+    let isValid = Validation.validate($(unSpacedFullName).val(), $(senderFullName).attr('type'));
+    if (!isValid) {
+        $(senderFullName).removeClass('is-valid').addClass('is-invalid');
+    } else {
+        $(senderFullName).removeClass('is-invalid').addClass('is-valid');
+    }
+})
 
 $(senderEmail).on('input', () => {
     let isValid = Validation.validate($(senderEmail).val(), $(senderEmail).attr('type'));
@@ -65,6 +79,8 @@ msgBody.addEventListener("input", () => {
     }
 });
 
-$(sendBtn).on('submit', () => {
-    return formValidation();
+$(sendBtn).on('submit', (e) => {
+    e.preventDefault();
+    formValidation();
+    emailForm.submit();
 });
