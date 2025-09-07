@@ -2,7 +2,7 @@
 
 use core\Flash;
 
-class ContactHelpContr extends VerifyDriver {
+class ContactHelpContr extends GetDriver {
     private $driverid;
     private $driverName;
     private $senderEmail;
@@ -12,9 +12,9 @@ class ContactHelpContr extends VerifyDriver {
     public function __construct($driverid, $driverName, $senderEmail, $receiverEmail, $emailMessage) {
         $this->driverid = $driverid;
         $this->driverName = $driverName;
-        $this->$senderEmail = $senderEmail;
-        $this->$receiverEmail = $receiverEmail;
-        $this->$emailMessage = $emailMessage;
+        $this->senderEmail = $senderEmail;
+        $this->receiverEmail = $receiverEmail;
+        $this->emailMessage = $emailMessage;
     }
 
     public function contactHelpDesk() {}

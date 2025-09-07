@@ -1,15 +1,25 @@
 <?php
 
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+
 class GetDrvrController {
         public function driverInfo() {
-                $drvrProfile = new GetDriver();
-                $driver = htmlspecialchars(trim($_SESSION['driver_id']));
-                $stats = $drvrProfile->getDrvrInfo($driver);
-                header("Content-Type: application/json");
-                header("Access-Control-Allow-Origin: *");
-                //print_r($stats);
-                echo json_encode($stats);
-                exit();
+                try {
+                        $drvrProfile = new GetDriver();
+                        $driver = htmlspecialchars(trim($_SESSION['driver_id']));
+                        $stats = $drvrProfile->getDrvrInfo($driver);
+                        //print_r($stats);
+                        echo json_encode($stats);
+                        exit();
+                } catch (Exception $e) {
+                        http_response_code(404);
+                        echo json_encode([
+                                'status' => 'error',
+                                'message' => 'There was a problem: ' . $e->getMessage()
+                        ]);
+                        exit();
+                }
         }
 }
 
