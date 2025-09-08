@@ -17,9 +17,8 @@ if ($formToken === $_SESSION['drvr_token']) {
         $emailMessage = htmlspecialchars(trim($_POST['message']));
         include_once base_path("app/models/getdrvrmodel.php");
         include_once base_path("app/classes/contact_help.php");
-        $separateNames = explode(" ", $senderName);
-        var_dump($separateNames);
-        exit();
+        $sendingInfo = new ContactHelpContr($_SESSION['driver_id'], $senderName, $senderEmail, $receiverEmail, $emailMessage);
+        $sendingInfo->contactHelpDesk();
     }
 }
 
