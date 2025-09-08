@@ -9,10 +9,10 @@ class ContactHelpContr extends GetDriver {
     private $receiverEmail;
     private $emailMessage;
 
-    public function __construct($driverid, $driverName, $senderEmail, $receiverEmail, $emailMessage) {
+    public function __construct($driverid, $driverName, $driverEmail, $receiverEmail, $emailMessage) {
         $this->driverid = $driverid;
         $this->driverName = $driverName;
-        $this->driverEmail = $senderEmail;
+        $this->driverEmail = $driverEmail;
         $this->receiverEmail = $receiverEmail;
         $this->emailMessage = $emailMessage;
     }
@@ -28,7 +28,7 @@ class ContactHelpContr extends GetDriver {
     private isEmptyInfo(): bool {
         $driverInfo = [
             $this->driverid,
-            $this->$driverName,
+            $this->driverName,
             $this->driverEmail,
             $this->receiverEmail,
             $this->emailMessage
