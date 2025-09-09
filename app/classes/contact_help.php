@@ -6,15 +6,15 @@ class ContactHelpContr extends GetDriver {
     private $driverid;
     private $driverName;
     private $driverEmail;
-    private $receiverEmail;
+    private $helpDeskEmail;
     private $emailSubject;
     private $emailMessage;
 
-    public function __construct($driverid, $driverName, $driverEmail, $receiverEmail, $emailSubject, $emailMessage) {
+    public function __construct($driverid, $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage) {
         $this->driverid = $driverid;
         $this->driverName = $driverName;
         $this->driverEmail = $driverEmail;
-        $this->receiverEmail = $receiverEmail;
+        $this->helpDeskEmail = $helpDeskEmail;
         $this->emailSubject = $emailSubject;
         $this->emailMessage = $emailMessage;
     }
@@ -51,7 +51,8 @@ class ContactHelpContr extends GetDriver {
             $this->driverid,
             $this->driverName,
             $this->driverEmail,
-            $this->receiverEmail,
+            $this->helpDeskEmail,
+            $this->emailSubject,
             $this->emailMessage
         ];
 
@@ -89,7 +90,7 @@ class ContactHelpContr extends GetDriver {
         $driverInformation = $this->getDrvrInfo($this->driverid);
         $emails2Test = [
             $this->driverEmail,
-            $this->receiverEmail
+            $this->helpDeskEmail
         ];
 
         if ($emails2Test[0] !== $driverInformation['email']) {
@@ -118,7 +119,7 @@ class ContactHelpContr extends GetDriver {
     private function sendEmail() {
         $mail = require_once base_path("core/emailSetup.php");
         $mail->setFrom($this->driverEmail, $this->driverName);
-        $mail->addAddress($this->receiverEmail);
+        $mail->addAddress($this->helpDeskEmail);
         $mail->Subject = $this->emailSubject;
         $mail->Body = $this->emailMessage;
         $mail->isHTML(false);
