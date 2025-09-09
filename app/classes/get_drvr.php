@@ -3,7 +3,7 @@
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 
-class GetDrvrController {
+class GetDrvrContr {
         public function driverInfo() {
                 try {
                         $drvrProfile = new GetDriver();

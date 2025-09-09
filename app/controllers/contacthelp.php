@@ -14,10 +14,11 @@ if ($formToken === $_SESSION['drvr_token']) {
         $senderName = htmlspecialchars(trim($_POST['sender_name']));
         $senderEmail = htmlspecialchars(trim($_POST['sender_email']));
         $receiverEmail = htmlspecialchars(trim($_POST['receiver']));
-        $emailMessage = htmlspecialchars(trim($_POST['message']));
+        $emailSubject = htmlspecialchars(trim($_POST['mail_subject']));
+        $emailMessage = trim($_POST['message']);
         include_once base_path("app/models/getdrvrmodel.php");
         include_once base_path("app/classes/contact_help.php");
-        $sendingInfo = new ContactHelpContr($_SESSION['driver_id'], $senderName, $senderEmail, $receiverEmail, $emailMessage);
+        $sendingInfo = new ContactHelpContr($_SESSION['driver_id'], $senderName, $senderEmail, $receiverEmail, $emailSubject, $emailMessage);
         $sendingInfo->contactHelpDesk();
     }
 }
