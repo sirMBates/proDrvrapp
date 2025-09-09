@@ -7,25 +7,46 @@ class ContactHelpContr extends GetDriver {
     private $driverName;
     private $driverEmail;
     private $receiverEmail;
+    private $emailSubject;
     private $emailMessage;
 
-    public function __construct($driverid, $driverName, $driverEmail, $receiverEmail, $emailMessage) {
+    public function __construct($driverid, $driverName, $driverEmail, $receiverEmail, $emailSubject, $emailMessage) {
         $this->driverid = $driverid;
         $this->driverName = $driverName;
         $this->driverEmail = $driverEmail;
         $this->receiverEmail = $receiverEmail;
+        $this->emailSubject = $emailSubject;
         $this->emailMessage = $emailMessage;
     }
 
     public function contactHelpDesk() {
+        if ($this->isEmptyInfo()) {
+            $alert::setMsg('error', 'Sorry, there seems to be a problem! Please, try again.');
+            header("Location: /contact?error=missing+message");
+            exit();
+        }
+
         if (!$this->checkDriverExist()) {
-            $alert::setMsg('danger', 'There is a problem. Please, try again!');
+            $alert::setMsg('danger', 'Sorry, there seems to be a problem! Please, try again!');
             header("Location: /contact?danger=name+not+match");
             exit();
         }
+
+        if (!$this->checkEmailAddresses()) {
+            $alert::setMsg('error', 'Sorry, There seems to be a problem! Please, try again.');
+            header("Location: /contact?error=email+not+accurate");
+            exit();
+        }
+
+        if (!$this->checkEmailMessage()) {
+            $alert::setMsg('warning', 'There\'s a problem with your message. Please re-type your message.');
+            header("Location: /contact?warning=message+not+valid");
+            exit();
+        }
+        $this->sendEmail();
     }
 
-    private isEmptyInfo(): bool {
+    private function isEmptyInfo(): bool {
         $driverInfo = [
             $this->driverid,
             $this->driverName,
@@ -36,11 +57,10 @@ class ContactHelpContr extends GetDriver {
 
         foreach($driverInfo as $value) {
             if (empty($value)) {
-                return false;
-            } else {
                 return true;
             }
         }
+        return false;
     }
 
     private function checkDriverExist(): bool {
@@ -64,8 +84,53 @@ class ContactHelpContr extends GetDriver {
         );
     }
 
-    private function checkDriverEmail() {}
+    private function checkEmailAddresses() {
+        $result;
+        $driverInformation = $this->getDrvrInfo($this->driverid);
+        $emails2Test = [
+            $this->driverEmail,
+            $this->receiverEmail
+        ];
+
+        if ($emails2Test[0] !== $driverInformation['email']) {
+            return false;
+        }
+
+        foreach($emails2Test as $email) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return false;
+            }
+        }
+        return $result;
+    }
     
-    private function checkEmailMessage() {}
+    private function checkEmailMessage() {
+        $textPattern = "/^[a-zA-Z0-9\s.,!?\"'()\-\@#%$&_+=:;\/\n\r\t\p{Extended_Pictographic}]{20,300}$/u";
+        $result;
+        if (!preg_match($textPattern, $this->emailMessage)) {
+            $result = false;
+        } else {
+            $result = true;
+        }
+        return $result;
+    }
+
+    private function sendEmail() {
+        $mail = require_once base_path("core/emailSetup.php");
+        $mail->setFrom($this->driverEmail, $this->driverName);
+        $mail->addAddress($this->receiverEmail);
+        $mail->Subject = $this->emailSubject;
+        $mail->Body = $this->emailMessage;
+        $mail->isHTML(false);
+        try {
+            $mail->send();
+        } catch (Exception $e) {
+            //remove(comment out if need to check mailer errors).
+            //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
+            $alert::setMsg('error', "Message not sent. Try again. {$mail->ErrorInfo}");
+            header("Location: /contact?error=system+error");
+            exit();
+        }
+    }
 } 
 ?>

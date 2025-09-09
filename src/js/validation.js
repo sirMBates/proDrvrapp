@@ -7,8 +7,8 @@ const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])
 const usernamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
 const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
-const photoPattern = /^[a-zA-Z0-9./_-]+\.(jpg|jpeg|png|gif)$/i;
-const textPattern = /^[A-Za-z0-9\s.,!?'"()\-@#$%^&*_+=:;\/ \n\r\t\p{Emoji}]{15,250}$/u;
+//const photoPattern = /^[a-zA-Z0-9./_-]+\.(jpg|jpeg|png|gif)$/i;
+const textPattern = /^[A-Za-z0-9\s.,!?'"()\-@#%$&_+=:;\/\n\r\t\p{Emoji}]{20,300}$/u;
 /**
  * Validation class to validate various types of input using regular expressions.
  */

@@ -32,6 +32,6 @@ $mail->Port = $_ENV['MAIL_PORT'];
 );*/
 $mail->Username = $_ENV['MAIL_USERNAME'];
 $mail->Password = $_ENV['MAIL_PASSWORD'];
-
+// Don't forget to set the mail isHTML ⬇
 $mail->isHTML(true);
 return $mail;

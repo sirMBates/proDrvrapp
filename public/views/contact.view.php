@@ -18,15 +18,19 @@ include "partials/info-modal.php";
                 </div>
                 <div class="form-floating mb-3 position-relative">
                     <input id="drvr-name" type="text" class="form-control fs-4 rounded-2" name="sender_name" placeholder="Full name" readonly required>
-                    <label for="drvr-name">Sender Name</label>
+                    <label for="drvr-name">Driver Name</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
                     <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="sender_email" placeholder="Your email address" readonly required>
-                    <label for="drvr-email">Sender Email Address</label>
+                    <label for="drvr-email">Driver E-Address</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
                     <input id="dev-email" type="email" class="form-control fs-4 rounded-2" name="receiver" placeholder="Admin email" readonly required>
                     <label for="dev-email">Help Desk E-Address</label>
+                </div>
+                <div class="form-floating mb-3 position-relative">
+                    <input id="mail_subject" type="text" class="form-control fs-4 rounded-2" name="mail_subject" placeholder="Subject" required>
+                    <label for="mail_subject">Title:</label>
                 </div>
                 <div class="form-floating position-relative">
                     <textarea id="body-msg" class="form-control" name="message" placeholder="Add your message here!" style="height: 200px;" required></textarea>
