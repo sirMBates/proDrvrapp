@@ -17,20 +17,20 @@ include "partials/info-modal.php";
                         <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="drvr-name" type="text" class="form-control fs-4 rounded-2" name="sender_name" placeholder="Full name" readonly required>
+                    <input id="drvr-name" type="text" class="form-control fs-4 rounded-2" name="driverName" placeholder="Full name" readonly required>
                     <label for="drvr-name">Driver Name</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="sender_email" placeholder="Your email address" readonly required>
-                    <label for="drvr-email">Driver E-Address</label>
+                    <input id="drvr-email" type="email" class="form-control fs-4 rounded-2" name="driverEmail" placeholder="Your email" readonly required>
+                    <label for="drvr-email">Driver Email</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="dev-email" type="email" class="form-control fs-4 rounded-2" name="receiver" placeholder="Admin email" readonly required>
-                    <label for="dev-email">Help Desk E-Address</label>
+                    <input id="help-email" type="email" class="form-control fs-4 rounded-2" name="helpDeskEmail" placeholder="Help Desk Email" readonly required>
+                    <label for="help-email">Help Desk Email</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
-                    <input id="mail_subject" type="text" class="form-control fs-4 rounded-2" name="mail_subject" placeholder="Subject" required>
-                    <label for="mail_subject">Title:</label>
+                    <input id="mail-subject-title" type="text" class="form-control fs-4 rounded-2" name="subjectTitle" placeholder="Subject/Title" required>
+                    <label for="mail-subject-title">Subject/Title</label>
                 </div>
                 <div class="form-floating position-relative">
                     <textarea id="body-msg" class="form-control" name="message" placeholder="Add your message here!" style="height: 200px;" required></textarea>
