@@ -1,6 +1,6 @@
 <?php
 
-$alert = new core\Flash();
+use core\Flash;
 
 class ContactHelpContr extends GetDriver {
     private $driverid;
@@ -20,6 +20,7 @@ class ContactHelpContr extends GetDriver {
     }
 
     public function contactHelpDesk() {
+        $alert = new Flash();
         if ($this->isEmptyInfo()) {
             $alert::setMsg('error', 'Sorry, there seems to be a problem! Please, try again.');
             header("Location: /contact?error=missing+message");
@@ -85,9 +86,11 @@ class ContactHelpContr extends GetDriver {
         );
     }
 
-    private function checkEmailAddresses() {
-        $result;
+    private function checkEmailAddresses(): bool {
         $driverInformation = $this->getDrvrInfo($this->driverid);
+        if (!isset($driverInformation['email'])) {
+            return false;
+        }
         $emails2Test = [
             $this->driverEmail,
             $this->helpDeskEmail
@@ -102,7 +105,7 @@ class ContactHelpContr extends GetDriver {
                 return false;
             }
         }
-        return $result;
+        return true;
     }
     
     private function checkEmailMessage() {
@@ -117,12 +120,15 @@ class ContactHelpContr extends GetDriver {
     }
 
     private function sendEmail() {
+        $alert = new Flash();
         $mail = require_once base_path("core/emailSetup.php");
         $mail->setFrom($this->driverEmail, $this->driverName);
         $mail->addAddress($this->helpDeskEmail);
+        $mail->isHTML(false);
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
         $mail->Subject = $this->emailSubject;
         $mail->Body = $this->emailMessage;
-        $mail->isHTML(false);
         try {
             $mail->send();
         } catch (Exception $e) {

@@ -1,9 +1,10 @@
 import { Validation } from "./validation";
 import formValidation from "./messagevalidation";
 import { fetchDrvr } from "./drvrapi";
-const senderFullName = document.querySelector('#drvr-name');
-const senderEmail = document.querySelector('#drvr-email');
-const helpDeskEmail = document.querySelector('#dev-email');
+const driverName = document.querySelector('#drvr-name');
+const driverEmail = document.querySelector('#drvr-email');
+const helpDeskEmail = document.querySelector('#help-email');
+const emailSubjectTitle = document.querySelector('#mail-subject-title');
 const msgBody = document.querySelector('#body-msg');
 const sendBtn = document.querySelector('#send-msg');
 const counter = document.querySelector("#charCounter");
@@ -18,8 +19,8 @@ window.addEventListener('DOMContentLoaded', () => {
     .then(data => {
         const driver = data;
         if (driver) {
-            senderFullName.value = `${driver['firstName']} ${driver['lastName']}`;
-            senderEmail.value = driver['email'];
+            driverName.value = `${driver['firstName']} ${driver['lastName']}`;
+            driverEmail.value = driver['email'];
         }
     })
     .catch(error => {
@@ -27,27 +28,27 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-$(senderFullName).on('input', () => {
-    let getDrvrName = senderFullName.value;
+$(driverName).on('focus', () => {
+    let getDrvrName = driverName.value;
     let unSpacedFullName = getDrvrName.replace(/\s+/g, ""); // removes space between names 
-    let isValid = Validation.validate($(unSpacedFullName).val(), $(senderFullName).attr('type'));
+    let isValid = Validation.validate($(unSpacedFullName).val(), $(driverName).attr('type'));
     if (!isValid) {
-        $(senderFullName).removeClass('is-valid').addClass('is-invalid');
+        $(driverName).removeClass('is-valid').addClass('is-invalid');
     } else {
-        $(senderFullName).removeClass('is-invalid').addClass('is-valid');
+        $(driverName).removeClass('is-invalid').addClass('is-valid');
     }
 })
 
-$(senderEmail).on('input', () => {
-    let isValid = Validation.validate($(senderEmail).val(), $(senderEmail).attr('type'));
+$(driverEmail).on('focus', () => {
+    let isValid = Validation.validate($(driverEmail).val(), $(driverEmail).attr('type'));
     if (!isValid) {
-        $(senderEmail).removeClass('is-valid').addClass('is-invalid');
+        $(driverEmail).removeClass('is-valid').addClass('is-invalid');
     } else {
-        $(senderEmail).removeClass('is-invalid').addClass('is-valid');
+        $(driverEmail).removeClass('is-invalid').addClass('is-valid');
     }
 });
 
-$(helpDeskEmail).on('input', () => {
+$(helpDeskEmail).on('focus', () => {
     let isValid = Validation.validate($(helpDeskEmail).val(), $(helpDeskEmail).attr('type'));
     if (!isValid) {
         $(helpDeskEmail).removeClass('is-valid').addClass('is-invalid');
@@ -55,6 +56,16 @@ $(helpDeskEmail).on('input', () => {
         $(helpDeskEmail).removeClass('is-invalid').addClass('is-valid');
     }
 });
+
+$(emailSubjectTitle).on('input', () => {
+    const pattern = /^[a-zA-Z0-9 .,!?]+$/;
+    let isValid = pattern.test($(emailSubjectTitle).val());
+    if (!isValid) {
+        $(emailSubjectTitle).removeClass('is-valid').addClass('is-invalid');
+    } else {
+        $(emailSubjectTitle).removeClass('is-invalid').addClass('is-valid');
+    }
+})
 
 $(msgBody).on('input', () => {
     let msgValue = $(msgBody).val().trim();  

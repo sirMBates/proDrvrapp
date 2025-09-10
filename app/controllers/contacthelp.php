@@ -1,7 +1,5 @@
 <?php
 
-/*dd($_POST);
-exit();*/
 $alert = new core\Flash();
 
 if (session_status() !== 2) {
@@ -11,16 +9,23 @@ if (session_status() !== 2) {
 $formToken = htmlspecialchars(trim($_POST['drvrtoken']));
 if ($formToken === $_SESSION['drvr_token']) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sendmsg'])) {
-        $driverName = htmlspecialchars(trim($_POST['sender_name']));
-        $driverEmail = htmlspecialchars(trim($_POST['sender_email']));
-        $helpDeskEmail = htmlspecialchars(trim($_POST['receiver']));
-        $emailSubject = htmlspecialchars(trim($_POST['mail_subject']));
+        $driverName = htmlspecialchars(trim($_POST['driverName']));
+        $driverEmail = htmlspecialchars(trim($_POST['driverEmail']));
+        $helpDeskEmail = htmlspecialchars(trim($_POST['helpDeskEmail']));
+        $emailSubject = htmlspecialchars(trim($_POST['subjectTitle']));
         $emailMessage = trim($_POST['message']);
         include_once base_path("app/models/getdrvrmodel.php");
         include_once base_path("app/classes/contact_help.php");
         $sendingInfo = new ContactHelpContr($_SESSION['driver_id'], $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage);
         $sendingInfo->contactHelpDesk();
+        $alert::setMsg('info', 'Your message was sent. You\'ll receive a response shortly.');
+        header("Location: /contact?info=message+sent");
+        exit();
     }
+} else {
+    $alert::setMsg('error', 'Unfortunately, there was an issue with your request. Please, try again.');
+    header("Location: /contact?error=page+expired");
+    exit();
 }
 
 ?>
