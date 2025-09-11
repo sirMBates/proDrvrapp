@@ -16,10 +16,10 @@ const drvrPsword = profileInputs[7];
 const drvrStatus = profileInputs[8];
 const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
-const fetchDriver = fetchDrvr;
+const getDriver = fetchDrvr;
 
 window.addEventListener('DOMContentLoaded', () => {
-    fetchDriver("https://prodriver.local/getprofile", {
+    getDriver("https://prodriver.local/getprofile", {
         mode: 'cors'
     })
         .then(data => {

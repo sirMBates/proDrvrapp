@@ -1,21 +1,27 @@
 <?php
 
-if (session_status() !== 2) {
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
+}
+
+if (!isset($_SESSION['driver_id'])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
+if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+    http_response_code(403);
+    echo json_encode(['error' => 'Direct access not allowed']);
+    exit;
 }
 
 include_once base_path("app/models/getdrvrmodel.php");
 include_once base_path("app/classes/get_drvr.php");
+header('Content-Type: application/json');
 
-$requestUri = $_SERVER['REQUEST_URI'];
-if ($requestUri === '/getprofile') {
-    header('Content-Type: application/json');
-    $getDriversProfile = new GetDrvrContr();
-    $getDriversProfile->driverInfo();
-} else {
-    headers('Content-Type: application/json');
-    http_response_code(404);
-    echo 'Not Found';
-}
+$getDriversProfile = new GetDrvrContr();
+$getDriversProfile->driverInfo();
+
 
 ?>

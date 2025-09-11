@@ -1,4 +1,5 @@
 import { fetchDrvr } from "./drvrapi";
+const getDriver = fetchDrvr;
 export class ChangeStatus {
     constructor(array, endpoint, drvrToken, bannerMsg) {
         this.array = array;
@@ -52,7 +53,7 @@ export class ChangeStatus {
     };
 
     updateDBStatus(endpoint, token, drvrstatus, stamp) {
-        fetchDrvr(endpoint, {
+        getDriver(endpoint, {
             mode: 'cors',
             credentials: 'include',
             method: 'POST',

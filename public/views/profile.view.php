@@ -60,7 +60,7 @@ include "partials/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="material-symbols-outlined fs-3 text-primary">person_check</i></span>
+                                                <span class="input-group-text"><span class="material-symbols-outlined fs-3 text-primary">person_check</span></span>
                                                 <div class="form-floating">
                                                         <input type="text" id="status" class="form-control" name="drvrstatus" placeholder="Status" disabled>
                                                         <label for="status" class="text-capitalize"><b>status</b></label>
