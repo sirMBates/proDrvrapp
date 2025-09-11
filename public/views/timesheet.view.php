@@ -66,11 +66,15 @@ include "partials/info-modal.php";
                                         </tbody>
                                 </table>
                         </div>
-                        <div class="card-footer d-inline-flex justify-content-center">
-                                <div class="my-2">
-                                        <button class="text-capitalize btn btn-lg btn-outline-primary" type="button">add info</button>
-                                        <button class="text-capitalize btn btn-lg btn-outline-primary" type="button">update & save</button>
-                                        <button class="text-capitalize btn btn-lg btn-outline-primary" type="button">submit</button>
+                        <div class="card-footer d-flex flex-column align-items-center">
+                                <div class="row my-2 col-lg-10">                        
+                                        <button id="insert-info" type="button" name="insertinfo" class="text-capitalize btn btn-lg btn-outline-primary">add info</button>
+                                </div>
+                                <div class="row my-2 col-lg-10">
+                                        <button id="update-info" type="button" name="updateinfo" class="text-capitalize btn btn-lg btn-outline-primary">update & save</button>
+                                </div>
+                                <div class="row my-2 col-lg-10">
+                                        <button id="submit-info" type="button" name="submitinfo" class="text-capitalize btn btn-lg btn-outline-primary">submit</button>
                                 </div>
                         </div>
                 </div>

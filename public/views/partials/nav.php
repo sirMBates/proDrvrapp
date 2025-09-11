@@ -1,4 +1,4 @@
-<div class="offcanvas offcanvas-start" tabindex="-1" id="useraccess" aria-labelledby="useraccessLabel">
+<div id="useraccess" class="offcanvas offcanvas-start" tabindex="-1" aria-labelledby="useraccessLabel">
         <div class="offcanvas-header bg-besttrailsclr">
                 <div id="profilecon" style="width: 60px; height: 60px;" class="border border-2 border-primary rounded d-inline-block me-2">                        
                         <label for="profile-upload"><img id="profile-pic" src="../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="mx-1 my-1"></label>

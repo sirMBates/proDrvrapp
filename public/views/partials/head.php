@@ -18,7 +18,7 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />        
         <script src="https://kit.fontawesome.com/f2acae2623.js" crossorigin="anonymous"></script>
         <script src='https://code.jquery.com/jquery-3.7.1.min.js' integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' crossorigin='anonymous'></script>
-        <link rel="icon" type="image/png" href="images-videos/logoandicons/bus-driver-icon-png-14404.png">                
+        <link rel="icon" type="image/png" sizes="50x50" href="/dist/images-videos/logoandicons/bus-driver-icon-png-14404.png">                
         <title><?= $title;?></title>
 </head>
 <body class="d-flex flex-column overflow-x-hidden vh-100 <?= urlIs('/printable') ? 'clear-bkgd' : 'align-items-center noprint';?>">
