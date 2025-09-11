@@ -183,4 +183,15 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    const screenSize = window.innerWidth;
+    const cardFooter = document.querySelector('.card-footer');
+    const cardFooterChildren = cardFooter.children;
+    if (screenSize <= 630) {
+        for (const child of cardFooterChildren) {
+            if (child.classList.contains('row')) {
+                child.classList.remove('col-lg-10');
+                child.classList.add('col-12');
+            }
+        }
+    }
 });
