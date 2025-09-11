@@ -28,6 +28,7 @@ const emergencyBtn = document.querySelectorAll('.status-emergency');
 let isActiveEmergency;
 const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
 const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontrol :)
+const getDriver = fetchDrvr;
 const statusEndpoint = "https://prodriver.local/setstatus";
 const drvrToken = document.getElementById('drvrToken').value;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
@@ -71,7 +72,7 @@ $(document).ready(() => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-        fetchDrvr("https://prodriver.local/getprofile", {
+        getDriver("https://prodriver.local/getprofile", {
                 mode: 'cors'
         })
         .then(data => {
@@ -124,7 +125,7 @@ profileInput.addEventListener('change', (e) => {
                 // formData.append('csrf_token', drvrToken);
 
                 // Upload to server
-                fetchDrvr('https://prodriver.local/setprofilepicture', {
+                getDriver('https://prodriver.local/setprofilepicture', {
                         mode: 'cors',
                         credentials: 'include',
                         method: 'POST',
@@ -133,7 +134,8 @@ profileInput.addEventListener('change', (e) => {
                 })
                 //.then(response => response.text())
                 .then(data => {
-                        alert(data);
+                        dataSent = JSON.parse(data);
+                        alert(dataSent);
                         // Reset input after successful upload
                         profileInput.value = '';
                 })

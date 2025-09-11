@@ -2,12 +2,12 @@ import { bdayCelebrationHandler } from "./celebration.js";
 import { fetchDrvr } from "./drvrapi.js";
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
-const fetchDriver = fetchDrvr;
+const getDriver = fetchDrvr;
 const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
 
-window.addEventListener('load', () => {
+window.addEventListener('DOMContentLoaded', () => {
         let dvrBirthday = $(drvrBirthDate).val();
         if ($.trim(dvrBirthday) !== '') {
                 localStorage.setItem('birthdate', $(drvrBirthDate).val());
@@ -18,7 +18,7 @@ window.addEventListener('load', () => {
                 localStorage.setItem('driverName', firstName);
         };
 
-        fetchDriver("https://prodriver.local/getprofile", { 
+        getDriver("https://prodriver.local/getprofile", { 
                 mode: 'cors' 
         })
         .then(data => {

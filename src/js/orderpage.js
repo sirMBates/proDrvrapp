@@ -8,10 +8,10 @@ const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
 const editBtn = document.querySelector('#edit');
 const completeBtn = document.querySelector('#submit-order');
-const fetchDriver = fetchDrvr;
+const getDriver = fetchDrvr;
 
 window.addEventListener('DOMContentLoaded', () => {
-    fetchDriver("https://prodriver.local/getprofile", {
+    getDriver("https://prodriver.local/getprofile", {
         mode: 'cors'
     })
     .then(data => {
@@ -25,7 +25,7 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     .catch(error => {
         console.error('There was a problem with the fetch operation:', error);
-    })
+    });
 
     clickCells.forEach(cell => {
         cell.addEventListener('click', () => {

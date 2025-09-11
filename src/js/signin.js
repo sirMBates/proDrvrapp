@@ -58,7 +58,7 @@ const paramValue = urlParams.get('success');
 if (paramValue === 'logged out') {
     setInterval(() => {
         window.location.href = '/signin';
-    }, 5000);
+    }, 1000);
 }
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');

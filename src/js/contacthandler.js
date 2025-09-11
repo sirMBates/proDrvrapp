@@ -10,10 +10,11 @@ const sendBtn = document.querySelector('#send-msg');
 const counter = document.querySelector("#charCounter");
 const emailForm = document.querySelector("#email-form");
 const maxLength = 300;
+const getDriver = fetchDrvr;
 
 window.addEventListener('DOMContentLoaded', () => {
     helpDeskEmail.value = "help-desk@prodriver.local";
-    fetchDrvr("https://prodriver.local/getprofile", {
+    getDriver("https://prodriver.local/getprofile", {
         mode: 'cors'
     })
     .then(data => {
