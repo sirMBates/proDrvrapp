@@ -1,7 +1,6 @@
 .local.env
 config.php
 tmp
-.htpasswd
 node_modules/
 .parcel-cache/
 public/dist/
