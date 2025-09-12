@@ -2,19 +2,17 @@
 
 $alert = new core\Flash();
 
-class RegProContr extends RegProInfo {
+class RegistrationContr extends RegistrationInformation {
     private $firstname;
     private $lastname;
     private $mobileNum;
     private $birthdate;
-    private $formToken;
 
-    public function __construct($firstname, $lastname, $mobileNum, $birthdate, $formToken) {
+    public function __construct($firstname, $lastname, $mobileNum, $birthdate) {
         $this->firstname = $firstname;
         $this->lastname = $lastname;
         $this->mobileNum = $mobileNum;
         $this->birthdate = $birthdate;
-        $this->formToken = $formToken;
     }
 
     public function processProfile () {
@@ -39,12 +37,6 @@ class RegProContr extends RegProInfo {
         if ($this->drvrInvalidBirthDate() === false) {
             $alert::setMsg('warning', 'Please re-enter your date of birth.');
             header("Location: /register?warning=invalid"); //birthdateNotValid
-            exit();
-        }
-
-        if ($this->enterDrvrInfo() === false) {
-            $alert::setMsg('danger', 'There seems to be a problem with your submission. Please try again!');
-            header("Location: /register?danger=invalid"); //userNotValid
             exit();
         }
 
@@ -122,24 +114,6 @@ class RegProContr extends RegProInfo {
         }
 
         if (DateTime::createFromFormat('Y-m-d', cleanDateOfBirth($getDate)) === false) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function enterDrvrInfo() {
-        $result;
-        $drvrToken = $this->formToken;
-        function cleanToken($token) {
-            $sanitizedToken = htmlspecialchars($token, ENT_QUOTES);
-            return $sanitizedToken;
-        }
-        $username = $_SESSION['user_name'];
-        $secretToken = $_SESSION['drvr_token'];
-        if (cleanToken($drvrToken) !== $secretToken && !isset($username)) {
             $result = false;
         }
         else {

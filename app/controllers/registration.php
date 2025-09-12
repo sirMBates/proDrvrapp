@@ -20,12 +20,20 @@ if ($method === 'PATCH' && $formToken === $_SESSION['drvr_token']) {
         $lastname = htmlspecialchars(trim($_POST['surname']));
         $mobileNum = htmlspecialchars(trim($_POST['mobilenum']));
         $birthdate = htmlspecialchars(trim($_POST['dateofbirth']));
-        $formToken = htmlspecialchars(trim($_POST['drvrtoken']));
         // Instantiate the add user controller class. ↓
-        include_once base_path("app/models/regprofilemodel.php");
-        include_once base_path("app/classes/completeregis.php");
-        $enterData = new RegProContr($firstname, $lastname, $mobileNum, $birthdate, $formToken);
+        include_once base_path("app/models/registrationmodel.php");
+        include_once base_path("app/classes/complete_registration.php");
+        $enterData = new RegistrationContr($firstname, $lastname, $mobileNum, $birthdate);
         $enterData->processProfile();
+        setcookie(
+            'driver_registered', 
+            'true', 
+            time() + (86400 * 365), // 1 year
+            '/',                    // path
+            'prodriver.local',      // domain
+            true,                   // secure ( works with HTTPS )
+            true                    // httponly
+        );
         // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
         $alert::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');
         header("Location: /signin?success=profile+updated");

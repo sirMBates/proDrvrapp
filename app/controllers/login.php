@@ -11,11 +11,22 @@ if (isset($_POST['loginAcct'])) {
     $password = htmlspecialchars($_POST['password']);
     $formToken = htmlspecialchars($_POST['drvrtoken']);
     // Instantiate the sign in user controller class. ↓
-    include_once base_path("app/models/drvrloginmodel.php");
-    include_once base_path("app/classes/drvrlogin.php");
+    include_once base_path("app/models/logindrvrmodel.php");
+    include_once base_path("app/classes/login_drvr.php");
     $signin = new Logincontr($username, $password);
     // Running error handlers and user signin.
     $signin->loginDriver();
+    if (!isset($_COOKIE['driver_registered'])) {
+        setcookie(
+            'driver_registered', 
+            'true', 
+            time() + (86400 * 365), // 1 year
+            '/',                    // path
+            'prodriver.local',      // domain
+            true,                   // secure ( works with HTTPS )
+            true                    // httponly
+        );
+    }
     // Redirect to home page upon successful login with valid message.
     $alert::setMsg('success', 'Hello there, '. $_SESSION['first_name'] . '!');
     header("Location: /");
