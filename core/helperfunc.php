@@ -24,3 +24,21 @@ function view($path, $attributes = []) {
     extract($attributes);
     require home_path('views/' . $path);
 }
+
+function requireLoginAjax() {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['driver_id'])) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Unauthorized']);
+        exit();
+    }
+
+    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Direct access not allowed']);
+        exit();
+    }
+}

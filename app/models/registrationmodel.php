@@ -9,7 +9,7 @@ require_once "../vendor/autoload.php";
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
 $dotenv->load();
 
-class RegProInfo {
+class RegistrationInformation {
     protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
