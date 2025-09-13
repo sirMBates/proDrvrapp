@@ -13,9 +13,17 @@ if (!in_array($method, ['PATCH'])) {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['__method'])) {
-    $method = strtoupper($_POST['__method']);
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'POST' && isset($_POST['__method'])) {
+    $override = strtoupper($_POST['__method']);
+    $allowed  = ['PUT', 'PATCH', 'DELETE'];
+
+    if (in_array($override, $allowed, true)) {
+        $method = $override;
+    }
 }
+
 
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
 $formToken = isset($_POST['drvrtoken']) ? htmlspecialchars(trim($_POST['drvrtoken'])) : null;
