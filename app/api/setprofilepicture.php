@@ -13,7 +13,6 @@ if (!in_array($method, ['PATCH'])) {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
-$method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'POST' && isset($_POST['__method'])) {
     $override = strtoupper($_POST['__method']);
