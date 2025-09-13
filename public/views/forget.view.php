@@ -12,7 +12,7 @@
                 <label for="email">Email address</label>
             </div>
             <div class="input-group">
-                    <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                    <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
             </div>
             <?php 
             $validateExpired = isset($_GET['validate']) && $_GET['validate'] === 'expired';

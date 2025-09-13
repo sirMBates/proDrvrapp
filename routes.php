@@ -21,8 +21,8 @@ $router->post('/forget', 'app/controllers/forgetpw.php');
 $router->post('/completereset', 'app/controllers/finishpwdprocess.php');
 $router->post('/reset', 'app/controllers/reset.php');
 $router->post('/setstatus', 'app/api/setstatus.php');
-$router->post('/setprofilepicture', 'app/api/setprofilepicture.php');
 $router->post('/contact', 'app/controllers/contacthelp.php');
 
 $router->patch('/register', 'app/controllers/registration.php');
 $router->patch('/profile', 'app/controllers/updateprofileacct.php');
+$router->patch('/setprofilepicture', 'app/api/setprofilepicture.php');

@@ -1,20 +1,13 @@
 <?php
 
 use core\Database;
-use Defuse\Crypto\Crypto;
-use Defuse\Crypto\Key;
-use Dotenv\Dotenv;
-require_once "../vendor/autoload.php";
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
-$dotenv->load();
 
 class ProfileImageUpload {
     protected function uploadImage($drvrid, $file) {
-        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
 
         // Create a directory for the user if it doesn't exist
-        $uploadDir = base_path('public/uploads/profiles/');
+        $uploadDir = base_path('public/uploads/profiles/' . $drvrid . '/');
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -27,7 +20,7 @@ class ProfileImageUpload {
         //move_uploaded_file($file['tmp_name'], $filePath);
 
         // Store **relative URL** in database for frontend
-        $publicPath = '/uploads/profiles/' . $filename;
+        $publicPath = '/uploads/profiles/' . $drvrid . '/' . $filename;
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {
