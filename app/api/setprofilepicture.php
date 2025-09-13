@@ -1,32 +1,58 @@
 <?php
 
-require_once base_path('core/Helperfunc.php');
-
 requireLoginAjax();
+header("Content-Type: application/json");
 
-/*if ($method === 'POST' && isset($_POST['__method'])) {
-    $method = strtoupper($_POST['__method']);
-}*/
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if (!in_array($method, ['PATCH'])) {
     http_response_code(405);
-    echo json_encode(['error' => 'Method Not Allowed']);
-    exit;
-}
-
-include_once base_path("app/models/profilepicturemodel.php");
-include_once base_path("app/classes/set_profile_pic.php");
-
-if (isset($_FILES['profileImage'])) {
-    $file = $_FILES['profileImage'];
-    $drvrPicture = new SetDrvrPictureContr($file);
-    $drvrPicture->setProfilePicture();
-    header("Content-Type: application/json");
-    http_response_code(200);
     echo json_encode([
-        'status' => 'success',
-        'message' => 'Photo uploaded'
+        'status' => 'error',
+        'message' => 'Method Not Allowed'
     ]);
     exit();
+}
+
+$method = $_SERVER['REQUEST_METHOD'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['__method'])) {
+    $method = strtoupper($_POST['__method']);
+}
+
+$headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+$formToken = isset($_POST['drvrtoken']) ? htmlspecialchars(trim($_POST['drvrtoken'])) : null;
+$sessionToken = $_SESSION['drvr_token'] ?? null;
+
+if ($sessionToken === null) {
+    http_response_code(403);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'No session token found'
+    ]);
+    exit();
+}
+
+if ($formToken !== $sessionToken && $headerToken !== $sessionToken) {
+    http_response_code(403);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Invalid CSRF token'
+    ]);
+    exit();
+}
+
+if ($method === 'PATCH') {
+    if (isset($_FILES['profileImage'])) {
+        include_once base_path("app/models/profilepicturemodel.php");
+        include_once base_path("app/classes/set_profile_pic.php");
+        $file = $_FILES['profileImage'];
+        $drvrPicture = new SetDrvrPictureContr($file);
+        $drvrPicture->setProfilePicture();
+        http_response_code(200);
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Photo uploaded!'
+        ]);
+        exit();
+    }
 }
 
 ?>

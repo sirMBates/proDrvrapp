@@ -1,16 +1,13 @@
 <?php
 
-if (session_status() !== 2) {
-    session_start();
-}
+requireLoginAjax();
 
 header('Content-Type: application/json');
 $tokenHeader = getallheaders();
 $drvrHiddenToken = isset($tokenHeader['X-CSRF-Token']) ? htmlspecialchars($tokenHeader['X-CSRF-Token'], ENT_QUOTES) : null;
-$requestUri = $_SERVER['REQUEST_URI'];
 
 if ($drvrHiddenToken === $_SESSION['drvr_token']) {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $requestUri === '/setstatus') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         include_once base_path("app/models/updatestatusmodel.php");
         include_once base_path("app/classes/update_drvr_status.php");
         $data = json_decode(file_get_contents("php://input"), true);

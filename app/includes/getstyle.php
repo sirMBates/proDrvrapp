@@ -18,7 +18,7 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='../dist/styles/style.css'>\n";
                         break;
 
-                case "/compreset":
+                case "/completereset":
                         echo "<link rel='stylesheet' href='../dist/styles/style.css'>\n";
                         break;
 

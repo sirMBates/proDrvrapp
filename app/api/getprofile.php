@@ -1,7 +1,5 @@
 <?php
 
-require_once base_path('core/Helperfunc.php');
-
 requireLoginAjax();
 
 include_once base_path("app/models/getdrvrmodel.php");

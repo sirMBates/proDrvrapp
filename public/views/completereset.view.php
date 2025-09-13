@@ -32,7 +32,7 @@
                     <p id="password-not-match" class="text-danger" hidden>Your password does not match</p>
 
                     <div class="input-group">
-                            <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                            <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                     </div>
                     
                     <div class="d-flex justify-content-center mb-3">

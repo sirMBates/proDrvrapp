@@ -122,22 +122,28 @@ profileInput.addEventListener('change', (e) => {
                 // Prepare form data for upload
                 const formData = new FormData();
                 formData.append('profileImage', file);
-                // formData.append('csrf_token', drvrToken);
+                formData.append('drvrtoken', drvrToken);
+                formData.append('__method', 'PATCH');
 
                 // Upload to server
                 getDriver('https://prodriver.local/setprofilepicture', {
                         mode: 'cors',
                         credentials: 'include',
                         method: 'POST',
-                        // headers: { 'X-CSRF-Token': drvrToken }, // if needed
+                        headers: { 
+                                'X-CSRF-Token': drvrToken
+                        }, // if needed
                         body: formData,
                 })
                 //.then(response => response.text())
                 .then(data => {
-                        dataSent = JSON.parse(data);
-                        alert(dataSent);
-                        // Reset input after successful upload
-                        profileInput.value = '';
+                        if (data.status === 'success') {
+                                alert(data.message);
+                                // Reset input after successful upload
+                                profileInput.value = '';
+                        } else {
+                                alert(data.message || 'Upload failed');
+                        }
                 })
                 .catch(error => console.error('Error uploading image:', error));
         };

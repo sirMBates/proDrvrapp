@@ -21,7 +21,7 @@ if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
                                 </div>
 
                                 <div class="input-group">
-                                        <input id="secret" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                 </div>
                                                 
                                 <div class="d-flex justify-content-center my-3 px-2">
