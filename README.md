@@ -38,6 +38,9 @@ The driver will see all information pertaining to the current trip/work order th
 + Google Fonts
 + jSignature
 + Bootstrap
++ Popper.js
++ js-confetti
++ html2pdf
 + NPM with Parcel
 + Php
 + MySql
