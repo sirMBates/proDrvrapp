@@ -54,7 +54,7 @@ if (!isset($_SESSION['drvr_token'])){
     $_SESSION['token_time'] = time(); 
 }
 else {
-    $expiration_time = 60 * 30;
+    $expiration_time = 60 * 15;
     if (time() - $_SESSION['token_time'] >= $expiration_time){
         $newToken = generateToken();
         $_SESSION['drvr_token'] = $newToken;
