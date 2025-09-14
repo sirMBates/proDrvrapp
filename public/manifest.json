@@ -1,8 +1,8 @@
 {
     "name": "Prodriver",
     "short_name": "Prodrvr",
-    "id": "/",
-    "start_url": "/",
+    "id": "/signin",
+    "start_url": "/signin",
     "scope": "/",
     "display": "standalone",
     "orientation": "any",

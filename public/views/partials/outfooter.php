@@ -8,15 +8,5 @@
 <?php
         require base_path("app/includes/getscripts.php");
 ?>
-<script>
-        // Toggle offline indicator visibility dynamically
-        window.addEventListener('online', () => {
-                document.getElementById('offline-indicator').style.display = 'none';
-        });
-        window.addEventListener('offline', () => {
-                document.getElementById('offline-indicator').style.display = 'block';
-        });
-        if (!navigator.onLine) document.getElementById('offline-indicator').style.display = 'block';
-</script>
 </body>
 </html>
