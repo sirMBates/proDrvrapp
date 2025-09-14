@@ -31,17 +31,18 @@ The driver will see all information pertaining to the current trip/work order th
 
 + Javascript
 + JQuery
++ HTML
++ CSS
++ SCSS
++ FontAwesome
++ Google Fonts
++ jSignature
++ Bootstrap
++ NPM with Parcel
 + Php
 + MySql
-+ Bootstrap
-+ Css
-+ HTML
-+ Font Awesome
-+ Google Fonts
 + Composer
-+ SCSS
 + PhpMailer
-+ jSignature
 + vlucas/Phpdotenv
 + Defuse/php-encryption
 
