@@ -12,6 +12,7 @@
         }
         ?>
         <link rel="stylesheet" href="../../dist/styles/scss/main.css">
+        <link rel="manifest" href="/manifest.json">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -19,7 +20,16 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />        
         <script src="https://kit.fontawesome.com/f2acae2623.js" crossorigin="anonymous"></script>
         <script src='https://code.jquery.com/jquery-3.7.1.min.js' integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' crossorigin='anonymous'></script>
-        <link rel="icon" type="image/png" sizes="50x50" href="/dist/images-videos/logoandicons/bus-driver-icon-png-14404.png">                
+        <link rel="icon" type="image/png" sizes="50x50" href="/dist/images-videos/logoandicons/prodrvr-bus-icon.png">                
         <title><?= $title;?></title>
 </head>
 <body class="d-flex flex-column align-items-center min-vh-100 overflow-y-scroll noprint prodrvrbkgd">
+<div class="container">
+        <button id="install-btn" style="display:none; position:fixed; bottom:1rem; right:1rem; z-index:9999; padding:0.5rem 1rem;">Install App
+        </button>
+</div>
+        <!-- Offline status indicator (top-right) -->
+<div id="offline-indicator" >
+    <i class="fas fa-wifi-slash"></i> Offline
+</div>
+

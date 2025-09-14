@@ -319,7 +319,7 @@ function viewablePayCard () {
                 viewPayCard.classList.add('d-none');
         }
 
-        if (myCurrentView !== '/printable') {
+        if (myCurrentView !== '/printable' || myCurrentView !== '/offline') {
                 viewPayCard.childNodes[3].classList.add('d-none');
                 viewPayCard.childNodes[1].classList.remove('d-none');
                 viewPayCard.classList.remove('dropdown-center');

@@ -44,8 +44,9 @@ The driver will see all information pertaining to the current trip/work order th
 + NPM with Parcel
 + Php
 + MySql
-+ Composer
 + PhpMailer
++ PhpSpreadsheet
 + vlucas/Phpdotenv
 + Defuse/php-encryption
++ Composer
 

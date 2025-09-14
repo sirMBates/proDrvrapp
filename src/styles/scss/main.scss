@@ -54,3 +54,29 @@ body, .offcanvas-body {
         display: none;
     }
 }
+
+#offline-indicator {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin: 1rem;
+    background-color: #ff4d4f;
+    color: #fff;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-weight: bold;
+    z-index: 9999;
+    font-size: 0.9rem;
+}
+
+#offline-icon {
+    display: none;
+    position: fixed; 
+    top: 1rem; 
+    right: 1rem; 
+    color: #ff4d4f; 
+    font-size: 1.2rem; 
+    z-index: 9999;
+}
+
