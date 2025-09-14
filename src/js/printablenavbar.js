@@ -9,7 +9,7 @@ const btnTheme = document.querySelector('#themeBtn').parentElement;
 
 function changeDrvrMenu () {
     let currentPage = window.location.pathname;
-    if (currentPage === '/printable') {
+    if (currentPage === '/printable' || currentPage === '/offline') {
         menuCardOpts.classList.remove('d-none');
         btnTheme.classList.add('d-none');
     } else {
