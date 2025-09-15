@@ -17,24 +17,6 @@
                                 <li class="dropdown-item"><a href="tel:646-301-5715"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
                         </ul>
                 </div>
-                <div class="dropdown mt-3">
-                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"><span class="px-2 fa-solid fa-user-tie"></span>Web Admin</button>
-                        <ul class="dropdown-menu">
-                                <li class="dropdown-item"><a href="/contact"><i class="px-2 fa-solid fa-envelope"></i>Send email</a></li>
-                        </ul>
-                </div>
-                <div class="dropdown mt-3 d-none">
-                        <a href="/printable" class="btn btn-secondary d-none" role="button"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</a>
-                                
-                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</button>
-                        <ul class="dropdown-menu">
-                                <li><a class="dropdown-item text-btd-blue-dodger" href='#'><i class="px-2 fa-solid fa-print"></i>Print</a></li>
-                                <li><a class="dropdown-item text-btd-blue-dodger" href='#'><i class="px-2 fa-solid fa-file-export"></i>Save & Download</a></li>
-                        </ul>
-                </div>
-                <div class="dropdown mt-3">
-                        <a href="#" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Help</a>
-                </div>
                 <div class="dropdown mt-3 d-none">                        
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="px-2 fa-solid fa-square-poll-horizontal"></i>Switch Status</button>
                         <ul class="dropdown-menu">
@@ -45,6 +27,24 @@
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-working-assignment" role="button"><i class="px-2 fa-solid fa-clipboard"></i>On Assignment</a></li>
                                 <li><a href='#' class="dropdown-item btn text-danger text-center set-status status-emergency" role="button">Emergency</a></li>
                         </ul>
+                </div>
+                <div class="dropdown mt-3">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"><span class="px-2 fa-solid fa-user-tie"></span>Web Admin</button>
+                        <ul class="dropdown-menu">
+                                <li class="dropdown-item"><a href="/contact"><i class="px-2 fa-solid fa-envelope"></i>Send email</a></li>
+                        </ul>
+                </div>
+                <!--<div class="dropdown mt-3 d-none">
+                        <a href="/printable" class="btn btn-secondary d-none" role="button"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</a>
+                                
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</button>
+                        <ul class="dropdown-menu">
+                                <li><a class="dropdown-item text-btd-blue-dodger" href='#'><i class="px-2 fa-solid fa-print"></i>Print</a></li>
+                                <li><a class="dropdown-item text-btd-blue-dodger" href='#'><i class="px-2 fa-solid fa-file-export"></i>Save & Download</a></li>
+                        </ul>
+                </div>-->
+                <div class="dropdown mt-3">
+                        <a href="#" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Help</a>
                 </div>
                 <div class="dropdown mt-3">
                         <a href="/logout" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-right-from-bracket"></span>Sign Out</a>

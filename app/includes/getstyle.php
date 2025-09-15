@@ -42,10 +42,6 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='../dist/styles/tsheet.css'>\n";
                         break;
 
-                case "/printable":
-                        echo "<link rel='stylesheet' href=''>\n";
-                        break;
-
                 case "/views/404.php":
                         return;
                         break;

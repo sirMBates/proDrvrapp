@@ -22,7 +22,7 @@ let isDarkMode;
 const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn.nextElementSibling;
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
-const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[9]//.firstElementChild;
+const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[3]//.firstElementChild;
 const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
 const emergencyBtn = document.querySelectorAll('.status-emergency');
 let isActiveEmergency;
@@ -310,23 +310,6 @@ function activeLink () {
         })
 }
 activeLink();
-
-//View pay card link in driver menu when on payroll page.
-function viewablePayCard () {
-        if (myCurrentView === '/timesheet') {
-                viewPayCard.classList.remove('d-none');        
-        } else {
-                viewPayCard.classList.add('d-none');
-        }
-
-        if (myCurrentView !== '/printable' || myCurrentView !== '/offline') {
-                viewPayCard.childNodes[3].classList.add('d-none');
-                viewPayCard.childNodes[1].classList.remove('d-none');
-                viewPayCard.classList.remove('dropdown-center');
-                viewPayCard.classList.add('dropdown');        
-        }
-};
-$(window).on('load', viewablePayCard);
 
 window.addEventListener('load', () => {
         if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {

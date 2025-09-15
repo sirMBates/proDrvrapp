@@ -21,10 +21,6 @@ function getClockandMainOrNav($value) {
         case '/completereset':
             return;
             break;
-
-        case '/printable': 
-            echo "<script type='module' src='../dist/js/printablenavbar.js'></script>\n\n";
-            break;
         
         default:
             echo "<script type='module' src='../dist/js/clock.js'></script>\n";

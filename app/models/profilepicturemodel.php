@@ -2,12 +2,17 @@
 
 use core\Database;
 
-class ProfileImageUpload {
+class ProfileImageUpload extends GetDriver {
     protected function uploadImage($drvrid, $file) {
         $db = new Database;
-
+        $driverInformation = $this->getDrvrInfo($drvrid);
+        $operatorName = [
+            $driverInformation['firstName'],
+            $driverInformation['lastName']
+        ];
+        $firstInitial = $operatorName[0][0];
         // Create a directory for the user if it doesn't exist
-        $uploadDir = base_path('public/uploads/profiles/' . $drvrid . '/');
+        $uploadDir = base_path('public/uploads/profiles/' . $firstInitial . $operatorName[1] . '-' . $drvrid . '/');
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -20,7 +25,7 @@ class ProfileImageUpload {
         //move_uploaded_file($file['tmp_name'], $filePath);
 
         // Store **relative URL** in database for frontend
-        $publicPath = '/uploads/profiles/' . $drvrid . '/' . $filename;
+        $publicPath = '/uploads/profiles/' . $firstInitial . $operatorName[1] . '-' . $drvrid . '/' . $filename;
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {

@@ -48,6 +48,7 @@ if ($formToken !== $sessionToken && $headerToken !== $sessionToken) {
 
 if ($method === 'PATCH') {
     if (isset($_FILES['profileImage'])) {
+        include_once base_path("app/models/getdrvrmodel.php");
         include_once base_path("app/models/profilepicturemodel.php");
         include_once base_path("app/classes/set_profile_pic.php");
         $file = $_FILES['profileImage'];
