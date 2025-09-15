@@ -7,16 +7,16 @@ const downloadLink = printLink.nextElementSibling;
 const navbar = document.querySelector('nav');
 const btnTheme = document.querySelector('#themeBtn').parentElement;
 
-function changeDrvrMenu () {
+/*function changeDrvrMenu () {
     let currentPage = window.location.pathname;
-    if (currentPage === '/printable' || currentPage === '/offline') {
+    if (currentPage === '/printable') {
         menuCardOpts.classList.remove('d-none');
         btnTheme.classList.add('d-none');
     } else {
         menuCardOpts.classList.add('d-none');
     }
 }
-$(window).on('load', changeDrvrMenu);
+$(window).on('load', changeDrvrMenu);*/
 
 // This is for the print btn in driver menu.
 printCurrentPage.printPage(printLink);
