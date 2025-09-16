@@ -25,6 +25,13 @@ include "partials/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
+                                                <span class="input-group-text"><i class="fa-regular fa-id-card fs-4 text-primary"></i></span>
+                                                <div class="form-floating">
+                                                        <input type="text" id="operatorId" class="form-control" name="operatorid" placeholder="Operator Id" disabled>
+                                                        <label for="operatorId" class="text-capitalize"><b>Operator Id</b></label>
+                                                </div>
+                                        </div>
+                                        <div class="input-group mb-2">
                                                 <span class="input-group-text"><button id="email-change" type="button" class="btn"><i class="fa-regular fa-envelope fs-4 text-primary"></i></button></span>
                                                 <div class="form-floating">
                                                         <input type="email" id="email" class="form-control" name="email" placeholder="email" disabled>

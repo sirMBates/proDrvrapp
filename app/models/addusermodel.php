@@ -11,24 +11,26 @@ class AddedDrvr {
         $alert = new Flash();
         $pdo = $db->connect();
         $sql = "INSERT INTO driver (
-                username, email, password, first_name, last_name, mobile_number, birth_date, profile_picture) 
-                VALUES (?,?,?,?,?,?,?,?)";
+                username, email, operator_id, password, first_name, last_name, mobile_number, birth_date, profile_picture) 
+                VALUES (?,?,?,?,?,?,?,?,?)";
         $stmt = $db->connect()->prepare($sql);
 
         $hashPsW = password_hash($password, PASSWORD_BCRYPT);
         $tmpFirstName = '';
         $tmpLastName = '';
         $tmpMobileNum = '';
+        $tmpOperatorId = '';
         $tmpBirthDate = NULL;
         $tmpProfilePicture = NULL;
         $stmt->bindParam(1, $username);
         $stmt->bindParam(2, $email);
-        $stmt->bindParam(3, $hashPsW);
-        $stmt->bindParam(4, $tmpFirstName);
-        $stmt->bindParam(5, $tmpLastName);
-        $stmt->bindParam(6, $tmpMobileNum);
-        $stmt->bindParam(7, $tmpBirthDate);
-        $stmt->bindParam(8, $tmpProfilePicture);
+        $stmt->bindParam(3, $tmpOperatorId);
+        $stmt->bindParam(4, $hashPsW);
+        $stmt->bindParam(5, $tmpFirstName);
+        $stmt->bindParam(6, $tmpLastName);
+        $stmt->bindParam(7, $tmpMobileNum);
+        $stmt->bindParam(8, $tmpBirthDate);
+        $stmt->bindParam(9, $tmpProfilePicture);
 
         $result = $stmt->execute();
 
@@ -39,6 +41,7 @@ class AddedDrvr {
         }
 
         $drvr_id = $pdo->lastInsertId();
+        $_SESSION['driver_id'] = $drvr_id;
         $token = '';
         $tokenExpTime = NULL;
         $sql2 = "INSERT INTO pwd_reset (email, driver_id, reset_token, token_exp_time)

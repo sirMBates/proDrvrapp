@@ -28,7 +28,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
             if (driver) {
                 fullname.textContent = `${driver['lastName']}, ${driver['firstName']}`;
-                drvrId.textContent = driver['driverid'];
+                drvrId.textContent = driver['operatorid'];
             }
         })
         .catch(error => {

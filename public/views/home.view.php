@@ -16,8 +16,8 @@
                         <table id="dashboard-info" class="table m-auto" style="width: 1200px;">
                                 <thead class="table-info text-capitalize">
                                         <tr>
-                                                <th scope="col">driver name</th>
-                                                <th scope="col">driver id</th>
+                                                <th scope="col">operator name</th>
+                                                <th scope="col">operator id</th>
                                                 <th scope="col">garage report date</th>
                                                 <th scope="col">garage report time</th>
                                                 <th scope="col">loc. spot time</th>

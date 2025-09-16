@@ -8,12 +8,13 @@ const phoneChangeBtn = document.querySelector('#phone-change');
 const pwdChangeBtn = document.querySelector('#pwd-change');
 const profileInputs = document.querySelectorAll('input');
 const drvrFullName = profileInputs[2];
-const drvrEmail = profileInputs[3];
-const drvrBirthDate = profileInputs[4];
-const drvrPhoneNumber = profileInputs[5];
-const drvrUserName = profileInputs[6];
-const drvrPsword = profileInputs[7];
-const drvrStatus = profileInputs[8];
+const operatorID = profileInputs[3];
+const drvrEmail = profileInputs[4];
+const drvrBirthDate = profileInputs[5];
+const drvrPhoneNumber = profileInputs[6];
+const drvrUserName = profileInputs[7];
+const drvrPsword = profileInputs[8];
+const drvrStatus = profileInputs[9];
 const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
 const getDriver = fetchDrvr;
@@ -26,6 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const driver = data;
             if (driver) {
                 drvrFullName.value = `${driver['firstName']} ${driver['lastName']}`;
+                operatorID.value = driver['operatorid'];
                 drvrEmail.value = driver['email'];
                 drvrBirthDate.value = driver['birthdate'];
                 drvrPhoneNumber.value = driver['mobileNumber'];
@@ -69,6 +71,16 @@ $(drvrFullName).on('input', () => {
     } else {
         $(drvrFullName).removeClass('is-invalid');
         $(drvrFullName).addClass('is-valid');
+    }
+})
+
+$(operatorID).on('input', () => {
+    let isValid = Validation.validate($(operatorID).val(), $(operatorID).attr('type'));
+    if (!isValid) {
+        $(operatorID).addClass('is-invalid');
+    } else {
+        $(operatorID).removeClass('is-invalid');
+        $(operatorID).addClass('is-valid');
     }
 })
 

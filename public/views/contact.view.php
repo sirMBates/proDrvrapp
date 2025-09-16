@@ -13,8 +13,10 @@ include "partials/info-modal.php";
             </div>
             <div class="card-body">
             <form id="email-form" action="" method="POST" name="emailcontactform" class="needs-validation" novalidate>
-                <div class="input-group">
-                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                <div class="form-floating mb-3 position-relative">
+                    <input id="operatorid" type="text" class="form-control fs-4 rounded-2" name="operatorid" placeholder="Operator Id" readonly required>
+                    <label for="operatorid">Operator Id</label>
                 </div>
                 <div class="form-floating mb-3 position-relative">
                     <input id="drvr-name" type="text" class="form-control fs-4 rounded-2" name="driverName" placeholder="Full name" readonly required>

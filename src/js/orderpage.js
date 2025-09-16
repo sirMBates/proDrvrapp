@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
         const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
         if (driver) {
-            primaryDrvrId.textContent = driver['driverid'];
+            primaryDrvrId.textContent = driver['operatorid'];
             primaryDrvrName.textContent = `${driver['lastName']}, ${driver['firstName']}`;
         }
     })

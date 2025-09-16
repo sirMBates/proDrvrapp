@@ -1,6 +1,6 @@
 // This file contains validation logic for various input types using regular expressions.
 const namePattern = /^[a-zA-Z]{1,}$/;
-const statusPattern = /^[a-zA-Z ]{1,}$/;
+const statusPattern = /^(?!.*-.*-)[a-zA-Z0-9 \-]+$/;
 const numberPattern = /^[0-9]{1,}$/;
 const phoneNumberPattern = /^\d{10}$/
 const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])$/;

@@ -4,14 +4,16 @@ use core\Flash;
 
 class ContactHelpContr extends GetDriver {
     private $driverid;
+    private $operatorid;
     private $driverName;
     private $driverEmail;
     private $helpDeskEmail;
     private $emailSubject;
     private $emailMessage;
 
-    public function __construct($driverid, $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage) {
+    public function __construct($driverid, $operatorid, $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage) {
         $this->driverid = $driverid;
+        $this->operatorid = $operatorid;
         $this->driverName = $driverName;
         $this->driverEmail = $driverEmail;
         $this->helpDeskEmail = $helpDeskEmail;
@@ -24,6 +26,12 @@ class ContactHelpContr extends GetDriver {
         if ($this->isEmptyInfo()) {
             $alert::setMsg('error', 'Sorry, there seems to be a problem! Please, try again.');
             header("Location: /contact?error=missing+message");
+            exit();
+        }
+
+        if (!$this->checkCompanyId()) {
+            $alert::setMsg('error', "There seems to be an issue with your authorization. Try again!");
+            header("Location: /contact?error=id+not+match");
             exit();
         }
 
@@ -50,6 +58,7 @@ class ContactHelpContr extends GetDriver {
     private function isEmptyInfo(): bool {
         $driverInfo = [
             $this->driverid,
+            $this->operatorid,
             $this->driverName,
             $this->driverEmail,
             $this->helpDeskEmail,
@@ -63,6 +72,16 @@ class ContactHelpContr extends GetDriver {
             }
         }
         return false;
+    }
+
+    private function checkCompanyId() {
+        $result;
+        if (!preg_match("/^[a-zA-Z0-9\-]{1,}$/", $this->operatorid)) {
+            $result = false;
+        } else {
+            $result = true;
+        }
+        return $result;
     }
 
     private function checkDriverExist(): bool {
@@ -109,7 +128,7 @@ class ContactHelpContr extends GetDriver {
     }
     
     private function checkEmailMessage() {
-        $textPattern = "/^[a-zA-Z0-9\s.,!?\"'()\-\@#%$&_+=:;\/\n\r\t\p{Extended_Pictographic}]{20,300}$/u";
+        $textPattern = "/^[a-zA-Z0-9\s.,!?\"'()\-\@#%$&_+=:;\/\n\r\t\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}]{20,300}$/u";
         $result;
         if (!preg_match($textPattern, $this->emailMessage)) {
             $result = false;
@@ -122,7 +141,7 @@ class ContactHelpContr extends GetDriver {
     private function sendEmail() {
         $alert = new Flash();
         $mail = require_once base_path("core/emailSetup.php");
-        $mail->setFrom($this->driverEmail, $this->driverName);
+        $mail->setFrom($this->driverEmail, $this->driverName . '-' . $this->operatorid);
         $mail->addAddress($this->helpDeskEmail);
         $mail->isHTML(false);
         $mail->CharSet = 'UTF-8';

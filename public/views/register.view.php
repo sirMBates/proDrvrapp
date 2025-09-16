@@ -47,9 +47,11 @@ include "partials/flashmessage.php";
                                         <div class="invalid-feedback fs-5"><strong>Enter your birthdate.</strong></div>
                                 </div>
 
-                                <div class="input-group">
-                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                                </div>
+                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+
+                                <input id="companyId" type="hidden" class="form-control" name="companyid" value="<?= $_SESSION['driver_id']?>">
+
+                                <input id="newOperatorId" type="hidden" class="form-control" name="operatorid" value="" required>
 
                                 <div id="save_btn_box" class="col-12 row mx-auto mb-3">
                                         <button id="register" type="submit" name="reginfo" class="btn btn-primary btn-lg text-uppercase">save & log-in</button>

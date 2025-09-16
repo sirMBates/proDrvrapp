@@ -10,24 +10,26 @@ $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
 $dotenv->load();
 
 class RegistrationInformation {
-    protected function addDriverDetails($firstname, $lastname, $mobileNum, $birthdate, $username) {
+    protected function addDriverDetails($newCompanyId, $firstname, $lastname, $mobileNum, $birthdate, $username) {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
         $sql = "UPDATE driver 
-                SET first_name = ?, last_name = ?, mobile_number = ?, birth_date = ? 
+                SET operator_id = ?, first_name = ?, last_name = ?, mobile_number = ?, birth_date = ? 
                 WHERE username = ?";
         $stmt = $db->connect()->prepare($sql);
 
+        $encryptedOperatorId = Crypto::encrypt($newCompanyId, $key);
         $encryptedFirstName = Crypto::encrypt($firstname, $key);
         $encryptedLastName = Crypto::encrypt($lastname, $key);
         $encryptedMobileNum = Crypto::encrypt($mobileNum, $key);
         $encryptedBirthdate = Crypto::encrypt($birthdate, $key);
-        $stmt->bindParam(1, $encryptedFirstName);
-        $stmt->bindParam(2, $encryptedLastName);
-        $stmt->bindParam(3, $encryptedMobileNum);
-        $stmt->bindParam(4, $encryptedBirthdate);
-        $stmt->bindParam(5, $username);
+        $stmt->bindParam(1, $encryptedOperatorId);
+        $stmt->bindParam(2, $encryptedFirstName);
+        $stmt->bindParam(3, $encryptedLastName);
+        $stmt->bindParam(4, $encryptedMobileNum);
+        $stmt->bindParam(5, $encryptedBirthdate);
+        $stmt->bindParam(6, $username);
 
         $result = $stmt->execute();
         if (!$result) {
