@@ -3,12 +3,14 @@
 $alert = new core\Flash();
 
 class RegistrationContr extends RegistrationInformation {
+    private $newCompanyId;
     private $firstname;
     private $lastname;
     private $mobileNum;
     private $birthdate;
 
-    public function __construct($firstname, $lastname, $mobileNum, $birthdate) {
+    public function __construct($newCompanyId, $firstname, $lastname, $mobileNum, $birthdate) {
+        $this->newCompanyId = $newCompanyId;
         $this->firstname = $firstname;
         $this->lastname = $lastname;
         $this->mobileNum = $mobileNum;
@@ -40,12 +42,19 @@ class RegistrationContr extends RegistrationInformation {
             exit();
         }
 
-        $this->addDriverDetails($this->firstname, $this->lastname, $this->mobileNum, $this->birthdate, $_SESSION['user_name']);
+        if (!$this->checkCompanyId()) {
+            $alert::setMsg('danger', 'A problem arised! Please try again.');
+            header("Location: /register?danger=failed+op+id");
+            exit();
+        }
+
+        $this->addDriverDetails($this->newCompanyId, $this->firstname, $this->lastname, $this->mobileNum, $this->birthdate, $_SESSION['user_name']);
     }
 
     private function isEmpty() {
         $result;
         $dataEntry = [
+            $this->newCompanyId,
             $this->firstname, 
             $this->lastname, 
             $this->mobileNum, 
@@ -117,6 +126,16 @@ class RegistrationContr extends RegistrationInformation {
             $result = false;
         }
         else {
+            $result = true;
+        }
+        return $result;
+    }
+
+    private function checkCompanyId() {
+        $result;
+        if (!preg_match("/^[a-zA-Z0-9\-]{1,}$/", $this->newCompanyId)) {
+            $result = false;
+        } else {
             $result = true;
         }
         return $result;

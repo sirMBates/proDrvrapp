@@ -7,6 +7,9 @@ const fornameInput = inputChecked[0];
 const surnameInput = inputChecked[1];
 const mobileNumInput = inputChecked[2];
 const birthdateInput = inputChecked[3];
+const dbDrvrId = document.querySelector('#companyId').value;
+const newOpId = document.querySelector('#newOperatorId');
+const registerAcct = document.querySelector('#acct_info');
 
 $(function () {
     $(fornameInput).on('input', () => {
@@ -65,8 +68,21 @@ $(function () {
         }
     })
 
+    function createOperatorId (value) {
+        let currentId = value;
+        let beginIdWith = 'BTT';
+        let newIDNumber = currentId.padStart(5, '0');
+        let newOperatorId = `${beginIdWith}-${newIDNumber}`;
+        newOpId.value = newOperatorId;
+        return newOperatorId;
+    };
+    console.log(createOperatorId(dbDrvrId));
+
     $(saveBtn).on('submit', () => {
+        //e.preventDefault;
+        //createOpId.value = createOperatorId(createOpId);
         return formValidation();
+        //registerAcct.submit();
     })
 });
 

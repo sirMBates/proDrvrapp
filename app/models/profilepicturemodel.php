@@ -6,26 +6,27 @@ class ProfileImageUpload extends GetDriver {
     protected function uploadImage($drvrid, $file) {
         $db = new Database;
         $driverInformation = $this->getDrvrInfo($drvrid);
-        $operatorName = [
+        $operatorBasicInfo = [
             $driverInformation['firstName'],
-            $driverInformation['lastName']
+            $driverInformation['lastName'],
+            $driverInformation['operatorid']
         ];
-        $firstInitial = $operatorName[0][0];
+        $firstInitial = $operatorBasicInfo[0][0];
         // Create a directory for the user if it doesn't exist
-        $uploadDir = base_path('public/uploads/profiles/' . $firstInitial . $operatorName[1] . '-' . $drvrid . '/');
+        $uploadDir = base_path('public/uploads/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/');
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
 
         // Create a unique filename using the driver's ID and current timestamp
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = strtolower($drvrid . '_' . time() . '.' . $extension);
+        $filename = strtolower($operatorBasicInfo[2] . '_' . time() . '.' . $extension);
         $filePath = $uploadDir . $filename;
 
         //move_uploaded_file($file['tmp_name'], $filePath);
 
         // Store **relative URL** in database for frontend
-        $publicPath = '/uploads/profiles/' . $firstInitial . $operatorName[1] . '-' . $drvrid . '/' . $filename;
+        $publicPath = '/uploads/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/' . $filename;
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {

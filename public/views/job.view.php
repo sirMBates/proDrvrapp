@@ -20,8 +20,8 @@ include "partials/info-modal.php"
                                         <thead class="table-info text-capitalize">
                                                 <tr class="text-center">
                                                         <th scope="col">coach id</th>
-                                                        <th scope="col">driver id</th>
-                                                        <th scope="col">name</th>
+                                                        <th scope="col">operator id</th>
+                                                        <th scope="col">operator name</th>
                                                         <th scope="col">order#</th>
                                                         <th scope="col">#coaches</th>
                                                 </tr>

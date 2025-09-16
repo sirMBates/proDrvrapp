@@ -24,6 +24,7 @@ class GetDriver {
             throw new Exception("Driver not found");
         }
 
+        $dbOperatorId = Crypto::decrypt($result['operator_id'], $key);
         $dbFirstName = Crypto::decrypt($result['first_name'], $key);
         $dbLastName = Crypto::decrypt($result['last_name'], $key);
         $dbMobileNum = Crypto::decrypt($result['mobile_number'], $key);
@@ -34,9 +35,9 @@ class GetDriver {
             $result['profile_picture'] = NULL;
         }
         return [
-            'driverid' => $result['driver_id'],
             'username' => $result['username'],
             'email' => $result['email'],
+            'operatorid' => $dbOperatorId,
             'firstName' => $dbFirstName,
             'lastName' => $dbLastName,
             'mobileNumber' => $dbMobileNum,

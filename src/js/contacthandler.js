@@ -2,6 +2,7 @@ import { Validation } from "./validation";
 import formValidation from "./messagevalidation";
 import { fetchDrvr } from "./drvrapi";
 const driverName = document.querySelector('#drvr-name');
+const operatorId = document.querySelector('#operatorid');
 const driverEmail = document.querySelector('#drvr-email');
 const helpDeskEmail = document.querySelector('#help-email');
 const emailSubjectTitle = document.querySelector('#mail-subject-title');
@@ -21,6 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const driver = data;
         if (driver) {
             driverName.value = `${driver['firstName']} ${driver['lastName']}`;
+            operatorId.value = driver['operatorid'];
             driverEmail.value = driver['email'];
         }
     })
@@ -28,6 +30,15 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error('Sorry, we had a problem: ', error);
     });
 });
+
+$(operatorId).on('focus', () => { 
+    let isValid = Validation.validateStatus($(operatorId).val(), $(operatorId).attr('type'));
+    if (!isValid) {
+        $(operatorId).removeClass('is-valid').addClass('is-invalid');
+    } else {
+        $(operatorId).removeClass('is-invalid').addClass('is-valid');
+    }
+})
 
 $(driverName).on('focus', () => {
     let getDrvrName = driverName.value;
