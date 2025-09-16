@@ -76,6 +76,7 @@ $(function () {
         newOpId.value = newOperatorId;
         return newOperatorId;
     };
+createOperatorId(dbDrvrId);
 
     $(saveBtn).on('submit', () => {
         return formValidation();
