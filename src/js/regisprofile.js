@@ -70,19 +70,15 @@ $(function () {
 
     function createOperatorId (value) {
         let currentId = value;
-        let beginIdWith = 'BTT';
+        let prefix = 'PRODRVR';
         let newIDNumber = currentId.padStart(5, '0');
-        let newOperatorId = `${beginIdWith}-${newIDNumber}`;
+        let newOperatorId = `${prefix}-${newIDNumber}`;
         newOpId.value = newOperatorId;
         return newOperatorId;
     };
-    console.log(createOperatorId(dbDrvrId));
 
     $(saveBtn).on('submit', () => {
-        //e.preventDefault;
-        //createOpId.value = createOperatorId(createOpId);
         return formValidation();
-        //registerAcct.submit();
     })
 });
 
