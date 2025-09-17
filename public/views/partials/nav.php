@@ -58,27 +58,51 @@
                 </div>
         </div>
 </div>
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-besttrailsclr container-fluid">
-        <div class="container-fluid">
-                <a class="navbar-brand m-0" data-bs-toggle="offcanvas" role="button" aria-controls="useraccess" href="#useraccess"><img src="../../dist/images-videos/logoandicons/prodrvr-bus-icon.png" alt="N/A" width="50" height="50" class="d-inline-block align-text-center"></a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+<div class="sticky-top shadow" style="width: 100vw;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-besttrailsclr px-3 w-100">
+                <div class="container-fluid">
+                        <a class="navbar-brand m-0" data-bs-toggle="offcanvas" role="button" aria-controls="useraccess" href="#useraccess"><img src="../../dist/images-videos/logoandicons/prodrvr-bus-icon.png" alt="N/A" width="50" height="50" class="d-inline-block align-text-center"></a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                                <li class="nav-item">
-                                        <a class="nav-link" href="/"><i class="px-2 fa-solid fa-house"></i>Home</a>
-                                </li>
-                                <li class="nav-item">
-                                        <a class="nav-link" href="/orders"><i class="px-2 fa-solid fa-file"></i>Job Order</a>
-                                </li>
-                                <li class="nav-item">
-                                        <a class="nav-link" href="/profile"><i class="px-2 fa-solid fa-user"></i>My Profile</a>
-                                </li>
-                                <li class="nav-item">
-                                        <a class="nav-link" href="/timesheet"><i class="px-2 fa-solid fa-file-invoice-dollar"></i>Summary</a>
-                                </li>                                                                
-                        </ul>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                        <li class="nav-item">
+                                                <a class="nav-link" href="/"><i class="px-2 fa-solid fa-house"></i>Home</a>
+                                        </li>
+                                        <li class="nav-item">
+                                                <a class="nav-link" href="/orders"><i class="px-2 fa-solid fa-file"></i>Job Order</a>
+                                        </li>
+                                        <li class="nav-item">
+                                                <a class="nav-link" href="/profile"><i class="px-2 fa-solid fa-user"></i>My Profile</a>
+                                        </li>
+                                        <li class="nav-item">
+                                                <a class="nav-link" href="/timesheet"><i class="px-2 fa-solid fa-file-invoice-dollar"></i>Summary</a>
+                                        </li>                                                                
+                                </ul>
+                        </div>
                 </div>
-        </div>
-</nav>
+        </nav>
+        <nav id="infobar" class="navbar bg-btd-gray-dark py-0 w-100" style="height: 25px;">
+                <div class="container-fluid d-flex justify-content-between align-items-center" style="height: 100%;">
+                        <div id="title" class="text-uppercase text-light d-flex align-items-center m-0 ps-3"
+         style="font-size: clamp(0.6rem, 1.5vw, 0.8rem); line-height: 1;">pro-driver
+                        </div>
+                        <div id="clock_container" class="d-flex flex-row text-capitalize" style="font-size: clamp(0.6rem, 1.5vw, 0.8rem); line-height: 1;">
+                                <div id="dateCon" class="d-inline-flex me-1">
+                                        <div class="text-btd-blue-bright mx-1"></div>
+                                        <div class="text-btd-blue-bright mx-1"></div>
+                                        <div class="text-btd-blue-bright mx-1"></div>
+                                        <div class="text-btd-blue-bright mx-1"></div>
+                                </div>
+                                <div id="timeCon" class="d-inline-flex">
+                                        <div class="container-xs mx-1 text-light"></div>
+                                        <div class="container-xs mx-1 text-light blink">:</div>
+                                        <div class="container-xs mx-1 text-light"></div>
+                                        <div class="container-xs mx-1 text-light"></div>
+                                        <div class="container-xs mx-1 text-light"></div>
+                                </div>
+                        </div>
+                </div>
+        </nav>
+</div>
