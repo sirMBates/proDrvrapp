@@ -1,3 +1,21 @@
+#infobar {
+    height: 25px;
+}
+
+#infobar > div {
+    height: 100%;
+}
+
+#infobar #title {
+    text-shadow: -1px -1px 0 #4c4c4c, 1px 1px 0 #ececec !important;
+    font-weight: 500 !important;
+}
+
+#infobar #title, #clock_container {
+    font-size: clamp(0.6rem, 1.5vw, 0.8rem); 
+    line-height: 1;
+}
+
 header {
     background: url("../images-videos/headerbkgd.jpg") no-repeat scroll 35% 55%;
     background-size: cover;
@@ -51,7 +69,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 #clock_container {
     font-family: "Orbitron", sans-serif;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .blink {

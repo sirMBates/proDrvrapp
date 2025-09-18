@@ -2,8 +2,6 @@
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
-$alert = new \core\Flash;
-include "partials/flashmessage.php";
 include "partials/info-modal.php"
 ?>       
 <main class="w-100 d-flex flex-column justify-content-center p-1">
@@ -12,9 +10,9 @@ include "partials/info-modal.php"
                         <div class="card-header bg-besttrailsclr">
                                 <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
                         </div>
-                        <div class="input-group">
-                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                        </div>
+                        
+                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+
                         <div class="card-body overflow-x-auto">                        
                                 <table id="tableA" class="table m-auto" style="width: 1200px;">
                                         <thead class="table-info text-capitalize">

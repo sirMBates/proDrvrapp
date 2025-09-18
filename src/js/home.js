@@ -3,7 +3,7 @@ import { fetchDrvr } from "./drvrapi.js";
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
 const getDriver = fetchDrvr;
-const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
+const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
 

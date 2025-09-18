@@ -1,11 +1,9 @@
 <?php
-        require "partials/head.php";
-        require "partials/nav.php";
-        require "partials/banner.php";
-        $alert = new core\Flash();
-        include "partials/flashmessage.php";
-        include "partials/info-modal.php";
-        include "partials/custom-modal.php";
+require "partials/head.php";
+require "partials/nav.php";
+require "partials/banner.php";
+include "partials/info-modal.php";
+include "partials/custom-modal.php";
 ?>
 <main class="container-fluid mb-1">
         <div class="card mb-auto">
@@ -35,9 +33,8 @@
                                         </tr>
                                 </tbody>
                                 <form>
-                                        <div class="input-group">
-                                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                                        </div>
+                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                        
                                         <div class="input-group">
                                                 <input id="drvrbday" type="hidden" class="form-control" value="<?php if (isset($_SESSION['birth_date'])) {
                                                         $formatDate = date('m-d-Y', strtotime($_SESSION['birth_date']));

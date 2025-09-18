@@ -31,7 +31,7 @@ const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontr
 const getDriver = fetchDrvr;
 const statusEndpoint = "https://prodriver.local/setstatus";
 const drvrToken = document.getElementById('drvrToken').value;
-const bannerMsg = document.querySelector('header').childNodes[3].childNodes[3];
+const statusMsg = document.querySelector('#statusMessage');
 
 
 $(document).ready(() => {
@@ -156,7 +156,7 @@ profileInput.addEventListener('change', (e) => {
 });
 
 // The status controls and the connection to the DB api
-const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrToken, bannerMsg);
+const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrToken, statusMsg);
 driverStatus.init();
 
 emergencyBtn.forEach(btn => {
@@ -315,14 +315,14 @@ window.addEventListener('load', () => {
         if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
                 sessionStorage.setItem('status', 'Official');
                 let startUpStatus = sessionStorage.getItem('status');
-                bannerMsg.textContent = startUpStatus;                
+                statusMsg.textContent = startUpStatus;                
         } else if (localStorage.getItem('status') !== null) {
                 sessionStorage.clear;
                 let drvrStatus = localStorage.getItem('status');
-                bannerMsg.textContent = drvrStatus;
+                statusMsg.textContent = drvrStatus;
         } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
                 let drvrStatus = sessionStorage.getItem('status');
-                bannerMsg.textContent = drvrStatus;
+                statusMsg.textContent = drvrStatus;
         }
 }, false);
 

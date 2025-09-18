@@ -2,8 +2,6 @@
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
-$alert = new core\Flash();
-include "partials/flashmessage.php";
 include "partials/info-modal.php";
 ?>
 <main class="container-fluid p-3 d-flex flex-column">
@@ -78,9 +76,7 @@ include "partials/info-modal.php";
                                 </div>
                         </div>
                 </div>
-                <div class="input-group">
-                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                </div>
+                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
         </form>
 </main>
 <?php

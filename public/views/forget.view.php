@@ -11,9 +11,7 @@
                 <input id="email" type="email" class="form-control" name="email" placeholder="Please enter your email" required>
                 <label for="email">Email address</label>
             </div>
-            <div class="input-group">
-                    <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-            </div>
+            <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
             <?php 
             $validateExpired = isset($_GET['validate']) && $_GET['validate'] === 'expired';
             $errorNotFound = isset($_GET['error']) && ($_GET['error'] === 'not+found' || $_GET['error'] === 'not+cleared');
