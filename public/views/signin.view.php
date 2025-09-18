@@ -19,10 +19,7 @@ if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
                                         <input type="password" id="password" class="form-control fs-4" name="password" placeholder="Password" data-bs-container="body" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-title="Password" data-bs-content="Please enter your password" required><span class="input-group-text rounded-end" aria-describedby="password"><i class="fa-solid fa-eye" id="psword-icon"></i></span>
                                         <div class="invalid-feedback">Please enter your password</div>
                                 </div>
-
-                                <div class="input-group">
-                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                                </div>
+                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                                 
                                 <div class="d-flex justify-content-center my-3 px-2">
                                         <button type="submit" id="signin" name="loginAcct" class="btn btn-lg btn-primary text-center text-capitalize" disabled>sign in</button>

@@ -29,11 +29,7 @@ include "partials/info-modal.php";
                                 </div>
 
                                 <p id="password-does-not-match-text" class="text-danger" hidden>Your password does not match</p>
-
-                                <div class="input-group">
-                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                                </div>
-
+                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                 <div class="d-flex justify-content-center mb-3">
                                         <button id="signup" type="submit" name="createAccount" class="btn btn-lg btn-primary" disabled>Create Account</button>
                                 </div>

@@ -2,8 +2,6 @@
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
-$alert = new core\Flash();
-include "partials/flashmessage.php";
 include "partials/info-modal.php";
 ?>
 
@@ -73,9 +71,7 @@ include "partials/info-modal.php";
                                                         <label for="status" class="text-capitalize"><b>status</b></label>
                                                 </div>
                                         </div>
-                                        <div class="input-group">
-                                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                                        </div>
+                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                 </fieldset>
                         </div>
 

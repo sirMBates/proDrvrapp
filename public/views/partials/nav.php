@@ -29,10 +29,7 @@
                         </ul>
                 </div>
                 <div class="dropdown mt-3">
-                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"><span class="px-2 fa-solid fa-user-tie"></span>Web Admin</button>
-                        <ul class="dropdown-menu">
-                                <li class="dropdown-item"><a href="/contact"><i class="px-2 fa-solid fa-envelope"></i>Send email</a></li>
-                        </ul>
+                        <a href="/contact" class="btn btn-secondary" role="button"><i class="px-2 fa-solid fa-envelope"></i>Web Admin</a>
                 </div>
                 <!--<div class="dropdown mt-3 d-none">
                         <a href="/printable" class="btn btn-secondary d-none" role="button"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</a>
@@ -83,24 +80,22 @@
                         </div>
                 </div>
         </nav>
-        <nav id="infobar" class="navbar bg-btd-gray-dark py-0 w-100" style="height: 25px;">
-                <div class="container-fluid d-flex justify-content-between align-items-center" style="height: 100%;">
-                        <div id="title" class="text-uppercase text-light d-flex align-items-center m-0 ps-3"
-         style="font-size: clamp(0.6rem, 1.5vw, 0.8rem); line-height: 1;">pro-driver
-                        </div>
-                        <div id="clock_container" class="d-flex flex-row text-capitalize" style="font-size: clamp(0.6rem, 1.5vw, 0.8rem); line-height: 1;">
+        <nav id="infobar" class="navbar bg-btd-gray-dark py-0 w-100 border-top border-2 border-dark">
+                <div class="container-fluid d-flex justify-content-between align-items-center">
+                        <div id="title" class="text-uppercase text-dark d-flex align-items-center m-0 ps-3">pro-driver</div>
+                        <div id="clock_container" class="d-flex flex-row text-capitalize">
                                 <div id="dateCon" class="d-inline-flex me-1">
-                                        <div class="text-btd-blue-bright mx-1"></div>
-                                        <div class="text-btd-blue-bright mx-1"></div>
-                                        <div class="text-btd-blue-bright mx-1"></div>
-                                        <div class="text-btd-blue-bright mx-1"></div>
+                                        <div class="text-dark me-1"></div>
+                                        <div class="text-dark me-1"></div>
+                                        <div class="text-dark me-1"></div>
+                                        <div class="text-dark me-1"></div>
                                 </div>
                                 <div id="timeCon" class="d-inline-flex">
-                                        <div class="container-xs mx-1 text-light"></div>
-                                        <div class="container-xs mx-1 text-light blink">:</div>
-                                        <div class="container-xs mx-1 text-light"></div>
-                                        <div class="container-xs mx-1 text-light"></div>
-                                        <div class="container-xs mx-1 text-light"></div>
+                                        <div class="container-xs me-1 text-dark"></div>
+                                        <div class="container-xs me-1 text-dark blink">:</div>
+                                        <div class="container-xs me-1 text-dark"></div>
+                                        <div class="container-xs me-1 text-dark"></div>
+                                        <div class="container-xs me-1 text-dark"></div>
                                 </div>
                         </div>
                 </div>
