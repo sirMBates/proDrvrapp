@@ -2,7 +2,6 @@
 require "partials/head.php";
 require "partials/nav.php";
 require "partials/banner.php";
-include "partials/info-modal.php";
 ?>
 
 <div class="card mb-3" style="width: 35rem;">
