@@ -30,6 +30,10 @@ function pageStyle($value) {
                         return;
                         break;
 
+                case "/help-faq":
+                        return;
+                        break;
+
                 case "/orders":
                         echo "<link rel='stylesheet' href='../dist/styles/orders.css'>\n";
                         break;

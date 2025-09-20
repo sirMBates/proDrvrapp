@@ -3,10 +3,6 @@ import { fetchDrvr } from './drvrapi.js';
 import { ChangeStatus } from './changestatus.js';
 import { Validation } from './validation.js';
 
-const infoBtn = document.querySelector('#notifyinfo');
-const infoModal = document.querySelector('#info-modal');
-const infoModalMsg = buildModal;
-const infoModBtn = document.querySelector('#info-ok');
 const myCurrentView = window.location.pathname;
 //const profCon = document.querySelector("#profilecon");
 // Profile image display in navbar.
@@ -35,40 +31,60 @@ const statusMsg = document.querySelector('#statusMessage');
 
 
 $(document).ready(() => {
-    const modalInstance = new bootstrap.Modal(infoModal, {
-        backdrop: 'static',
-        keyboard: false
-    });
-
-    infoBtn.addEventListener('click', () => {
-        modalInstance.show();
-    });
-
-    infoModal.addEventListener('shown.bs.modal', () => {
-        if (window.location.pathname === '/') {
-                infoModalMsg.info('Welcome to your dashboard. From here, you can update your status (which will automatically notify dispatch) and get brief details about your job(s) (if any assignments assigned to you) for the day. If and when you need to update your status from another page, click the icon in the navigation bar and search for switch status. That is where you\'ll also find other options as well.', 'Ok');
+        // Skip modal setup on /help-faq
+        if (myCurrentView === '/help-faq') {
+                return;
         }
 
-        if (window.location.pathname === '/contact') {
-                infoModalMsg.info('Need help with something? Not sure of what to do next? Here, you can use this page to send an email with any problems regarding the use of the app. <u>Please and only if neccessary!</u> For account issues, please refer to your company administrator.', 'Understood');
-        }
+        const infoBtn = document.querySelector('#notifyinfo');
+        const infoModal = document.querySelector('#info-modal');
+        const infoModalMsg = buildModal;
+        const infoModBtn = document.querySelector('#info-ok');
 
-        if (window.location.pathname === '/orders') {
-                infoModalMsg.info(`This is where your job orders will be viewed. You\'ll be able to edit certain times, details and add notes for dispatch and your personal reference.<br> You must confirm the job by clicking the button below once received.<br> When you\'re completing the job, click the edit button down below if there are any changes to be made.<br> If no changes, complete the dispatch order.<br> You can also cancel the job if dispatch allows.`, 'Ok');
-        }
+        // Centralized config for modal messages
+        const modalMessages = {
+                '/': {
+                        text: `Welcome to your dashboard. From here, you can update your status (which will automatically notify dispatch) and get brief details about your job(s) (if any assignments assigned to you) for the day. If and when you need to update your status from another page, click the icon in the navigation bar and search for switch status. That is where you\'ll also find other options as well.`, 
+                        button: 'Ok'
+                },
+                '/contact': {
+                        text: `Need help with something? Not sure of what to do next? Here, you can use this page to send an email with any problems regarding the use of the app. <u>Please and only if neccessary!</u> For account issues, please refer to your company administrator.`, 
+                        button: 'Understood'
+                },
+                '/orders': {
+                        text: `This is where your job orders will be viewed. You\'ll be able to edit certain times, details and add notes for dispatch and your personal reference.<br> You must confirm the job by clicking the button below once received.<br> When you\'re completing the job, click the edit button down below if there are any changes to be made.<br> If no changes, complete the dispatch order.<br> You can also cancel the job if dispatch allows.`, 
+                        button: 'Ok'
+                },
+                '/profile': {
+                        text: `Here on your account info profile, this is where you can view your personal information. You can only update your email, mobile number and password. If you would like to update any of the 3, click the button next to the field you would like to update.`, 
+                        button: 'Ok'
+                },
+                '/timesheet': {
+                        text: `This is your timesheet (cha\`ching\`💰). This sheet will hold a record of each job/order you\'ve done for the week. Once the week is over, a new sheet will be made available for you to utilize. If your payroll dept requests, you may send this sheet to them as is, print it out or download a copy for yourself.`, 
+                        button: 'Ok'
+                }
+        };
 
-        if (window.location.pathname === '/profile') {
-                infoModalMsg.info('Here on your account info profile, this is where you can view your personal information. You can only update your email, mobile number and password. If you would like to update any of the 3, click the button next to the field you would like to update.', 'Ok');
-        }
+        const modalInstance = new bootstrap.Modal(infoModal, {
+                backdrop: 'static',
+                keyboard: false
+        });
 
-        if (window.location.pathname === '/timesheet') {
-                infoModalMsg.info('This is your timesheet (cha`ching`💰). This sheet will hold a record of each job/order you\'ve done for the week. Once the week is over, a new sheet will be made available for you to utilize. If your payroll dept requests, you may send this sheet to them as is, print it out or download a copy for yourself.', 'Ok');
-        }
-    });
-    
-    infoModBtn.addEventListener('click', () => {
-        modalInstance.hide();
-    });
+        infoBtn.addEventListener('click', () => {
+                modalInstance.show();
+        });
+
+        infoModal.addEventListener('shown.bs.modal', () => {
+                const path = window.location.pathname;
+                if (modalMessages[path]) {
+                        const { text, button } = modalMessages[path];
+                        infoModalMsg.info(text, button);
+                }
+        });
+
+        infoModBtn.addEventListener('click', () => {
+                modalInstance.hide();
+        });
 });
 
 window.addEventListener('DOMContentLoaded', () => {
