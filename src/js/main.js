@@ -32,7 +32,7 @@ const statusMsg = document.querySelector('#statusMessage');
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq
-        if (myCurrentView === '/help-faq') {
+        if (myCurrentView === '/help') {
                 return;
         }
 
@@ -205,6 +205,10 @@ const themeSet = {
                 const header = document.querySelector('header');
                 const btnSwitch = themeBtn.childNodes[1];
                 const textbox = document.querySelectorAll('textarea');
+                if (myCurrentView === '/help') {
+                        const cardImage = document.querySelector('#card-img');
+                        cardImage.src = "../../dist/images-videos/busnitepics/drvr-area-nite.jpg";
+                };
                 themeBtnText.textContent = 'Light theme';
                 btnSwitch.classList.remove("fa-moon", "text-dark");
                 btnSwitch.classList.add("fa-sun", "text-btd-white-floral");
@@ -219,11 +223,15 @@ const themeSet = {
         },
         // Set the Light theme.
         lightTheme() {
-                let page = document.querySelector('html');
-                let body = document.querySelector('body');
-                let header = document.querySelector('header');
-                let btnSwitch = themeBtn.childNodes[1];
+                const page = document.querySelector('html');
+                const body = document.querySelector('body');
+                const header = document.querySelector('header');
+                const btnSwitch = themeBtn.childNodes[1];
                 const textbox = document.querySelectorAll('textarea');
+                if (myCurrentView === '/help') {
+                        const cardImage = document.querySelector('#card-img');
+                        cardImage.src = "../../dist/images-videos/drvrarea1.jpg";
+                };
                 themeBtnText.textContent = 'Dark theme';
                 btnSwitch.classList.remove('fa-sun', 'text-btd-white-floral');
                 btnSwitch.classList.add('fa-moon', 'text-dark');

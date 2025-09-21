@@ -19,7 +19,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-one" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">Yes 👍, you can update your email, mobile number and password. In your profile section ( profile page ), just click on the icon next to the input you want to update. Anything else besides those choices will have to go through your company administrator.</div>
+                <div class="accordion-body">Yes 👍, you can update your email, mobile number and password. In your profile page, just click on the icon next to the input you want to update. Anything else besides those choices will have to go through your company administrator ( management ).</div>
             </div>
         </div>
         <div class="accordion-item">
@@ -29,7 +29,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-two" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">Yes 👍, you can update your password. In your profile section ( profile page ), Just click on the icon next to password and enter your new password. You may have to check your email to confirm the change.</div>
+                <div class="accordion-body">Yes 👍, you can update your password. In your profile page, just click on the icon next to password and enter your new password. You may have to check your email to confirm the change.</div>
             </div>
         </div>
         <div class="accordion-item">
@@ -39,7 +39,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-three" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">Once your assignment(s) 💲 have been posted, You'll receive an email and/or notification regarding your assignment(s). Once received, you <u>must</u> confirm your assignment(s). If your company administrator allows, you may also cancel ( reject ) an assignment. When you confirm your assignment, dispatch will receive an update that you're confirmed.</div>
+                <div class="accordion-body">Once your assignment(s) 💵 have been posted, you'll receive an email and/or notification regarding your assignment(s). Once received, you <u>must</u> confirm your assignment(s). If your company administrator ( management ) allows, you may also cancel ( reject ) an assignment. When you confirm your assignment, dispatch will receive an update that you're confirmed.</div>
             </div>
         </div>
         <div class="accordion-item">
@@ -79,7 +79,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-seven" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">Why would you want to? That kinda defeats the purpose of the app, right? The prodriver app your using is a companion app for you ( the driver ). There's really no need for paperwork at this point. But, if you would like a print out, you can ask your office administrator. Direct printing of any job/work orders are subject to your company's discretion.</div>
+                <div class="accordion-body">Why would you want to? That kinda defeats the purpose of the app, right? The prodriver app your using is a companion app for you ( the driver ). There's really no need for paperwork at this point. But, if you would like a print out, you can ask your office administrator ( management ). Direct printing of any job/work orders are subject to your company's discretion.</div>
             </div>
         </div>
         <div class="accordion-item">
@@ -139,7 +139,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-thirteen" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">In the driver menu, if you click on office, A list of registered ( authorized ) numbers will be listed according to your company's administration set up. There you can click on which ever number you so choose and your device primary dialer will take over. Your device may give you options to choose from.</div>
+                <div class="accordion-body">In the driver menu, if you click on office, A list of registered ( authorized ) numbers will be listed according to your company's administration ( management )set up. There you can click on which ever number you so choose and your device primary dialer will take over. Your device may give you options to choose from.</div>
             </div>
         </div>
     </div>
