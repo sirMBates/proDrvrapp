@@ -41,7 +41,7 @@
                         </ul>
                 </div>-->
                 <div class="dropdown mt-3">
-                        <a href="/help-faq" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Help</a>
+                        <a href="/help" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Help</a>
                 </div>
                 <div class="dropdown mt-3">
                         <a href="/logout" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-right-from-bracket"></span>Sign Out</a>
