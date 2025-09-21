@@ -79,7 +79,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-seven" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">Well, if that was the case, I guess there wouldn't be a need for the app, right? The prodriver app your using is a companion app for you ( the driver ). There's really no need for paperwork at this point. But, if you would like a print out, you can ask your office administrator. Direct printing of any job/work orders are subject to your companies discretion.</div>
+                <div class="accordion-body">Why would you want to? That kinda defeats the purpose of the app, right? The prodriver app your using is a companion app for you ( the driver ). There's really no need for paperwork at this point. But, if you would like a print out, you can ask your office administrator. Direct printing of any job/work orders are subject to your company's discretion.</div>
             </div>
         </div>
         <div class="accordion-item">
