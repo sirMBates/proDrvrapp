@@ -109,7 +109,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-ten" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">Right away! Once you click the emergency button, the app will flash red and send an alert to dispatch. Until dispatch checks with you, your app will stay in emergency mode. Dispatch must clear the emergency status and once cleared, the app will return to normal mode. Please, under no circumstances, click the emergency button if it is not a real <b class="text-danger">EMERGENCY</b>!</div>
+                <div class="accordion-body">Right away 💯! Once you click the emergency button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in emergency mode. Dispatch must clear the emergency status and once cleared, the app will return to normal mode. Please, under no circumstances, click the emergency button if it is not a real <b class="text-danger">EMERGENCY</b>!</div>
             </div>
         </div>
         <div class="accordion-item">
@@ -129,7 +129,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-twelve" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">Please, only click the emergency button if you're in an actual emergency. As of date, The only alert goes out to your dispatch. Eventually maybe, the button will alert the authorities. For now, no.</div>
+                <div class="accordion-body">Please, only click the emergency button if you're in an actual emergency. As of date, The only alert goes out to your company's dispatch. Eventually maybe, the button will alert the authorities. For now, no 👎.</div>
             </div>
         </div>
         <div class="accordion-item">
@@ -139,7 +139,7 @@ require "partials/banner.php";
                 </button>
             </h2>
             <div id="question-thirteen" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                <div class="accordion-body">In the driver menu, if you click on office, A list of registered ( authorized ) numbers will be listed according to your companies administration set up. There you can click on which ever number(s) and your device primary dialer will take over. Your device may give you options to choose from.</div>
+                <div class="accordion-body">In the driver menu, if you click on office, A list of registered ( authorized ) numbers will be listed according to your company's administration set up. There you can click on which ever number you so choose and your device primary dialer will take over. Your device may give you options to choose from.</div>
             </div>
         </div>
     </div>
