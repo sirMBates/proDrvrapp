@@ -130,7 +130,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-twelve" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Once you've completed your work assignments for the duration of your shift, there's a button, ( <b class="text-capitalize">end shift</b> ). <u><b>You must</b> click this button</u> only if your done with all of your assignments for the shift. This way dispatch ( management )<i class="px-1 fa-solid fa-building"></i> has confirmation that your done with all your assignments and the app can reset your status<i class="px-1 fa-solid fa-square-poll-vertical"></i>.</div>
+                    <div class="accordion-body">Once you've completed your work assignments for the duration of your shift, there's a button, ( <b class="text-capitalize">end shift</b> ). <u><b>You must</b> click this button</u> only if your done with all of your assignments for the shift. This way, dispatch ( management )<i class="px-1 fa-solid fa-building"></i> has confirmation that your done with all your assignments and the app can reset your status<i class="px-1 fa-solid fa-square-poll-vertical"></i>.</div>
                 </div>
             </div>
             <div class="accordion-item">
