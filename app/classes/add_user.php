@@ -96,10 +96,10 @@ class AddDrvrContr extends AddedDrvr {
 
     private function nameOrEmailExist() {
         $result;
-        if (!$this->checkDriver($this->username, $this->email)) {
-            $result = false;
-        } else {
+        if ($this->checkDriver($this->username, $this->email)) {
             $result = true;
+        } else {
+            $result = false;
         }
         return $result;
     }
