@@ -70,7 +70,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-six" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Once you finish your assignment and made the necessary changes, you may then click the <b><u>Complete Dispatch Order</b></u> button. Dispatch ( management ) will then receive the completed assignment.</div>
+                    <div class="accordion-body">Once you finish your assignment(s) and made the necessary changes, you may then click the <b><u>Complete Dispatch Order</b></u> button. Dispatch ( management ) will then receive the completed assignment.</div>
                 </div>
             </div>
             <div class="accordion-item">
