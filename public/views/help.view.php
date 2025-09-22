@@ -60,7 +60,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-five" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Absolutely 👍, yes! Once your viewing your assignment, click the edit button and make your necessary updates ( changes ) accordingly. Once done you can submit your changes.</div>
+                    <div class="accordion-body">Absolutely 👍, yes! Once your viewing your assignment, click the edit button and make your necessary updates ( changes ) accordingly. Once done, you can submit your changes.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -110,7 +110,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-ten" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Right away 💯! Once you click the emergency button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in emergency mode. Dispatch must clear the emergency status<i class="px-1 fa-solid fa-square-poll-vertical"></i> and once cleared, the app will return to normal mode. <u>Please, under no circumstances, click the emergency button if it is not a real <b class="text-danger text-capitalize">emergency</b></u>!</div>
+                    <div class="accordion-body">Right away 💯! Once you click the <b class="text-capitalize text-danger">emergency</b> button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in emergency mode. Dispatch must clear the emergency status<i class="px-1 fa-solid fa-square-poll-vertical"></i> and once cleared, the app will return to normal mode. <u>Please, under no circumstances, click the emergency button if it is not a real <b class="text-danger text-capitalize">emergency</b></u>!</div>
                 </div>
             </div>
             <div class="accordion-item">
