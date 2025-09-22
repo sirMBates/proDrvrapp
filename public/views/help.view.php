@@ -70,7 +70,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-six" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Once you finish your assignment and made the necessary changes, you may then click the <b><u>Complete Dispatch Order</b></u> button. Dispatch will then receive the completed assignment.</div>
+                    <div class="accordion-body">Once you finish your assignment and made the necessary changes, you may then click the <b><u>Complete Dispatch Order</b></u> button. Dispatch ( management ) will then receive the completed assignment.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -90,7 +90,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-eight" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Dispatch can view your status at any moment. The only time when dispatch gets an alert is, when you click the emergency button.</div>
+                    <div class="accordion-body">Dispatch can view your status<i class="px-1 fa-solid fa-square-poll-vertical"></i> at any moment. The only time dispatch gets an alert is when you click the <b class="text-capitalize text-danger">emergency</b> button.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -100,7 +100,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-nine" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">If you look at the top of the page inside the banner section at the top right, under the date/time display, you'll see text. That is your <b class="text-info">S</b>tatus <b class="text-info">M</b>essage <b class="text-info">D</b>isplay (SMD). There, each time you change status, you'll see the status confirmed. Also, on your home page, it will confirm in your dashboard under status. In your profile page it will also confirm in the status input field at the bottom.</div>
+                    <div class="accordion-body">If you look at the top of the page inside the banner section at the top right, under the date/time display, you'll see some text. That is your <b class="text-info">S</b>tatus <b class="text-info">M</b>essage <b class="text-info">D</b>isplay (SMD). There, each time you change status<i class="px-1 fa-solid fa-square-poll-vertical"></i>, you'll see the status confirmed. Also, on your home page, it will confirm in your dashboard under status. In your profile page it will also confirm in the status input field at the bottom.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -110,7 +110,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-ten" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Right away 💯! Once you click the emergency button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in emergency mode. Dispatch must clear the emergency status and once cleared, the app will return to normal mode. Please, under no circumstances, click the emergency button if it is not a real <b class="text-danger">EMERGENCY</b>!</div>
+                    <div class="accordion-body">Right away 💯! Once you click the emergency button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in emergency mode. Dispatch must clear the emergency status<i class="px-1 fa-solid fa-square-poll-vertical"></i> and once cleared, the app will return to normal mode. <u>Please, under no circumstances, click the emergency button if it is not a real <b class="text-danger text-capitalize">emergency</b></u>!</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -120,27 +120,37 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-eleven" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">In the driver's menu. If you check the driver's menu when not on the home screen, you'll see a button for switch status. This button is available for every page except the home page ( for obvious reasons ).</div>
+                    <div class="accordion-body">In the driver's menu. When not on the home screen, you'll see a button that says switch status<i class="px-1 fa-solid fa-square-poll-vertical"></i>. This button is available for every page except the home page ( for obvious reasons ).</div>
                 </div>
             </div>
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#question-twelve" aria-expanded="false" aria-controls="question-twelve">
-                        If I click the emergency button, will the local authorities be notified?
+                        Does dispatch ( management ) know when i'm done with work? Besides just completing work order?
                     </button>
                 </h2>
                 <div id="question-twelve" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Please, only click the emergency button if you're in an actual emergency. As of date, The only alert goes out to your company's dispatch. Eventually maybe, the button will alert the authorities. For now, no 👎.</div>
+                    <div class="accordion-body">Once you've completed your work assignments for the duration of your shift, there's a button, ( <b class="text-capitalize">end shift</b> ). <u><b>You must</b> click this button</u> only if your done with all of your assignments for the shift. This way dispatch ( management )<i class="px-1 fa-solid fa-building"></i> has confirmation that your done with all your assignments and the app can reset your status<i class="px-1 fa-solid fa-square-poll-vertical"></i>.</div>
                 </div>
             </div>
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#question-thirteen" aria-expanded="false" aria-controls="question-thirteen">
-                        Can I send a message to the office through the app?
+                        If I click the emergency button, will the local authorities be notified?
                     </button>
                 </h2>
                 <div id="question-thirteen" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">In the driver menu, if you click on office, A list of registered ( authorized ) numbers will be listed according to your company's administration ( management )set up. There you can click on which ever number you so choose and your device primary dialer will take over. Your device may give you options to choose from.</div>
+                    <div class="accordion-body"><u>Please, only click the emergency button if you're in an actual <b class="text-danger text-capitalize">emergency</b></u>. The alert only goes out to your company's dispatch ( management )<i class="px-1 fa-solid fa-building"></i>. So for now, no 👎.</div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#question-fourteen" aria-expanded="false" aria-controls="question-fourteen">
+                        Can I send a message to the dispatch ( management ) through the app?
+                    </button>
+                </h2>
+                <div id="question-fourteen" class="accordion-collapse collapse" data-bs-parent="#faqcon">
+                    <div class="accordion-body">In the driver menu, if you click on office<i class="px-1 fa-solid fa-building"></i>, A list of registered ( authorized ) numbers will be listed according to your company's administration ( management ) set up. There you can click on which ever number you so choose and your device should show the dialer. If not, your device may give you other options to choose from.</div>
                 </div>
             </div>
         </div>

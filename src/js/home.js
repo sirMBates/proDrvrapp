@@ -26,9 +26,15 @@ window.addEventListener('DOMContentLoaded', () => {
             const drvrMainTable = document.querySelector('#dashboard-info');
             const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
             const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
+            const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
+            const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
+            const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
             if (driver) {
                 fullname.textContent = `${driver['lastName']}, ${driver['firstName']}`;
                 drvrId.textContent = driver['operatorid'];
+                reportDate.textContent = 'No assignment available...';
+                reportTime.textContent = 'No assignment available...';
+                spotTime.textContent = 'No assignment available...';
             }
         })
         .catch(error => {
