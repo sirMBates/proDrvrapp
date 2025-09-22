@@ -126,7 +126,7 @@ require "partials/banner.php";
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#question-twelve" aria-expanded="false" aria-controls="question-twelve">
-                        Does dispatch ( management ) know when i'm done with work? Besides just completing work order?
+                        Does dispatch ( management ) know when i'm done with my shift? Besides just completing all work orders?
                     </button>
                 </h2>
                 <div id="question-twelve" class="accordion-collapse collapse" data-bs-parent="#faqcon">
