@@ -196,6 +196,15 @@ dashboardStatusBtns.addEventListener('click', (e) => {
                 }
         }
         if (e.target === dashboardStatusBtns.childNodes[11]) {
+                localStorage.setItem('status', 'End of Shift');
+                let changeStatus = localStorage.getItem('status');
+                dashBoardStatusValue.textContent = changeStatus;
+                bannerMsg.textContent = changeStatus;
+                if (sessionStorage.getItem('status') !== null) {
+                        sessionStorage.removeItem('status');
+                }
+        }
+        if (e.target === dashboardStatusBtns.childNodes[13]) {
                 localStorage.setItem('status', 'Emergency');
                 let changeStatus = localStorage.getItem('status');
                 dashBoardStatusValue.textContent = changeStatus;

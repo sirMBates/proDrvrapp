@@ -11,7 +11,7 @@ $router->get('/orders', 'app/controllers/orders.php', true);
 $router->get('/profile', 'app/controllers/profile.php', true);
 $router->get('/timesheet', 'app/controllers/timesheet.php', true);
 $router->get('/contact', 'app/controllers/contact.php', true);
-$router->get('/help', 'app/controllers/help-faqs.php');
+$router->get('/help', 'app/controllers/help.php');
 $router->get('/logout', 'app/controllers/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
 
