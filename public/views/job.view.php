@@ -26,11 +26,11 @@ include "partials/info-modal.php"
                                         </thead>
                                         <tbody class="table-group-divider">
                                                 <tr class="text-center">
-                                                        <td scope="row" class="editable-data">1800</td>
+                                                        <td scope="row" class="editable-data"></td>
                                                         <td></td>
                                                         <td></td>
-                                                        <td>99999</td>
-                                                        <td>1</td>
+                                                        <td></td>
+                                                        <td></td>
                                                 </tr>
                                                 <tr>
                                                         <table id="tableB" class="table m-auto" style="width: 1200px;">
@@ -43,9 +43,9 @@ include "partials/info-modal.php"
                                                                 </thead>
                                                                 <tbody class="table-group-divider">
                                                 <tr class="text-center">
-                                                        <td scope="row">08/15/2025, 06:00am</td>
-                                                        <td>08:00am</td>
-                                                        <td>08-15-2025, 08:30am</td>
+                                                        <td scope="row"></td>
+                                                        <td></td>
+                                                        <td></td>
                                                 </tr>
                                         </tbody>
                                                         </table>
@@ -64,11 +64,11 @@ include "partials/info-modal.php"
                                         </thead>
                                         <tbody class="table-group-divider">
                                                 <tr class="text-center">
-                                                        <td scope="row">08-15-2025, 07:30pm</td>
+                                                        <td scope="row"></td>
                                                         <td class="editable-data"></td>
-                                                        <td>08-15-2025, 08:30pm</td>
+                                                        <td></td>
                                                         <td class="editable-data"></td>
-                                                        <td class="editable-data">12.00</td>
+                                                        <td class="editable-data"></td>
                                                         <td class="editable-data"></td>
                                                 </tr>
                                         </tbody>
@@ -88,12 +88,12 @@ include "partials/info-modal.php"
                                         </thead>
                                         <tbody class="table-group-divider">
                                                 <tr class="text-center">
-                                                        <td scope="row">New York, NY</td>
-                                                        <td>Philadelphia, PA</td>
-                                                        <td>New Golden Era, Jane Doe</td>
-                                                        <td>917-654-9783</td>
-                                                        <td>Lazzy Tours Inc., 718-231-7498</td>
-                                                        <td>John Doe, 347-743-5891</td>
+                                                        <td scope="row"></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
                                                 </tr>
                                         </tbody>
                                 </table>
