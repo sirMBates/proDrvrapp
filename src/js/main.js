@@ -351,7 +351,7 @@ window.addEventListener('load', () => {
 }, false);
 
 $(logoutLink).on('click', () => {
-        if (localStorage.getItem('status') !== null) {
+        if (localStorage.getItem('status') === 'End of Shift') {
                 localStorage.removeItem('status');
         }
 

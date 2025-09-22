@@ -21,4 +21,4 @@
         <link rel="icon" type="image/png" sizes="50x50" href="/dist/images-videos/logoandicons/prodrvr-bus-icon.png">                
         <title><?= $title;?></title>
 </head>
-<body class="d-flex flex-column overflow-x-hidden vh-100 <?= urlIs('/printable') ? 'clear-bkgd' : 'align-items-center noprint';?>">
+<body class="d-flex flex-column overflow-x-hidden vh-100 align-items-center noprint">

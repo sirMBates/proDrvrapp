@@ -23,6 +23,7 @@ export class ChangeStatus {
             'status-enroute-location': 'Enroute to location',
             'status-onlocation': 'Arrived at location',
             'status-working-assignment': 'On assignment',
+            'status-end-shift': 'End of Shift',
             'status-emergency': 'Emergency'
         };
 

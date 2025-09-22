@@ -59,6 +59,10 @@ function pageScripts($value) {
                 echo "<script type='module' src='../dist/js/contacthandler.js'></script>";
                 break;
 
+            case "/help":
+                return;
+                break;
+
             case "/orders":
                 if (isset($_SESSION['signatureRequired']) && $_SESSION['signatureRequired'] === true) {
                     echo "<script type='module' src='../dist/js/sign.js'></script>\n";

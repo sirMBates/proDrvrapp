@@ -52,6 +52,7 @@ include "partials/custom-modal.php";
                                         <button type="button" class="btn btn-outline-primary set-status status-enroute-location">Enroute to Loc</button>
                                         <button type="button" class="btn btn-outline-primary set-status status-onlocation">Arrived at Loc</button>
                                         <button type="button" class="btn btn-outline-primary set-status status-working-assignment">On Assignment</button>
+                                        <button type="button" class="btn btn-outline-primary set-status status-end-shift">End Shift</button>
                                         <button type="button" class="btn btn-danger set-status status-emergency">Emergency</button>
                                 </div>
                         </div>
