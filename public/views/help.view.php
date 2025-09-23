@@ -40,7 +40,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-three" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Once your assignment(s) 💵 have been posted, you'll receive an email and/or notification regarding your assignment(s). Once received, you <u>must</u> confirm your assignment(s). If your company administrator ( management ) allows, you may also cancel ( reject ) an assignment. When you confirm your assignment, dispatch will receive an update that you're confirmed.</div>
+                    <div class="accordion-body">Once your assignment(s) 💵 have been posted, you'll receive an email and/or notification regarding your assignment(s). Once received, you <u>must</u> confirm your assignment(s). If your company administrator ( management ) allows it, you may also cancel ( reject ) an assignment. When you confirm your assignment, dispatch will receive an update that you're confirmed.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -50,7 +50,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-four" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Click on the <b>Job Order</b> tab and then view your assignments from there. There you'll be able to confirm, cancel/unconfirm, edit and complete ( submit ) your assignments.</div>
+                    <div class="accordion-body">Click on the <b>Job Order</b><i class="px-1 fa-solid fa-file"></i> tab and then view your assignments from there. There you'll be able to confirm, cancel/unconfirm, edit and complete ( submit ) your assignments.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -70,7 +70,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-six" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Once you finish your assignment(s) and made the necessary changes, you may then click the <b><u>Complete Dispatch Order</b></u> button. Dispatch ( management ) will then receive the completed assignment.</div>
+                    <div class="accordion-body">Once you finish your assignment(s) and make the necessary changes, you may then click the <b><u>Complete Dispatch Order</b></u> button. Dispatch ( management ) will then receive the completed assignment.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -80,7 +80,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-seven" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Why would you want to? That kinda defeats the purpose of the app, right? The prodriver app your using is a companion app for you ( the driver ). There's really no need for paperwork at this point. But, if you would like a print out, you can ask your office administrator ( management ). Direct printing of any job/work orders are subject to your company's discretion.</div>
+                    <div class="accordion-body">Why would you want to? That kinda defeats the purpose of the app, right? The prodriver app<i class="px-1 fa-solid fa-tablet-screen-button"></i> your using is a companion app for you ( the driver ). There's really no need for paperwork at this point. But, if you would like a print out, you can ask your office administrator ( management ). Direct printing of any job/work orders are subject to your company's discretion.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -90,7 +90,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-eight" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Dispatch can view your status<i class="px-1 fa-solid fa-square-poll-vertical"></i> at any moment. The only time dispatch gets an alert is when you click the <b class="text-capitalize text-danger">emergency</b> button.</div>
+                    <div class="accordion-body">Dispatch can view your status<i class="px-1 fa-solid fa-square-poll-vertical"></i> at any moment. The only time dispatch gets an alert is when you click the <b class="text-uppercase text-danger">emergency</b> button.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -110,7 +110,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-ten" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Right away 💯! Once you click the <b class="text-capitalize text-danger">emergency</b> button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in emergency mode. Dispatch must clear the emergency status<i class="px-1 fa-solid fa-square-poll-vertical"></i> and once cleared, the app will return to normal mode. <u>Please, under no circumstances, click the emergency button if it is not a real <b class="text-danger text-capitalize">emergency</b></u>!</div>
+                    <div class="accordion-body">Right away 💯! Once you click the <b class="text-uppercase text-danger">emergency</b> button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in <b class="text-danger">emergency</b> mode. Dispatch must clear the emergency status<i class="px-1 fa-solid fa-square-poll-vertical"></i> and once cleared, the app will return to normal mode. <u>Please, under no circumstances, click the <b class="text-uppercase text-danger">emergency</b> button if it is not a real <b class="text-danger">emergency</b></u>!</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -130,7 +130,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-twelve" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Once you've completed your work assignments for the duration of your shift, there's a button, ( <b class="text-capitalize">end shift</b> ). <u><b>You must</b> click this button</u> only if your done with all of your assignments for the shift. This way, dispatch ( management )<i class="px-1 fa-solid fa-building"></i> has confirmation that your done with all your assignments and the app can reset your status<i class="px-1 fa-solid fa-square-poll-vertical"></i>.</div>
+                    <div class="accordion-body">Once you've completed all your work assignments for the duration of your shift, there's a button, ( <b class="text-uppercase">end shift</b> ). <u><b>You must</b> click this button</u> only if you're done with all of your assignments for the shift. This way, dispatch ( management )<i class="px-1 fa-solid fa-building"></i> has confirmation that your done with all your assignments and the app can reset your status<i class="px-1 fa-solid fa-square-poll-vertical"></i>.</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -140,7 +140,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-thirteen" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body"><u>Please, only click the emergency button if you're in an actual <b class="text-danger text-capitalize">emergency</b></u>. The alert only goes out to your company's dispatch ( management )<i class="px-1 fa-solid fa-building"></i>. So for now, no 👎.</div>
+                    <div class="accordion-body"><u>Please, only click the <b class="text-uppercase text-danger">emergency</b> button if you're in an actual <b class="text-danger">emergency</b></u>. The alert only goes out to your company's dispatch ( management )<i class="px-1 fa-solid fa-building"></i>. So for now, no 👎.</div>
                 </div>
             </div>
             <div class="accordion-item">

@@ -2,7 +2,7 @@
         <div class="offcanvas-header bg-besttrailsclr">
                 <div id="profilecon" style="width: 60px; height: 60px;" class="border border-2 border-primary rounded d-inline-block me-2">                        
                         <label for="profile-upload"><img id="profile-pic" src="../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="mx-1 my-1"></label>
-                        <input type="file" id="profile-upload" accept="image/jpg, image/jpeg, image/png, image/gif" capture="user">
+                        <input type="file" id="profile-upload" accept="image/jpg, image/jpeg, image/png, image/gif">
                 </div>
                 <h5 class="offcanvas-title text-light" id="useraccessLabel"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="close"></button>
