@@ -12,8 +12,10 @@ class ProfileImageUpload extends GetDriver {
             $driverInformation['operatorid']
         ];
         $firstInitial = $operatorBasicInfo[0][0];
+
+        $uploadBase = 'D:/prodrvr_uploads/public/profiles/';
         // Create a directory for the user if it doesn't exist
-        $uploadDir = base_path('public/uploads/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/');
+        $uploadDir = $uploadBase . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/';
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -26,7 +28,7 @@ class ProfileImageUpload extends GetDriver {
         //move_uploaded_file($file['tmp_name'], $filePath);
 
         // Store **relative URL** in database for frontend
-        $publicPath = '/uploads/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/' . $filename;
+        $publicPath = '/prodrvr_uploads/public/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/' . $filename;
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {
