@@ -73,15 +73,37 @@ try {
         $signature          = trim($rowData['signature'] ?? '');
         $driverNotes        = trim($rowData['driver_notes'] ?? '');
         
-         echo implode(' | ', [
-            $vehicleId, $operatorId, $name, $numCoaches, $startDateTime, $spotTime,
-            $leaveDateTime, $returnDateTime, $actualDropTime, $endDateTime, $actualEndTime,
-            $totalHrs, $driveTime, $origin, $destination, $groupName, $groupLeader,
-            $groupLeadMobile, $customerName, $customerPhone, $contactName, $contactMobile,
-            $pickUpdetails, $destDetails, $isSignature, $signature, $driverNotes
-        ]) . "<br>";
-
+        $rows[] = [
+            'vehicle_id' => $vehicleId,
+            'operator_id' => $operatorId,
+            'name' => $name,
+            'num_of_coaches' => $numCoaches,
+            'start_date_time' => $startDateTime,
+            'spot_time' => $spotTime,
+            'leave_date_time' => $leaveDateTime,
+            'return_date_time' => $returnDateTime,
+            'actual_drop_time' => $actualDropTime,
+            'end_date_time' => $endDateTime,
+            'actual_end_time' => $actualEndTime,
+            'total_job_hrs' => $totalHrs,
+            'driving_time' => $driveTime,
+            'origin' => $origin,
+            'destination' => $destination,
+            'group_name' => $groupName,
+            'group_leader' => $groupLeader,
+            'group_leader_mobile' => $groupLeadMobile,
+            'customer_name' => $customerName,
+            'customer_phone' => $customerPhone,
+            'contact_name' => $contactName,
+            'contact_mobile' => $contactMobile,
+            'location_pickup_details' => $pickUpdetails,
+            'destination_location_details' => $destDetails,
+            'signature_required' => $isSignature,
+            'signature' => $signature,
+            'driver_notes' => $driverNotes
+        ];
     }
+    return $rows;
 
 } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
     die("❌ Spreadsheet Reader Error: " . $e->getMessage());
