@@ -40,10 +40,10 @@ class Assignment {
             $stmt->bindValue(20, $data['customer_phone'] ?? null);
             $stmt->bindValue(21, $data['contact_name'] ?? null);
             $stmt->bindValue(22, $data['contact_mobile'] ?? null);
-            $stmt->bindValue(23, $data['location_pickup_details'] ?? null);
-            $stmt->bindValue(24, $data['destination_location_details'] ?? null);
+            $stmt->bindValue(23, $data['pickup_details'] ?? null);
+            $stmt->bindValue(24, $data['destination_details'] ?? null);
             $stmt->bindValue(25, $data['signature_required'] ?? 0);
-            $stmt->bindValue(26, $data['signature'] ?? null);
+            $stmt->bindValue(26, $data['signature_path'] ?? null);
             $stmt->bindValue(27, $data['driver_notes'] ?? null);
             $dataInserted = $stmt->execute();
             return $dataInserted;
