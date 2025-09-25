@@ -1,12 +1,12 @@
 <?php
 
 use core\Database;
-use core\Alert;
+use core\Flash;
 
 class Assignment {
     public function insertAssignment(array $data): bool {
       $db = new Database();
-      $alert = new Alert();
+      $alert = new Flash();
         $sql = "INSERT INTO work_orders (vehicle_id, operator_id, name, num_of_coaches,
                 start_date_time, spot_time, leave_date_time, return_date_time, actual_drop_time,
                 end_date_time, actual_end_time, total_job_hrs, driving_time, origin, destination,
