@@ -46,7 +46,7 @@ try {
         // Now safely access by your column names
         $vehicleId          = trim($rowData['vehicle_id'] ?? '');
         $operatorId         = trim($rowData['operator_id'] ?? '');
-        $name               = trim($rowData['name'] ?? '');
+        $operatorName       = trim($rowData['operator_name'] ?? '');
         $numCoaches         = trim($rowData['num_of_coaches'] ?? '');
         $startDateTime      = normalizeDateTime($rowData['start_date_time'] ?? '');
         $spotTime           = normalizeDateTime($rowData['spot_time'] ?? '', true);
@@ -66,7 +66,7 @@ try {
         $customerPhone      = trim($rowData['customer_phone'] ?? '');
         $contactName        = trim($rowData['contact_name'] ?? '');
         $contactMobile      = trim($rowData['contact_mobile'] ?? '');
-        $pickUpdetails      = trim($rowData['location_pickup_details'] ?? '');
+        $pickUpdetails      = trim($rowData['pickup_location_details'] ?? '');
         $destDetails        = trim($rowData['destination_location_details'] ?? '');
         $rawSignature       = $rowData['signature_required'] ?? 'no';
         $isSignature        = strtolower(trim($rawSignature)) === 'yes' ? 1 : 0;
@@ -74,33 +74,33 @@ try {
         $driverNotes        = trim($rowData['driver_notes'] ?? '');
         
         $rows[] = [
-            'vehicle_id' => $vehicleId,
-            'operator_id' => $operatorId,
-            'name' => $name,
-            'num_of_coaches' => $numCoaches,
-            'start_date_time' => $startDateTime,
-            'spot_time' => $spotTime,
-            'leave_date_time' => $leaveDateTime,
-            'return_date_time' => $returnDateTime,
-            'actual_drop_time' => $actualDropTime,
-            'end_date_time' => $endDateTime,
-            'actual_end_time' => $actualEndTime,
-            'total_job_hrs' => $totalHrs,
-            'driving_time' => $driveTime,
-            'origin' => $origin,
-            'destination' => $destination,
-            'group_name' => $groupName,
-            'group_leader' => $groupLeader,
+            'vehicle_id'        => $vehicleId,
+            'operator_id'       => $operatorId,
+            'operator_name'     => $operatorName,
+            'num_of_coaches'    => $numCoaches,
+            'start_date_time'   => $startDateTime,
+            'spot_time'         => $spotTime,
+            'leave_date_time'   => $leaveDateTime,
+            'return_date_drop_time'  => $returnDateTime,
+            'actual_drop_time'  => $actualDropTime,
+            'end_date_time'     => $endDateTime,
+            'actual_end_time'   => $actualEndTime,
+            'total_job_hrs'     => $totalHrs,
+            'driving_time'      => $driveTime,
+            'origin'            => $origin,
+            'destination'       => $destination,
+            'group_name'        => $groupName,
+            'group_leader'      => $groupLeader,
             'group_leader_mobile' => $groupLeadMobile,
-            'customer_name' => $customerName,
-            'customer_phone' => $customerPhone,
-            'contact_name' => $contactName,
-            'contact_mobile' => $contactMobile,
-            'location_pickup_details' => $pickUpdetails,
+            'customer_name'     => $customerName,
+            'customer_phone'    => $customerPhone,
+            'contact_name'      => $contactName,
+            'contact_mobile'    => $contactMobile,
+            'pickup_location_details' => $pickUpdetails,
             'destination_location_details' => $destDetails,
             'signature_required' => $isSignature,
-            'signature' => $signature,
-            'driver_notes' => $driverNotes
+            'signature'         => $signature,
+            'driver_notes'      => $driverNotes
         ];
     }
     return $rows;
