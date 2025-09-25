@@ -1,109 +1,86 @@
 <?php
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 require __DIR__ . '/../../vendor/autoload.php';
+require_once base_path('app/models/assignmentmodel.php');
 
-// Absolute Windows path to file
+// Absolute Windows path to the Excel file
 $filePathName = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
 
-// Check if the file exists before trying to load it
+// Check if the file exists
 if (!file_exists($filePathName)) {
     die("❌ File not found: $filePathName");
 }
 
 try {
-    // Attempt to load the spreadsheet
+    // Load spreadsheet
     $spreadsheet = IOFactory::load($filePathName);
-    // Get first sheet (active)
     $sheet = $spreadsheet->getActiveSheet();
-    // Convert to array
     $data = $sheet->toArray(null, true, true, true);
 
-    //echo "✅ File loaded successfully. Row count: " . count($data) . "<br><br>";
+    // Read headers
+    $headers = [];
+    foreach ($data[1] as $col => $value) {
+        $headers[$col] = strtolower(str_replace(' ', '_', trim($value)));
+    }
 
-    // Dump data
-    /*foreach ($data as $row) {
-        echo implode(' | ', $row) . "<br>";
-    }*/
-    
-        $header = [];
-        foreach ($data[1] as $col => $value) {
-            $headers[$col] = strtolower(str_replace(' ', '_', trim($value)));
-        }
+    $rows = [];
 
-    // Loop through rows ( skip 1st row, which is headers).
-    foreach($data as $index => $row) {
-        if ($index === 1) continue; // Skip header row
+    // Process each row (skip header)
+    foreach ($data as $index => $row) {
+        if ($index === 1) continue;
 
-        // Map each cell to it's header
         $rowData = [];
         foreach ($row as $col => $value) {
             $key = $headers[$col] ?? $col;
             $rowData[$key] = $value;
         }
 
-        // Now safely access by your column names
-        $vehicleId          = trim($rowData['vehicle_id'] ?? '');
-        $operatorId         = trim($rowData['operator_id'] ?? '');
-        $operatorName       = trim($rowData['operator_name'] ?? '');
-        $numCoaches         = trim($rowData['num_of_coaches'] ?? '');
-        $startDateTime      = normalizeDateTime($rowData['start_date_time'] ?? '');
-        $spotTime           = normalizeDateTime($rowData['spot_time'] ?? '', true);
-        $leaveDateTime      = normalizeDateTime($rowData['leave_date_time'] ?? '');
-        $returnDateTime     = normalizeDateTime($rowData['return_date_drop_time'] ?? '');
-        $actualDropTime     = normalizeDateTime($rowData['actual_drop_time'] ?? '', true);
-        $endDateTime        = normalizeDateTime($rowData['end_date_time'] ?? '');
-        $actualEndTime      = normalizeDateTime($rowData['acutal_end_time'] ?? '', true);
-        $totalHrs           = trim($rowData['total_job_hrs'] ?? '');
-        $driveTime          = trim($rowData['driving_time'] ?? '');
-        $origin             = trim($rowData['origin'] ?? '');
-        $destination        = trim($rowData['destination'] ?? '');
-        $groupName          = trim($rowData['group_name'] ?? '');
-        $groupLeader        = trim($rowData['group_leader'] ?? '');
-        $groupLeadMobile    = trim($rowData['group_leader_mobile'] ?? '');
-        $customerName       = trim($rowData['customer_name'] ?? '');
-        $customerPhone      = trim($rowData['customer_phone'] ?? '');
-        $contactName        = trim($rowData['contact_name'] ?? '');
-        $contactMobile      = trim($rowData['contact_mobile'] ?? '');
-        $pickUpdetails      = trim($rowData['pickup_location_details'] ?? '');
-        $destDetails        = trim($rowData['destination_location_details'] ?? '');
-        $rawSignature       = $rowData['signature_required'] ?? 'no';
-        $isSignature        = strtolower(trim($rawSignature)) === 'yes' ? 1 : 0;
-        $signature          = trim($rowData['signature'] ?? '');
-        $driverNotes        = trim($rowData['driver_notes'] ?? '');
-        
+        // Map Excel data to database fields
         $rows[] = [
-            'vehicle_id'        => $vehicleId,
-            'operator_id'       => $operatorId,
-            'operator_name'     => $operatorName,
-            'num_of_coaches'    => $numCoaches,
-            'start_date_time'   => $startDateTime,
-            'spot_time'         => $spotTime,
-            'leave_date_time'   => $leaveDateTime,
-            'return_date_drop_time'  => $returnDateTime,
-            'actual_drop_time'  => $actualDropTime,
-            'end_date_time'     => $endDateTime,
-            'actual_end_time'   => $actualEndTime,
-            'total_job_hrs'     => $totalHrs,
-            'driving_time'      => $driveTime,
-            'origin'            => $origin,
-            'destination'       => $destination,
-            'group_name'        => $groupName,
-            'group_leader'      => $groupLeader,
-            'group_leader_mobile' => $groupLeadMobile,
-            'customer_name'     => $customerName,
-            'customer_phone'    => $customerPhone,
-            'contact_name'      => $contactName,
-            'contact_mobile'    => $contactMobile,
-            'pickup_location_details' => $pickUpdetails,
-            'destination_location_details' => $destDetails,
-            'signature_required' => $isSignature,
-            'signature'         => $signature,
-            'driver_notes'      => $driverNotes
+            'vehicle_id'                  => trim($rowData['vehicle_id'] ?? ''),
+            'operator_id'                 => trim($rowData['operator_id'] ?? ''),
+            'operator_name'               => trim($rowData['operator_name'] ?? ''),
+            'num_of_coaches'              => trim($rowData['num_of_coaches'] ?? ''),
+            'start_date_time'             => normalizeDateTime($rowData['start_date_time'] ?? ''),
+            'spot_time'                   => normalizeDateTime($rowData['spot_time'] ?? '', true),
+            'leave_date_time'             => normalizeDateTime($rowData['leave_date_time'] ?? ''),
+            'return_date_drop_time'       => normalizeDateTime($rowData['return_date_drop_time'] ?? ''),
+            'actual_drop_time'            => normalizeDateTime($rowData['actual_drop_time'] ?? '', true),
+            'end_date_time'               => normalizeDateTime($rowData['end_date_time'] ?? ''),
+            'actual_end_time'             => normalizeDateTime($rowData['actual_end_time'] ?? '', true),
+            'total_job_time'              => trim($rowData['total_job_hrs'] ?? ''),
+            'driving_time'                => trim($rowData['driving_time'] ?? ''),
+            'origin'                      => trim($rowData['origin'] ?? ''),
+            'destination'                 => trim($rowData['destination'] ?? ''),
+            'group_name'                  => trim($rowData['group_name'] ?? ''),
+            'group_leader'                => trim($rowData['group_leader'] ?? ''),
+            'group_leader_mobile'         => trim($rowData['group_leader_mobile'] ?? ''),
+            'customer_name'               => trim($rowData['customer_name'] ?? ''),
+            'customer_phone'              => trim($rowData['customer_phone'] ?? ''),
+            'contact_name'                => trim($rowData['contact_name'] ?? ''),
+            'contact_mobile'              => trim($rowData['contact_mobile'] ?? ''),
+            'pickup_details'              => trim($rowData['pickup_location_details'] ?? ''),
+            'destination_details'         => trim($rowData['destination_location_details'] ?? ''),
+            'signature_required'          => strtolower(trim($rowData['signature_required'] ?? 'no')) === 'yes' ? 1 : 0,
+            'signature_path'              => trim($rowData['signature'] ?? ''),
+            'driver_notes'                => trim($rowData['driver_notes'] ?? '')
         ];
     }
-    return $rows;
+
+    // Insert each row using Assignment class
+    $assignment = new Assignment();
+
+    foreach ($rows as $rowData) {
+        $success = $assignment->insertAssignment($rowData);
+        if ($success) {
+            echo "✅ Assignment inserted successfully for vehicle ID: " . ($rowData['vehicle_id'] ?? '') . "\n";
+        } else {
+            echo "❌ Failed to insert assignment for vehicle ID: " . ($rowData['vehicle_id'] ?? '') . "\n";
+        }
+    }
 
 } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
     die("❌ Spreadsheet Reader Error: " . $e->getMessage());
