@@ -3,8 +3,33 @@
 use core\Database;
 
 class Assignment {
+    protected string $logFile;
+
+    public function __construct($logFile = 'D:/webapps/logs/job_import.log') {
+        $this->logFile = $logFile;
+    }
+
     public function insertAssignment(array $data): bool {
         $db = new Database();
+        $pdo = $db->connect();
+        try {
+            // Step 1: Pre-check for duplicate assignment
+            $checkSql = "SELECT COUNT(*) FROM work_orders
+                        WHERE vehicle_id = :vehicle_id
+                        AND start_date_time = :start_date_time";
+            $checkStmt = $pdo->prepare($checkSql);
+            $checkStmt->execute([
+                ':vehicle_id' => $data['vehicle_id'] ?? null,
+                ':start_date_time' => $data['start_date_time'] ?? null
+            ]);
+
+            if ($checkStmt->fetchColumn() > 0) {
+                // Duplicate found - stop insert
+                /*error_log("Duplicate assignment blocked: vehicle {$data['vehicle_id']} at {$data['start_date_time']}");
+                return 'duplicate';*/
+                $this->writeLog("DUPLICATE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} skipped");
+                return 'duplicate';
+            }
         $sql = "INSERT INTO work_orders (vehicle_id, operator_id, operator_name, num_of_coaches,
                 start_date_time, spot_time, leave_date_time, return_date_drop_time, actual_drop_time,
                 end_date_time, actual_end_time, total_job_time, driving_time, origin, destination,
@@ -15,8 +40,8 @@ class Assignment {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                         ?, ?, ?, ?, ?, ?, ?)";
-        try {
-            $stmt = $db->connect()->prepare($sql);
+
+            $stmt = $pdo->prepare($sql);
 
             $stmt->bindValue(1, $data['vehicle_id'] ?? null);
             $stmt->bindValue(2, $data['operator_id'] ?? null);
@@ -46,12 +71,24 @@ class Assignment {
             $stmt->bindValue(26, $data['signature_path'] ?? null);
             $stmt->bindValue(27, $data['driver_notes'] ?? null);
             $dataInserted = $stmt->execute();
-            return $dataInserted;
 
+            if ($dataInserted) {
+                $this->writeLog("SUCCESS: Inserted vehicle {$data['vehicle_id']} at {$data['start_date_time']}");
+                return true;
+            } else {
+                $this->writeLog("FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Execute returned false");
+                return false;
+            }
+            
         } catch (PDOException $e) {
-            error_log("Database Insert Error (assignment): " . $e->getMessage());
+            $this->writeLog("FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Error: " . $e->getMessage());
             return false;
         }
+    }
+
+    protected function writeLog(string $message) {
+        $timestamp = date('Y-m-d H:i:s');
+        file_put_contents($this->logFile, "[$timestamp] $message\n", FILE_APPEND);
     }
 }
 ?>
