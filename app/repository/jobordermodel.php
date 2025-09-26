@@ -30,7 +30,7 @@ try {
 
     // Process each row (skip header)
     foreach ($data as $index => $row) {
-        if ($index === 1) continue;
+        if ($index === 1) continue; // Skip header row
 
         $rowData = [];
         foreach ($row as $col => $value) {
@@ -73,12 +73,32 @@ try {
     // Insert each row using Assignment class
     $assignment = new Assignment();
 
+    // Path to custom log file
+    $logFile = 'D:/webapps/logs/job_import.log';
+
+    // Function to write log messages
+    function writeLog($file, $message) {
+        $timestamp = date('Y-m-d H:i:s');
+        file_put_contents($file, "[$timestamp] $message\n", FILE_APPEND);
+    }
+
     foreach ($rows as $rowData) {
-        $success = $assignment->insertAssignment($rowData);
-        if ($success) {
-            echo "✅ Assignment inserted successfully for vehicle ID: " . ($rowData['vehicle_id'] ?? '') . "\n";
+        $result = $assignment->insertAssignment($rowData);
+
+        if ($result === true) {
+            $msg = "SUCCESS: Inserted vehicle ID: " . ($rowData['vehicle_id'] ?? '');
+            echo "✅ $msg\n";
+            writeLog($logFile, $msg);
+
+        } elseif ($result === 'duplicate') {
+            $msg = "DUPLICATE: Skipped vehicle ID: " . ($rowData['vehicle_id'] ?? '');
+            echo "⚠️ $msg\n";
+            writeLog($logFile, $msg);
+
         } else {
-            echo "❌ Failed to insert assignment for vehicle ID: " . ($rowData['vehicle_id'] ?? '') . "\n";
+            $msg = "FAILURE: Insert failed for vehicle ID: " . ($rowData['vehicle_id'] ?? '');
+            echo "❌ $msg\n";
+            writeLog($logFile, $msg);
         }
     }
 
