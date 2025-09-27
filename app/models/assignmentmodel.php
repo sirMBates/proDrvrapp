@@ -5,7 +5,7 @@ use core\Database;
 class Assignment {
     protected string $logFile;
 
-    public function __construct($logFile = 'D:/webapps/logs/job_import.log') {
+    public function __construct($logFile = 'D:/webapps/logs/job_import_master.log') {
         $this->logFile = $logFile;
     }
 
@@ -42,7 +42,10 @@ class Assignment {
                         ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $pdo->prepare($sql);
-
+            // Loop over each and set each property and value.
+            /*for ($i=1; $i<=27; $i++) {
+                $stmt->bindValue($i, $data[array_keys($data)[$i-1]] ?? null);
+            }*/
             $stmt->bindValue(1, $data['vehicle_id'] ?? null);
             $stmt->bindValue(2, $data['operator_id'] ?? null);
             $stmt->bindValue(3, $data['operator_name'] ?? null);
@@ -91,4 +94,5 @@ class Assignment {
         file_put_contents($this->logFile, "[$timestamp] $message\n", FILE_APPEND);
     }
 }
+
 ?>
