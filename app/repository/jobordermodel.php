@@ -4,7 +4,17 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 require __DIR__ . '/../../vendor/autoload.php';
-require_once base_path('app/models/assignmentmodel.php');
+require_once 'D:/webapps/prodrvrapp/app/models/assignmentmodel.php';
+// require_once base_path('app/models/assignmentmodel.php);
+
+// Master log (same as Assignment class)
+$masterLog = 'D:/webapps/logs/job_import_master.log';
+
+function writeLog(string $message) {
+    global $masterLog;
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($masterLog, "[$timestamp] $message\n", FILE_APPEND);
+}
 
 // Absolute Windows path to the Excel file
 $filePathName = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
@@ -73,41 +83,27 @@ try {
     // Insert each row using Assignment class
     $assignment = new Assignment();
 
-    // Path to custom log file
-    $logFile = 'D:/webapps/logs/job_import.log';
-
-    // Function to write log messages
-    function writeLog($file, $message) {
-        $timestamp = date('Y-m-d H:i:s');
-        file_put_contents($file, "[$timestamp] $message\n", FILE_APPEND);
-    }
-
     foreach ($rows as $rowData) {
         $result = $assignment->insertAssignment($rowData);
 
         if ($result === true) {
-            $msg = "SUCCESS: Inserted vehicle ID: " . ($rowData['vehicle_id'] ?? '');
-            echo "✅ $msg\n";
-            writeLog($logFile, $msg);
-
+            writeLog("✅ SUCCESS: Inserted vehicle {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
         } elseif ($result === 'duplicate') {
-            $msg = "DUPLICATE: Skipped vehicle ID: " . ($rowData['vehicle_id'] ?? '');
-            echo "⚠️ $msg\n";
-            writeLog($logFile, $msg);
-
+            writeLog("⚠️ DUPLICATE: Skipped vehicle {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
         } else {
-            $msg = "FAILURE: Insert failed for vehicle ID: " . ($rowData['vehicle_id'] ?? '');
-            echo "❌ $msg\n";
-            writeLog($logFile, $msg);
+            writeLog("❌ FAILURE: Insert failed for vehicle {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
         }
     }
 
 } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
-    die("❌ Spreadsheet Reader Error: " . $e->getMessage());
+    echo "❌ Spreadsheet Reader Error: " . $e->getMessage() . "\n";
+    exit(1);
 } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
-    die("❌ PhpSpreadsheet Error: " . $e->getMessage());
+    echo "❌ PhpSpreadsheet Error: " . $e->getMessage() . "\n";
+    exit(1);
 } catch (\Exception $e) {
-    die("❌ General Error: " . $e->getMessage());
+    echo "❌ General Error: " . $e->getMessage() . "\n";
+    exit(1);
 }
 
 /**
