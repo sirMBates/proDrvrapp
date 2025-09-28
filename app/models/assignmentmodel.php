@@ -1,11 +1,6 @@
 <?php
 
-use Defuse\Crypto\Crypto;
-use Defuse\Crypto\Key;
 use core\Database;
-use Dotenv\Dotenv;
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
-$dotenv->load();
 
 class Assignment {
     protected string $logFile;
