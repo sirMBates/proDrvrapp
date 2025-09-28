@@ -110,7 +110,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-ten" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body">Right away 💯! Once you click the <b class="text-uppercase text-danger">emergency</b> button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in <b class="text-danger">emergency</b> mode. Dispatch must clear the emergency status<i class="px-1 fa-solid fa-square-poll-vertical"></i> and once cleared, the app will return to normal mode. <u>Please, under no circumstances, click the <b class="text-uppercase text-danger">emergency</b> button if it is not a real <b class="text-danger">emergency</b></u>!</div>
+                    <div class="accordion-body">Right away 💯! Once you click the <b class="text-danger">emergency</b> button, the app will flash red and send an alert to your company's dispatch. Until dispatch checks with you, your app will stay in <b class="text-danger">emergency</b> mode. Dispatch must clear the emergency status<i class="px-1 fa-solid fa-square-poll-vertical"></i> and once cleared, the app will return to normal mode. <u>Please, under no circumstances, click the <b class="text-danger">emergency</b> button if it is not a real <b class="text-uppercase text-danger">emergency</b></u>!</div>
                 </div>
             </div>
             <div class="accordion-item">
@@ -140,7 +140,7 @@ require "partials/banner.php";
                     </button>
                 </h2>
                 <div id="question-thirteen" class="accordion-collapse collapse" data-bs-parent="#faqcon">
-                    <div class="accordion-body"><u>Please, only click the <b class="text-uppercase text-danger">emergency</b> button if you're in an actual <b class="text-danger">emergency</b></u>. The alert only goes out to your company's dispatch ( management )<i class="px-1 fa-solid fa-building"></i>. So for now, no 👎.</div>
+                    <div class="accordion-body"><u>Please, only click the <b class="text-danger">emergency</b> button if you're in an actual <b class="text-uppercase text-danger">emergency</b></u>! The alert only goes out to your company's dispatch ( management )<i class="px-1 fa-solid fa-building"></i>. So for now, no 👎.</div>
                 </div>
             </div>
             <div class="accordion-item">
