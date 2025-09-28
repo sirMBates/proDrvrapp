@@ -1,6 +1,11 @@
 <?php
 
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
 use core\Database;
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
 
 class Assignment {
     protected string $logFile;
@@ -9,9 +14,10 @@ class Assignment {
         $this->logFile = $logFile;
     }
 
-    public function insertAssignment(array $data): bool {
+    public function insertAssignment(array $data): bool|string {
         $db = new Database();
         $pdo = $db->connect();
+
         try {
             // Step 1: Pre-check for duplicate assignment
             $checkSql = "SELECT COUNT(*) FROM work_orders
@@ -30,16 +36,33 @@ class Assignment {
                 $this->writeLog("DUPLICATE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} skipped");
                 return 'duplicate';
             }
-        $sql = "INSERT INTO work_orders (vehicle_id, operator_id, operator_name, num_of_coaches,
-                start_date_time, spot_time, leave_date_time, return_date_drop_time, actual_drop_time,
-                end_date_time, actual_end_time, total_job_time, driving_time, origin, destination,
-                group_name, group_leader, group_leader_mobile, customer_name, customer_phone,
-                contact_name, contact_mobile, pickup_details, destination_details,
-                signature_required, signature_path, driver_notes
-            ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                        ?, ?, ?, ?, ?, ?, ?)";
+
+            $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+            $driverSql = "SELECT driver_id, first_name, last_name 
+                        FROM drivers";
+            $driverStmt = $pdo->query($driverSql);
+            $driverFound = null;
+
+            foreach ($driverStmt as $d) {
+                $plainOpId = Crypto::decrypt($d['operator_id'], $key);
+                if ($plainOpId === $data['operator_id']) {
+                    $driverFound = $d;
+                    break;
+                }
+            }
+
+            if (!$driverFound) {
+                $this->writeLog("FAILURE: No driver found for operator_id {$data['operator_id']}");
+                return 'driver_not_found';
+            }
+
+            $sql = "INSERT INTO work_orders (vehicle_id, driver_id, num_of_coaches, start_date_time, spot_time, 
+                    leave_date_time, return_date_drop_time, actual_drop_time, end_date_time, actual_end_time, total_job_time, driving_time, origin, destination, group_name, group_leader, group_leader_mobile, customer_name, customer_phone, contact_name, contact_mobile, pickup_details, destination_details,
+                    signature_required, signature_path, driver_notes
+                ) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                            ?, ?, ?, ?, ?, ?)";
 
             $stmt = $pdo->prepare($sql);
             // Loop over each and set each property and value.
@@ -47,36 +70,35 @@ class Assignment {
                 $stmt->bindValue($i, $data[array_keys($data)[$i-1]] ?? null);
             }*/
             $stmt->bindValue(1, $data['vehicle_id'] ?? null);
-            $stmt->bindValue(2, $data['operator_id'] ?? null);
-            $stmt->bindValue(3, $data['operator_name'] ?? null);
-            $stmt->bindValue(4, $data['num_of_coaches'] ?? null);
-            $stmt->bindValue(5, $data['start_date_time'] ?? null);
-            $stmt->bindValue(6, $data['spot_time'] ?? null);
-            $stmt->bindValue(7, $data['leave_date_time'] ?? null);
-            $stmt->bindValue(8, $data['return_date_time'] ?? null);
-            $stmt->bindValue(9, $data['actual_drop_time'] ?? null);
-            $stmt->bindValue(10, $data['end_date_time'] ?? null);
-            $stmt->bindValue(11, $data['actual_end_time'] ?? null);
-            $stmt->bindValue(12, $data['total_job_time'] ?? null);
-            $stmt->bindValue(13, $data['driving_time'] ?? null);
-            $stmt->bindValue(14, $data['origin'] ?? null);
-            $stmt->bindValue(15, $data['destination'] ?? null);
-            $stmt->bindValue(16, $data['group_name'] ?? null);
-            $stmt->bindValue(17, $data['group_leader'] ?? null);
-            $stmt->bindValue(18, $data['group_leader_mobile'] ?? null);
-            $stmt->bindValue(19, $data['customer_name'] ?? null);
-            $stmt->bindValue(20, $data['customer_phone'] ?? null);
-            $stmt->bindValue(21, $data['contact_name'] ?? null);
-            $stmt->bindValue(22, $data['contact_mobile'] ?? null);
-            $stmt->bindValue(23, $data['pickup_details'] ?? null);
-            $stmt->bindValue(24, $data['destination_details'] ?? null);
-            $stmt->bindValue(25, $data['signature_required'] ?? 0);
-            $stmt->bindValue(26, $data['signature_path'] ?? null);
-            $stmt->bindValue(27, $data['driver_notes'] ?? null);
+            $stmt->bindValue(2, $driverFound['driver_id']); // driver_id inserted
+            $stmt->bindValue(3, $data['num_of_coaches'] ?? null);
+            $stmt->bindValue(4, $data['start_date_time'] ?? null);
+            $stmt->bindValue(5, $data['spot_time'] ?? null);
+            $stmt->bindValue(6, $data['leave_date_time'] ?? null);
+            $stmt->bindValue(7, $data['return_date_drop_time'] ?? null);
+            $stmt->bindValue(8, $data['actual_drop_time'] ?? null);
+            $stmt->bindValue(9, $data['end_date_time'] ?? null);
+            $stmt->bindValue(10, $data['actual_end_time'] ?? null);
+            $stmt->bindValue(11, $data['total_job_time'] ?? null);
+            $stmt->bindValue(12, $data['driving_time'] ?? null);
+            $stmt->bindValue(13, $data['origin'] ?? null);
+            $stmt->bindValue(14, $data['destination'] ?? null);
+            $stmt->bindValue(15, $data['group_name'] ?? null);
+            $stmt->bindValue(16, $data['group_leader'] ?? null);
+            $stmt->bindValue(17, $data['group_leader_mobile'] ?? null);
+            $stmt->bindValue(18, $data['customer_name'] ?? null);
+            $stmt->bindValue(19, $data['customer_phone'] ?? null);
+            $stmt->bindValue(20, $data['contact_name'] ?? null);
+            $stmt->bindValue(21, $data['contact_mobile'] ?? null);
+            $stmt->bindValue(22, $data['pickup_details'] ?? null);
+            $stmt->bindValue(23, $data['destination_details'] ?? null);
+            $stmt->bindValue(24, $data['signature_required'] ?? 0);
+            $stmt->bindValue(25, $data['signature_path'] ?? null);
+            $stmt->bindValue(26, $data['driver_notes'] ?? null);
             $dataInserted = $stmt->execute();
 
             if ($dataInserted) {
-                $this->writeLog("SUCCESS: Inserted vehicle {$data['vehicle_id']} at {$data['start_date_time']}");
+                $this->writeLog("SUCCESS: Inserted vehicle {$data['vehicle_id']} assigned to {$driverFound['first_name']} {$driverFound['last_name']} at {$data['start_date_time']}");
                 return true;
             } else {
                 $this->writeLog("FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Execute returned false");

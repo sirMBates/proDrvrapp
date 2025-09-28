@@ -2,7 +2,7 @@
 
 namespace core;
 use Dotenv\Dotenv;
-require_once "../vendor/autoload.php";
+require_once base_path("vendor/autoload.php");
 $dotenv = Dotenv::createImmutable(__DIR__, '../.local.env');
 $dotenv->load();
 
