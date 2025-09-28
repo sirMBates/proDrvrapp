@@ -3,7 +3,7 @@ REM -------------------------
 REM Configuration
 REM -------------------------
 set PHP_PATH=C:\php\php.exe
-set SCRIPT_PATH=D:\webapps\prodrvrapp\app\repository\jobordermodel.php
+set SCRIPT_PATH=D:\webapps\prodrvrapp\public\index.php
 set MASTER_LOG=D:\webapps\logs\job_import_master.log
 
 REM Get current timestamp
@@ -14,8 +14,8 @@ for /f "tokens=1-5 delims=/:. " %%a in ("%date% %time%") do (
 REM Log start of task
 echo [%DATE% %TIME%] Task Scheduler started PHP script >> "%MASTER_LOG%"
 
-REM Run PHP script and redirect both stdout and stderr to master log
-"%PHP_PATH%" "%SCRIPT_PATH%" >> "%MASTER_LOG%" 2>&1
+REM Run PHP script with a query string-like parameter for the job import and redirect both stdout and stderr to master log
+"%PHP_PATH%" "%SCRIPT_PATH%" job=import >> "%MASTER_LOG%" 2>&1
 
 REM Check exit code
 if %ERRORLEVEL% neq 0 (

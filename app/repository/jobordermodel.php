@@ -2,10 +2,18 @@
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
+use core\Database;
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
+$key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
 
-require __DIR__ . '/../../vendor/autoload.php';
-require_once 'D:/webapps/prodrvrapp/app/models/assignmentmodel.php';
-// require_once base_path('app/models/assignmentmodel.php);
+// require __DIR__ . '/../../vendor/autoload.php';
+require_once base_path("vendor/autoload.php");
+require_once base_path("app/models/assignmentmodel.php");
+// require_once 'D:/webapps/prodrvrapp/app/models/assignmentmodel.php';
 
 // Master log (same as Assignment class)
 $masterLog = 'D:/webapps/logs/job_import_master.log';
@@ -48,11 +56,29 @@ try {
             $rowData[$key] = $value;
         }
 
+        $encryptedOperatorId = Crypto::encrypt($rowData['operator_id'], $key);
+
+         // Lookup driver_id from drivers table
+        $db = new Database();
+        $pdo = $db->connect();
+        $sql = "SELECT driver_id, first_name, last_name
+                FROM driver
+                WHERE operator_id = :operator_id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':operator_id' => $encryptedOperatorId]);
+        $driver = $stmt->fetch();
+        
+        if (!$driver) {
+            echo "❌ ERROR: No driver found for operator_id {$rowData['operator_id']}\n";
+            continue; // skip this row
+        }
+
         // Map Excel data to database fields
         $rows[] = [
             'vehicle_id'                  => trim($rowData['vehicle_id'] ?? ''),
-            'operator_id'                 => trim($rowData['operator_id'] ?? ''),
-            'operator_name'               => trim($rowData['operator_name'] ?? ''),
+            'driver_id'                   => $driver['driver_id'], // insert only driver_id
+            'operator_id'                 => trim($rowData['operator_id'] ?? ''), // for display/log only
+            'operator_name'               => $driver['first_name'] . ' ' . $driver['last_name'], // display/log only
             'num_of_coaches'              => trim($rowData['num_of_coaches'] ?? ''),
             'start_date_time'             => normalizeDateTime($rowData['start_date_time'] ?? ''),
             'spot_time'                   => normalizeDateTime($rowData['spot_time'] ?? '', true),
