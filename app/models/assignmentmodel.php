@@ -37,22 +37,17 @@ class Assignment {
                 return 'duplicate';
             }
 
-            $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
             $driverSql = "SELECT driver_id, first_name, last_name 
-                        FROM drivers";
-            $driverStmt = $pdo->query($driverSql);
-            $driverFound = null;
-
-            foreach ($driverStmt as $d) {
-                $plainOpId = Crypto::decrypt($d['operator_id'], $key);
-                if ($plainOpId === $data['operator_id']) {
-                    $driverFound = $d;
-                    break;
-                }
-            }
+                        FROM driver
+                        WHERE operator_id = :operator_id
+                        LIMIT 1";
+            $driverStmt = $pdo->prepare($driverSql);
+            $driverStmt-bindValue(':operator_id', $data['operator_id'] ?? null, PDO::PARAM_STR);
+            $driverStmt->execute();
+            $driverFound = $driverStmt->fetch();
 
             if (!$driverFound) {
-                $this->writeLog("FAILURE: No driver found for operator_id {$data['operator_id']}");
+                $this->writeLog("FAILURE: No driver found for operator_id: {$data['operator_id']}");
                 return 'driver_not_found';
             }
 
@@ -70,7 +65,7 @@ class Assignment {
                 $stmt->bindValue($i, $data[array_keys($data)[$i-1]] ?? null);
             }*/
             $stmt->bindValue(1, $data['vehicle_id'] ?? null);
-            $stmt->bindValue(2, $driverFound['driver_id']); // driver_id inserted
+            $stmt->bindValue(2, $driverFound['driver_id'], PDO::PARAM_INT); // driver_id inserted
             $stmt->bindValue(3, $data['num_of_coaches'] ?? null);
             $stmt->bindValue(4, $data['start_date_time'] ?? null);
             $stmt->bindValue(5, $data['spot_time'] ?? null);

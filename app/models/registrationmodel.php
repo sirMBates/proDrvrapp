@@ -20,12 +20,11 @@ class RegistrationInformation {
                 WHERE username = ?";
         $stmt = $db->connect()->prepare($sql);
 
-        $encryptedOperatorId = Crypto::encrypt($newCompanyId, $key);
         $encryptedFirstName = Crypto::encrypt($firstname, $key);
         $encryptedLastName = Crypto::encrypt($lastname, $key);
         $encryptedMobileNum = Crypto::encrypt($mobileNum, $key);
         $encryptedBirthdate = Crypto::encrypt($birthdate, $key);
-        $stmt->bindParam(1, $encryptedOperatorId);
+        $stmt->bindParam(1, $newCompanyId);
         $stmt->bindParam(2, $encryptedFirstName);
         $stmt->bindParam(3, $encryptedLastName);
         $stmt->bindParam(4, $encryptedMobileNum);
