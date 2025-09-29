@@ -1,12 +1,13 @@
 <?php
 
+use core\Logger;
 use core\Database;
 
 class Assignment {
-    protected string $logFile;
+    protected Logger $logger;
 
-    public function __construct($logFile = 'D:/webapps/logs/job_import_master.log') {
-        $this->logFile = $logFile;
+    public function __construct(Logger $logger) {
+        $this->logger = $logger;
     }
 
     public function insertAssignment(array $data): bool|string {
@@ -28,7 +29,7 @@ class Assignment {
                 // Duplicate found - stop insert
                 /*error_log("Duplicate assignment blocked: vehicle {$data['vehicle_id']} at {$data['start_date_time']}");
                 return 'duplicate';*/
-                $this->writeLog("DUPLICATE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} skipped");
+                $this->logger->warning("Duplicate Vehicle: {$data['vehicle_id']} at {$data['start_date_time']} skipped");
                 return 'duplicate';
             }
 
@@ -37,12 +38,12 @@ class Assignment {
                         WHERE operator_id = :operator_id
                         LIMIT 1";
             $driverStmt = $pdo->prepare($driverSql);
-            $driverStmt-bindValue(':operator_id', $data['operator_id'] ?? null, PDO::PARAM_STR);
+            $driverStmt->bindValue(':operator_id', $data['operator_id'] ?? null, PDO::PARAM_STR);
             $driverStmt->execute();
             $driverFound = $driverStmt->fetch();
 
             if (!$driverFound) {
-                $this->writeLog("FAILURE: No driver found for operator_id: {$data['operator_id']}");
+                $this->logger->log("❌ FAILURE: No driver found for operator_id: {$data['operator_id']}");
                 return 'driver_not_found';
             }
 
@@ -56,11 +57,11 @@ class Assignment {
 
             $stmt = $pdo->prepare($sql);
             // Loop over each and set each property and value.
-            /*for ($i=1; $i<=27; $i++) {
+            /*for ($i=1; $i<=26; $i++) {
                 $stmt->bindValue($i, $data[array_keys($data)[$i-1]] ?? null);
             }*/
             $stmt->bindValue(1, $data['vehicle_id'] ?? null);
-            $stmt->bindValue(2, $driverFound['driver_id'], PDO::PARAM_INT); // driver_id inserted
+            $stmt->bindValue(2, $driverFound['driver_id'], \PDO::PARAM_INT); // driver_id inserted
             $stmt->bindValue(3, $data['num_of_coaches'] ?? null);
             $stmt->bindValue(4, $data['start_date_time'] ?? null);
             $stmt->bindValue(5, $data['spot_time'] ?? null);
@@ -88,15 +89,15 @@ class Assignment {
             $dataInserted = $stmt->execute();
 
             if ($dataInserted) {
-                $this->writeLog("SUCCESS: Inserted vehicle {$data['vehicle_id']} assigned to {$driverFound['first_name']} {$driverFound['last_name']} at {$data['start_date_time']}");
+                $this->logger->info("✅ SUCCESS: Inserted vehicle {$data['vehicle_id']} assigned to {$driverFound['first_name']} {$driverFound['last_name']} at {$data['start_date_time']}");
                 return true;
             } else {
-                $this->writeLog("FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Execute returned false");
+                $this->logger->error("❌ FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Execute returned false");
                 return false;
             }
             
-        } catch (PDOException $e) {
-            $this->writeLog("FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Error: " . $e->getMessage());
+        } catch (\PDOException $e) {
+            $this->logger->log("❌ FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Error: " . $e->getMessage());
             return false;
         }
     }
