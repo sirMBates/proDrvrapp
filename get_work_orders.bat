@@ -4,27 +4,22 @@ REM Configuration
 REM -------------------------
 set PHP_PATH=C:\php\php.exe
 set SCRIPT_PATH=D:\webapps\prodrvrapp\public\index.php
-set MASTER_LOG=D:\webapps\logs\job_import_master.log
-
-REM Get current timestamp
-for /f "tokens=1-5 delims=/:. " %%a in ("%date% %time%") do (
-    set TIMESTAMP=%%a-%%b-%%c_%%d-%%e
-)
+set MASTER_LOG=D:\webapps\logs/job_import_master.log
+set DEBUG_LOG=D:\webapps\logs/debug_task.log
 
 REM Log start of task
-echo [%DATE% %TIME%] Task Scheduler started PHP script >> "%MASTER_LOG%"
+echo [%DATE% %TIME%] Task Scheduler started >> "%MASTER_LOG%"
 
-REM Run PHP script with a query string-like parameter for the job import and redirect both stdout and stderr to master log
-"%PHP_PATH%" "%SCRIPT_PATH%" job=import >> "%MASTER_LOG%" 2>&1
-
-REM Check exit code
-if %ERRORLEVEL% neq 0 (
-    echo [%DATE% %TIME%] PHP script exited with error code %ERRORLEVEL% >> "%MASTER_LOG%"
+REM If no argument is passed to the bat, default to job=import
+if "%1"=="" (
+    set ARG=job=import
 ) else (
-    echo [%DATE% %TIME%] PHP script completed successfully >> "%MASTER_LOG%"
+    set ARG=%1
 )
 
-REM Extra blank line for readability
-echo. >> "%MASTER_LOG%"
+REM Run PHP script with argument and redirect stdout & stderr
+"%PHP_PATH%" "%SCRIPT_PATH%" %ARG% >> "%MASTER_LOG%" 2>&1
 
-
+REM Log end of task
+echo [%DATE% %TIME%] Task Scheduler finished >> "%MASTER_LOG%"
+echo Argument passed: %ARG% >> "%DEBUG_LOG%"
