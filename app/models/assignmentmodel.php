@@ -27,18 +27,18 @@ class Assignment {
 
             if ($checkStmt->fetchColumn() > 0) {
                 // Duplicate found - stop insert
-                /*error_log("Duplicate assignment blocked: vehicle {$data['vehicle_id']} at {$data['start_date_time']}");
-                return 'duplicate';*/
                 $this->logger->warning("Duplicate Vehicle: {$data['vehicle_id']} at {$data['start_date_time']} skipped");
                 return 'duplicate';
             }
 
+            //$this->logger->debug("Looking up driver with operator_id='{$operatorId}'");
             $driverSql = "SELECT driver_id, first_name, last_name 
                         FROM driver
                         WHERE operator_id = :operator_id
                         LIMIT 1";
             $driverStmt = $pdo->prepare($driverSql);
-            $driverStmt->bindValue(':operator_id', $data['operator_id'] ?? null, PDO::PARAM_STR);
+            $operatorId = isset($data['operator_id']) ? trim($data['operator_id']) : null;
+            $driverStmt->bindValue(':operator_id', $operatorId, PDO::PARAM_STR);
             $driverStmt->execute();
             $driverFound = $driverStmt->fetch();
 
@@ -97,14 +97,9 @@ class Assignment {
             }
             
         } catch (\PDOException $e) {
-            $this->logger->log("❌ FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Error: " . $e->getMessage());
+            $this->logger->error("❌ FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Error: " . $e->getMessage());
             return false;
         }
-    }
-
-    protected function writeLog(string $message) {
-        $timestamp = date('Y-m-d H:i:s');
-        file_put_contents($this->logFile, "[$timestamp] $message\n", FILE_APPEND);
     }
 }
 
