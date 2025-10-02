@@ -2,10 +2,13 @@
 REM -------------------------
 REM Configuration
 REM -------------------------
-set PHP_PATH=C:\php\php.exe
-set SCRIPT_PATH=D:\webapps\prodrvrapp\public\index.php
-set MASTER_LOG=D:\webapps\logs/job_import_master.log
-set DEBUG_LOG=D:\webapps\logs/debug_task.log
+set PHP_PATH=C:/php/php.exe
+set SCRIPT_PATH=D:/webapps/prodrvrapp/public/index.php
+set MASTER_LOG=D:/webapps/logs/work_scheduler.log
+set DEBUG_LOG=D:/webapps/logs/debug_task.log
+
+REM Ensure logs directory exists
+if not exist "D:/webapps/logs" mkdir "D:/webapps/logs"
 
 REM Log start of task
 echo [%DATE% %TIME%] Task Scheduler started >> "%MASTER_LOG%"
@@ -23,3 +26,4 @@ REM Run PHP script with argument and redirect stdout & stderr
 REM Log end of task
 echo [%DATE% %TIME%] Task Scheduler finished >> "%MASTER_LOG%"
 echo Argument passed: %ARG% >> "%DEBUG_LOG%"
+
