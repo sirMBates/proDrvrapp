@@ -14,6 +14,7 @@ $router->get('/contact', 'app/controllers/contact.php', true);
 $router->get('/help', 'app/controllers/help.php');
 $router->get('/logout', 'app/controllers/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
+$router->get('/getassignments', 'app/api/getassignments.php');
 
 $router->post('/signup', 'app/controllers/adduser.php');
 $router->post('/signin', 'app/controllers/login.php');
