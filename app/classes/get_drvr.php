@@ -8,9 +8,9 @@ class GetDrvrContr extends GetDriver {
                 try {
                         $drvrProfile = new GetDriver();
                         $driver = htmlspecialchars(trim($_SESSION['driver_id']));
-                        $stats = $drvrProfile->getDrvrInfo($driver);
+                        $operator = $drvrProfile->getDrvrInfo($driver);
                         //print_r($stats);
-                        echo json_encode($stats);
+                        echo json_encode($operator);
                         exit();
                 } catch (Exception $e) {
                         http_response_code(404);

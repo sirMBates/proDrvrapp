@@ -18,7 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('driverName', firstName);
         };
 
-        getDriver("https://prodriver.local/getprofile", { 
+        getDriver("https://prodriver.local/getassignments", { 
                 mode: 'cors' 
         })
         .then(data => {
@@ -29,9 +29,30 @@ window.addEventListener('DOMContentLoaded', () => {
             const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
             const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
             const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
+            // Check if assignments exist
+            if (driver.status === 'success' && driver.data.length > 0) {
+                const assignment = driver.data[0]; // For now, just take the first
+                fullname.textContent = `${assignment.last_name}, ${assignment.first_name}`;
+                drvrId.textContent = assignment.operator_id;
+                reportDate.textContent = assignment.report_date || 'N/A';
+                reportTime.textContent = assignment.report_time || 'N/A';
+                spotTime.textContent = assignment.spot_time || 'N/A';
+            } else {
+                // No assignments → fallback to getProfile
+                console.log("No assignments found, loading profile instead...");
+                return getDriver("https://prodriver.local/getprofile", { mode: 'cors' });
+            }
+        })
+        .then(driver => {
             if (driver) {
                 fullname.textContent = `${driver['lastName']}, ${driver['firstName']}`;
                 drvrId.textContent = driver['operatorid'];
+                reportDate.textContent = 'No assignment available...';
+                reportTime.textContent = 'No assignment available...';
+                spotTime.textContent = 'No assignment available...';
+
+                fullname.textContent = `${driver.lastName}, ${driver.firstName}`;
+                drvrId.textContent = driver.operatorid;
                 reportDate.textContent = 'No assignment available...';
                 reportTime.textContent = 'No assignment available...';
                 spotTime.textContent = 'No assignment available...';
