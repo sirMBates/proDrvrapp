@@ -3,6 +3,7 @@ import { fetchDrvr } from "./drvrapi.js";
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
 const getDriver = fetchDrvr;
+const getAssignment = fetchDrvr;
 const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
@@ -18,7 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('driverName', firstName);
         };
 
-        getDriver("https://prodriver.local/getassignments", { 
+        getAssignment("https://prodriver.local/getassignments", { 
                 mode: 'cors' 
         })
         .then(data => {
@@ -32,27 +33,44 @@ window.addEventListener('DOMContentLoaded', () => {
             // Check if assignments exist
             if (driver.status === 'success' && driver.data.length > 0) {
                 const assignment = driver.data[0]; // For now, just take the first
-                fullname.textContent = `${assignment.last_name}, ${assignment.first_name}`;
-                drvrId.textContent = assignment.operator_id;
-                reportDate.textContent = assignment.report_date || 'N/A';
-                reportTime.textContent = assignment.report_time || 'N/A';
-                spotTime.textContent = assignment.spot_time || 'N/A';
+                //const assignment = driver;
+                fullname.textContent = `${assignment['last_name']}, ${assignment['first_name']}`;
+                drvrId.textContent = assignment['operator_id'];
+                const garageStartDateTime = new Date(assignment['start_date_time']); // convert string ➡ Date
+                const rawTime = assignment['spot_time']; // "08:00:00"
+                const timeObj = new Date(`1970-01-01T${rawTime}`); 
+                const timeString = timeObj.toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                });
+                const localizeDate = garageStartDateTime.toLocaleDateString();
+                const localizeTime = garageStartDateTime.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                });
+                reportDate.textContent = localizeDate || 'N/A';
+                reportTime.textContent = localizeTime || 'N/A';
+                spotTime.textContent = timeString || 'N/A';
             } else {
                 // No assignments → fallback to getProfile
                 console.log("No assignments found, loading profile instead...");
-                return getDriver("https://prodriver.local/getprofile", { mode: 'cors' });
+                return getDriver("https://prodriver.local/getprofile", { 
+                        mode: 'cors' 
+                });
             }
         })
-        .then(driver => {
-            if (driver) {
+        .then(data => {
+            if (data) {
+                const driver = data;
+                const drvrMainTable = document.querySelector('#dashboard-info');
+                const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
+                const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
+                const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
+                const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
+                const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
                 fullname.textContent = `${driver['lastName']}, ${driver['firstName']}`;
                 drvrId.textContent = driver['operatorid'];
-                reportDate.textContent = 'No assignment available...';
-                reportTime.textContent = 'No assignment available...';
-                spotTime.textContent = 'No assignment available...';
-
-                fullname.textContent = `${driver.lastName}, ${driver.firstName}`;
-                drvrId.textContent = driver.operatorid;
                 reportDate.textContent = 'No assignment available...';
                 reportTime.textContent = 'No assignment available...';
                 spotTime.textContent = 'No assignment available...';
