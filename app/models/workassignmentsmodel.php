@@ -24,9 +24,9 @@ class WorkAssignments {
             throw new Exception("Driver not found");
         }
 
-        $results = fetchAll();
+        $results = $stmt->fetchAll();
 
-        foreach ($result as $row) {
+        foreach ($results as &$row) {
             try {
                 $row['first_name'] = Crypto::decrypt($row['first_name'], $key);
                 $row['last_name'] = Crypto::decrypt($row['last_name'], $key);
@@ -36,6 +36,7 @@ class WorkAssignments {
                 $row['last_name'] = null;
             }
         }
+        //unset($row); // break the reference
         $stmt->closeCursor();
         return $results;
     }
