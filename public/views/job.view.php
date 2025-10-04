@@ -133,8 +133,8 @@ include "partials/info-modal.php"
                         </div>
                         <div class="card-body">
                                 <div class="d-block mb-2 p-1">
-                                        <label for="drvrNotes" class="h6 label-form text-capitalize">notes:</label>
-                                        <textarea class="form-control bg-btd-textarea-clr text-dark" style="height: 200px;" id="drvrNotes" name="drvrNotes"></textarea>
+                                        <label for="drvr_notes" class="h6 label-form text-capitalize">notes:</label>
+                                        <textarea class="form-control bg-btd-textarea-clr text-dark" style="height: 200px;" id="drvr_notes" name="drvrNotes"></textarea>
                                 </div>
                         </div>
                 </section>

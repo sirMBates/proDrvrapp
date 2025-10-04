@@ -67,7 +67,7 @@ function pageScripts($value) {
                 if (isset($_SESSION['signatureRequired']) && $_SESSION['signatureRequired'] === true) {
                     echo "<script type='module' src='../dist/js/sign.js'></script>\n";
                 }
-                echo "<script type='module' src='../dist/js/orderpage.js'></script>\n";
+                echo "<script type='module' src='../dist/js/orderhandler.js'></script>\n";
                 break;
 
             case "/profile":
