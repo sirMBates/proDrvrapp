@@ -16,8 +16,7 @@ const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 
 window.addEventListener('DOMContentLoaded', () => {
-    getAssignment("https://prodriver.local/getassignments", {
-        method: 'GET', 
+    getAssignment("https://prodriver.local/getassignments", { 
         mode: 'cors',
         credentials: 'include',
         headers: {
