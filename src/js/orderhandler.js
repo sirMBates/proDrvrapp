@@ -76,8 +76,7 @@ window.addEventListener('DOMContentLoaded', () => {
             operatorNotes.value = assignment['driver_notes'];
         } else {
             console.log("No assignments found, loading profile instead...");
-            return getDriver("https://prodriver.local/getprofile", {
-                method: 'GET', 
+            return getDriver("https://prodriver.local/getprofile", { 
                 mode: 'cors',
                 credentials: 'include',
                 headers: {
