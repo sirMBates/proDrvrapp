@@ -41,7 +41,7 @@ if ($formToken !== $sessionToken && $headerToken !== $sessionToken) {
     http_response_code(403);
     echo json_encode([
         'status' => 'error',
-        'message' => 'Invalid CSRF token'
+        'message' => 'Access denied'
     ]);
     exit();
 }
