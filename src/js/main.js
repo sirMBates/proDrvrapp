@@ -89,7 +89,13 @@ $(document).ready(() => {
 
 window.addEventListener('DOMContentLoaded', () => {
         getDriver("https://prodriver.local/getprofile", {
-                mode: 'cors'
+                method: 'GET', 
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': drvrToken
+                }
         })
         .then(data => {
             const driver = data;

@@ -4,6 +4,7 @@ const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
+const drvrToken = document.querySelector('#drvrToken');
 const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
@@ -19,8 +20,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('driverName', firstName);
         };
 
-        getAssignment("https://prodriver.local/getassignments", { 
-                mode: 'cors' 
+        getAssignment("https://prodriver.local/getassignments", {
+                method: 'GET', 
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': drvrToken.value
+                } 
         })
         .then(data => {
             const driver = data;
@@ -55,8 +62,14 @@ window.addEventListener('DOMContentLoaded', () => {
             } else {
                 // No assignments → fallback to getProfile
                 console.log("No assignments found, loading profile instead...");
-                return getDriver("https://prodriver.local/getprofile", { 
-                        mode: 'cors' 
+                return getDriver("https://prodriver.local/getprofile", {
+                        method: 'GET', 
+                        mode: 'cors',
+                        credentials: 'include',
+                        headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': drvrToken.value
+                        } 
                 });
             }
         })
