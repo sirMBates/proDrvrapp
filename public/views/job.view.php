@@ -123,7 +123,7 @@ include "partials/info-modal.php"
                         </div>
                 </section>
 <?php
-        if (isset($_SESSION['signatureRequired']) && $_SESSION['signatureRequired'] === true) {
+        if (isset($_SESSION['signature_required']) && $_SESSION['signature_required'] === true) {
                 require_once "partials/signpad.php";
         }
 ?>
