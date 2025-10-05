@@ -1,5 +1,5 @@
 import { Validation } from './validation.js';
-import  formValidation  from './messagevalidation.js';
+import  formValidation  from './helpers.js';
 import { buildModal } from './appmodal.js';
 // Set variables to the inputs from the form control class.
 const infoModal = document.querySelector('#info-modal');

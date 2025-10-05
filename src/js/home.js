@@ -1,9 +1,10 @@
 import { bdayCelebrationHandler } from "./celebration.js";
-import { fetchDrvr } from "./drvrapi.js";
+import { fetchDrvr, viewableDateTimeHelper } from "./helpers.js";
 const drvrBirthDate = document.querySelector('#drvrbday');
 const mainContent = document.querySelector('main');
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
+const dtHelper = viewableDateTimeHelper;
 const drvrToken = document.querySelector('#drvrToken').value;
 const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
@@ -40,25 +41,11 @@ window.addEventListener('DOMContentLoaded', () => {
             // Check if assignments exist
             if (driver.status === 'success' && driver.data.length > 0) {
                 const assignment = driver.data[0]; // For now, just take the first
-                //const assignment = driver;
-                fullname.textContent = `${assignment['last_name']}, ${assignment['first_name']}`;
+                fullname.textContent = `${assignment['first_name']} ${assignment['last_name']}`;
                 drvrId.textContent = assignment['operator_id'];
-                const garageStartDateTime = new Date(assignment['start_date_time']); // convert string ➡ Date
-                const rawTime = assignment['spot_time']; // "08:00:00"
-                const timeObj = new Date(`1970-01-01T${rawTime}`); 
-                const timeString = timeObj.toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                });
-                const localizeDate = garageStartDateTime.toLocaleDateString();
-                const localizeTime = garageStartDateTime.toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                });
-                reportDate.textContent = localizeDate || 'N/A';
-                reportTime.textContent = localizeTime || 'N/A';
-                spotTime.textContent = timeString || 'N/A';
+                reportDate.textContent = dtHelper(assignment['start_date_time'], 'date');
+                reportTime.textContent = dtHelper(assignment['start_date_time'], 'time');
+                spotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
             } else {
                 // No assignments → fallback to getProfile
                 console.log("No assignments found, loading profile instead...");
@@ -68,7 +55,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         credentials: 'include',
                         headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-Token': drvrToken.value
+                                'X-CSRF-Token': drvrToken
                         } 
                 });
             }
@@ -126,12 +113,7 @@ function timeCelebrationHandler() {
                 }
                 sessionStorage.setItem('celebrationOccured', 'true');
                 localStorage.setItem('themePlayedAlready', 'true');
-                const dateOptions = {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                };
-                localStorage.setItem('dateOfThemePlayed', currentTime.toLocaleString('en-us', dateOptions));
+                localStorage.setItem('dateOfThemePlayed', dtHelper(currentTime, 'time'));
         }
 };
 
@@ -145,19 +127,15 @@ function handleCelebration () {
 handleCelebration();
 
 function removeDrvrGov() {
-        const dateOptions = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-        };
-        let currentDate = new Date().toLocaleString('en-us', dateOptions);
+        const currentDate = new Date();
+        const checkCurrentDate = dtHelper(currentDate, 'date');
         let birthdayStamp;
         let checkStamp;
         if (localStorage.getItem('dateOfThemePlayed') !== null) {
                 birthdayStamp = localStorage.getItem('dateOfThemePlayed');
                 checkStamp = birthdayStamp.toLocaleString('en-us', dateOptions);
         }
-        if (currentDate !== checkStamp) {
+        if (checkCurrentDate !== checkStamp) {
                 localStorage.removeItem('driverName');
         }
 

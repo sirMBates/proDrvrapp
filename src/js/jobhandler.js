@@ -1,4 +1,4 @@
-import { fetchDrvr } from "./drvrapi.js";
+import { fetchDrvr, viewableDateTimeHelper } from "./helpers.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');
@@ -14,6 +14,7 @@ const completeBtn = document.querySelector('#submit-order');
 const drvrToken = document.querySelector('#drvrToken').value;
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
+const dtHelper = viewableDateTimeHelper;
 
 window.addEventListener('DOMContentLoaded', () => {
     getAssignment("https://prodriver.local/getassignments", { 
@@ -49,22 +50,21 @@ window.addEventListener('DOMContentLoaded', () => {
         const pickupDetails = locationPickup;
         const destinationDetails = locationDestination;
         const operatorNotes = driverNotes;
+        const confirmBtnStatus = $(confirmBtn).prop("disabled");
+        const cancelBtnStatus = $(cancelBtn).prop("disabled");
         if (operator.status === 'success' && operator.data.length > 0) {
             const assignment = operator.data[0];
             primaryCoachId.textContent = assignment['vehicle_id'];
             primaryDrvrId.textContent = assignment['operator_id'];
-            primaryDrvrName.textContent = `${assignment['last_name']} ${assignment['first_name']}`;
+            primaryDrvrName.textContent = `${assignment['last_name']}, ${assignment['first_name']}`;
             primaryOrderNumber.textContent = assignment['order_id'];
             primaryNumOfCoaches.textContent = assignment['num_of_coaches'];
-            const startDateTimeStr = assignment['start_date_time'];
-            const startDateTime = new Date(startDateTimeStr.replace(" ", "T"));
-            const dateTimeOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true};
-            secondaryStartTime.textContent = startDateTime.toLocaleString('en-us', dateTimeOptions);
-            secondarySpotTime.textContent = assignment['spot_time'];
-            secondaryLeaveTime.textContent = assignment['leave_date_time'];
-            tertiaryReturnTime.textContent = assignment['return_date_drop_time'];
+            secondaryStartTime.textContent = dtHelper(assignment['start_date_time']);
+            secondarySpotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
+            secondaryLeaveTime.textContent = dtHelper(assignment['leave_date_time']);
+            tertiaryReturnTime.textContent = dtHelper(assignment['return_date_drop_time']);
             tertiaryDropTime.textContent = assignment['actual_drop_time'];
-            tertiaryEndTime.textContent = assignment['end_time'];
+            tertiaryEndTime.textContent = dtHelper(assignment['end_date_time']);
             tertiaryActEndTime.textContent = assignment['actual_end_time'];
             tertiaryShiftTime.textContent = assignment['total_job_time'];
             tertiaryDriveTime.textContent = assignment['driving_time'];
@@ -76,10 +76,13 @@ window.addEventListener('DOMContentLoaded', () => {
             quaternaryContactNameandMobile.textContent = `${assignment['contact_name']}, ${assignment['contact_mobile']}`;
             pickupDetails.value = assignment['pickup_details'];
             destinationDetails.value = assignment['destination_details'];
-            if (assignment['signature_required'] === 1) {
-                //window.location.reload();
-            } 
             operatorNotes.value = assignment['driver_notes'];
+            if (confirmBtnStatus) {
+                $(confirmBtn).prop("disabled", false);
+            }
+            if (cancelBtnStatus) {
+                $(cancelBtn).prop("disabled", false);
+            }
         } else {
             console.log("No assignments found, loading profile instead...");
             return getDriver("https://prodriver.local/getprofile", { 
@@ -87,7 +90,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': drvrToken.value
+                    'X-CSRF-Token': drvrToken
                 }
             });
         }
@@ -147,6 +150,28 @@ window.addEventListener('DOMContentLoaded', () => {
     .catch(error => {
         console.error('There was a problem with the fetch operation:', error);
     });
+
+    // 🔎 MutationObserver: watch for changes to the assignment order cell
+    const targetNode = document.querySelector('#tableA');
+    if (targetNode) {
+        const observer = new MutationObserver(() => {
+            const orderCell = targetNode.querySelector('td:nth-child(4)'); // 4th cell = order ID
+            console.log(orderCell);
+            if (orderCell && orderCell.textContent.trim() !== '' && orderCell.textContent.trim() !== 'No assignment available...') {
+                // When order ID changes, notify other scripts
+                window.dispatchEvent(new CustomEvent('assignmentChanged', {
+                    detail: { orderId: orderCell.textContent.trim() }
+                }));
+            }
+        });
+
+        observer.observe(targetNode, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
+
 
     clickCells.forEach(cell => {
         cell.addEventListener('click', () => {

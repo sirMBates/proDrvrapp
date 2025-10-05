@@ -23,6 +23,3 @@
             <div id="post-trip" class="w-100 bg-btd-white-floral border border-2 rounded-1 border-dark d-none"><p class='h5 text-center text-capitalize text-nowrap text-btd-blue-bright text-decoration-underline'>post-trip signature</p></div>
         </div>
     </section>
-
-
-

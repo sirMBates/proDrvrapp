@@ -1,5 +1,5 @@
 import { Validation } from "./validation";
-import formValidation from "./messagevalidation";
+import formValidation from "./helpers.js";
 
 const checkInputs = document.querySelectorAll('.form-control');
 const usernameInput = checkInputs[0]; 
@@ -62,5 +62,7 @@ if (paramValue === 'logged out') {
 }
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, {
+    container: 'body'
+}));
 //const popover = new bootstrap.Popover('.popover-dismiss', {trigger: 'focus'});

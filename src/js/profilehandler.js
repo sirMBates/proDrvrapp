@@ -1,6 +1,6 @@
 import { Validation } from "./validation.js";
-import formValidation from "./messagevalidation.js";
-import { fetchDrvr } from "./drvrapi.js";
+import formValidation from "./helpers.js";
+import { fetchDrvr } from "./helpers.js";
 
 const openInfoUpdateBtn = document.querySelector('#changeinfo');
 const emailChangeBtn = document.querySelector('#email-change');
