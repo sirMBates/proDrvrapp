@@ -1,6 +1,6 @@
-import { Validation } from "./validation";
-import formValidation from "./messagevalidation";
-import { fetchDrvr } from "./drvrapi";
+import { Validation } from "./validation.js";
+import formValidation from "./helpers.js";
+import { fetchDrvr } from "./helpers.js";
 const driverName = document.querySelector('#drvr-name');
 const operatorId = document.querySelector('#operatorid');
 const driverEmail = document.querySelector('#drvr-email');

@@ -1,5 +1,5 @@
-import { Validation } from "./validation";
-import formValidation from "./messagevalidation";
+import { Validation } from "./validation.js";
+import formValidation from "./helpers.js";
 
 const inputChecked = document.querySelectorAll('.form-control-lg');
 const saveBtn = document.querySelector('#register');

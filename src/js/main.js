@@ -1,5 +1,5 @@
 import { buildModal } from './appmodal.js';
-import { fetchDrvr } from './drvrapi.js';
+import { fetchDrvr } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
 import { Validation } from './validation.js';
 
@@ -374,6 +374,7 @@ $(logoutLink).on('click', () => {
         // Immediately apply auto theme
         autoThemeSwitcher();
         updateThemeIndicator();
+        localStorage.removeItem('warnModalShownFor');
 });
 
 if (myCurrentView !== '/') {
