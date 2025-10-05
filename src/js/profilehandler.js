@@ -15,13 +15,19 @@ const drvrPhoneNumber = profileInputs[6];
 const drvrUserName = profileInputs[7];
 const drvrPsword = profileInputs[8];
 const drvrStatus = profileInputs[9];
+const drvrToken = document.querySelector('#drvrToken').value;
 const updatePswordBtn = document.querySelector('#updatePsword');
 const updateTelEmailBtn = document.querySelector('#updateTel-email');
 const getDriver = fetchDrvr;
 
 window.addEventListener('DOMContentLoaded', () => {
     getDriver("https://prodriver.local/getprofile", {
-        mode: 'cors'
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': drvrToken
+        }
     })
         .then(data => {
             const driver = data;

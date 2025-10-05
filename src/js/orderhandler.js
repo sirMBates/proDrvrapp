@@ -11,7 +11,7 @@ const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
 const editBtn = document.querySelector('#edit');
 const completeBtn = document.querySelector('#submit-order');
-const drvrToken = document.querySelector('#drvrToken');
+const drvrToken = document.querySelector('#drvrToken').value;
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 
@@ -21,7 +21,7 @@ window.addEventListener('DOMContentLoaded', () => {
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': drvrToken.value
+            'X-CSRF-Token': drvrToken
         }
     })
     .then(data => {
@@ -56,7 +56,10 @@ window.addEventListener('DOMContentLoaded', () => {
             primaryDrvrName.textContent = `${assignment['last_name']} ${assignment['first_name']}`;
             primaryOrderNumber.textContent = assignment['order_id'];
             primaryNumOfCoaches.textContent = assignment['num_of_coaches'];
-            secondaryStartTime.textContent = assignment['start_date_time'];
+            const startDateTimeStr = assignment['start_date_time'];
+            const startDateTime = new Date(startDateTimeStr.replace(" ", "T"));
+            const dateTimeOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true};
+            secondaryStartTime.textContent = startDateTime.toLocaleString('en-us', dateTimeOptions);
             secondarySpotTime.textContent = assignment['spot_time'];
             secondaryLeaveTime.textContent = assignment['leave_date_time'];
             tertiaryReturnTime.textContent = assignment['return_date_drop_time'];
@@ -72,7 +75,10 @@ window.addEventListener('DOMContentLoaded', () => {
             quaternaryCustomerNameandPhone.textContent = `${assignment['customer_name']}, ${assignment['customer_phone']}`;
             quaternaryContactNameandMobile.textContent = `${assignment['contact_name']}, ${assignment['contact_mobile']}`;
             pickupDetails.value = assignment['pickup_details'];
-            destinationDetails.value = assignment['destination_details']; 
+            destinationDetails.value = assignment['destination_details'];
+            if (assignment['signature_required'] === 1) {
+                //window.location.reload();
+            } 
             operatorNotes.value = assignment['driver_notes'];
         } else {
             console.log("No assignments found, loading profile instead...");

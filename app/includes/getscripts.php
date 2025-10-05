@@ -64,7 +64,7 @@ function pageScripts($value) {
                 break;
 
             case "/orders":
-                if (isset($_SESSION['signatureRequired']) && $_SESSION['signatureRequired'] === true) {
+                if (isset($_SESSION['signature_required']) && $_SESSION['signature_required'] === 1) {
                     echo "<script type='module' src='../dist/js/sign.js'></script>\n";
                 }
                 echo "<script type='module' src='../dist/js/orderhandler.js'></script>\n";
