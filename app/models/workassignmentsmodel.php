@@ -30,7 +30,7 @@ class WorkAssignments {
             try {
                 $row['first_name'] = Crypto::decrypt($row['first_name'], $key);
                 $row['last_name'] = Crypto::decrypt($row['last_name'], $key);
-                if (isset($row['signature_required']) && $row['signature_required'] === true) {
+                if (!empty($row['signature_required']) && $row['signature_required'] === 1) {
                     $_SESSION['signature_required'] = $row['signature_required'];
                 }
             } catch (\Exception $e) {

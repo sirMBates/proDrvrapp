@@ -5,10 +5,8 @@ header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Typ, X-Requested-With");
 
-/*dd(getallHeaders(), true);
-exit();*/
-
 requireLoginAjax();
+
 $headers = getallheaders();
 $headerToken = $headers['X-CSRF-Token'] ?? null;
 $sessionToken = $_SESSION['drvr_token'];
