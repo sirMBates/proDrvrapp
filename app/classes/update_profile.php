@@ -6,12 +6,14 @@ class UpdateDrvrContr extends UpdateDrvr {
     private $drvrid;
     private $password;
     private $email;
+    private $birthdate;
     private $mobileNum;
 
-    public function __construct($drvrid, $password, $email, $mobileNum) {
+    public function __construct($drvrid, $password, $email, $birthdate, $mobileNum) {
         $this->drvrid = $drvrid;
         $this->password = $password;  
-        $this->email = $email;  
+        $this->email = $email;
+        $this->birthdate = $birthdate;  
         $this->mobileNum = $mobileNum;  
     }
 
@@ -41,7 +43,7 @@ class UpdateDrvrContr extends UpdateDrvr {
     public function changeDrvrData() {
         $alert = new Flash();
         if ($this->isInputEmpty() === true) {
-            $alert::setMsg('warning', 'You must enter a email or number.');
+            $alert::setMsg('warning', 'You must enter a email, birthdate or number.');
             header("Location: /profile?warning=empty");
             exit();
         }
@@ -52,12 +54,18 @@ class UpdateDrvrContr extends UpdateDrvr {
             exit();
         }
 
+        if (!empty($this->email) && $this->isBirthDateValid() === false) {
+            $alert::setMsg('warning', 'Please re-type your birth date.');
+            header("Location: /profile?warning=invalid+birthdate");
+            exit();
+        }
+
         if (!empty($this->mobileNum) && $this->isMobileNumberValid() === false) {
             $alert::setMsg('warning', 'Please enter a mobile number.');
             header("Location: /profile?warning=invalid+number");
             exit();
         }
-        $this->drvrUpdateData($this->drvrid, $this->email, $this->mobileNum);
+        $this->drvrUpdateData($this->drvrid, $this->email, $this->birthdate, $this->mobileNum);
     }
 
     private function doesDrvrExist() {
@@ -72,7 +80,7 @@ class UpdateDrvrContr extends UpdateDrvr {
 
     private function isInputEmpty() {
         $result;
-        if (!empty($this->password) || !empty($this->email) || !empty($this->mobileNum)) {
+        if (!empty($this->password) || !empty($this->email) || !empty($this->birthdate) || !empty($this->mobileNum)) {
             $result = false;
         }
         else {
@@ -96,6 +104,23 @@ class UpdateDrvrContr extends UpdateDrvr {
         $result;
         $cleanEmail = filter_var($this->email, FILTER_SANITIZE_EMAIL);
         if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
+            $result = false;
+        }
+        else {
+            $result = true;
+        }
+        return $result;
+    }
+
+    private function isBirthDateValid() {
+        $result;
+        $getDate = $this->birthdate;
+        function cleanDateOfBirth($date) {
+            $cleanDob = filter_var($date, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
+            return $cleanDob;
+        }
+
+        if (DateTime::createFromFormat('Y-m-d', cleanDateOfBirth($getDate)) === false) {
             $result = false;
         }
         else {

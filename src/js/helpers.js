@@ -30,10 +30,21 @@ export async function fetchDrvr(url, options = {}) {
     return await response.json();
 }
 
-export function viewableDateTimeHelper(string, format = 'datetime') {
-    if (!string) return 'N/A';
-    // Normalize MySQL-style "YYYY-MM-DD HH:mm:ss" string
-    const date = new Date(string.replace(' ', 'T'));
+export function viewableDateTimeHelper(input, format = 'datetime') {
+    if (!input) return 'N/A';
+
+    let date;
+
+    // Handle both string and Date object inputs
+    if (input instanceof Date) {
+        // Normalize MySQL-style "YYYY-MM-DD HH:mm:ss" string
+        date = input;
+    } else if (typeof input === 'string') {
+        date = new Date(input.replace(' ', 'T'));
+    } else {
+        return 'Invalid input';
+    };
+
     if (isNaN(date)) return 'Invalid date';
 
     // Choose formatting options based on desired output

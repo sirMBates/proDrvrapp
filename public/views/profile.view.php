@@ -37,9 +37,9 @@ include "partials/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="fa-solid fa-cake-candles fs-4 text-primary"></i></span>
+                                                <span class="input-group-text"><button id="birth-date-change" type="button" class="btn"><i class="fa-solid fa-cake-candles fs-4 text-primary"></i></button></span>
                                                 <div class="form-floating">
-                                                        <input type="date" id="birthdate" class="form-control" name="birthdate" disabled>
+                                                        <input type="date" id="birthdate" class="form-control" name="birthdate" placeholder="birth date" disabled>
                                                         <label for="birthdate" class="text-capitalize"><b>birth date</b></label>
                                                 </div>
                                         </div>
@@ -77,10 +77,10 @@ include "partials/info-modal.php";
 
                         <div class="card-footer">
                                 <div class="row my-2">                        
-                                        <button id="updatePswd" type="submit" class="btn btn-outline-primary text-capitalize" name="updatepswd">update<br>password</button>
+                                        <button id="updatePswd" type="submit" class="btn btn-outline-primary text-capitalize" name="updatepswd">update<br>password only</button>
                                 </div>
                                 <div class="row my-2">
-                                        <button id="updateTel-email" type="submit" class="btn btn-outline-secondary text-capitalize" name="updateTelEmail" formaction="">update<br>email/phone</button>
+                                        <button id="update-info" type="submit" class="btn btn-outline-secondary text-capitalize" name="updateinfo">update<br>information</button>
                                 </div>                        
                         </div>
                 </div>

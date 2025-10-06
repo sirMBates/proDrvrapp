@@ -103,7 +103,7 @@ function timeCelebrationHandler() {
                         if (bDayMonth === todayMon && bDayDate === todayDate) {
                                 let bdaySong = document.createElement("audio");
                                 mainContent.insertAdjacentElement('afterbegin', bdaySong);
-                                $(bdaySong).attr('src', '../audio/happy-birthday-clip.mp3');
+                                $(bdaySong).attr('src', '../../dist/audio/happy-birthday-clip.mp3');
                                 bdaySong.play();
                                 bdayCelebrationHandler();
                                 bdaySong.addEventListener('ended', () => {
@@ -113,7 +113,7 @@ function timeCelebrationHandler() {
                 }
                 sessionStorage.setItem('celebrationOccured', 'true');
                 localStorage.setItem('themePlayedAlready', 'true');
-                localStorage.setItem('dateOfThemePlayed', dtHelper(currentTime, 'time'));
+                localStorage.setItem('dateOfThemePlayed', dtHelper(currentTime, 'date'));
         }
 };
 
@@ -127,15 +127,13 @@ function handleCelebration () {
 handleCelebration();
 
 function removeDrvrGov() {
-        const currentDate = new Date();
-        const checkCurrentDate = dtHelper(currentDate, 'date');
-        let birthdayStamp;
-        let checkStamp;
+        const currentDate = dtHelper(new Date(), 'date');
+        let checkStamp = null;
         if (localStorage.getItem('dateOfThemePlayed') !== null) {
-                birthdayStamp = localStorage.getItem('dateOfThemePlayed');
-                checkStamp = birthdayStamp.toLocaleString('en-us', dateOptions);
+                const birthdayStamp = localStorage.getItem('dateOfThemePlayed');
+                checkStamp = dtHelper(birthdayStamp, 'date');
         }
-        if (checkCurrentDate !== checkStamp) {
+        if (currentDate !== checkStamp) {
                 localStorage.removeItem('driverName');
         }
 

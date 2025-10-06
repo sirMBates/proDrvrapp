@@ -2,7 +2,7 @@ import { Validation } from "./validation.js";
 import formValidation from "./helpers.js";
 import { fetchDrvr } from "./helpers.js";
 
-const openInfoUpdateBtn = document.querySelector('#changeinfo');
+const birthDateChangeBtn = document.querySelector('#birth-date-change');
 const emailChangeBtn = document.querySelector('#email-change');
 const phoneChangeBtn = document.querySelector('#phone-change');
 const pwdChangeBtn = document.querySelector('#pwd-change');
@@ -17,7 +17,7 @@ const drvrPsword = profileInputs[8];
 const drvrStatus = profileInputs[9];
 const drvrToken = document.querySelector('#drvrToken').value;
 const updatePswordBtn = document.querySelector('#updatePsword');
-const updateTelEmailBtn = document.querySelector('#updateTel-email');
+const updateInfoBtn = document.querySelector('#updateTel-email');
 const getDriver = fetchDrvr;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -51,6 +51,14 @@ emailChangeBtn.addEventListener('click', () => {
         $(drvrEmail).prop('disabled', false);
     } else if (drvrEmail.setAttribute('disabled', 'false')) {
         $(drvrEmail).attr('disabled');
+    }
+});
+
+birthDateChangeBtn.addEventListener('click', () => {
+    if (drvrBirthDate.hasAttribute('disabled')) {
+        $(drvrBirthDate).prop('disabled', false);
+    } else if (drvrBirthDate.setAttribute('disabled', 'false')) {
+        $(drvrBirthDate).attr('disabled');
     }
 });
 
@@ -144,6 +152,6 @@ $(updatePswordBtn).on('submit', () => {
     return formValidation();
 });
 
-$(updateTelEmailBtn).on('submit', () => {
+$(updateInfoBtn).on('submit', () => {
     return formValidation();
 });
