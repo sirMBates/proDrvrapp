@@ -6,6 +6,7 @@ include "partials/info-modal.php";
 include "partials/custom-modal.php";
 ?>
 <main class="container-fluid mb-1">
+        <button id="birthday-theme-btn" type="button" class="btn-sm position-absolute z-3 me-2 end-0 text-capitalize d-none"><i class="me-2 fa-solid fa-cake-candles"></i>happy birthday</button>
         <div class="card mb-auto">
                 <div class="card-header bg-besttrailsclr text-btd-white-off">
                         <h3 class='text-center text-capitalize'><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>driver information</h3>
