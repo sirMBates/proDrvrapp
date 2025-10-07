@@ -54,7 +54,7 @@ class UpdateDrvrContr extends UpdateDrvr {
             exit();
         }
 
-        if (!empty($this->email) && $this->isBirthDateValid() === false) {
+        if (!empty($this->birthdate) && $this->isBirthDateValid() === false) {
             $alert::setMsg('warning', 'Please re-type your birth date.');
             header("Location: /profile?warning=invalid+birthdate");
             exit();
