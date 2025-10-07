@@ -9,17 +9,21 @@ const drvrToken = document.querySelector('#drvrToken').value;
 const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
+const birthdayThemeBtn = document.querySelector('#birthday-theme-btn');
 
 window.addEventListener('DOMContentLoaded', () => {
-        let dvrBirthday = $(drvrBirthDate).val();
+        const dvrBirthday = $(drvrBirthDate).val();
         if ($.trim(dvrBirthday) !== '') {
                 localStorage.setItem('birthdate', $(drvrBirthDate).val());
-                const drvrTable = document.querySelector('table');
-                let idCell = drvrTable.childNodes[3].childNodes[1].childNodes[1];
-                let separateNames = idCell.textContent.split(" ");
-                let firstName = separateNames[0];
-                localStorage.setItem('driverName', firstName);
-        };
+                localStorage.getItem('driverName');
+                let time = new Date();
+                let timeHour = time.getHours();
+                if (timeHour >= 6 && timeHour <= 23) {
+                        $(birthdayThemeBtn).removeClass('d-none');
+                }
+        } else if (sessionStorage.getItem('celebrationOccured') === 'true' && localStorage.getItem('themePlayedAlready') === 'true') {
+                $(birthdayThemeBtn).addClass('d-none');
+        }
 
         getAssignment("https://prodriver.local/getassignments", {
                 method: 'GET', 
@@ -42,6 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (driver.status === 'success' && driver.data.length > 0) {
                 const assignment = driver.data[0]; // For now, just take the first
                 fullname.textContent = `${assignment['first_name']} ${assignment['last_name']}`;
+                localStorage.setItem('driverName', assignment['first_name']);
                 drvrId.textContent = assignment['operator_id'];
                 reportDate.textContent = dtHelper(assignment['start_date_time'], 'date');
                 reportTime.textContent = dtHelper(assignment['start_date_time'], 'time');
@@ -70,6 +75,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
                 const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
                 fullname.textContent = `${driver['lastName']}, ${driver['firstName']}`;
+                localStorage.setItem('driverName', driver['first_name']);
                 drvrId.textContent = driver['operatorid'];
                 reportDate.textContent = 'No assignment available...';
                 reportTime.textContent = 'No assignment available...';
@@ -88,7 +94,7 @@ window.addEventListener('DOMContentLoaded', () => {
         })
 });
 
-function timeCelebrationHandler() {
+function birthdayCelebrationHandler() {
         let currentTime = new Date();
         if ($(drvrBirthDate).val() !== '') {
                 if (!sessionStorage.getItem('celebrationOccured') && !localStorage.getItem('themePlayedAlready')) {
@@ -117,14 +123,13 @@ function timeCelebrationHandler() {
         }
 };
 
-function handleCelebration () {
-        let time = new Date();
-        let timeHour = time.getHours();
-        if (timeHour >= 6 && timeHour <= 23) {
-                window.addEventListener('load', timeCelebrationHandler, false);
+function endCelebration () {
+        if (sessionStorage.getItem('celebrationOccured') === true && localStorage.getItem('themePlayedAlready') === true) {
+                $(birthdayThemeBtn).addClass('d-none');
         }
 };
-handleCelebration();
+
+birthdayThemeBtn.addEventListener('click', birthdayCelebrationHandler, false);
 
 function removeDrvrGov() {
         const currentDate = dtHelper(new Date(), 'date');
