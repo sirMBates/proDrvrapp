@@ -2,7 +2,7 @@ import { Validation } from "./validation.js";
 import formValidation from "./helpers.js";
 import { fetchDrvr } from "./helpers.js";
 
-const birthDateChangeBtn = document.querySelector('#birth-date-change');
+//const birthDateChangeBtn = document.querySelector('#birth-date-change');
 const emailChangeBtn = document.querySelector('#email-change');
 const phoneChangeBtn = document.querySelector('#phone-change');
 const pwdChangeBtn = document.querySelector('#pwd-change');
@@ -54,13 +54,13 @@ emailChangeBtn.addEventListener('click', () => {
     }
 });
 
-birthDateChangeBtn.addEventListener('click', () => {
+/*birthDateChangeBtn.addEventListener('click', () => {
     if (drvrBirthDate.hasAttribute('disabled')) {
         $(drvrBirthDate).prop('disabled', false);
     } else if (drvrBirthDate.setAttribute('disabled', 'false')) {
         $(drvrBirthDate).attr('disabled');
     }
-});
+});*/
 
 phoneChangeBtn.addEventListener('click', () => {
     if (drvrPhoneNumber.hasAttribute('disabled')) {

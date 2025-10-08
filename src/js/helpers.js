@@ -41,6 +41,8 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
         date = input;
     } else if (typeof input === 'string') {
         date = new Date(input.replace(' ', 'T'));
+    } else if (typeof input === 'number') {
+        date = new Date(input);
     } else {
         return 'Invalid input';
     };

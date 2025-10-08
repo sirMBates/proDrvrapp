@@ -6,14 +6,14 @@ class UpdateDrvrContr extends UpdateDrvr {
     private $drvrid;
     private $password;
     private $email;
-    private $birthdate;
+    //private $birthdate;
     private $mobileNum;
 
     public function __construct($drvrid, $password, $email, $birthdate, $mobileNum) {
         $this->drvrid = $drvrid;
         $this->password = $password;  
         $this->email = $email;
-        $this->birthdate = $birthdate;  
+        //$this->birthdate = $birthdate;  
         $this->mobileNum = $mobileNum;  
     }
 
@@ -54,18 +54,18 @@ class UpdateDrvrContr extends UpdateDrvr {
             exit();
         }
 
-        if (!empty($this->birthdate) && $this->isBirthDateValid() === false) {
+        /*if (!empty($this->birthdate) && $this->isBirthDateValid() === false) {
             $alert::setMsg('warning', 'Please re-type your birth date.');
             header("Location: /profile?warning=invalid+birthdate");
             exit();
-        }
+        }*/
 
         if (!empty($this->mobileNum) && $this->isMobileNumberValid() === false) {
             $alert::setMsg('warning', 'Please enter a mobile number.');
             header("Location: /profile?warning=invalid+number");
             exit();
         }
-        $this->drvrUpdateData($this->drvrid, $this->email, $this->birthdate, $this->mobileNum);
+        $this->drvrUpdateData($this->drvrid, $this->email, /*$this->birthdate,*/$this->mobileNum);
     }
 
     private function doesDrvrExist() {
@@ -80,7 +80,7 @@ class UpdateDrvrContr extends UpdateDrvr {
 
     private function isInputEmpty() {
         $result;
-        if (!empty($this->password) || !empty($this->email) || !empty($this->birthdate) || !empty($this->mobileNum)) {
+        if (!empty($this->password) || !empty($this->email) || /*!empty($this->birthdate) ||*/!empty($this->mobileNum)) {
             $result = false;
         }
         else {
@@ -112,7 +112,7 @@ class UpdateDrvrContr extends UpdateDrvr {
         return $result;
     }
 
-    private function isBirthDateValid() {
+    /*private function isBirthDateValid() {
         $result;
         $getDate = $this->birthdate;
         function cleanDateOfBirth($date) {
@@ -127,7 +127,7 @@ class UpdateDrvrContr extends UpdateDrvr {
             $result = true;
         }
         return $result;
-    }
+    }*/
 
     private function isMobileNumberValid() {
         $result;

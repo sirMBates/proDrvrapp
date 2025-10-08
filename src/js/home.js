@@ -10,21 +10,19 @@ const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
 const birthdayThemeBtn = document.querySelector('#birthday-theme-btn');
+const todayDate = dtHelper(new Date(), 'date');
+
+function resetDailyFlags () {
+        const lastPlayed = localStorage.getItem('dateOfThemePlayed');
+        if ( lastPlayed && lastPlayed !== todayDate) {
+                sessionStorage.removeItem('celebrationOccured');
+                localStorage.removeItem('themePlayedAlready');
+                localStorage.removeItem('dateOfThemePlayed');
+        }
+};
+resetDailyFlags();
 
 window.addEventListener('DOMContentLoaded', () => {
-        const dvrBirthday = $(drvrBirthDate).val();
-        if ($.trim(dvrBirthday) !== '') {
-                localStorage.setItem('birthdate', $(drvrBirthDate).val());
-                localStorage.getItem('driverName');
-                let time = new Date();
-                let timeHour = time.getHours();
-                if (timeHour >= 6 && timeHour <= 23) {
-                        $(birthdayThemeBtn).removeClass('d-none');
-                }
-        } else if (sessionStorage.getItem('celebrationOccured') === 'true' && localStorage.getItem('themePlayedAlready') === 'true') {
-                $(birthdayThemeBtn).addClass('d-none');
-        }
-
         getAssignment("https://prodriver.local/getassignments", {
                 method: 'GET', 
                 mode: 'cors',
@@ -46,11 +44,14 @@ window.addEventListener('DOMContentLoaded', () => {
             if (driver.status === 'success' && driver.data.length > 0) {
                 const assignment = driver.data[0]; // For now, just take the first
                 fullname.textContent = `${assignment['first_name']} ${assignment['last_name']}`;
-                localStorage.setItem('driverName', assignment['first_name']);
+                if (drvrBirthDate.value !== '') {
+                        localStorage.setItem('driverName', assignment['first_name']);
+                };
                 drvrId.textContent = assignment['operator_id'];
                 reportDate.textContent = dtHelper(assignment['start_date_time'], 'date');
                 reportTime.textContent = dtHelper(assignment['start_date_time'], 'time');
                 spotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
+                handleBirthdayTheme();
             } else {
                 // No assignments → fallback to getProfile
                 console.log("No assignments found, loading profile instead...");
@@ -75,11 +76,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
                 const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
                 fullname.textContent = `${driver['lastName']}, ${driver['firstName']}`;
-                localStorage.setItem('driverName', driver['first_name']);
+                if (drvrBirthDate !== '') {
+                        localStorage.setItem('driverName', driver['firstName']);
+                };
                 drvrId.textContent = driver['operatorid'];
                 reportDate.textContent = 'No assignment available...';
                 reportTime.textContent = 'No assignment available...';
                 spotTime.textContent = 'No assignment available...';
+                handleBirthdayTheme();
             }
         })
         .catch(error => {
@@ -94,38 +98,54 @@ window.addEventListener('DOMContentLoaded', () => {
         })
 });
 
-function birthdayCelebrationHandler() {
-        let currentTime = new Date();
-        if ($(drvrBirthDate).val() !== '') {
-                if (!sessionStorage.getItem('celebrationOccured') && !localStorage.getItem('themePlayedAlready')) {
-                        let dateNow = new Date();
-                        let drvrSavedBDay = localStorage.getItem('birthdate');
-                        const birthdate = new Date(drvrSavedBDay);       
-                        let bDayMonth = birthdate.getMonth();
-                        let bDayDate = birthdate.getDate();
-                        let todayMon = dateNow.getMonth();
-                        let todayDate = dateNow.getDate();
-                        //console.log(bDayDate);
-                        if (bDayMonth === todayMon && bDayDate === todayDate) {
-                                let bdaySong = document.createElement("audio");
-                                mainContent.insertAdjacentElement('afterbegin', bdaySong);
-                                $(bdaySong).attr('src', '../../dist/audio/happy-birthday-clip.mp3');
-                                bdaySong.play();
-                                bdayCelebrationHandler();
-                                bdaySong.addEventListener('ended', () => {
-                                        bdaySong.remove();
-                                })
-                        }
+function handleBirthdayTheme() {
+        const drvrBirthday = $(drvrBirthDate).val();
+        const hasPlayed = localStorage.getItem('themePlayedAlready') === 'true';
+        const now = new Date();
+        const hour = now.getHours();
+        if (!drvrBirthday || hasPlayed) {
+                $(birthdayThemeBtn).addClass('d-none');
+        } else {
+                localStorage.setItem('birthdate', drvrBirthday);
+                const birthDate = new Date(drvrBirthday);
+                const bdayMonth = birthDate.getMonth();
+                const bdayDay = birthDate.getDate();
+                const todayMonth = now.getMonth();
+                const todayDay = now.getDate();
+
+                if (bdayMonth === todayMonth && bdayDay === todayDay && hour >= 6 && hour <= 23) {
+                        $(birthdayThemeBtn).removeClass('d-none');
+                } else {
+                        $(birthdayThemeBtn).addClass('d-none');
                 }
-                sessionStorage.setItem('celebrationOccured', 'true');
-                localStorage.setItem('themePlayedAlready', 'true');
-                localStorage.setItem('dateOfThemePlayed', dtHelper(currentTime, 'date'));
-        }
+        };
 };
 
-function endCelebration () {
-        if (sessionStorage.getItem('celebrationOccured') === true && localStorage.getItem('themePlayedAlready') === true) {
-                $(birthdayThemeBtn).addClass('d-none');
+function birthdayCelebrationHandler() {
+        const drvrBDay = localStorage.getItem('birthdate');
+        if (!drvrBDay) return; 
+        const birthDate = new Date(drvrBDay);
+        const now = new Date();
+        const bdayMonth = birthDate.getMonth();
+        const bdayDay = birthDate.getDate();
+        const todayMonth = now.getMonth();       
+        const todayDay = now.getDate();
+        if (bdayMonth === todayMonth && bdayDay === todayDay) {
+                const song = document.createElement("audio");
+                song.src = '../../dist/audio/happy-birthday-clip.mp3';
+                mainContent.insertAdjacentElement('afterbegin', song);
+                song.play().then(() => {
+                        bdayCelebrationHandler();
+                        song.addEventListener('ended', () => {
+                                song.remove();
+                                $(birthdayThemeBtn).addClass('d-none');
+                        });
+                        sessionStorage.setItem('celebrationOccured', 'true');
+                        localStorage.setItem('themePlayedAlready', 'true');
+                        localStorage.setItem('dateOfThemePlayed', todayDate);
+                }).catch(() => {
+                        console.warn('Audio playback failed ( likely due to browser restrictions).');
+                })
         }
 };
 
@@ -133,12 +153,9 @@ birthdayThemeBtn.addEventListener('click', birthdayCelebrationHandler, false);
 
 function removeDrvrGov() {
         const currentDate = dtHelper(new Date(), 'date');
-        let checkStamp = null;
-        if (localStorage.getItem('dateOfThemePlayed') !== null) {
-                const birthdayStamp = localStorage.getItem('dateOfThemePlayed');
-                checkStamp = dtHelper(birthdayStamp, 'date');
-        }
-        if (currentDate !== checkStamp) {
+        const dateOfThemePlayed = localStorage.getItem('dateOfThemePlayed');
+        
+        if (dateOfThemePlayed && dtHelper(dateOfThemePlayed, 'date') !== currentDate) {
                 localStorage.removeItem('driverName');
         }
 
