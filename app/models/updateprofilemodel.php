@@ -31,7 +31,7 @@ class UpdateDrvr {
         $stmt = null;
     }
 
-    protected function drvrUpdateData($drvrid, $drvrEmail, $drvrBirthDate, $drvrMobile) {
+    protected function drvrUpdateData($drvrid, $drvrEmail, /*$drvrBirthDate,*/$drvrMobile) {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
@@ -43,11 +43,11 @@ class UpdateDrvr {
             $params[':email'] = $drvrEmail;
         }
 
-        if ($drvrBirthDate !== null && $drvrBirthDate !== '') {
+        /*if ($drvrBirthDate !== null && $drvrBirthDate !== '') {
             $encryptedBirthDate = Crypto::encrypt($drvrBirthDate, $key);
             $fields[] = "birth_date = :birth_date";
             $params[':birth_date'] = $encryptedBirthDate;
-        }
+        }*/
 
         if ($drvrMobile !== null && $drvrMobile !== '') {
             $encryptedMobileNum = Crypto::encrypt($drvrMobile, $key);

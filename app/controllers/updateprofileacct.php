@@ -30,11 +30,11 @@ if ($method === 'PATCH') {
         $driver = htmlspecialchars(Trim($_SESSION['driver_id']));
         $drvrPassword = null; 
         $drvrEmail = isset($_POST['email'])? htmlspecialchars(trim($_POST['email'])) : null;
-        $drvrBirthDate = isset($_POST['birthdate'])? htmlspecialchars(trim($_POST['birthdate'])) : null;
+        //$drvrBirthDate = isset($_POST['birthdate'])? htmlspecialchars(trim($_POST['birthdate'])) : null;
         $drvrMobile = isset($_POST['mobile'])? htmlspecialchars(trim($_POST['mobile'])) : null;
         include_once base_path("app/models/updateprofilemodel.php");
         include_once base_path("app/classes/update_profile.php");
-        $changeData = new UpdateDrvrContr($driver, $drvrPassword, $drvrEmail, $drvrBirthDate, $drvrMobile);
+        $changeData = new UpdateDrvrContr($driver, $drvrPassword, $drvrEmail, /*$drvrBirthDate,*/$drvrMobile);
         $changeData->changeDrvrData();
         $alert::setMsg('info', 'Your information has been updated.');
         header("Location: /profile?info=data+saved");

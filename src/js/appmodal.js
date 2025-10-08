@@ -81,14 +81,14 @@ export const buildModal = {
         unConfirmBtn.textContent = btn2Text;
     },
 
-    custom(message, bkgdClr, faClass, iconClr, cusLabelTxt, btnClr, btnText) {
+    custom(message, bkgdClr, textClr, faClass, iconClr, cusLabelTxt, btnClr, btnText) {
         const customModal = document.querySelector('#custom-modal');
         const customModalBody = customModal.childNodes[1].childNodes[1];
         const customHeadIcon = customModalBody.childNodes[1].childNodes[0];
         const customHeadLabel = customHeadIcon.parentNode.childNodes[2];
         const customMessage = customHeadLabel.parentNode.nextElementSibling.childNodes[1];
         const customModalBtn = customMessage.parentNode.nextElementSibling.childNodes[1];
-        customModalBody.classList.add(bkgdClr);
+        customModalBody.classList.add(bkgdClr, textClr);
         customHeadIcon.classList.add('fa-solid', faClass, iconClr);
         customHeadLabel.textContent = cusLabelTxt;
         customMessage.innerHTML = `<strong>${message}</strong>`;
