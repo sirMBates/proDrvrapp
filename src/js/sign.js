@@ -14,10 +14,10 @@ const imgInspBox = document.querySelector('#insp_img_box');
 const preInspSign = document.querySelector('#pre-trip');
 const postInspSign = document.querySelector('#post-trip');
 const warnModalMsg = buildModal;
-const confirmModalMsg = buildModal;
-const confirmModal = document.querySelector('#confirm-modal');
 const warnModal = document.querySelector('#warn-modal');
 const warnModalBtn = warnModal.childNodes[1].childNodes[1].childNodes[5].childNodes[1];
+const confirmModalMsg = buildModal;
+const confirmModal = document.querySelector('#confirm-modal');
 const confirmModalOptBtn = document.querySelector('#confirm');
 const unconfirmModalOptBtn = document.querySelector('#unconfirm');
 const signBtnContainer = signBox.childNodes[3];
@@ -26,33 +26,41 @@ let signature;
 let secondSignature;
 
 // 🧩 Show warning modal once per assignment (integrated with MutationObserver)
-function showWarnModalForAssignment(orderId) {
+function showWarnModalForAssignment(orderId, requiresSignature) {
     const lastWarnedId = localStorage.getItem('warnModalShownFor');
 
-    if (orderId && orderId !== lastWarnedId) {
-        // Delay slightly so UI is ready
-        setTimeout(() => {
-            $(warnModal).modal('show');
-        }, 2500);
-
-        warnModal.addEventListener('shown.bs.modal', () => {
-            warnModalMsg.warning('You\'re required to have a rep from the client sign both for pre & post trip inspections. Please when signing, turn device on side for better signature capture.', 'Understood & agree');
-        }, { once: true });
-
-        $(warnModalBtn).one('click', () => {
-            $(signatureBoxBtn).removeClass('d-none');
-            $(warnModal).modal('toggle');
-            localStorage.setItem('warnModalShownFor', orderId);
-        });
-    } else {
-        $(signatureBoxBtn).removeClass('d-none');
+    // ❌ If no signature is required - hide it!
+    if (!requiresSignature) {
+        $(signatureBoxBtn).addClass('d-none');
+        return;
     }
+
+    // ✅ If signature required but already warned once
+    if (orderId === lastWarnedId) {
+        $(signatureBoxBtn).removeClass('d-none');
+        return;
+    };
+    
+    // ✅ Otherwise, show modal once
+    setTimeout(() => {
+        $(warnModal).modal('show');
+    }, 1500);
+
+    $(warnModal).off('shown.bs.modal').on('shown.bs.modal', function () {
+        warnModalMsg.warning("You're required to have a rep from the client sign both for pre & post trip inspections. Please turn device on side for better signature capture.", "Understood & agree");
+    });
+
+    $(warnModalBtn).off('click').on('click', function () {
+        $(signatureBoxBtn).removeClass('d-none');
+        $(warnModal).modal('hide');
+        localStorage.setItem('warnModalShownFor', orderId);
+    });
 }
 
 // 🔔 Listen for the event from jobhandler.js
 window.addEventListener('assignmentChanged', (e) => {
-    const { orderId } = e.detail;
-    showWarnModalForAssignment(orderId);
+    const { orderId, requiresSignature } = e.detail;    
+    showWarnModalForAssignment(orderId, requiresSignature);
 });
 
 // On confirm modal btn, handle new recorded signature for post trip.

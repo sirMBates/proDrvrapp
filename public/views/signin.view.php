@@ -2,6 +2,7 @@
 require "partials/outhead.php";
 $alert = new core\Flash();
 include "partials/flashmessage.php";
+include "partials/info-modal.php";
 if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
         unset($_SESSION['reset']);
 }

@@ -35,23 +35,28 @@ window.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             const driver = data;
             const drvrMainTable = document.querySelector('#dashboard-info');
-            const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
-            const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
-            const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
-            const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
-            const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
+            //const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
+            //const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
+            //const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
+            //const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
+            //const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
             // Check if assignments exist
             if (driver.status === 'success' && driver.data.length > 0) {
-                const assignment = driver.data[0]; // For now, just take the first
-                fullname.textContent = `${assignment['first_name']} ${assignment['last_name']}`;
-                if (drvrBirthDate.value !== '') {
-                        localStorage.setItem('driverName', assignment['first_name']);
-                };
-                drvrId.textContent = assignment['operator_id'];
-                reportDate.textContent = dtHelper(assignment['start_date_time'], 'date');
-                reportTime.textContent = dtHelper(assignment['start_date_time'], 'time');
-                spotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
-                handleBirthdayTheme();
+                const assignments = driver.data;
+                const tableBody = drvrMainTable.querySelector('tbody');
+                tableBody.innerHTML = ''; // clear old data
+
+                assignments.forEach((assignment, index) => {
+                        const row = document.createElement('tr');
+
+                        row.innerHTML = `<td>${assignment['first_name']} ${assignment['last_name']}</td>
+                                <td>${assignment['operator_id']}</td>
+                                <td>${dtHelper(assignment['start_date_time'], 'date')}</td>
+                                <td>${dtHelper(assignment['start_date_time'], 'time')}</td>
+                                <td>${dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time')}</td>
+                                <td>${assignment['confirmed_assignment']}</td>`;
+                        tableBody.appendChild(row);
+                });
             } else {
                 // No assignments → fallback to getProfile
                 console.log("No assignments found, loading profile instead...");

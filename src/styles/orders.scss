@@ -10,3 +10,43 @@
 .editable-data {
         cursor: pointer;
 }
+
+/* Pagination Pills Styling */
+#step-indicator {
+    gap: 0.25rem; /* spacing between pills */
+}
+
+#step-indicator .btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+#step-indicator .btn:hover {
+    transform: scale(1.1);
+}
+
+#step-indicator .btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); /* Bootstrap primary focus */
+}
+
+#step-indicator .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+#step-indicator .btn-outline-secondary {
+    background-color: #f8f9fa;
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+#step-indicator .btn-outline-secondary:hover {
+    background-color: #e2e6ea;
+    border-color: #6c757d;
+    color: #495057;
+}
