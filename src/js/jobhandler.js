@@ -5,7 +5,7 @@ const groupC = document.querySelector('#tableC');
 const groupD = document.querySelector('#tableD');
 const locationPickup = document.querySelector('#pickup_details');
 const locationDestination = document.querySelector('#destination_details');
-const driverNotes = document.querySelector('#drvr_notes');
+const operatorNotes = document.querySelector('#drvr_notes');
 const clickCells = document.querySelectorAll('.editable-data');
 const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
@@ -15,18 +15,84 @@ const drvrToken = document.querySelector('#drvrToken').value;
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
+let assignments = [];
+let currentIndex = 0;
+let pagination = null;
 
 window.addEventListener('DOMContentLoaded', () => {
-    getAssignment("https://prodriver.local/getassignments", { 
-        mode: 'cors',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': drvrToken
-        }
-    })
-    .then(data => {
-        const operator = data;
+    // Create pagination controls (Bootstrap)
+    function createPaginationControls() {
+        const container = document.createElement('div');
+        container.classList.add('card-footer', 'd-flex', 'justify-content-between', 'align-items-center', 'mt-3');
+
+        const prevBtn = document.createElement('button');
+        prevBtn.classList.add('btn', 'btn-outline-secondary');
+        prevBtn.setAttribute('type', 'button');
+        prevBtn.textContent = 'Previous';
+
+        const stepIndicator = document.createElement('div');
+        stepIndicator.classList.add('d-flex', 'align-items-center', 'mx-3', 'gap-1');
+        stepIndicator.id = 'step-indicator';
+
+        const nextBtn = document.createElement('button');
+        nextBtn.classList.add('btn', 'btn-primary');
+        prevBtn.setAttribute('type', 'button');
+        nextBtn.textContent = 'Next';
+
+        container.append(prevBtn, stepIndicator, nextBtn);
+        primaryA.parentElement.parentElement.append(container); // place under primary section
+
+        // Build pill buttons
+        function renderPills() {
+            const stepIndicator = document.querySelector('#step-indicator');
+            stepIndicator.innerHTML = ''; // Clear previous pills
+
+            assignments.forEach((_, i) => {
+                const pill = document.createElement('button');
+                pill.type = 'button';
+                pill.classList.add('btn', i === currentIndex ? 'btn-primary' : 'btn-outline-secondary');
+                pill.textContent = i + 1;
+                pill.addEventListener('click', () => showAssignment(i));
+                stepIndicator.appendChild(pill);
+            });
+        };
+
+        // Update Previous / Next buttons state
+        function updateButtons() {
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === assignments.length - 1;
+        };
+
+        prevBtn.addEventListener('click', () => {
+            showAssignment(currentIndex - 1);
+            renderPills();
+            updateButtons();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            showAssignment(currentIndex + 1);
+            renderPills();
+            updateButtons();
+        });
+
+        // Initial render
+        renderPills();
+        updateButtons();
+
+        // Expose a function to refresh pills and buttons from showAssignment
+        return { renderPills, updateButtons };
+    };
+
+    // Renders the assignment details to your existing UI tables
+    function showAssignment(index) {
+        if (assignments.length === 0) return;
+
+        if (index < 0 || index >= assignments.length) return; // guard
+
+        currentIndex = index;
+        const assignment = assignments[index];
+
+        // Existing DOM refs
         const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
         const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
         const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
@@ -49,34 +115,56 @@ window.addEventListener('DOMContentLoaded', () => {
         const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[11];
         const pickupDetails = locationPickup;
         const destinationDetails = locationDestination;
-        const operatorNotes = driverNotes;
+        const opNotes = operatorNotes;
+
+        // Populate fields
+        primaryCoachId.textContent = assignment['vehicle_id'];
+        primaryDrvrId.textContent = assignment['operator_id'];
+        primaryDrvrName.textContent = `${assignment['last_name']}, ${assignment['first_name']}`;
+        primaryOrderNumber.textContent = assignment['order_id'];
+        primaryNumOfCoaches.textContent = assignment['num_of_coaches'];
+        secondaryStartTime.textContent = dtHelper(assignment['start_date_time']);
+        secondarySpotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
+        secondaryLeaveTime.textContent = dtHelper(assignment['leave_date_time']);
+        tertiaryReturnTime.textContent = dtHelper(assignment['return_date_drop_time']);
+        tertiaryDropTime.textContent = assignment['actual_drop_time'];
+        tertiaryEndTime.textContent = dtHelper(assignment['end_date_time']);
+        tertiaryActEndTime.textContent = assignment['actual_end_time'];
+        tertiaryShiftTime.textContent = assignment['total_job_time'];
+        tertiaryDriveTime.textContent = assignment['driving_time'];
+        quaternaryOrigin.textContent = assignment['origin'];
+        quaternaryDestination.textContent = assignment['destination'];
+        quaternaryGroupNameandLeader.textContent = `${assignment['group_name']}, ${assignment['group_leader']}`;
+        quaternaryGroupLeaderMobile.textContent = assignment['group_leader_mobile'];
+        quaternaryCustomerNameandPhone.textContent = `${assignment['customer_name']}, ${assignment['customer_phone']}`;
+        quaternaryContactNameandMobile.textContent = `${assignment['contact_name']}, ${assignment['contact_mobile']}`;
+        pickupDetails.value = assignment['pickup_details'];
+        destinationDetails.value = assignment['destination_details'];
+        opNotes.value = assignment['driver_notes'];
+
+        // Update pills and buttons if pagination exists
+        if (pagination) {
+            pagination.renderPills();
+            pagination.updateButtons();
+        }
+    };
+
+    getAssignment("https://prodriver.local/getassignments", { 
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': drvrToken
+        }
+    })
+    .then(data => {
+        const operator = data;
         const confirmBtnStatus = $(confirmBtn).prop("disabled");
         const cancelBtnStatus = $(cancelBtn).prop("disabled");
         if (operator.status === 'success' && operator.data.length > 0) {
-            const assignment = operator.data[0];
-            primaryCoachId.textContent = assignment['vehicle_id'];
-            primaryDrvrId.textContent = assignment['operator_id'];
-            primaryDrvrName.textContent = `${assignment['last_name']}, ${assignment['first_name']}`;
-            primaryOrderNumber.textContent = assignment['order_id'];
-            primaryNumOfCoaches.textContent = assignment['num_of_coaches'];
-            secondaryStartTime.textContent = dtHelper(assignment['start_date_time']);
-            secondarySpotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
-            secondaryLeaveTime.textContent = dtHelper(assignment['leave_date_time']);
-            tertiaryReturnTime.textContent = dtHelper(assignment['return_date_drop_time']);
-            tertiaryDropTime.textContent = assignment['actual_drop_time'];
-            tertiaryEndTime.textContent = dtHelper(assignment['end_date_time']);
-            tertiaryActEndTime.textContent = assignment['actual_end_time'];
-            tertiaryShiftTime.textContent = assignment['total_job_time'];
-            tertiaryDriveTime.textContent = assignment['driving_time'];
-            quaternaryOrigin.textContent = assignment['origin'];
-            quaternaryDestination.textContent = assignment['destination'];
-            quaternaryGroupNameandLeader.textContent = `${assignment['group_name']}, ${assignment['group_leader']}`;
-            quaternaryGroupLeaderMobile.textContent = assignment['group_leader_mobile'];
-            quaternaryCustomerNameandPhone.textContent = `${assignment['customer_name']}, ${assignment['customer_phone']}`;
-            quaternaryContactNameandMobile.textContent = `${assignment['contact_name']}, ${assignment['contact_mobile']}`;
-            pickupDetails.value = assignment['pickup_details'];
-            destinationDetails.value = assignment['destination_details'];
-            operatorNotes.value = assignment['driver_notes'];
+            assignments = operator.data;
+            createPaginationControls();
+            showAssignment(0);
             if (confirmBtnStatus) {
                 $(confirmBtn).prop("disabled", false);
             }
@@ -101,67 +189,43 @@ window.addEventListener('DOMContentLoaded', () => {
             const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
             const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
             const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
-            const primaryOrderNumber = primaryA.childNodes[3].childNodes[1].childNodes[7];
-            const primaryNumOfCoaches = primaryA.childNodes[3].childNodes[1].childNodes[9];
-            const secondaryStartTime = groupB.childNodes[3].childNodes[1].childNodes[1];
-            const secondarySpotTime = groupB.childNodes[3].childNodes[1].childNodes[3];
-            const secondaryLeaveTime = groupB.childNodes[3].childNodes[1].childNodes[5];
-            const tertiaryReturnTime = groupC.childNodes[3].childNodes[1].childNodes[1];
-            const tertiaryDropTime = groupC.childNodes[3].childNodes[1].childNodes[3];
-            const tertiaryEndTime = groupC.childNodes[3].childNodes[1].childNodes[5];
-            const tertiaryActEndTime = groupC.childNodes[3].childNodes[1].childNodes[7];
-            const tertiaryShiftTime = groupC.childNodes[3].childNodes[1].childNodes[9];
-            const tertiaryDriveTime = groupC.childNodes[3].childNodes[1].childNodes[11];
-            const quaternaryOrigin = groupD.childNodes[3].childNodes[1].childNodes[1];
-            const quaternaryDestination = groupD.childNodes[3].childNodes[1].childNodes[3];
-            const quaternaryGroupNameandLeader = groupD.childNodes[3].childNodes[1].childNodes[5];
-            const quaternaryGroupLeaderMobile = groupD.childNodes[3].childNodes[1].childNodes[7];
-            const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[9];
-            const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[11];
-            const pickupDetails = locationPickup;
-            const destinationDetails = locationDestination;
-            const operatorNotes = driverNotes;
-
+            
+            primaryCoachId.textContent = 'No assignment available...';
             primaryDrvrId.textContent = driver['operatorid'];
             primaryDrvrName.textContent = `${driver['lastName']}, ${driver['firstName']}`;
-            primaryCoachId.textContent = 'No assignment available...';
-            primaryOrderNumber.textContent = 'No assignment available...';
-            primaryNumOfCoaches.textContent = 'No assignment available...';
-            secondaryStartTime.textContent = 'No assignment available...';
-            secondarySpotTime.textContent = 'No assignment available...';
-            secondaryLeaveTime.textContent = 'No assignment available...';
-            tertiaryReturnTime.textContent = 'No assignment available...';
-            tertiaryDropTime.textContent = 'No assignment available...';
-            tertiaryEndTime.textContent = 'No assignment available...';
-            tertiaryActEndTime.textContent = 'No assignment available...';
-            tertiaryShiftTime.textContent = 'No assignment available...';
-            tertiaryDriveTime.textContent = 'No assignment available...';
-            quaternaryOrigin.textContent = 'No assignment available...';
-            quaternaryDestination.textContent = 'No assignment available...';
-            quaternaryGroupNameandLeader.textContent = 'No assignment available...';
-            quaternaryGroupLeaderMobile.textContent = 'No assignment available...';
-            quaternaryCustomerNameandPhone.textContent = 'No assignment available...';
-            quaternaryContactNameandMobile.textContent = 'No assignment available...';
-            pickupDetails.value = 'No assignment available...';
-            destinationDetails.value = 'No assignment available...';
+            const placeholders = [primaryOrderNumber, primaryNumOfCoaches, secondaryStartTime, secondarySpotTime, secondaryLeaveTime, tertiaryReturnTime, tertiaryDropTime, tertiaryEndTime, tertiaryActEndTime, tertiaryShiftTime, tertiaryDriveTime, quaternaryOrigin, quaternaryDestination, quaternaryGroupNameandLeader, quaternaryGroupLeaderMobile, quaternaryCustomerNameandPhone, quaternaryContactNameandMobile];
+            placeholders.forEach(ph => {
+                const el = eval(ph);
+                if (el) el.textContent = 'No assignment available...';
+            });
+            locationPickup.value = 'No assignment available...';
+            locationDestination.value = 'No assignment available...';
             operatorNotes.value = 'No stored notes available...';
         }
     })
-    .catch(error => {
-        console.error('There was a problem with the fetch operation:', error);
-    });
+    .catch(error => console.error('There was a problem with the fetch operation:', error));
 
     // 🔎 MutationObserver: watch for changes to the assignment order cell
     const targetNode = document.querySelector('#tableA');
     if (targetNode) {
         const observer = new MutationObserver(() => {
             const orderCell = targetNode.querySelector('td:nth-child(4)'); // 4th cell = order ID
-            console.log(orderCell);
-            if (orderCell && orderCell.textContent.trim() !== '' && orderCell.textContent.trim() !== 'No assignment available...') {
+            if (!orderCell) return;
+
+            const previousOrderId = orderCell.dataset.previousOrderId || '';
+            const currentOrderId = orderCell.textContent.trim();
+            
+            if (currentOrderId && currentOrderId !== 'No assignment available...' && currentOrderId !== previousOrderId) {
+                const assignment = assignments.find( a => a.order_id == currentOrderId);
+                const requiresSignature = assignment ? assignment.signature_required === 1 : false;
                 // When order ID changes, notify other scripts
                 window.dispatchEvent(new CustomEvent('assignmentChanged', {
-                    detail: { orderId: orderCell.textContent.trim() }
+                    detail: { 
+                        orderId: currentOrderId, 
+                        requiresSignature
+                    } 
                 }));
+                orderCell.dataset.previousOrderId = currentOrderId;
             }
         });
 
@@ -191,9 +255,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 });
 
                 input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        input.blur();
-                    }
+                    if (e.key === 'Enter') input.blur();
                 });
             }
         });

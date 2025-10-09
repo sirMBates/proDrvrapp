@@ -41,6 +41,9 @@ class JobOrderImporter {
             }
             //$this->logger->debug("Normalized headers: " . json_encode($headers));
 
+            $orderRef = 'JOB-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
+            $this->logger->info("Generated order reference: {$orderRef}");
+
             $rows = [];
             // Process each row (skip header)
             foreach ($data as $index => $row) {
@@ -90,6 +93,7 @@ class JobOrderImporter {
 
                 // Map Excel data to database fields
                 $rows[] = [
+                    'order_ref'                   => $orderRef, // shared across all rows in this file
                     'vehicle_id'                  => trim($rowData['vehicle_id'] ?? ''),
                     'driver_id'                   => $driver['driver_id'], // insert only driver_id
                     'operator_id'                 => trim($rowData['operator_id'] ?? ''), // for display/log only
@@ -128,14 +132,14 @@ class JobOrderImporter {
                 $result = $assignment->insertAssignment($rowData);
 
                 if ($result === true) {
-                    $this->logger->info("Inserted vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
+                    $this->logger->info("Inserted vehicle: {$rowData['vehicle_id']} ({$rowData['order_ref']}) at {$rowData['start_date_time']}");
                 } elseif ($result === 'duplicate') {
                     $this->logger->warning("Duplicate vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
                 } else {
                     $this->logger->log("Failed to insert vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
                 }
             }
-            $this->logger->info("JobOrderImporter completed successfully.");
+            $this->logger->info("JobOrderImporter completed successfully with reference {$orderRef}.");
             return true;
 
         } catch (\Exception $e) {
