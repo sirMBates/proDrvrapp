@@ -54,7 +54,7 @@ window.addEventListener('DOMContentLoaded', () => {
                                 <td>${dtHelper(assignment['start_date_time'], 'date')}</td>
                                 <td>${dtHelper(assignment['start_date_time'], 'time')}</td>
                                 <td>${dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time')}</td>
-                                <td>${assignment['confirmed_assignment']}</td>`;
+                                <td class='text-capitalize'>${assignment['confirmed_assignment']}</td>`;
                         tableBody.appendChild(row);
                 });
             } else {

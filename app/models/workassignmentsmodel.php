@@ -34,7 +34,7 @@ class WorkAssignments {
                     $_SESSION['signature_required'] = $row['signature_required'];
                 }
                 if (empty($row['confirmed_assignment'])) {
-                    $row['confirmed_assignment'] = 'Unconfirmed';
+                    $row['confirmed_assignment'] = 'unconfirmed';
                 }
             } catch (\Exception $e) {
                 // Handle corrupted or missing ciphertext

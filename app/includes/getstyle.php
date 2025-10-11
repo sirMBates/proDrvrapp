@@ -34,8 +34,8 @@ function pageStyle($value) {
                         return;
                         break;
 
-                case "/orders":
-                        echo "<link rel='stylesheet' href='../dist/styles/orders.css'>\n";
+                case "/assignment":
+                        echo "<link rel='stylesheet' href='../dist/styles/jobsview.css'>\n";
                         break;
 
                 case "/profile":
