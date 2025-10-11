@@ -83,6 +83,16 @@ window.addEventListener('DOMContentLoaded', () => {
         return { renderPills, updateButtons };
     };
 
+    /*function getCurrentAssignment() {
+        return assignments?.[currentIndex] || null;
+    };
+
+    function refreshCurrentAssignment() {
+        if ( typeof currentIndex === 'number' && assignments?.length) {
+            showAssignment(currentIndex);
+        }
+    };*/
+
     // Renders the assignment details to your existing UI tables
     function showAssignment(index) {
         if (assignments.length === 0) return;
@@ -147,6 +157,17 @@ window.addEventListener('DOMContentLoaded', () => {
             pagination.renderPills();
             pagination.updateButtons();
         }
+
+        /*if (assignment['confirmed_assignment'] === 'unconfirmed') {
+            $(editBtn).prop("disabled", true);
+            $(completeBtn).prop("disabled", true);
+        } else if (assignment['confirmed_assignment'] === 'confirmed') {
+            $(editBtn).prop("disabled", false);
+            $(completeBtn).prop("disabled", false);
+        } else {
+            $(editBtn).prop("disabled", false);
+            $(completeBtn).prop("disabled", false);
+        }*/
     };
 
     getAssignment("https://prodriver.local/getassignments", { 
@@ -165,12 +186,8 @@ window.addEventListener('DOMContentLoaded', () => {
             assignments = operator.data;
             createPaginationControls();
             showAssignment(0);
-            if (confirmBtnStatus) {
-                $(confirmBtn).prop("disabled", false);
-            }
-            if (cancelBtnStatus) {
-                $(cancelBtn).prop("disabled", false);
-            }
+            if (confirmBtnStatus) $(confirmBtn).prop("disabled", false);
+            if (cancelBtnStatus) $(cancelBtn).prop("disabled", false);
         } else {
             console.log("No assignments found, loading profile instead...");
             return getDriver("https://prodriver.local/getprofile", { 
@@ -261,3 +278,8 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+confirmBtn.addEventListener('click', (e) => {});
+cancelBtn.addEventListener('click', (e) => {});
+editBtn.addEventListener('click', (e) => {});
+completeBtn.addEventListener('click', (e) => {});
