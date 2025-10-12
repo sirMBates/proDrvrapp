@@ -15,7 +15,7 @@ include "partials/info-modal.php";
                                 <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
 
                                 <div class="card-body overflow-x-auto">                        
-                                        <table id="tableA" class="table m-auto" style="width: 1200px;">
+                                        <table id="tableA" class="table m-auto" style="width: 1300px;">
                                                 <thead class="table-info text-capitalize">
                                                         <tr class="text-center">
                                                                 <th scope="col">coach id</th>
@@ -34,7 +34,7 @@ include "partials/info-modal.php";
                                                                 <td></td>
                                                         </tr>
                                                         <tr>
-                                                                <table id="tableB" class="table m-auto" style="width: 1200px;">
+                                                                <table id="tableB" class="table m-auto" style="width: 1300px;">
                                                                         <thead class="table-info text-capitalize">
                                                                                 <tr class="text-center">
                                                                                         <th>start date, time</th>
@@ -52,7 +52,7 @@ include "partials/info-modal.php";
                                                                 </table>
                                                         </tr>
                                                         <tr>
-                                                                <table id="tableC" class="table m-auto" style="width: 1200px;">
+                                                                <table id="tableC" class="table m-auto" style="width: 1300px;">
                                                                         <thead class="table-info text-capitalize">
                                                         <tr class="text-center">
                                                                 <th class="col">return date, time</th>
@@ -76,7 +76,7 @@ include "partials/info-modal.php";
                                                                 </table>
                                                         </tr>
                                                         <tr>
-                                                                <table id="tableD" class="table m-auto" style="width: 1200px;">
+                                                                <table id="tableD" class="table m-auto" style="width: 1300px;">
                                                 <thead class="table-info text-capitalize">
                                                         <tr class="text-center">
                                                                 <th scope="col">origin</th>

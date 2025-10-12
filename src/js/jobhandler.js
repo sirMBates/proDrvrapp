@@ -36,7 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         const nextBtn = document.createElement('button');
         nextBtn.classList.add('btn', 'btn-primary');
-        prevBtn.setAttribute('type', 'button');
+        nextBtn.setAttribute('type', 'button');
         nextBtn.textContent = 'Next';
 
         container.append(prevBtn, stepIndicator, nextBtn);
@@ -83,7 +83,7 @@ window.addEventListener('DOMContentLoaded', () => {
         return { renderPills, updateButtons };
     };
 
-    /*function getCurrentAssignment() {
+    function getCurrentAssignment() {
         return assignments?.[currentIndex] || null;
     };
 
@@ -91,7 +91,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if ( typeof currentIndex === 'number' && assignments?.length) {
             showAssignment(currentIndex);
         }
-    };*/
+    };
 
     // Renders the assignment details to your existing UI tables
     function showAssignment(index) {
@@ -158,7 +158,7 @@ window.addEventListener('DOMContentLoaded', () => {
             pagination.updateButtons();
         }
 
-        /*if (assignment['confirmed_assignment'] === 'unconfirmed') {
+        if (assignment['confirmed_assignment'] === 'unconfirmed') {
             $(editBtn).prop("disabled", true);
             $(completeBtn).prop("disabled", true);
         } else if (assignment['confirmed_assignment'] === 'confirmed') {
@@ -167,7 +167,7 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             $(editBtn).prop("disabled", false);
             $(completeBtn).prop("disabled", false);
-        }*/
+        }
     };
 
     getAssignment("https://prodriver.local/getassignments", { 
@@ -279,7 +279,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-confirmBtn.addEventListener('click', (e) => {});
-cancelBtn.addEventListener('click', (e) => {});
-editBtn.addEventListener('click', (e) => {});
-completeBtn.addEventListener('click', (e) => {});
+confirmBtn.addEventListener('click', () => {});
+cancelBtn.addEventListener('click', () => {});
+editBtn.addEventListener('click', () => {});
+completeBtn.addEventListener('click', () => {});
