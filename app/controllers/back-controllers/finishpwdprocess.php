@@ -16,7 +16,7 @@ if ($formToken === $_SESSION['drvr_token']) {
         //echo $password;
         // Instantiate the reset token controller class. ↓
         include_once base_path("app/models/finishpwdmodel.php");
-        include_once base_path("app/classes/finish_pwd_process.php");
+        include_once base_path("app/errors/finish_pwd_process.php");
         $createNewPwd = new CompleteResetContr($token, $password);
         $createNewPwd->changeDrvrPassword();
         $createNewPwd->hasTokenCleared();

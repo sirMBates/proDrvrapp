@@ -15,7 +15,7 @@ if ($formToken === $_SESSION['drvr_token']) {
         $password = htmlspecialchars(trim($_POST['password']));
         // Instantiate the add user controller class. ↓
         include_once base_path("app/models/addusermodel.php");
-        include_once base_path("app/classes/add_user.php");
+        include_once base_path("app/errors/add_user.php");
         $signup = new AddDrvrContr($username, $email, $password);
         // Running error handlers and user signup.
         $signup->addDriver();

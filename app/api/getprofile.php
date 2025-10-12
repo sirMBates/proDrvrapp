@@ -26,7 +26,7 @@ if ($headerToken !== $sessionToken) {
 }
 
 include_once base_path("app/models/getdrvrmodel.php");
-include_once base_path("app/classes/get_drvr.php");
+include_once base_path("app/errors/get_drvr.php");
 
 $getDriversProfile = new GetDrvrContr();
 $getDriversProfile->driverInfo();

@@ -23,7 +23,7 @@ if ($method === 'PATCH' && $formToken === $_SESSION['drvr_token']) {
         $newCompanyId = htmlspecialchars(trim($_POST['operatorid']));
         // Instantiate the add user controller class. ↓
         include_once base_path("app/models/registrationmodel.php");
-        include_once base_path("app/classes/complete_registration.php");
+        include_once base_path("app/errors/complete_registration.php");
         $enterData = new RegistrationContr($newCompanyId, $firstname, $lastname, $mobileNum, $birthdate);
         $enterData->processProfile();
         setcookie(

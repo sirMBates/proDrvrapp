@@ -16,7 +16,7 @@ if ($formToken === $_SESSION['drvr_token']) {
         // The time() method gives you the current time in seconds.
         $token_expires = date('Y-m-d H:i:s', time() + 60 * 30); // 30 minutes expiration
         include_once base_path("app/models/forgetpwdmodel.php");
-        include_once base_path("app/classes/forget_pswd.php");
+        include_once base_path("app/errors/forget_pswd.php");
         $startReset = new ForgetPswdContr($token, $token_expires, $email);
         $startReset->addTokenAndExpireTime();
         $startReset->sendForgetEmail();
