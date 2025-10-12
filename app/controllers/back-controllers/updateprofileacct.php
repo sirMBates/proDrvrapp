@@ -19,7 +19,7 @@ if ($method === 'PATCH') {
         $email = htmlspecialchars(trim(null));
         $phoneNumber = htmlspecialchars(trim(null));
         include_once base_path("app/models/updateprofilemodel.php");
-        include_once base_path("app/classes/update_profile.php");
+        include_once base_path("app/errors/update_profile.php");
         $newDrvrPwd = new UpdateDrvrContr($drvrid, $password, $email, $phoneNumber);
         $newDrvrPwd->changeDrvrPwd();
         $alert::setMsg('success', 'You\'ve successfully updated your password!');
@@ -33,7 +33,7 @@ if ($method === 'PATCH') {
         //$drvrBirthDate = isset($_POST['birthdate'])? htmlspecialchars(trim($_POST['birthdate'])) : null;
         $drvrMobile = isset($_POST['mobile'])? htmlspecialchars(trim($_POST['mobile'])) : null;
         include_once base_path("app/models/updateprofilemodel.php");
-        include_once base_path("app/classes/update_profile.php");
+        include_once base_path("app/errors/update_profile.php");
         $changeData = new UpdateDrvrContr($driver, $drvrPassword, $drvrEmail, /*$drvrBirthDate,*/$drvrMobile);
         $changeData->changeDrvrData();
         $alert::setMsg('info', 'Your information has been updated.');

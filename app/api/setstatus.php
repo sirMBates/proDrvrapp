@@ -9,7 +9,7 @@ $drvrHiddenToken = isset($tokenHeader['X-CSRF-Token']) ? htmlspecialchars($token
 if ($drvrHiddenToken === $_SESSION['drvr_token']) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         include_once base_path("app/models/updatestatusmodel.php");
-        include_once base_path("app/classes/update_drvr_status.php");
+        include_once base_path("app/errors/update_drvr_status.php");
         $data = json_decode(file_get_contents("php://input"), true);
         if ($data) {
             $drvrId = $_SESSION['driver_id'];

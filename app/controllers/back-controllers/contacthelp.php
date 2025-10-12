@@ -16,7 +16,7 @@ if ($formToken === $_SESSION['drvr_token']) {
         $emailSubject = htmlspecialchars(trim($_POST['subjectTitle']));
         $emailMessage = trim($_POST['message']);
         include_once base_path("app/models/getdrvrmodel.php");
-        include_once base_path("app/classes/contact_help.php");
+        include_once base_path("app/errors/contact_help.php");
         $sendingInfo = new ContactHelpContr($_SESSION['driver_id'], $operatorId, $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage);
         $sendingInfo->contactHelpDesk();
         $alert::setMsg('info', 'Your message was sent. You\'ll receive a response shortly.');

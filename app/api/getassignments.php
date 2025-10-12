@@ -21,7 +21,7 @@ if ($headerToken !== $sessionToken) {
 }
 
 include_once base_path("app/models/workassignmentsmodel.php");
-include_once base_path("app/classes/get_work.php");
+include_once base_path("app/errors/get_work.php");
 
 $getOperatorJob = new GetWorkContr();
 $getOperatorJob->workInformation();
