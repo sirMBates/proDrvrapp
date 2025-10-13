@@ -14,10 +14,24 @@ const completeBtn = document.querySelector('#submit-order');
 const drvrToken = document.querySelector('#drvrToken').value;
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
+const confirmAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
 let assignments = [];
 let currentIndex = 0;
 let pagination = null;
+
+function getCurrentAssignment() {
+    // safe guard
+    return (Array.isArray(assignments) && assignments.length > 0 && typeof currentIndex === 'number') ? assignments[currentIndex] : null;
+};
+
+function refreshCurrentAssignment() {
+    // re-render same index (uses showAssignment defined inside the DOMContentLoaded; we'll expose a small helper for that)
+    // we'll call window._refreshAssignmentFromOutside() (see below) which showAssignment will set up
+    if ( typeof window._refreshAssignmentFromOutside === 'function') {
+        window._refreshAssignmentFromOutside();
+    }
+};
 
 window.addEventListener('DOMContentLoaded', () => {
     // Create pagination controls (Bootstrap)
@@ -81,16 +95,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // Expose a function to refresh pills and buttons from showAssignment
         return { renderPills, updateButtons };
-    };
-
-    function getCurrentAssignment() {
-        return assignments?.[currentIndex] || null;
-    };
-
-    function refreshCurrentAssignment() {
-        if ( typeof currentIndex === 'number' && assignments?.length) {
-            showAssignment(currentIndex);
-        }
     };
 
     // Renders the assignment details to your existing UI tables
@@ -168,6 +172,22 @@ window.addEventListener('DOMContentLoaded', () => {
             $(editBtn).prop("disabled", false);
             $(completeBtn).prop("disabled", false);
         }
+
+        const assignmentForm = document.querySelector('.assignment-card');
+        if (assignmentForm) {
+            assignmentForm.dataset.currentIndex = currentIndex.toString();
+            // also store order_id for convenience
+            if (assignment && assignment['order_id']) {
+                assignmentForm.dataset.orderId = assignment['order_id'];
+            } else {
+                delete assignmentForm.dataset.orderId;
+            }
+        }
+
+        // Expose refresh hook for refreshCurrentAssignment() ( safe, single assignment re-render)
+        window._refreshAssignmentFromOutside = function() {
+            showAssignment(currentIndex);
+        };
     };
 
     getAssignment("https://prodriver.local/getassignments", { 
@@ -279,7 +299,48 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-confirmBtn.addEventListener('click', () => {});
+confirmBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const assignment = getCurrentAssignment();
+    if (!assignment) {
+        console.warn('No assignment selected yet.');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('order_id', assignment['order_id']);
+        formData.append('vehicle_id', assignment['vehicle_id']);
+        formData.append('driver_id', assignment['driver_id']);
+        formData.append('__method', 'PATCH');
+        const result = await confirmAssignment('https://prodriver.local/assignmenthandler', {
+            mode: 'cors',
+            credentials: 'include',
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': drvrToken
+            },
+            body: formData
+        });
+        if (result.status === 'success') {
+            console.log('Assignment confirmed:', result);
+
+            // Update your local model so UI stays in sync
+            assignment['confirmed_assignment'] = 'confirmed';
+
+            // Refresh the currently displayed assignment in UI
+            refreshCurrentAssignment();
+
+            // Optionally: give user feedback
+            alert('Assignment confirmed successfully!');
+        } else {
+            console.warn('Confirmation failed:', result.message);
+        }
+    } catch (error) {
+        console.error('Error confirmation assignment:', error);
+        alert('Something went wrong confirming this assignment.');
+    }
+});
 cancelBtn.addEventListener('click', () => {});
 editBtn.addEventListener('click', () => {});
 completeBtn.addEventListener('click', () => {});
