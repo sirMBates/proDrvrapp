@@ -309,6 +309,7 @@ confirmBtn.addEventListener('click', async (e) => {
 
     try {
         const formData = new FormData();
+        formData.append('confirmed_assignment', 'confirmed');
         formData.append('order_id', assignment['order_id']);
         formData.append('vehicle_id', assignment['vehicle_id']);
         formData.append('driver_id', assignment['driver_id']);

@@ -1,7 +1,7 @@
 <?php
 
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
+//header("Access-Control-Allow-Origin: *");
 
 class GetWorkContr extends WorkAssignments {
     public function workInformation() {

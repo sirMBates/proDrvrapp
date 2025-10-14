@@ -1,7 +1,7 @@
 <?php
 
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
+//header("Access-Control-Allow-Origin: *");
 
 class GetDrvrContr extends GetDriver {
         public function driverInfo() {
