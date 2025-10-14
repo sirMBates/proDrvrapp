@@ -1,4 +1,4 @@
-import { fetchDrvr, viewableDateTimeHelper } from "./helpers.js";
+import { fetchDrvr, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');
@@ -16,6 +16,7 @@ const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 const confirmAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
+const drvrAlert = showFlashAlert;
 let assignments = [];
 let currentIndex = 0;
 let pagination = null;
@@ -302,6 +303,7 @@ window.addEventListener('DOMContentLoaded', () => {
 confirmBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const assignment = getCurrentAssignment();
+    const btnName = confirmBtn.name;
     if (!assignment) {
         console.warn('No assignment selected yet.');
         return;
@@ -309,6 +311,7 @@ confirmBtn.addEventListener('click', async (e) => {
 
     try {
         const formData = new FormData();
+        formData.append(btnName, true);
         formData.append('confirmed_assignment', 'confirmed');
         formData.append('order_id', assignment['order_id']);
         formData.append('vehicle_id', assignment['vehicle_id']);
@@ -324,22 +327,23 @@ confirmBtn.addEventListener('click', async (e) => {
             body: formData
         });
         if (result.status === 'success') {
-            console.log('Assignment confirmed:', result);
+            //console.log('Assignment confirmed:', result);
+            showFlashAlert(result.status, result.message);
 
             // Update your local model so UI stays in sync
             assignment['confirmed_assignment'] = 'confirmed';
 
             // Refresh the currently displayed assignment in UI
             refreshCurrentAssignment();
-
-            // Optionally: give user feedback
-            alert('Assignment confirmed successfully!');
+            $(confirmBtn).prop('disabled', true);
+            $(cancelBtn).prop('disabled', true);
         } else {
-            console.warn('Confirmation failed:', result.message);
+            showFlashAlert(result.status, result.message);
+            $(confirmBtn).prop('disabled', false);
+            $(cancelBtn).prop('disabled', false);
         }
     } catch (error) {
         console.error('Error confirmation assignment:', error);
-        alert('Something went wrong confirming this assignment.');
     }
 });
 cancelBtn.addEventListener('click', () => {});

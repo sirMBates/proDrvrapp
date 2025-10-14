@@ -142,10 +142,10 @@ include "partials/info-modal.php";
 
                         <section id="workOrder-btns" class="vstack gap-2 col-lg-12 mx-auto">
                                 <input type="hidden" name="__method" value="">
-                                <button id="confirm-job" class="btn btn-outline-primary" type="button" disabled>Confirm</button>
-                                <button id="cancel-job" class="btn btn-outline-danger" type="button" disabled>Cancel/Unconfirm</button>
-                                <button id="edit" class="btn btn-outline-info" type="button" disabled>Edit</button>
-                                <button id="submit-order" class="btn btn-outline-success" type="submit" disabled>Complete Dispatch Order</button>
+                                <button id="confirm-job" class="btn btn-outline-primary" type="button" name="confirm" disabled>Confirm</button>
+                                <button id="cancel-job" class="btn btn-outline-danger" type="button" name="cancel" disabled>Cancel/Unconfirm</button>
+                                <button id="edit" class="btn btn-outline-info" type="button" name="modify" disabled>Edit</button>
+                                <button id="submit-order" class="btn btn-outline-success" type="submit" name="assignment-complete" disabled>Complete Dispatch Order</button>
                         </section>
                 </form>
         </div>
