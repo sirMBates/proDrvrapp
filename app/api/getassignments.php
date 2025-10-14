@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Typ, X-Requested-With");
+header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
 
 requireLoginAjax();
 
