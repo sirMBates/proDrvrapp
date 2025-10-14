@@ -79,3 +79,42 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
             return date.toLocaleString('en-us', options);
     }
 };
+
+export function showFlashAlert(type = 'info', message = '') {
+    if (!message) return;
+
+    const existing = document.getElementById('flash-alert');
+    if (existing) existing.remove();
+
+    const iconMap = {
+        success: 'fa-thumbs-up',
+        warning: 'fa-circle-radiation',
+        danger: 'fa-radiation',
+        info: 'fa-circle-info',
+        error: 'fa-thumbs-down',
+        validate: 'fa-circle-exclamation',
+        default: 'fa-circle-info'
+    };
+
+    const icon = iconMap[type] || iconMap.default;
+
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'flash-alert';
+    alertDiv.className = `my-2 alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        <i class="fs-5 me-2 fa-solid ${icon}"></i>
+        <span class="fs-5">${message}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    // Append inside banner alert area
+    const alertContainer = document.querySelector('#alert-container');
+    if (alertContainer) {
+        alertContainer.innerHTML = ''; // clear old one if needed
+        alertContainer.appendChild(alertDiv);
+    } else {
+        // fallback if banner missing
+        document.body.prepend(alertDiv);
+    }
+};
