@@ -337,10 +337,14 @@ confirmBtn.addEventListener('click', async (e) => {
             refreshCurrentAssignment();
             $(confirmBtn).prop('disabled', true);
             $(cancelBtn).prop('disabled', true);
+            $(editBtn).prop('disabled', false);
+            $(completeBtn).prop('disabled', false);
         } else {
             showFlashAlert(result.status, result.message);
             $(confirmBtn).prop('disabled', false);
             $(cancelBtn).prop('disabled', false);
+            $(editBtn).prop('disabled', true);
+            $(completeBtn).prop('disabled', true);
         }
     } catch (error) {
         console.error('Error confirmation assignment:', error);
