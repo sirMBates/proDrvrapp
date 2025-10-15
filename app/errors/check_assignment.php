@@ -8,7 +8,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
     private $vehicleId;
     private $assignmentStatus;
 
-    public function __construct($driverId, $orderId, $vehicleId, $assignmentStatus) {
+    public function __construct($driverId, $orderId, $vehicleId, $assignmentStatus = null) {
         $this->driverId = $driverId;
         $this->orderId = $orderId;
         $this->vehicleId = $vehicleId;
@@ -51,17 +51,47 @@ class UpdateAssignmentContr extends UpdateAssignment {
         return $this->confirmAssignment($this->driverId, $this->orderId, $this->vehicleId, $this->assignmentStatus);
     }
 
-    //public function cancel() {}
+    public function cancel() {
+        if ($this->isInfoMissing(true)) {
+            http_response_code(400);
+            return [
+                'status' => 'error',
+                'message' => 'Please check all required info before cancelling.'
+            ];
+        }
+
+        if (!$this->validateAssignment()) {
+            http_response_code(400);
+            return [
+                'status' => 'error',
+                'message' => 'Please check your assignment order id.'
+            ];
+        }
+
+        if (!$this->validateVehicleId()) {
+            http_response_code(400);
+            return [
+                'status' => 'error',
+                'message' => 'Please check your vehicle id.'
+            ];
+        }
+
+        return $this->removeAssignment($this->driverId, $this->orderId, $this->vehicleId);
+    }
 
     //public function completeAssignment() {}
 
-    private function isInfoMissing(): bool {
+    private function isInfoMissing(bool $forCancel = false): bool {
         $checkInfo = [
             $this->driverId, 
             $this->orderId, 
-            $this->vehicleId,
-            $this->assignmentStatus
+            $this->vehicleId
         ];
+
+        if (!$forCancel) {
+            $checkInfo[] = $this->assignmentStatus;
+        }
+
         foreach($checkInfo as $value) {
             if (empty($value)) {
                 return true;

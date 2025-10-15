@@ -1,4 +1,4 @@
-import { fetchDrvr, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
+import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn } from "./helpers.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');
@@ -17,6 +17,7 @@ const getAssignment = fetchDrvr;
 const confirmAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
 const drvrAlert = showFlashAlert;
+let showAssignment;
 let assignments = [];
 let currentIndex = 0;
 let pagination = null;
@@ -32,6 +33,93 @@ function refreshCurrentAssignment() {
     if ( typeof window._refreshAssignmentFromOutside === 'function') {
         window._refreshAssignmentFromOutside();
     }
+};
+
+function showNoAssignments(driver = null) {
+    // Select elements safely
+    const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
+    const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
+    const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
+
+    // Display default message for no assignments
+    primaryCoachId.textContent = 'No assignment available...';
+
+    // Show driver info if provided, else clear
+    if (driver) {
+        primaryDrvrId.textContent = driver['operatorid'] || 'N/A';
+        primaryDrvrName.textContent = `${driver['lastName'] || ''}, ${driver['firstName'] || ''}`.trim();
+    } else {
+        primaryDrvrId.textContent = '';
+        primaryDrvrName.textContent = '';
+    }
+
+    // Optional: visually reset the rest of the UI
+    const assignmentContainer = document.querySelector('#assignmentContainer');
+    if (assignmentContainer) {
+        assignmentContainer.textContent = 'No active assignments found.';
+    }
+
+    // Optionally disable buttons (depending on your UX flow)
+    $(confirmBtn).prop('disabled', true);
+    $(cancelBtn).prop('disabled', true);
+    $(editBtn).prop('disabled', true);
+    $(completeBtn).prop('disabled', true);
+};
+
+async function loadNextAssignment(afterIndex) {
+    // Case 1: There are still other assignments left
+    if (assignments.length > 0) {
+        const nextIndex = afterIndex >= assignments.length ? assignments.length - 1 : afterIndex;
+        if (nextIndex >= 0) {
+            showAssignment(nextIndex);
+            return;
+        }
+    }
+
+    // Case 2: None left → Fetch profile fallback
+    console.log("Fetching profile fallback...");
+    try {
+        const data = await getDriver("https://prodriver.local/getprofile", {
+            mode: 'cors',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': drvrToken
+            }
+        });
+
+        // Pass the driver info to showNoAssignments()
+        showNoAssignments(data);
+    } catch (err) {
+        console.error("Error fetching driver profile fallback:", err);
+        // Fallback to empty state if driver fetch fails
+        showNoAssignments();
+    }
+};
+
+async function clearAssignmentUI() {
+    const assignmentCard = document.querySelector('.assignment-card');
+    if (!assignmentCard) return;
+
+    await fadeOut(assignmentCard); // smooth fade out
+
+    // Grab your primary assignment container (or however your current assignment is shown)
+    const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
+    const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
+    const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
+
+    // Clear out the content
+    primaryCoachId.textContent = 'Loading next assignment...';
+    primaryDrvrId.textContent = '';
+    primaryDrvrName.textContent = '';
+
+    // Optionally disable action buttons to prevent interactions mid-transition
+    $(confirmBtn).prop('disabled', false);
+    $(cancelBtn).prop('disabled', false);
+    $(editBtn).prop('disabled', true);
+    $(completeBtn).prop('disabled', true);
+
+    await fadeIn(assignmentCard); // smooth fade back in
 };
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -99,7 +187,7 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     // Renders the assignment details to your existing UI tables
-    function showAssignment(index) {
+    showAssignment = function(index) {
         if (assignments.length === 0) return;
 
         if (index < 0 || index >= assignments.length) return; // guard
@@ -327,8 +415,7 @@ confirmBtn.addEventListener('click', async (e) => {
             body: formData
         });
         if (result.status === 'success') {
-            //console.log('Assignment confirmed:', result);
-            showFlashAlert(result.status, result.message);
+            drvrAlert(result.status, result.message); // toast
 
             // Update your local model so UI stays in sync
             assignment['confirmed_assignment'] = 'confirmed';
@@ -340,7 +427,7 @@ confirmBtn.addEventListener('click', async (e) => {
             $(editBtn).prop('disabled', false);
             $(completeBtn).prop('disabled', false);
         } else {
-            showFlashAlert(result.status, result.message);
+            drvrAlert(result.status, result.message); // toast
             $(confirmBtn).prop('disabled', false);
             $(cancelBtn).prop('disabled', false);
             $(editBtn).prop('disabled', true);
@@ -348,8 +435,54 @@ confirmBtn.addEventListener('click', async (e) => {
         }
     } catch (error) {
         console.error('Error confirmation assignment:', error);
+        drvrAlert('error', 'Something went wrong. Please try again.');
     }
 });
-cancelBtn.addEventListener('click', () => {});
+
+cancelBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const assignment = getCurrentAssignment();
+    const btnName = cancelBtn.name;
+    if (!assignment) {
+        console.warn('No assignment selected yet.');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append(btnName, true);
+        formData.append('order_id', assignment['order_id']);
+        formData.append('vehicle_id', assignment['vehicle_id']);
+        formData.append('driver_id', assignment['driver_id']);
+        formData.append('__method', 'DELETE');
+        const result = await confirmAssignment('https://prodriver.local/assignmenthandler', {
+            mode: 'cors',
+            credentials: 'include',
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': drvrToken
+            },
+            body: formData
+        });
+        if (result.status === 'success') {
+            //console.log('Assignment confirmed:', result);
+            drvrAlert(result.status, result.message); // toast
+
+            // Remove canceled assignment from array
+            assignments.splice(currentIndex, 1);
+
+            // Immediately clear UI for visual feedback
+            clearAssignmentUI();
+
+            // Load next assignment ( or fallback )
+            await loadNextAssignment(currentIndex);
+        } else {
+            drvrAlert(result.status, result.message); // toast
+        }
+    } catch (error) {
+        console.error('Error canceling assignment:', error);
+        drvrAlert('error', 'Something went wrong. Please try again.');
+    }
+});
 editBtn.addEventListener('click', () => {});
 completeBtn.addEventListener('click', () => {});
