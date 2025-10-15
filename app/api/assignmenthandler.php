@@ -40,7 +40,7 @@ if ($method === 'POST' && isset($_POST['__method'])) {
     }
 }
 
-if (!in_array($method, ['PATCH'])) {
+if (!in_array($method, ['PATCH', 'DELETE'])) {
     http_response_code(405);
     echo json_encode([
         'status' => 'error',
@@ -59,6 +59,21 @@ if ($method === 'PATCH') {
         $confirmation = htmlspecialchars(trim($_POST['confirmed_assignment']));
         $confirmed = new UpdateAssignmentContr($driverId, $orderId, $coachId, $confirmation);
         $result = $confirmed->confirm();
+        $isFetch = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+        if ($isFetch) {
+            echo json_encode($result);
+            exit();
+        }
+    }
+} elseif ($method === 'DELETE') {
+    if (isset($_POST['cancel'])) {
+        include_once base_path("app/models/assignmenthandlermodel.php");
+        include_once base_path("app/errors/check_assignment.php");
+        $driverId = htmlspecialchars(trim($_POST['driver_id']));
+        $orderId = htmlspecialchars(trim($_POST['order_id']));
+        $coachId = htmlspecialchars(trim($_POST['vehicle_id']));
+        $cancelJob = new UpdateAssignmentContr($driverId, $orderId, $coachId);
+        $result = $cancelJob->cancel();
         $isFetch = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
         if ($isFetch) {
             echo json_encode($result);

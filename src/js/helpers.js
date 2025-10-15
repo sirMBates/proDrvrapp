@@ -80,11 +80,8 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
     }
 };
 
-export function showFlashAlert(type = 'info', message = '') {
+export function showFlashAlert(type = 'info', message = '', timeout = 4000, useBanner = false) {
     if (!message) return;
-
-    const existing = document.getElementById('flash-alert');
-    if (existing) existing.remove();
 
     const iconMap = {
         success: 'fa-thumbs-up',
@@ -98,23 +95,104 @@ export function showFlashAlert(type = 'info', message = '') {
 
     const icon = iconMap[type] || iconMap.default;
 
-    const alertDiv = document.createElement('div');
-    alertDiv.id = 'flash-alert';
-    alertDiv.className = `my-2 alert alert-${type} alert-dismissible fade show`;
-    alertDiv.role = 'alert';
-    alertDiv.innerHTML = `
-        <i class="fs-5 me-2 fa-solid ${icon}"></i>
-        <span class="fs-5">${message}</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
+    if (useBanner) {
+        // Banner alert (top of page)
+        const alertContainer = document.querySelector('#alert-container');
+        if (!alertContainer) {
+            console.warn('Banner alert container not found.');
+            return;
+        }
 
-    // Append inside banner alert area
-    const alertContainer = document.querySelector('#alert-container');
-    if (alertContainer) {
-        alertContainer.innerHTML = ''; // clear old one if needed
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show my-2`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            <i class="fs-5 me-2 fa-solid ${icon}"></i>
+            <span class="fs-5">${message}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        alertContainer.innerHTML = ''; // Clear previous
         alertContainer.appendChild(alertDiv);
+
+        // Auto-remove after timeout
+        setTimeout(() => {
+            if (alertDiv) {
+                alertDiv.classList.remove('show');
+                alertDiv.classList.add('fade');
+                setTimeout(() => alertDiv.remove(), 500);
+            }
+        }, timeout);
+
     } else {
-        // fallback if banner missing
-        document.body.prepend(alertDiv);
+        // Toast alert (top-right)
+        let container = document.querySelector('#toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.style.position = 'fixed';
+            container.style.top = '1rem';
+            container.style.right = '1rem';
+            container.style.zIndex = 1050;
+            container.style.display = 'flex';
+            container.style.flexDirection = 'column';
+            container.style.gap = '0.5rem';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} d-flex align-items-center shadow`;
+        toast.style.minWidth = '250px';
+        toast.style.opacity = 0;
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+        toast.innerHTML = `
+            <i class="fs-5 me-2 fa-solid ${icon}"></i>
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close ms-2" aria-label="Close"></button>
+        `;
+
+        toast.querySelector('.btn-close').addEventListener('click', () => {
+            toast.style.opacity = 0;
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 500);
+        });
+
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            toast.style.opacity = 1;
+            toast.style.transform = 'translateX(0)';
+        });
+
+        // Auto remove after timeout
+        setTimeout(() => {
+            toast.style.opacity = 0;
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 500);
+        }, timeout);
     }
+};
+
+export function fadeOut(element, duration = 400) {
+    return new Promise(resolve => {
+        element.style.transition = `opacity ${duration}ms ease`;
+        element.style.opacity = 0;
+        setTimeout(() => {
+            element.style.display = 'none';
+            resolve();
+        }, duration);
+    });
+};
+
+export function fadeIn(element, duration = 400) {
+    return new Promise(resolve => {
+        element.style.display = '';
+        requestAnimationFrame(() => {
+            element.style.transition = `opacity ${duration}ms ease`;
+            element.style.opacity = 1;
+        });
+        setTimeout(resolve, duration);
+    });
 };
