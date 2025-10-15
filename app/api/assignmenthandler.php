@@ -31,15 +31,6 @@ if ($headerToken !== $sessionToken) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-if (!in_array($method, ['PATCH'])) {
-    http_response_code(405);
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Method Not Allowed'
-    ]);
-    exit();
-}
-
 if ($method === 'POST' && isset($_POST['__method'])) {
     $override = strtoupper($_POST['__method']);
     $allowed  = ['PUT', 'PATCH', 'DELETE'];
@@ -47,6 +38,15 @@ if ($method === 'POST' && isset($_POST['__method'])) {
     if (in_array($override, $allowed, true)) {
         $method = $override;
     }
+}
+
+if (!in_array($method, ['PATCH'])) {
+    http_response_code(405);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Method Not Allowed'
+    ]);
+    exit();
 }
 
 if ($method === 'PATCH') {
