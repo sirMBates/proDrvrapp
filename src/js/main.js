@@ -1,5 +1,5 @@
 import { buildModal } from './appmodal.js';
-import { fetchDrvr } from './helpers.js';
+import { fetchDrvr, showFlashAlert} from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
 import { Validation } from './validation.js';
 
@@ -27,6 +27,7 @@ const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontr
 const getDriver = fetchDrvr;
 const statusEndpoint = "https://prodriver.local/setstatus";
 const drvrToken = document.getElementById('drvrToken').value;
+const drvrAlert = showFlashAlert;
 const statusMsg = document.querySelector('#statusMessage');
 
 
@@ -51,7 +52,7 @@ $(document).ready(() => {
                         text: `Need help with something? Not sure of what to do next? Here, you can use this page to send an email with any problems regarding the use of the app. <u>Please and only if neccessary!</u> For account issues, please refer to your company administrator.`, 
                         button: 'Understood'
                 },
-                '/orders': {
+                '/assignment': {
                         text: `This is where your job orders will be viewed. You\'ll be able to edit certain times, details and add notes for dispatch and your personal reference.<br> You must confirm the job by clicking the button below once received.<br> When you\'re completing the job, click the edit button down below if there are any changes to be made.<br> If no changes, complete the dispatch order.<br> You can also cancel the job if dispatch allows.`, 
                         button: 'Ok'
                 },
@@ -130,7 +131,7 @@ profileInput.addEventListener('change', (e) => {
         // Validate the file
         const isValid = Validation.validate(file, 'file'); 
         if (!isValid) {
-                alert('Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
+                drvrAlert('error', 'Please select a valid image file (JPG, JPEG, PNG, GIF) and ensure it is within the size limit.');
                 profileImage.src = defaultProfileImage;
                 return;
         }
@@ -160,11 +161,11 @@ profileInput.addEventListener('change', (e) => {
                 //.then(response => response.text())
                 .then(data => {
                         if (data.status === 'success') {
-                                alert(data.message);
+                                drvrAlert(data.status, data.message);
                                 // Reset input after successful upload
                                 profileInput.value = '';
                         } else {
-                                alert(data.message || 'Upload failed');
+                                drvrAlert(data.status, data.message);
                         }
                 })
                 .catch(error => console.error('Error uploading image:', error));

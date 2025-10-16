@@ -127,15 +127,13 @@ class ContactHelpContr extends GetDriver {
         return true;
     }
     
-    private function checkEmailMessage() {
+    private function checkEmailMessage(): bool {
         $textPattern = "/^[a-zA-Z0-9\s.,!?\"'()\-\@#%$&_+=:;\/\n\r\t\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}]{20,300}$/u";
         $result;
         if (!preg_match($textPattern, $this->emailMessage)) {
-            $result = false;
-        } else {
-            $result = true;
+            return false;
         }
-        return $result;
+        return true;
     }
 
     private function sendEmail() {

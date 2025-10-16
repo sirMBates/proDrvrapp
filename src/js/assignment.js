@@ -298,7 +298,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (confirmBtnStatus) $(confirmBtn).prop("disabled", false);
             if (cancelBtnStatus) $(cancelBtn).prop("disabled", false);
         } else {
-            console.log("No assignments found, loading profile instead...");
+            //console.log("No assignments found, loading profile instead...");
             return getDriver("https://prodriver.local/getprofile", { 
                 mode: 'cors',
                 credentials: 'include',
@@ -315,10 +315,27 @@ window.addEventListener('DOMContentLoaded', () => {
             const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
             const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
             const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
+            const primaryOrderNumber = primaryA.childNodes[3].childNodes[1].childNodes[7];
+            const primaryNumOfCoaches = primaryA.childNodes[3].childNodes[1].childNodes[9];
+            const secondaryStartTime = groupB.childNodes[3].childNodes[1].childNodes[1];
+            const secondarySpotTime = groupB.childNodes[3].childNodes[1].childNodes[3];
+            const secondaryLeaveTime = groupB.childNodes[3].childNodes[1].childNodes[5];
+            const tertiaryReturnTime = groupC.childNodes[3].childNodes[1].childNodes[1];
+            const tertiaryDropTime = groupC.childNodes[3].childNodes[1].childNodes[3];
+            const tertiaryEndTime = groupC.childNodes[3].childNodes[1].childNodes[5];
+            const tertiaryActEndTime = groupC.childNodes[3].childNodes[1].childNodes[7];
+            const tertiaryShiftTime = groupC.childNodes[3].childNodes[1].childNodes[9];
+            const tertiaryDriveTime = groupC.childNodes[3].childNodes[1].childNodes[11];
+            const quaternaryOrigin = groupD.childNodes[3].childNodes[1].childNodes[1];
+            const quaternaryDestination = groupD.childNodes[3].childNodes[1].childNodes[3];
+            const quaternaryGroupNameandLeader = groupD.childNodes[3].childNodes[1].childNodes[5];
+            const quaternaryGroupLeaderMobile = groupD.childNodes[3].childNodes[1].childNodes[7];
+            const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[9];
+            const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[11];
             
             primaryCoachId.textContent = 'No assignment available...';
             primaryDrvrId.textContent = driver['operatorid'];
-            primaryDrvrName.textContent = `${driver['lastName']}, ${driver['firstName']}`;
+            primaryDrvrName.textContent = `${driver['firstName']} ${driver['lastName']}`;
             const placeholders = [primaryOrderNumber, primaryNumOfCoaches, secondaryStartTime, secondarySpotTime, secondaryLeaveTime, tertiaryReturnTime, tertiaryDropTime, tertiaryEndTime, tertiaryActEndTime, tertiaryShiftTime, tertiaryDriveTime, quaternaryOrigin, quaternaryDestination, quaternaryGroupNameandLeader, quaternaryGroupLeaderMobile, quaternaryCustomerNameandPhone, quaternaryContactNameandMobile];
             placeholders.forEach(ph => {
                 const el = eval(ph);

@@ -15,23 +15,21 @@ class SetDrvrPictureContr extends ProfileImageUpload {
 
         if (!$this->checkPicType()) {
             http_response_code(415);
-            echo json_encode([
+            return [
                 'status' => 'error',
                 'message' => 'Invalid image type. Only jpeg, png, or gif are allowed.'
-            ]);
-            exit();
+            ];
         }
 
         if ($this->checkPicSize()) {
             http_response_code(415);
-            echo json_encode([
+            return [
                 'status' => 'error',
                 'message' => 'Image size exceeds the limit of 5MB.'
-            ]);
-            exit();
+            ];
         }
 
-        $this->uploadImage($_SESSION['driver_id'], $this->file);
+        return $this->uploadImage($_SESSION['driver_id'], $this->file);
     }
 
     private function checkPicType() {
@@ -50,15 +48,13 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         return $result;
     }
 
-    private function checkPicSize() {
+    private function checkPicSize(): bool {
         $megabytes5 = 5 * 1024 * 1024; //5MB
         $result;
         if ($this->file['size'] > $megabytes5) {
-            $result = true;
-        } else {
-            $result = false;
+            return true;
         }
-        return $result;
+        return false;
     }
 
     private function handleUploadError($errorCode) {
@@ -75,11 +71,10 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         $message = $messages[$errorCode] ?? "Unknown upload error.";
 
         http_response_code(400);
-        echo json_encode([
+        return [
             'status' => 'error',
             'message' => $message
-        ]);
-        exit();
+        ];
     }
 }
 

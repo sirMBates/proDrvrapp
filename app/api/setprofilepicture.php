@@ -1,7 +1,11 @@
 <?php
 
 requireLoginAjax();
+
 header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: https://prodriver.local");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
 
 if (!in_array($method, ['PATCH'])) {
     http_response_code(405);
@@ -53,13 +57,12 @@ if ($method === 'PATCH') {
         include_once base_path("app/errors/set_profile_pic.php");
         $file = $_FILES['profileImage'];
         $drvrPicture = new SetDrvrPictureContr($file);
-        $drvrPicture->setProfilePicture();
-        http_response_code(200);
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Photo uploaded!'
-        ]);
-        exit();
+        $result = $drvrPicture->setProfilePicture();
+        $isFetch = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+        if ($isFetch) {
+            echo json_encode($result);
+            exit();
+        }
     }
 }
 
