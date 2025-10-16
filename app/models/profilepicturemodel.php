@@ -49,13 +49,24 @@ class ProfileImageUpload extends GetDriver {
         $stmt->execute();
 
         if (!$stmt) {
-            http_response_code(401);
-            echo json_encode([
+            //http_response_code(401);
+            return [
                 'status' => 'error',
-                'message' => 'There was a problem with your request.'
-            ]);
-            exit();
+                'message' => 'There was a problem with your request. Please try again.'
+            ];
         }
+
+        if ($stmt->rowCount() === 0) {
+            return [
+                'status' => 'error',
+                'message' => 'Upload failed!'
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'message' => 'Photo successfully uploaded!'
+        ];
     }
 }
 ?>

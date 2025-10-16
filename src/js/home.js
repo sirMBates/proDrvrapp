@@ -59,7 +59,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 });
             } else {
                 // No assignments → fallback to getProfile
-                console.log("No assignments found, loading profile instead...");
+                //console.log("No assignments found, loading profile instead...");
                 return getDriver("https://prodriver.local/getprofile", {
                         method: 'GET', 
                         mode: 'cors',
@@ -80,7 +80,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
                 const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
                 const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
-                fullname.textContent = `${driver['lastName']}, ${driver['firstName']}`;
+                fullname.textContent = `${driver['firstName']} ${driver['lastName']}`;
                 if (drvrBirthDate !== '') {
                         localStorage.setItem('driverName', driver['firstName']);
                 };

@@ -128,17 +128,26 @@ class JobOrderImporter {
             // Insert each row using Assignment class
             $assignment = new Assignment($this->logger);
 
+            $notifiedDrivers = [];
+
             foreach ($rows as $rowData) {
                 $result = $assignment->insertAssignment($rowData);
 
                 if ($result === true) {
                     $this->logger->info("Inserted vehicle: {$rowData['vehicle_id']} ({$rowData['order_ref']}) at {$rowData['start_date_time']}");
+                    // Track drivers to notify
+                    $notifiedDrivers[$rowData['driver_id']] = $rowData['operator_name'];
                 } elseif ($result === 'duplicate') {
                     $this->logger->warning("Duplicate vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
                 } else {
                     $this->logger->log("Failed to insert vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
                 }
             }
+
+            foreach ($notifiedDrivers as $driverId => $driverName) {
+                $this->sendAssignmentEmail($driverId, $driverName, $orderRef);
+            }
+
             $this->logger->info("JobOrderImporter completed successfully with reference {$orderRef}.");
             return true;
 
@@ -165,6 +174,46 @@ class JobOrderImporter {
         $ts = strtotime($value);
         if (!$ts) return null;
         return $timeOnly ? date('H:i:s', $ts) : date('Y-m-d H:i:s', $ts);
+    }
+
+    protected function sendAssignmentEmail($driverId, $driverName, $orderRef) {
+        try {
+            $db = new Database();
+            $pdo = $db->connect();
+            $sql = "SELECT email FROM driver
+                    WHERE driver_id = :driver_id
+                    LIMIT 1";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':driver_id', $driverId);
+            $stmt->execute();
+            $driver = $stmt->fetch();
+
+            if (!$driver || empty($driver['email'])) {
+                $this->logger->warning("No email found for driver {$driverName} (ID {$driverId})");
+                return;
+            }
+
+            $to = $driver['email'];
+            $mail = require base_path("core/emailSetup.php");
+            $mail->setFrom($_ENV['MAIL_FROM_ADDRESS'], $_ENV['MAIL_FROM_NAME']);
+            $mail->addAddress($to, $driverName);
+            $mail->isHTML(true);
+            $mail->Charset = 'UTF-8';
+            $mail->Encoding = 'base64';
+            $mail->Subject = "New Job Assignment(s) Ready for Confirmation";
+            $mail->Body = "
+                <p>Hi {$driverName},</p>
+                <p>This is to notify you that new job assignment(s) have been added and are now ready for confirmation.</p>
+                <p><strong>Reference:</strong> {$orderRef}</p>
+                <p>Please log in to your driver portal to review and confirm your assignment(s).</p>
+                <p>Regards,<br>Dispatch Team</p>
+            ";
+            $mail->AltBody = "Hi {$driverName},\n\nNew job assignments are ready for confirmation.\nReference: {$orderRef}\nPlease log in to your driver portal to review and confirm.\n\n- Dispatch Team";
+            $mail->send();
+            $this->logger->info("Notification email sent to {$driverName} ({$to}) for order {$orderRef}");
+        } catch (Exception $e){
+            $this->logger->error("Email send failed for driver {$driverName} (ID {$driverId}): " . $e->getMessage());
+        }
     }
 }
 
