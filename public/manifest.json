@@ -34,9 +34,9 @@
     ],
     "shortcuts": [
         {
-            "name": "Orders",
-            "short_name": "Orders",
-            "url": "/orders",
+            "name": "assignments",
+            "short_name": "Jobs",
+            "url": "/assignment",
             "icons": [
                 {
                     "src": "/dist/images-videos/logoandicons/bus-driver-icon-png-192.png",
@@ -71,7 +71,7 @@
         },
         {
             "name": "Contact Help",
-            "short_name": "Email",
+            "short_name": "HelpDesk",
             "url": "/contact",
             "icons": [
                 {
