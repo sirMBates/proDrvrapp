@@ -60,7 +60,7 @@ return new class {
 
         if (isset($_SESSION['driver_id'])) {
             // prevent Logged-in users from hitting signup/signin
-            if (in_array($uri, ['/signup', '/signin', '/forget', '/compreset'])) {
+            if (in_array($uri, ['/signup', '/signin', '/forget', '/completereset'])) {
                 header("Location: /");
                 exit();
             }

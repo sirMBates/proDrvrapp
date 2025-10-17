@@ -34,7 +34,7 @@ function pageStyle($value) {
                         return;
                         break;
 
-                case "/assignment":
+                case "/assignments":
                         echo "<link rel='stylesheet' href='../dist/styles/jobsview.css'>\n";
                         break;
 
