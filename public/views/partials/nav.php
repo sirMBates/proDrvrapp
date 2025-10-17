@@ -69,7 +69,7 @@
                                                 <a class="nav-link" href="/"><i class="px-2 fa-solid fa-house"></i>Home</a>
                                         </li>
                                         <li class="nav-item">
-                                                <a class="nav-link" href="/assignment"><i class="px-2 fa-solid fa-file"></i>Assignment(s)</a>
+                                                <a class="nav-link" href="/assignments"><i class="px-2 fa-solid fa-file"></i>Assignment(s)</a>
                                         </li>
                                         <li class="nav-item">
                                                 <a class="nav-link" href="/profile"><i class="px-2 fa-solid fa-user"></i>My Profile</a>

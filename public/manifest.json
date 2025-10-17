@@ -1,42 +1,46 @@
 {
     "name": "Prodriver",
-    "short_name": "Prodrvr",
-    "id": "/signin",
+    "short_name": "ProDrvr",
+    "id": "/",
     "start_url": "/signin",
     "scope": "/",
     "display": "standalone",
     "orientation": "any",
     "background_color": "#E5E4E2",
-    "theme_color": "rgba(29, 82, 131, 0.9)",
+    "theme_color": "#1D5283",
     "description": "An app for the professional driver made by a professional driver.",
     "lang": "en-US",
     "icons": [
         {
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-256.png",
             "sizes": "256x256",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-1024.png",
             "sizes": "1024x1024",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ],
     "shortcuts": [
         {
-            "name": "assignments",
+            "name": "Assignments",
             "short_name": "Jobs",
-            "url": "/assignment",
+            "url": "/assignments",
             "icons": [
                 {
                     "src": "/dist/images-videos/logoandicons/bus-driver-icon-png-192.png",

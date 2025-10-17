@@ -7,7 +7,7 @@ $router->get('/forget', 'app/controllers/front-controllers/forget.php');
 $router->get('/completereset', 'app/controllers/front-controllers/completereset.php');
 $router->get('/reset', 'app/controllers/back-controllers/reset.php');
 $router->get('/', 'app/controllers/front-controllers/index.php', true);
-$router->get('/assignment', 'app/controllers/front-controllers/assignment.php', true);
+$router->get('/assignments', 'app/controllers/front-controllers/assignments.php', true);
 $router->get('/profile', 'app/controllers/front-controllers/profile.php', true);
 $router->get('/timesheet', 'app/controllers/front-controllers/timesheet.php', true);
 $router->get('/contact', 'app/controllers/front-controllers/contact.php', true);

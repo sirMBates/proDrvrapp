@@ -52,7 +52,7 @@ $(document).ready(() => {
                         text: `Need help with something? Not sure of what to do next? Here, you can use this page to send an email with any problems regarding the use of the app. <u>Please and only if neccessary!</u> For account issues, please refer to your company administrator.`, 
                         button: 'Understood'
                 },
-                '/assignment': {
+                '/assignments': {
                         text: `This is where your job orders will be viewed. You\'ll be able to edit certain times, details and add notes for dispatch and your personal reference.<br> You must confirm the job by clicking the button below once received.<br> When you\'re completing the job, click the edit button down below if there are any changes to be made.<br> If no changes, complete the dispatch order.<br> You can also cancel the job if dispatch allows.`, 
                         button: 'Ok'
                 },
