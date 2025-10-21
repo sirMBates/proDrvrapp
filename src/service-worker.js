@@ -16,6 +16,14 @@ const STATIC_ASSETS = [
   '/dist/images-videos/logoandicons/prodrvr-bus-icon-512.png'
 ];
 
+// 🔹 Listen for messages from the client (e.g., SKIP_WAITING)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] Received SKIP_WAITING message from client');
+    self.skipWaiting(); // immediately activate the new worker
+  }
+});
+
 // Install event – cache core assets
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing, cache version:', CACHE_VERSION);
@@ -29,19 +37,33 @@ self.addEventListener('install', (event) => {
 // Activate event – remove old caches
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating...');
+
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
+    (async () => {
+      // 1️⃣ Remove outdated caches
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map((key) => {
           if (key !== CACHE_NAME) {
             console.log('[SW] Deleting old cache:', key);
             return caches.delete(key);
           }
         })
-      )
-    )
+      );
+
+      // 2️⃣ Immediately take control of all open clients
+      self.skipWaiting();
+      await self.clients.claim();
+
+      // 3️⃣ Notify clients that a new version is active
+      const allClients = await self.clients.matchAll({ includeUncontrolled: true });
+      for (const client of allClients) {
+        client.postMessage({ type: 'SW_UPDATED' });
+      }
+
+      console.log('[SW] Activated new version:', CACHE_NAME);
+    })()
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -119,3 +141,18 @@ async function networkFirst(request) {
   }
 };
 
+// --- AUTO UPDATE DETECTION ---
+// Notify clients when a new service worker takes control
+self.addEventListener('install', () => {
+  console.log('[SW] Installed new version');
+});
+
+self.addEventListener('activate', async () => {
+  console.log('[SW] Activated new version:', CACHE_NAME);
+
+  // Once activated, send a message to all controlled clients
+  const allClients = await self.clients.matchAll({ includeUncontrolled: true });
+  for (const client of allClients) {
+    client.postMessage({ type: 'SW_UPDATED' });
+  }
+});
