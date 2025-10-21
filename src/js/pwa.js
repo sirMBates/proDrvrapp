@@ -52,8 +52,13 @@ if ('serviceWorker' in navigator) {
     document.body.appendChild(toast);
 
     // Handle the reload button
-    document.getElementById('refresh-app').addEventListener('click', () => {
-      window.location.reload();
+    document.getElementById('refresh-app').addEventListener('click', async () => {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && reg.waiting) {
+        console.log('[PWA] Triggering skip waiting...');
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' }); // 💥 tell SW to activate
+      }
+      window.location.reload(); // refresh after activation
     });
   }
 }
