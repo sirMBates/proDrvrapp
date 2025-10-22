@@ -15,25 +15,49 @@
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
         },
         {
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-256.png",
             "sizes": "256x256",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-256.png",
+            "sizes": "256x256",
+            "type": "image/png",
+            "purpose": "maskable"
         },
         {
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         },
         {
             "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-1024.png",
             "sizes": "1024x1024",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-1024.png",
+            "sizes": "1024x1024",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
     "shortcuts": [
@@ -43,7 +67,7 @@
             "url": "/assignments",
             "icons": [
                 {
-                    "src": "/dist/images-videos/logoandicons/bus-driver-icon-png-192.png",
+                    "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
                     "sizes": "192x192",
                     "type": "image/png"
                 }
@@ -55,7 +79,7 @@
             "url": "/profile",
             "icons": [
                 {
-                    "src": "/dist/images-videos/logoandicons/bus-driver-icon-png-192.png",
+                    "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
                     "sizes": "192x192",
                     "type": "image/png"
                 }
@@ -67,7 +91,7 @@
             "url": "/timesheet",
             "icons": [
                 {
-                    "src": "/dist/images-videos/logoandicons/bus-driver-icon-png-192.png",
+                    "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
                     "sizes": "192x192",
                     "type": "image/png"
                 }
@@ -79,11 +103,24 @@
             "url": "/contact",
             "icons": [
                 {
-                    "src": "/dist/images-videos/logoandicons/bus-driver-icon-png-192.png",
+                    "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
                     "sizes": "192x192",
                     "type": "image/png"
                 }
             ]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/dist/images-videos/screenshots/prodriver-desktop-1280x720.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/dist/images-videos/screenshots/prodriver-mobile-540x960.png",
+            "sizes": "540x960",
+            "type": "image/png"
         }
     ]
 }

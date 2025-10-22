@@ -16,6 +16,18 @@ const STATIC_ASSETS = [
   '/dist/images-videos/logoandicons/prodrvr-bus-icon-512.png'
 ];
 
+// Precache Google Font CSS and WOFF2 files
+const PRECACHE_FONTS = [
+  // CSS stylesheets
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap',
+  'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap',
+  'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap',
+
+  // Actual WOFF2 files (add the key ones used by your site)
+  'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.woff2',
+  'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlfBBc9.woff2'
+];
+
 // 🔹 Listen for messages from the client (e.g., SKIP_WAITING)
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -24,13 +36,20 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Install event – cache core assets
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing, cache version:', CACHE_VERSION);
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
+    (async () => {
+      const appCache = await caches.open(CACHE_NAME);
+      await appCache.addAll(STATIC_ASSETS);
+
+      // Pre-cache font files
+      const fontCache = await caches.open(FONT_CACHE);
+      await fontCache.addAll(PRECACHE_FONTS);
+
+      await self.skipWaiting();
+      console.log('[SW] Pre-cached fonts successfully!');
+    })()
   );
 });
 
@@ -47,6 +66,16 @@ self.addEventListener('activate', (event) => {
           if (key !== CACHE_NAME) {
             console.log('[SW] Deleting old cache:', key);
             return caches.delete(key);
+          }
+
+          if (key.startsWith('prodriver-fonts-') && key !== FONT_CACHE) {
+              console.log('[SW] Deleting old font cache:', key);
+              return caches.delete(key);
+          }
+
+          if (key !== CACHE_NAME && key !== FONT_CACHE) {
+              console.log('[SW] Deleting old cache:', key);
+              return caches.delete(key);
           }
         })
       );
@@ -72,6 +101,12 @@ self.addEventListener('fetch', (event) => {
 
   // Ignore non-GET requests
   if (request.method !== 'GET') return;
+
+  // Handle Google Fonts separately
+  if (url.origin.includes('fonts.googleapis.com') || url.origin.includes('fonts.gstatic.com')) {
+    event.respondWith(cacheGoogleFonts(request));
+    return;
+  }
 
   // Skip browser extension requests
   if (request.url.startsWith('chrome-extension://')) return;
@@ -141,13 +176,71 @@ async function networkFirst(request) {
   }
 };
 
+// --- GOOGLE FONT OPTIMIZATION ---
+// When you update your font list or add a new font, just bump the cache version:
+const FONT_CACHE = 'prodriver-fonts-v2';
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Handle Google Fonts CSS (stylesheets)
+  if (url.origin === 'https://fonts.googleapis.com') {
+    event.respondWith(cacheGoogleFontCSS(request));
+    return;
+  }
+
+  // Handle Google Fonts font files (woff2)
+  if (url.origin === 'https://fonts.gstatic.com') {
+    event.respondWith(cacheGoogleFontFiles(request));
+    return;
+  }
+});
+
+// Cache and serve Google Fonts CSS
+async function cacheGoogleFontCSS(request) {
+  const cache = await caches.open(FONT_CACHE);
+  const cachedResponse = await cache.match(request);
+  if (cachedResponse) return cachedResponse;
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      // Clone and cache CSS
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    console.warn('[SW] Font CSS fetch failed:', request.url, err);
+    return cachedResponse || new Response('', { status: 503 });
+  }
+};
+
+// Cache and serve Google Fonts font files
+async function cacheGoogleFontFiles(request) {
+  const cache = await caches.open(FONT_CACHE);
+  const cachedResponse = await cache.match(request);
+  if (cachedResponse) return cachedResponse;
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    console.warn('[SW] Font file fetch failed:', request.url, err);
+    return cachedResponse || new Response('', { status: 503 });
+  }
+};
+
 // --- AUTO UPDATE DETECTION ---
 // Notify clients when a new service worker takes control
 self.addEventListener('install', () => {
   console.log('[SW] Installed new version');
 });
 
-self.addEventListener('activate', async () => {
+/*self.addEventListener('activate', async () => {
   console.log('[SW] Activated new version:', CACHE_NAME);
 
   // Once activated, send a message to all controlled clients
@@ -155,4 +248,4 @@ self.addEventListener('activate', async () => {
   for (const client of allClients) {
     client.postMessage({ type: 'SW_UPDATED' });
   }
-});
+});*/
