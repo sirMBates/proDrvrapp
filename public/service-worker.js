@@ -1,4 +1,5 @@
 // public/service-worker.js
+importScripts('https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
 // Generate a dynamic cache version based on build timestamp
 const CACHE_VERSION = 'v' + new Date().getTime();
 const CACHE_NAME = `prodriver-${CACHE_VERSION}`;
@@ -258,12 +259,101 @@ self.addEventListener('install', () => {
   console.log('[SW] Installed new version');
 });
 
-/*self.addEventListener('activate', async () => {
-  console.log('[SW] Activated new version:', CACHE_NAME);
+// --- OFFLINE SYNC QUEUE ---
+const OFFLINE_QUEUE = 'prodriver-sync-queue';
 
-  // Once activated, send a message to all controlled clients
-  const allClients = await self.clients.matchAll({ includeUncontrolled: true });
-  for (const client of allClients) {
-    client.postMessage({ type: 'SW_UPDATED' });
+// Intercept POST / PATCH / DELETE requests
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+
+  if (
+    request.method === 'POST' ||
+    request.method === 'PATCH' ||
+    request.method === 'DELETE'
+  ) {
+    event.respondWith(
+      (async () => {
+        try {
+          // Try network first
+          const response = await fetch(request.clone());
+          return response;
+        } catch (err) {
+          // Save request for background sync
+          const queue = await openQueue();
+          const body = await request.clone().text();
+          await queue.add({
+            url: request.url,
+            method: request.method,
+            body,
+            headers: [...request.headers],
+            timestamp: Date.now(),
+          });
+
+          // Register background sync event
+          if ('sync' in self.registration) {
+            await self.registration.sync.register('prodriver-sync');
+          }
+
+          console.warn('[SW] Queued offline request for sync later:', request.url);
+          return new Response(
+            JSON.stringify({ status: 'queued', message: 'Offline — will sync when online.' }),
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      })()
+    );
   }
-});*/
+});
+
+// Helper: open IndexedDB queue
+async function openQueue() {
+  const db = await idb.openDB(OFFLINE_QUEUE, 1, {
+    upgrade(db) {
+      db.createObjectStore('requests', { keyPath: 'timestamp' });
+    },
+  });
+  return {
+    async add(requestData) {
+      const tx = db.transaction('requests', 'readwrite');
+      await tx.store.add(requestData);
+      await tx.done;
+    },
+    async getAll() {
+      return (await db.getAll('requests')) || [];
+    },
+    async clear() {
+      const tx = db.transaction('requests', 'readwrite');
+      await tx.store.clear();
+      await tx.done;
+    },
+  };
+}
+
+// --- Background sync handler ---
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'prodriver-sync') {
+    event.waitUntil(processOfflineQueue());
+  }
+});
+
+async function processOfflineQueue() {
+  const queue = await openQueue();
+  const requests = await queue.getAll();
+  console.log(`[SW] Processing ${requests.length} queued requests...`);
+
+  for (const req of requests) {
+    try {
+      const res = await fetch(req.url, {
+        method: req.method,
+        headers: new Headers(req.headers),
+        body: req.body,
+      });
+      if (res.ok) console.log('[SW] Synced request:', req.url);
+    } catch (err) {
+      console.warn('[SW] Failed to re-sync request:', req.url);
+    }
+  }
+
+  await queue.clear();
+};
+

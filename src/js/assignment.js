@@ -1,4 +1,5 @@
 import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn } from "./helpers.js";
+import { handleAssignmentFetch } from "./pwa.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');
@@ -422,7 +423,7 @@ confirmBtn.addEventListener('click', async (e) => {
         formData.append('vehicle_id', assignment['vehicle_id']);
         formData.append('driver_id', assignment['driver_id']);
         formData.append('__method', 'PATCH');
-        const result = await confirmAssignment('https://prodriver.local/assignmenthandler', {
+        const options = {
             mode: 'cors',
             credentials: 'include',
             method: 'POST',
@@ -430,7 +431,8 @@ confirmBtn.addEventListener('click', async (e) => {
                 'X-CSRF-Token': drvrToken
             },
             body: formData
-        });
+        };
+        const result = await handleAssignmentFetch(options);
         if (result.status === 'success') {
             drvrAlert(result.status, result.message); // toast
 
@@ -472,7 +474,7 @@ cancelBtn.addEventListener('click', async (e) => {
         formData.append('vehicle_id', assignment['vehicle_id']);
         formData.append('driver_id', assignment['driver_id']);
         formData.append('__method', 'DELETE');
-        const result = await confirmAssignment('https://prodriver.local/assignmenthandler', {
+        const options = {
             mode: 'cors',
             credentials: 'include',
             method: 'POST',
@@ -480,7 +482,8 @@ cancelBtn.addEventListener('click', async (e) => {
                 'X-CSRF-Token': drvrToken
             },
             body: formData
-        });
+        };
+        const result = await handleAssignmentFetch(options);
         if (result.status === 'success') {
             //console.log('Assignment confirmed:', result);
             drvrAlert(result.status, result.message); // toast
