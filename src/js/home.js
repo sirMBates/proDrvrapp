@@ -1,6 +1,6 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { fetchDrvr, viewableDateTimeHelper } from "./helpers.js";
-const drvrBirthDate = document.querySelector('#drvrbday');
+const drvrBirthDate = document.querySelector('#drvrbday').value;
 const mainContent = document.querySelector('main');
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
@@ -47,6 +47,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 tableBody.innerHTML = ''; // clear old data
 
                 assignments.forEach((assignment, index) => {
+                        if (drvrBirthDate) {
+                                localStorage.setItem('driverName', assignment['first_name']);
+                        };
                         const row = document.createElement('tr');
 
                         row.innerHTML = `<td>${assignment['first_name']} ${assignment['last_name']}</td>
@@ -81,7 +84,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
                 const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
                 fullname.textContent = `${driver['firstName']} ${driver['lastName']}`;
-                if (drvrBirthDate !== '') {
+                if (drvrBirthDate) {
                         localStorage.setItem('driverName', driver['firstName']);
                 };
                 drvrId.textContent = driver['operatorid'];

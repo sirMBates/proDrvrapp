@@ -156,3 +156,94 @@ window.addEventListener('DOMContentLoaded', () => {
       fadeOutInstallBtn();
     });
 });
+
+// --- NETWORK STATUS TOAST (offline/online) ---
+(function setupNetworkToasts() {
+  // Create a single reusable toast element
+  const toast = document.createElement('div');
+  toast.setAttribute('id', 'network-toast');
+  toast.style.cssText = `
+    position: fixed;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%) translateY(20px);
+    min-width: 260px;
+    max-width: 92vw;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    color: #fff;
+    background: #6c757d; /* default, will be overridden per state */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    font-size: 0.95rem;
+    font-family: "Roboto", "Segoe UI", sans-serif;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 280ms ease,
+      transform 280ms ease,
+      background 180ms ease;
+  `;
+  toast.innerHTML = `<span id="network-toast-text"></span>`;
+  document.body.appendChild(toast);
+
+  let toastTimer = null;
+  let lastState = null; // 'online' | 'offline'
+
+  function showToast(message, bgColor = '#6c757d', autoHideMs = 2800) {
+    const textEl = document.getElementById('network-toast-text');
+    if (!textEl) return;
+    textEl.textContent = message;
+    toast.style.background = bgColor;
+
+    // show
+    toast.style.pointerEvents = 'auto';
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+
+    // clear any existing timer
+    if (toastTimer) clearTimeout(toastTimer);
+
+    // auto-hide unless explicitly persistent
+    if (autoHideMs > 0) {
+      toastTimer = setTimeout(hideToast, autoHideMs);
+    }
+  }
+
+  function hideToast() {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+    setTimeout(() => {
+      toast.style.pointerEvents = 'none';
+    }, 300);
+  }
+
+  function handleOnline() {
+    if (lastState === 'online') return; // debounce duplicate events
+    lastState = 'online';
+    // Blue/green success look
+    showToast('Back online ✓', '#198754', 2200);
+  }
+
+  function handleOffline() {
+    if (lastState === 'offline') return; // debounce
+    lastState = 'offline';
+    // Red warning, keep a bit longer
+    showToast('You’re offline. Some features may not work.', '#dc3545', 4000);
+  }
+
+  // Initial state check on load
+  if (navigator.onLine) {
+    lastState = 'online';
+  } else {
+    lastState = 'offline';
+    // Optionally show on first load if offline:
+    showToast('You’re offline. Some features may not work.', '#dc3545', 4000);
+  }
+
+  // Listen for connectivity changes
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', handleOffline);
+})();

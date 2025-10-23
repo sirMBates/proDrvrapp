@@ -30,6 +30,13 @@ include "partials/info-modal.php";
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
+                                                <span class="input-group-text"><i class="fa-regular fa-user fs-4 text-primary"></i></span>
+                                                <div class="form-floating">
+                                                        <input type="text" id="uname" class="form-control" name="username" placeholder="Username" disabled>
+                                                        <label for="uname" class="text-capitalize"><b>username</b></label>
+                                                </div>
+                                        </div>
+                                        <div class="input-group mb-2">
                                                 <span class="input-group-text"><button id="email-change" type="button" class="btn"><i class="fa-regular fa-envelope fs-4 text-primary"></i></button></span>
                                                 <div class="form-floating">
                                                         <input type="email" id="email" class="form-control" name="email" placeholder="email" disabled>
@@ -48,13 +55,6 @@ include "partials/info-modal.php";
                                                 <div class="form-floating">
                                                         <input type="tel" id="mobileDev" inputmode="tel" class="form-control" name="mobile" placeholder="mobile number" disabled>
                                                         <label for="mobileDev" class="text-capitalize"><b>mobile number</b></label>
-                                                </div>
-                                        </div>
-                                        <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="fa-regular fa-user fs-4 text-primary"></i></span>
-                                                <div class="form-floating">
-                                                        <input type="text" id="uname" class="form-control" name="username" placeholder="Username" disabled>
-                                                        <label for="uname" class="text-capitalize"><b>username</b></label>
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">
