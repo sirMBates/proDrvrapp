@@ -13,7 +13,7 @@ class WorkAssignments {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $pdo = $db->connect();
-        $sql = "SELECT wo.*, d.operator_id, d.first_name, d.last_name
+        $sql = "SELECT wo.*, d.operator_id, d.first_name, d.last_name, d.birth_date
                 FROM work_orders wo INNER JOIN driver d ON wo.driver_id = d.driver_id
                 WHERE wo.driver_id = :driver_id";
         $stmt = $pdo->prepare($sql);
@@ -30,16 +30,24 @@ class WorkAssignments {
             try {
                 $row['first_name'] = Crypto::decrypt($row['first_name'], $key);
                 $row['last_name'] = Crypto::decrypt($row['last_name'], $key);
+                $row['birth_date'] = Crypto::decrypt($row['birth_date'], $key);
+                $operatorBirthDate = $row['birth_date'];
                 if (!empty($row['signature_required']) && $row['signature_required'] === 1) {
                     $_SESSION['signature_required'] = $row['signature_required'];
                 }
                 if (empty($row['confirmed_assignment'])) {
                     $row['confirmed_assignment'] = 'unconfirmed';
                 }
+                $currentDate = date('md');
+                $drvrDate = date('md', strtotime($operatorBirthDate));
+                if ($currentDate === $drvrDate) {
+                    $_SESSION['birth_date'] = $operatorBirthDate;
+                }
             } catch (\Exception $e) {
                 // Handle corrupted or missing ciphertext
                 $row['first_name'] = null;
                 $row['last_name'] = null;
+                $row['birth_date'] = null;
             }
         }
         //unset($row); // break the reference

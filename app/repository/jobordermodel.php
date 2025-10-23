@@ -3,6 +3,12 @@
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use core\Database;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
+use Dotenv\Dotenv;
+require_once __DIR__ . "/../../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
 
 // require __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . "/../../vendor/autoload.php";
@@ -180,7 +186,8 @@ class JobOrderImporter {
         try {
             $db = new Database();
             $pdo = $db->connect();
-            $sql = "SELECT email FROM driver
+            $sql = "SELECT email, first_name, last_name 
+                    FROM driver
                     WHERE driver_id = :driver_id
                     LIMIT 1";
             $stmt = $pdo->prepare($sql);
@@ -189,28 +196,61 @@ class JobOrderImporter {
             $driver = $stmt->fetch();
 
             if (!$driver || empty($driver['email'])) {
-                $this->logger->warning("No email found for driver {$driverName} (ID {$driverId})");
+                $this->logger->warning("No valid email found for driver ID: {$driverId}");
                 return;
             }
 
+            $key = null;
+            try {
+                if (!empty($_ENV['SECRET_KEY'])) {
+                    $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+                }
+            } catch (Exception $e) {
+                $this->logger->error("Failed to load encryption key: " . $e->getMessage());
+            }
+
+            $safeDecrypt = function ($value, $field) use ($key) {
+                if (empty($value)) return '';
+                if (!$key) {
+                    $this->logger->info("[Decrypt] No key loaded - using plaintext for {$field}");
+                    return $value;
+                }
+                try {
+                    $decrypted = Crypto::decrypt($value, $key);
+                    $this->logger->info("[Decrypt] Succesfully decrypted {$field}");
+                    return $decrypted;
+                } catch (WrongKeyOrModifiedCiphertextException $e) {
+                    $this->logger->warning("[Decrypt] {$field} not encrypted - using plaintext");
+                    return $value;
+                } catch (Exception $e) {
+                    $this->logger->error("[Decrypt] Failed to decrypt {$field}: " . $e->getMessage());
+                    return $value;
+                }
+            };
+
+            $firstName = $safeDecrypt($driver['first_name'], 'first_name');
+            $lastName = $safeDecrypt($driver['last_name'], 'last_name');
+            $fullName = trim("{$firstName} {$lastName}");
             $to = $driver['email'];
+
             $mail = require base_path("core/emailSetup.php");
-            $mail->setFrom($_ENV['MAIL_FROM_ADDRESS'], $_ENV['MAIL_FROM_NAME']);
-            $mail->addAddress($to, $driverName);
+            //$mail->setFrom($_ENV['MAIL_FROM_ADDRESS'], $_ENV['MAIL_FROM_NAME']);
+            $mail->setFrom("noreply@prodriver.local", "Assignments");
+            $mail->addAddress($to, $fullName ?: 'Driver');
             $mail->isHTML(true);
             $mail->Charset = 'UTF-8';
             $mail->Encoding = 'base64';
             $mail->Subject = "New Job Assignment(s) Ready for Confirmation";
             $mail->Body = "
-                <p>Hi {$driverName},</p>
+                <p>Hi {$fullName},</p>
                 <p>This is to notify you that new job assignment(s) have been added and are now ready for confirmation.</p>
                 <p><strong>Reference:</strong> {$orderRef}</p>
                 <p>Please log in to your driver portal to review and confirm your assignment(s).</p>
                 <p>Regards,<br>Dispatch Team</p>
             ";
-            $mail->AltBody = "Hi {$driverName},\n\nNew job assignments are ready for confirmation.\nReference: {$orderRef}\nPlease log in to your driver portal to review and confirm.\n\n- Dispatch Team";
+            $mail->AltBody = "Hi {$fullName},\n\nNew job assignments are ready for confirmation.\nReference: {$orderRef}\nPlease log in to your driver portal to review and confirm.\n\n- Dispatch Team";
             $mail->send();
-            $this->logger->info("Notification email sent to {$driverName} ({$to}) for order {$orderRef}");
+            $this->logger->info("Notification email sent to {$fullName} ({$to}) for order {$orderRef}");
         } catch (Exception $e){
             $this->logger->error("Email send failed for driver {$driverName} (ID {$driverId}): " . $e->getMessage());
         }

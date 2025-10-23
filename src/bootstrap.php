@@ -60,7 +60,7 @@ return new class {
 
         if (isset($_SESSION['driver_id'])) {
             // prevent Logged-in users from hitting signup/signin
-            if (in_array($uri, ['/signup', '/signin', '/forget', '/completereset'])) {
+            if (in_array($uri, ['/signup', '/signin', '/register', '/forget', '/completereset'])) {
                 header("Location: /");
                 exit();
             }
@@ -84,7 +84,8 @@ return new class {
         $routes = require base_path("routes.php");
         $router->route($uri, $method);
     }
-}
+};
+
 /*spl_autoload_register(function ($class) {
     $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
     require base_path("{$class}.php");

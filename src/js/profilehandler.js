@@ -9,10 +9,10 @@ const pwdChangeBtn = document.querySelector('#pwd-change');
 const profileInputs = document.querySelectorAll('input');
 const drvrFullName = profileInputs[2];
 const operatorID = profileInputs[3];
-const drvrEmail = profileInputs[4];
-const drvrBirthDate = profileInputs[5];
-const drvrPhoneNumber = profileInputs[6];
-const drvrUserName = profileInputs[7];
+const drvrUserName = profileInputs[4];
+const drvrEmail = profileInputs[5];
+const drvrBirthDate = profileInputs[6];
+const drvrPhoneNumber = profileInputs[7];
 const drvrPsword = profileInputs[8];
 const drvrStatus = profileInputs[9];
 const drvrToken = document.querySelector('#drvrToken').value;
@@ -34,10 +34,10 @@ window.addEventListener('DOMContentLoaded', () => {
             if (driver) {
                 drvrFullName.value = `${driver['firstName']} ${driver['lastName']}`;
                 operatorID.value = driver['operatorid'];
+                drvrUserName.value = driver['username'];
                 drvrEmail.value = driver['email'];
                 drvrBirthDate.value = driver['birthdate'];
                 drvrPhoneNumber.value = driver['mobileNumber'];
-                drvrUserName.value = driver['username'];
                 drvrStatus.value = localStorage.getItem('status') ? localStorage.getItem('status') : sessionStorage.getItem('status');
             }
         })

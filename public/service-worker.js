@@ -41,14 +41,38 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const appCache = await caches.open(CACHE_NAME);
-      await appCache.addAll(STATIC_ASSETS);
 
-      // Pre-cache font files
-      const fontCache = await caches.open(FONT_CACHE);
-      await fontCache.addAll(PRECACHE_FONTS);
+      // --- Safer static asset caching ---
+      const results = await Promise.allSettled(
+        STATIC_ASSETS.map(asset =>
+          fetch(asset)
+            .then(response => {
+              if (response.ok) return appCache.put(asset, response);
+              console.warn('[SW] Skipping failed asset:', asset, response.status);
+            })
+            .catch(err => console.warn('[SW] Failed to fetch asset:', asset, err))
+        )
+      );
+      console.log('[SW] Cached app assets:', results);
+
+      // --- Pre-cache Google Fonts or other static font assets ---
+      if (typeof FONT_CACHE !== 'undefined' && typeof PRECACHE_FONTS !== 'undefined') {
+        const fontCache = await caches.open(FONT_CACHE);
+        const fontResults = await Promise.allSettled(
+          PRECACHE_FONTS.map(font =>
+            fetch(font)
+              .then(response => {
+                if (response.ok) return fontCache.put(font, response);
+                console.warn('[SW] Skipping failed font:', font, response.status);
+              })
+              .catch(err => console.warn('[SW] Failed to fetch font:', font, err))
+          )
+        );
+        console.log('[SW] Pre-cached fonts:', fontResults);
+      }
 
       await self.skipWaiting();
-      console.log('[SW] Pre-cached fonts successfully!');
+      console.log('[SW] Installed new version');
     })()
   );
 });
@@ -101,12 +125,6 @@ self.addEventListener('fetch', (event) => {
 
   // Ignore non-GET requests
   if (request.method !== 'GET') return;
-
-  // Handle Google Fonts separately
-  if (url.origin.includes('fonts.googleapis.com') || url.origin.includes('fonts.gstatic.com')) {
-    event.respondWith(cacheGoogleFonts(request));
-    return;
-  }
 
   // Skip browser extension requests
   if (request.url.startsWith('chrome-extension://')) return;

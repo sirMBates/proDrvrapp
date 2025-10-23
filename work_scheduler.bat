@@ -3,7 +3,7 @@ REM -------------------------
 REM Configuration
 REM -------------------------
 set PHP_PATH=C:/php/php.exe
-set SCRIPT_PATH=D:/webapps/prodrvrapp/public/index.php
+set SCRIPT_PATH=D:/webapps/prodrvrapp/src/bootstrap.php
 set MASTER_LOG=D:/webapps/logs/work_scheduler.log
 set DEBUG_LOG=D:/webapps/logs/debug_task.log
 
