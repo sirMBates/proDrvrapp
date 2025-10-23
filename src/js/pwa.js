@@ -1,4 +1,5 @@
 // src/js/pwa.js
+import { showFlashAlert } from "./helpers";
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
@@ -247,3 +248,23 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
 })();
+
+export async function handleAssignmentFetch(options) {
+  try {
+    const response = await fetchDrvr('https://prodriver.local/assignmenthandler', options);
+    const data = await response.json();
+
+    if (data.status === 'queued') {
+      showFlashAlert('warning', 'You’re offline. This will sync once connection is restored.');
+    } else if (data.status === 'success') {
+      showFlashAlert('success', 'Assignment confirmed!');
+    } else {
+      showFlashAlert('error', 'An unexpected error occurred.');
+    }
+
+    return data;
+  } catch (err) {
+    console.error('[PWA] Fetch failed:', err);
+    showFlashAlert('error', 'Network error.');
+  }
+};
