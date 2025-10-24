@@ -45,6 +45,9 @@
                         <a href="/help" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Help</a>
                 </div>
                 <div class="dropdown mt-3">
+                        <a href="/counter" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-arrow-up-1-9"></span>Tick Counter</a>
+                </div>
+                <div class="dropdown mt-3">
                         <a href="/logout" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-right-from-bracket"></span>Sign Out</a>
                 </div>
                 <div class="d-inline-flex fixed-bottom">

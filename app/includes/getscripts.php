@@ -63,6 +63,10 @@ function pageScripts($value) {
                 return;
                 break;
 
+            case "/counter":
+                echo "<script type='module' src='../dist/js/ticker.js'></script>";
+                break;
+
             case "/assignments":
                 if (isset($_SESSION['signature_required']) && $_SESSION['signature_required'] === 1) {
                     echo "<script type='module' src='../dist/js/sign.js'></script>\n";
