@@ -16,6 +16,7 @@ const drvrToken = document.querySelector('#drvrToken').value;
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 const confirmAssignment = fetchDrvr;
+const cancelAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
 const drvrAlert = showFlashAlert;
 let showAssignment;
@@ -424,6 +425,7 @@ confirmBtn.addEventListener('click', async (e) => {
         formData.append('driver_id', assignment['driver_id']);
         formData.append('__method', 'PATCH');
         const options = {
+        //const result = await confirmAssignment("https://prodriver.local/assignmenthandler.php", {
             mode: 'cors',
             credentials: 'include',
             method: 'POST',
@@ -475,6 +477,7 @@ cancelBtn.addEventListener('click', async (e) => {
         formData.append('driver_id', assignment['driver_id']);
         formData.append('__method', 'DELETE');
         const options = {
+        //const result = await cancelAssignment("https://prodriver.local/assignmenthandler.php", {
             mode: 'cors',
             credentials: 'include',
             method: 'POST',

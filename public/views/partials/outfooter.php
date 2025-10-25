@@ -1,5 +1,5 @@
 <footer class="mt-auto text-light text-center text-lg-start">
-        <h5 class="<?= !urlIs('/register') ?: 'text-dark';?> text-center text-uppercase"><i>created by </i>softbigboy</h5>
+        <h5 class="<?= !urlIs('/register') ?: 'text-dark';?> text-center text-uppercase"><i>created by </i>bigsoft</h5>
         <p class="text-center"><a class="<?= urlIS('/register') ? 'text-dark' : 'text-light';?>" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
 </footer>
 <script src='../../dist/js/app.js'></script>

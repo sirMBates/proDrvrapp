@@ -10,14 +10,14 @@ require_once "partials/banner.php";
         </div>
         <div class="card-body d-flex flex-column justify-content-center align-items-center">
             <p class="fs-5 text-center">Need to take a quick count? Just click the <u><b class="text-uppercase">tick</b></u> button below!</p>
-            <div class="border border-2 rounded-2 border-besttrailsclr" style="width: 75px; height: 60px;">
-                <span id="counter" class="fs-1 text-center">0</span>
+            <div class="d-flex justify-content-center align-items-center border border-3 rounded-2 border-besttrailsclr" style="min-width: 100px; height: 60px;">
+                <span id="counter" class="fs-1 mx-2">0</span>
             </div>
             <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
         </div>
-        <div class="card-footer d-inline-flex justify-content-around">
+        <div class="card-footer d-inline-flex justify-content-evenly">
             <button id="adder" class="btn btn-lg btn-primary text-uppercase" type="button">tick</button>
-            <button id="reset" class="btn btn-lg btn-secondary text-uppercase" type="button">reset</button>
+            <button id="reset" class="btn btn-lg btn-dark text-uppercase" type="button">reset</button>
         </div>
     </div>
 </main>
