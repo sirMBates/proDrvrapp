@@ -20,7 +20,7 @@
                 <div class="dropdown mt-3 d-none">                        
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="px-2 fa-solid fa-square-poll-horizontal"></i>Switch Status</button>
                         <ul class="dropdown-menu">
-                                <li><a href='#'status-enroute-location class="dropdown-item text-btd-blue-dodger set-status status-enroute-garage" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Yard</a></li>
+                                <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-enroute-garage" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Yard</a></li>
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-checkedin-garage" role="button"><i class="px-2 fa-solid fa-map-pin"></i>At Yard</a></li>
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-enroute-location" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Loc</a></li>
                                 <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-onlocation" role="button"><i class="px-2 fa-solid fa-location-dot"></i>At Location</a></li>

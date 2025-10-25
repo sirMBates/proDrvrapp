@@ -1,4 +1,5 @@
 // src/js/pwa.js
+import { queueRequest, getAllQueued, clearQueued } from "./dbQueue";
 import { showFlashAlert } from "./helpers";
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -255,16 +256,41 @@ export async function handleAssignmentFetch(options) {
     const data = await response.json();
 
     if (data.status === 'queued') {
-      showFlashAlert('warning', 'You’re offline. This will sync once connection is restored.');
+      showFlashAlert('warning', 'You’re offline. Request will sync later.');
     } else if (data.status === 'success') {
       showFlashAlert('success', 'Assignment confirmed!');
     } else {
-      showFlashAlert('error', 'An unexpected error occurred.');
+      showFlashAlert('error', data.message || 'An unexpected error occurred.');
     }
 
     return data;
   } catch (err) {
-    console.error('[PWA] Fetch failed:', err);
-    showFlashAlert('error', 'Network error.');
+    console.warn('[PWA] Network unavailable - queuing request');
+    await queueRequest({
+      url: '/assignmenthandler',
+      options,
+    })
+    showFlashAlert('warning', 'You\'re offline. Request saved for sync.');
+    return { status: 'queued' };
   }
 };
+
+window.addEventListener('online', async () => {
+  const queued = await getAllQueued();
+  if (!queued.length) return;
+
+  console.log(`[PWA] Syncing ${queued.length} queued request(s)...`);
+  for (const req of queued) {
+    try {
+      const response = await fetchDrvr(req.url, req.options);
+      const data = await response.json();
+      if (data.status === 'success') {
+        await clearQueued(req.id);
+        showFlashAlert('success', 'Offline request synced!');
+      }
+    } catch (err) {
+      console.warn('[PWA] Failed to sync queued request:', err);
+    }
+  }
+});
+
