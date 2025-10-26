@@ -37,6 +37,36 @@ function refreshCurrentAssignment() {
     }
 };
 
+async function refreshAssignmentsFromServer() {
+  try {
+    const response = await fetchDrvr("https://prodriver.local/assignmenthandler", {
+      mode: "cors",
+      credentials: "include",
+      method: "GET",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRF-Token": drvrToken
+      }
+    });
+
+    if (response && Array.isArray(response.assignments)) {
+      // 🧠 Update your local assignment array
+      window.assignments = response.assignments;
+      // 🧠 Optionally persist to localStorage for offline access
+      localStorage.setItem("assignments", JSON.stringify(response.assignments));
+      // 🧠 If you have a UI renderer, refresh it
+      if (typeof renderAssignments === "function") {
+        renderAssignments(response.assignments);
+      }
+      console.log(`[PWA] Assignments refreshed: ${response.assignments.length} loaded`);
+    } else {
+      console.warn("[PWA] No assignment list in response payload");
+    }
+  } catch (error) {
+    console.error("[PWA] Failed to refresh assignments from server:", error);
+  }
+};
+
 function showNoAssignments(driver = null) {
     // Select elements safely
     const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
@@ -411,10 +441,7 @@ confirmBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const assignment = getCurrentAssignment();
     const btnName = confirmBtn.name;
-    if (!assignment) {
-        console.warn('No assignment selected yet.');
-        return;
-    }
+    if (!assignment) return;
 
     try {
         const formData = new FormData();
@@ -424,8 +451,7 @@ confirmBtn.addEventListener('click', async (e) => {
         formData.append('vehicle_id', assignment['vehicle_id']);
         formData.append('driver_id', assignment['driver_id']);
         formData.append('__method', 'PATCH');
-        const options = {
-        //const result = await confirmAssignment("https://prodriver.local/assignmenthandler.php", {
+        const result = await handleAssignmentFetch({
             mode: 'cors',
             credentials: 'include',
             method: 'POST',
@@ -433,26 +459,18 @@ confirmBtn.addEventListener('click', async (e) => {
                 'X-CSRF-Token': drvrToken
             },
             body: formData
-        };
-        const result = await handleAssignmentFetch(options);
+        });
+        drvrAlert(result.status, result.message); // toast
+        // Only update Local model on confirmed success and refresh the currently displayed assignment in UI
         if (result.status === 'success') {
-            drvrAlert(result.status, result.message); // toast
-
-            // Update your local model so UI stays in sync
-            assignment['confirmed_assignment'] = 'confirmed';
-
-            // Refresh the currently displayed assignment in UI
+            assignment['confirmed_assignment'] = 'Confirmed';
             refreshCurrentAssignment();
             $(confirmBtn).prop('disabled', true);
             $(cancelBtn).prop('disabled', true);
             $(editBtn).prop('disabled', false);
             $(completeBtn).prop('disabled', false);
-        } else {
-            drvrAlert(result.status, result.message); // toast
-            $(confirmBtn).prop('disabled', false);
-            $(cancelBtn).prop('disabled', false);
-            $(editBtn).prop('disabled', true);
-            $(completeBtn).prop('disabled', true);
+
+            await refreshAssignmentsFromServer();
         }
     } catch (error) {
         console.error('Error confirmation assignment:', error);

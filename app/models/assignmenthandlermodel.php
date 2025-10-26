@@ -26,7 +26,13 @@ class UpdateAssignment {
 
         return [
             'status' => 'success',
-            'message' => 'Assignment confirmation updated.'
+            'message' => 'Assignment confirmation updated.',
+            'data' => [
+                'driver_id' => $driverId,
+                'order_id' => $orderId,
+                'vehicle_id' => $vehicleId,
+                'confirmed_assignment' => $assignmentStatus
+            ]
         ];
     }
 
