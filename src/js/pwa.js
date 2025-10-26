@@ -1,6 +1,6 @@
 // src/js/pwa.js
-import { queueRequest, getAllQueued, clearQueued } from "./dbQueue";
-import { showFlashAlert } from "./helpers";
+import { queueRequest, getAllQueued, clearQueued } from "./dbQueue.js";
+import { fetchDrvr, showFlashAlert } from "./helpers.js";
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
@@ -250,28 +250,36 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('offline', handleOffline);
 })();
 
+function serializeFormData(formData) {
+  const obj = {};
+  for (const [key, value] of formData.entries()) {
+    obj[key] = value;
+  }
+  return obj;
+};
+
 export async function handleAssignmentFetch(options) {
   try {
-    const response = await fetchDrvr('https://prodriver.local/assignmenthandler', options);
-    const data = await response.json();
-
-    if (data.status === 'queued') {
-      showFlashAlert('warning', 'You’re offline. Request will sync later.');
-    } else if (data.status === 'success') {
-      showFlashAlert('success', 'Assignment confirmed!');
-    } else {
-      showFlashAlert('error', data.message || 'An unexpected error occurred.');
-    }
-
-    return data;
+    return await fetchDrvr('https://prodriver.local/assignmenthandler', options);
   } catch (err) {
     console.warn('[PWA] Network unavailable - queuing request');
+    let serializedBody = null;
+    if (options.body instanceof FormData) {
+      serializedBody = serializeFormData(options.body);
+    } else if (typeof options.body === 'object') {
+      serializedBody = options.body;
+    }
+
     await queueRequest({
       url: '/assignmenthandler',
-      options,
-    })
-    showFlashAlert('warning', 'You\'re offline. Request saved for sync.');
-    return { status: 'queued' };
+      options: {
+        method: options.method,
+        headers: options.headers,
+        body: serializedBody,
+      },
+    });
+
+    return { status: 'queued', message: 'Offline — will sync when back online.' };
   }
 };
 
@@ -282,11 +290,23 @@ window.addEventListener('online', async () => {
   console.log(`[PWA] Syncing ${queued.length} queued request(s)...`);
   for (const req of queued) {
     try {
-      const response = await fetchDrvr(req.url, req.options);
-      const data = await response.json();
-      if (data.status === 'success') {
+      const formData = new FormData();
+      for (const [key, value] of Object.entries(req.options.body || {})) {
+        formData.append(key, value);
+      }
+
+      const data = await fetchDrvr(req.url, {
+        method: req.options.method,
+        headers: req.options.headers,
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (data && data.status === 'success') {
         await clearQueued(req.id);
         showFlashAlert('success', 'Offline request synced!');
+      } else {
+        console.warn('[PWA] Sync response not successful:', data);
       }
     } catch (err) {
       console.warn('[PWA] Failed to sync queued request:', err);

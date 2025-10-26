@@ -18,15 +18,20 @@ function openDB() {
     request.onsuccess = (event) => resolve(event.target.result);
     request.onerror = (event) => reject(event.target.error);
   });
-}
+};
 
 export async function queueRequest(data) {
   const db = await openDB();
-  const tx = db.transaction(STORE_NAME, "readwrite");
-  tx.objectStore(STORE_NAME).add({ ...data, timestamp: Date.now() });
-  await tx.complete;
-  db.close();
-}
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).add({ ...data, timestamp: Date.now() });
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = (e) => reject(e);
+  });
+};
 
 export async function getAllQueued() {
   const db = await openDB();
@@ -34,16 +39,23 @@ export async function getAllQueued() {
     const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
     const req = store.getAll();
-
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      db.close();
+      resolve(req.result);
+    };
     req.onerror = (e) => reject(e);
   });
-}
+};
 
 export async function clearQueued(id) {
   const db = await openDB();
-  const tx = db.transaction(STORE_NAME, "readwrite");
-  tx.objectStore(STORE_NAME).delete(id);
-  await tx.complete;
-  db.close();
-}
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).delete(id);
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = (e) => reject(e);
+  });
+};
