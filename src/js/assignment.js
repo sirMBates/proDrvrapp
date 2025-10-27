@@ -283,16 +283,22 @@ window.addEventListener('DOMContentLoaded', () => {
             pagination.updateButtons();
         }
 
-        if (assignment['confirmed_assignment'] === 'unconfirmed') {
+        const status = (assignment['confirmed_assignment'] || '').toLowerCase();
+
+        if (status === 'unconfirmed') {
+            $(confirmBtn).prop("disabled", false);
+            $(cancelBtn).prop("disabled", false);
             $(editBtn).prop("disabled", true);
             $(completeBtn).prop("disabled", true);
-        } else if (assignment['confirmed_assignment'] === 'confirmed') {
+        } else if (status === 'confirmed') {
+            $(confirmBtn).prop("disabled", true);
+            $(cancelBtn).prop("disabled", true);
             $(editBtn).prop("disabled", false);
             $(completeBtn).prop("disabled", false);
-        } else {
+        };/* else {
             $(editBtn).prop("disabled", false);
             $(completeBtn).prop("disabled", false);
-        }
+        };*/
 
         const assignmentForm = document.querySelector('.assignment-card');
         if (assignmentForm) {
@@ -309,6 +315,13 @@ window.addEventListener('DOMContentLoaded', () => {
         window._refreshAssignmentFromOutside = function() {
             showAssignment(currentIndex);
         };
+    };
+
+    const storedAssignments = localStorage.getItem("assignments");
+    if ( storedAssignments) {
+        assignments = JSON.parse( storedAssignments );
+        createPaginationControls();
+        showAssignment(0);
     };
 
     getAssignment("https://prodriver.local/getassignments", { 
@@ -469,7 +482,12 @@ confirmBtn.addEventListener('click', async (e) => {
             $(cancelBtn).prop('disabled', true);
             $(editBtn).prop('disabled', false);
             $(completeBtn).prop('disabled', false);
-
+            localStorage.setItem("assignments", JSON.stringify(assignments));
+            // Broadcast storage change so other tabs/pages refresh
+            window.dispatchEvent( new StorageEvent('storage', {
+                key: 'assignments',
+                newValue: JSON.stringify(assignments)
+            }));
             await refreshAssignmentsFromServer();
         }
     } catch (error) {
@@ -508,13 +526,16 @@ cancelBtn.addEventListener('click', async (e) => {
         if (result.status === 'success') {
             //console.log('Assignment confirmed:', result);
             drvrAlert(result.status, result.message); // toast
-
             // Remove canceled assignment from array
             assignments.splice(currentIndex, 1);
-
+            localStorage.setItem("assignments", JSON.stringify(assignments));
+            // Broadcast storage change so other tabs/pages refresh
+            window.dispatchEvent( new StorageEvent('storage', {
+                key: 'assignments',
+                newValue: JSON.stringify(assignments)
+            }));
             // Immediately clear UI for visual feedback
             clearAssignmentUI();
-
             // Load next assignment ( or fallback )
             await loadNextAssignment(currentIndex);
         } else {

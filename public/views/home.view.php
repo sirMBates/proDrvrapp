@@ -61,5 +61,5 @@ include "partials/custom-modal.php";
         </div>
 </main>
 <?php
-        require "partials/footer.php";
+require "partials/footer.php";
 ?>
