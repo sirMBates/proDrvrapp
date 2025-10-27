@@ -1,5 +1,5 @@
 import { bdayCelebrationHandler } from "./celebration.js";
-import { fetchDrvr, viewableDateTimeHelper } from "./helpers.js";
+import { fetchDrvr, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
 const drvrBirthDate = document.querySelector('#drvrbday').value;
 const mainContent = document.querySelector('main');
 const getDriver = fetchDrvr;
@@ -23,6 +23,24 @@ function resetDailyFlags () {
 resetDailyFlags();
 
 window.addEventListener('DOMContentLoaded', () => {
+        const storedAssignments = localStorage.getItem("assignments");
+        if ( storedAssignments ) {
+                const cached = JSON.parse( storedAssignments );
+                const tableBody = document.querySelector('#dashboard-info tbody');
+                tableBody.innerHTML = '';
+                cached.forEach(a => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                        <td>${a.first_name} ${a.last_name}</td>
+                        <td>${a.operator_id}</td>
+                        <td>${dtHelper(a.start_date_time, 'date')}</td>
+                        <td>${dtHelper(a.start_date_time, 'time')}</td>
+                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
+                        <td class='text-capitalize'>${a.confirmed_assignment}</td>`;
+                        tableBody.appendChild(row);
+                });
+        };
+
         getAssignment("https://prodriver.local/getassignments", {
                 method: 'GET', 
                 mode: 'cors',
@@ -35,11 +53,6 @@ window.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             const driver = data;
             const drvrMainTable = document.querySelector('#dashboard-info');
-            //const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
-            //const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
-            //const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
-            //const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
-            //const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
             // Check if assignments exist
             if (driver.status === 'success' && driver.data.length > 0) {
                 const assignments = driver.data;
@@ -104,6 +117,57 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
                 console.error('There was a problem with the fetch operation:', error);
         })
+});
+
+// 🧭 Listen for assignment updates from other pages/tabs
+window.addEventListener('storage', (event) => {
+        if (event.key === 'assignments' && event.newValue) {
+                showFlashAlert('info', 'Assignments updated!'); // Show friendly toast to indicate new synced data
+                try {
+                        const updated = JSON.parse(event.newValue);
+                        const tableBody = document.querySelector('#dashboard-info tbody');
+                        tableBody.innerHTML = '';
+                        updated.forEach(a => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                        <td>${a.first_name} ${a.last_name}</td>
+                                        <td>${a.operator_id}</td>
+                                        <td>${dtHelper(a.start_date_time, 'date')}</td>
+                                        <td>${dtHelper(a.start_date_time, 'time')}</td>
+                                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
+                                        <td class='text-capitalize'>${a.confirmed_assignment}</td>`;
+                                tableBody.appendChild(row);
+                        });
+                        console.log('[SYNC] Home view updated from assignment changes.');
+                } catch (err) {
+                        console.error('Failed to parse updated assignments:', err);
+                }
+        }
+});
+
+// 🪄 Refresh Home table automatically when the tab regains focus
+document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+                const storedAssignments = localStorage.getItem("assignments");
+                if (storedAssignments) {
+                        const updated = JSON.parse(storedAssignments);
+                        const tableBody = document.querySelector('#dashboard-info tbody');
+                        tableBody.innerHTML = '';
+                        updated.forEach(a => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                        <td>${a.first_name} ${a.last_name}</td>
+                                        <td>${a.operator_id}</td>
+                                        <td>${dtHelper(a.start_date_time, 'date')}</td>
+                                        <td>${dtHelper(a.start_date_time, 'time')}</td>
+                                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
+                                        <td class='text-capitalize'>${a.confirmed_assignment}</td>`;
+                                tableBody.appendChild(row);
+                        });
+                        showFlashAlert('info', 'Dashboard refreshed.');
+                        console.log('[SYNC] Home view refreshed on tab visibility.');
+                }
+        }
 });
 
 function handleBirthdayTheme() {

@@ -151,5 +151,5 @@ include "partials/info-modal.php";
         </div>
 </main>       
 <?php
-        require "partials/footer.php";
+require "partials/footer.php";
 ?>
