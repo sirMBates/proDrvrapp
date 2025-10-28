@@ -147,6 +147,7 @@ self.addEventListener('fetch', (event) => {
   const isDynamicRequest =
     url.pathname.startsWith('/api/') ||
     url.pathname.includes('assignmenthandler') ||
+    url.pathname.startsWith('/getassignments') ||
     url.pathname === '/';
 
   if (isDynamicRequest) {

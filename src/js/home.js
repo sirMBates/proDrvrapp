@@ -11,6 +11,7 @@ const dashBoardStatusValue = document.querySelector('table').childNodes[3].child
 const dashboardStatusBtns = document.querySelector('#update-status-con');
 const birthdayThemeBtn = document.querySelector('#birthday-theme-btn');
 const todayDate = dtHelper(new Date(), 'date');
+let lastAssignmentsUpdate = 0;
 
 function resetDailyFlags () {
         const lastPlayed = localStorage.getItem('dateOfThemePlayed');
@@ -21,6 +22,46 @@ function resetDailyFlags () {
         }
 };
 resetDailyFlags();
+
+// At top-level of home script (once per load)
+try {
+  const bc = new BroadcastChannel('assignments');
+  bc.onmessage = async (evt) => {
+    if (evt?.data?.type === 'assignments-updated') {
+      // Pull fresh data and re-render the table
+      const fresh = await fetchDrvr("https://prodriver.local/getassignments", {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': drvrToken }
+      });
+      if (fresh?.status === 'success') {
+        localStorage.setItem('assignments', JSON.stringify(fresh.data));
+        renderHomeTable(fresh.data); // factor your DOM write into a helper
+      }
+    }
+  };
+} catch {}
+
+function renderHomeTable(assignments, fromSync = false) {
+  const tableBody = document.querySelector('#dashboard-info tbody');
+  tableBody.innerHTML = '';
+  assignments.forEach(a => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${a.first_name} ${a.last_name}</td>
+      <td>${a.operator_id}</td>
+      <td>${dtHelper(a.start_date_time, 'date')}</td>
+      <td>${dtHelper(a.start_date_time, 'time')}</td>
+      <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
+      <td class="text-capitalize">${a.confirmed_assignment}</td>`;
+    tableBody.appendChild(row);
+  });
+
+  if (fromSync) showFlashAlert('info', 'Assignments updated!');
+  lastAssignmentsUpdate = Date.now();
+};
 
 window.addEventListener('DOMContentLoaded', () => {
         const storedAssignments = localStorage.getItem("assignments");
@@ -45,7 +86,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 method: 'GET', 
                 mode: 'cors',
                 credentials: 'include',
+                cache: 'no-store',
                 headers: {
+                        "X-Requested-With": "XMLHttpRequest",
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': drvrToken
                 } 
