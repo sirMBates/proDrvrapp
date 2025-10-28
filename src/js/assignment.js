@@ -40,13 +40,15 @@ function refreshCurrentAssignment() {
 async function refreshAssignmentsFromServer() {
   try {
     const response = await fetchDrvr("https://prodriver.local/assignmenthandler", {
-      mode: "cors",
-      credentials: "include",
-      method: "GET",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRF-Token": drvrToken
-      }
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+        cache: 'no-store',
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-type": 'application/json',
+            "X-CSRF-Token": drvrToken
+        }
     });
 
     if (response && Array.isArray(response.assignments)) {
@@ -112,9 +114,11 @@ async function loadNextAssignment(afterIndex) {
     console.log("Fetching profile fallback...");
     try {
         const data = await getDriver("https://prodriver.local/getprofile", {
+            method: 'GET',
             mode: 'cors',
             credentials: 'include',
             headers: {
+                "X-Requested-With": "XMLHttpRequest",
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': drvrToken
             }
@@ -157,7 +161,11 @@ async function clearAssignmentUI() {
 window.addEventListener('DOMContentLoaded', () => {
     // Create pagination controls (Bootstrap)
     function createPaginationControls() {
+        const existing = document.querySelector('#assignment-pager');
+        if ( existing ) existing.remove();
+
         const container = document.createElement('div');
+        container.id = 'assignment-pager';
         container.classList.add('card-footer', 'd-flex', 'justify-content-between', 'align-items-center', 'mt-3');
 
         const prevBtn = document.createElement('button');
@@ -324,10 +332,13 @@ window.addEventListener('DOMContentLoaded', () => {
         showAssignment(0);
     };
 
-    getAssignment("https://prodriver.local/getassignments", { 
+    getAssignment("https://prodriver.local/getassignments", {
+        method: 'GET', 
         mode: 'cors',
         credentials: 'include',
+        cache: 'no-store',
         headers: {
+            "X-Requested-With": "XMLHttpRequest",
             'Content-Type': 'application/json',
             'X-CSRF-Token': drvrToken
         }
@@ -344,10 +355,12 @@ window.addEventListener('DOMContentLoaded', () => {
             if (cancelBtnStatus) $(cancelBtn).prop("disabled", false);
         } else {
             //console.log("No assignments found, loading profile instead...");
-            return getDriver("https://prodriver.local/getprofile", { 
+            return getDriver("https://prodriver.local/getprofile", {
+                method: 'GET', 
                 mode: 'cors',
                 credentials: 'include',
                 headers: {
+                    "X-Requested-With": "XMLHttpRequest",
                     'Content-Type': 'application/json',
                     'X-CSRF-Token': drvrToken
                 }
@@ -465,10 +478,12 @@ confirmBtn.addEventListener('click', async (e) => {
         formData.append('driver_id', assignment['driver_id']);
         formData.append('__method', 'PATCH');
         const result = await handleAssignmentFetch({
+            method: 'POST',
             mode: 'cors',
             credentials: 'include',
-            method: 'POST',
             headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": 'application/json',
                 'X-CSRF-Token': drvrToken
             },
             body: formData
@@ -476,7 +491,22 @@ confirmBtn.addEventListener('click', async (e) => {
         drvrAlert(result.status, result.message); // toast
         // Only update Local model on confirmed success and refresh the currently displayed assignment in UI
         if (result.status === 'success') {
-            assignment['confirmed_assignment'] = 'Confirmed';
+            assignment['confirmed_assignment'] = 'confirmed';
+            const fresh = await fetchDrvr("https://prodriver.local/getassignment", {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                cache: 'no-store',
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": 'application/json',
+                    'X-CSRF-Token': drvrToken
+                }
+            });
+            if ( fresh && fresh.status === 'success' && Array.isArray(fresh.data)) {
+                assignments = fresh.data;
+                localStorage.setItem('assignments', JSON.stringify(fresh.data));
+            }
             refreshCurrentAssignment();
             $(confirmBtn).prop('disabled', true);
             $(cancelBtn).prop('disabled', true);
@@ -484,10 +514,15 @@ confirmBtn.addEventListener('click', async (e) => {
             $(completeBtn).prop('disabled', false);
             localStorage.setItem("assignments", JSON.stringify(assignments));
             // Broadcast storage change so other tabs/pages refresh
-            window.dispatchEvent( new StorageEvent('storage', {
+            try {
+                const bc = new BroadcastChannel('assignments');
+                bc.postMessage({ type: 'assignments-updated' });
+                bc.close();
+            } catch {}
+            /*window.dispatchEvent( new StorageEvent('storage', {
                 key: 'assignments',
                 newValue: JSON.stringify(assignments)
-            }));
+            }));*/
             await refreshAssignmentsFromServer();
         }
     } catch (error) {
@@ -514,10 +549,12 @@ cancelBtn.addEventListener('click', async (e) => {
         formData.append('__method', 'DELETE');
         const options = {
         //const result = await cancelAssignment("https://prodriver.local/assignmenthandler.php", {
+            method: 'POST',
             mode: 'cors',
             credentials: 'include',
-            method: 'POST',
             headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": 'application/json',
                 'X-CSRF-Token': drvrToken
             },
             body: formData
