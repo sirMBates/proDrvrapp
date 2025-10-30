@@ -33,53 +33,51 @@ include "partials/info-modal.php";
                                                                 <td></td>
                                                                 <td></td>
                                                         </tr>
-                                                        <tr>
-                                                                <table id="tableB" class="table m-auto" style="width: 1300px;">
-                                                                        <thead class="table-info text-capitalize">
-                                                                                <tr class="text-center">
-                                                                                        <th>start date, time</th>
-                                                                                        <th>spot time</th>
-                                                                                        <th>leave date, time</th>
-                                                                                </tr>
-                                                                        </thead>
-                                                                        <tbody class="table-group-divider">
+                                                </tbody>
+                                        </table>
+                                        <table id="tableB" class="table m-auto" style="width: 1300px;">
+                                                <thead class="table-info text-capitalize">
+                                                        <tr class="text-center">
+                                                                <th scope="col">start date, time</th>
+                                                                <th scope="col">spot time</th>
+                                                                <th scope="col">leave date, time</th>
+                                                                <th scope="col">return date, time</th>
+                                                                <th scope="col">act. drop time</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody class="table-group-divider">
                                                         <tr class="text-center">
                                                                 <td scope="row"></td>
                                                                 <td></td>
                                                                 <td></td>
+                                                                <td></td>
+                                                                <td class="editable-data"></td>
                                                         </tr>
                                                 </tbody>
-                                                                </table>
-                                                        </tr>
-                                                        <tr>
-                                                                <table id="tableC" class="table m-auto" style="width: 1300px;">
-                                                                        <thead class="table-info text-capitalize">
+                                        </table>
+                                        <table id="tableC" class="table m-auto" style="width: 1300px;">
+                                                <thead class="table-info text-capitalize">
                                                         <tr class="text-center">
-                                                                <th class="col">return date, time</th>
-                                                                <th class="col">act. drop time</th>
-                                                                <th class="col">end date, time</th>
-                                                                <th class="col">actual end time</th>
-                                                                <th class="col">total hrs</th>
-                                                                <th class="col">driving time</th>
+                                                                <th scope="col">end date, time</th>
+                                                                <th scope="col">actual end time</th>
+                                                                <th scope="col">total hrs</th>
+                                                                <th scope="col">driving time</th>
+                                                                <th scope="col">origin</th>
                                                         </tr>
                                                 </thead>
                                                 <tbody class="table-group-divider">
                                                         <tr class="text-center">
                                                                 <td scope="row"></td>
                                                                 <td class="editable-data"></td>
+                                                                <td class="editable-data"></td>
+                                                                <td class="editable-data"></td>
                                                                 <td></td>
-                                                                <td class="editable-data"></td>
-                                                                <td class="editable-data"></td>
-                                                                <td class="editable-data"></td>
                                                         </tr>
                                                 </tbody>
-                                                                </table>
-                                                        </tr>
-                                                        <tr>
-                                                                <table id="tableD" class="table m-auto" style="width: 1300px;">
+                                        </table>
+                                        <table id="tableD" class="table m-auto" style="width: 1300px;">
                                                 <thead class="table-info text-capitalize">
                                                         <tr class="text-center">
-                                                                <th scope="col">origin</th>
                                                                 <th scope="col">destination</th>
                                                                 <th scope="col">group name, group leader</th>
                                                                 <th scope="col">group leader mobile</th>
@@ -94,10 +92,6 @@ include "partials/info-modal.php";
                                                                 <td></td>
                                                                 <td></td>
                                                                 <td></td>
-                                                                <td></td>
-                                                        </tr>
-                                                </tbody>
-                                        </table>
                                                         </tr>
                                                 </tbody>
                                         </table>
@@ -145,7 +139,7 @@ include "partials/info-modal.php";
                                 <button id="confirm-job" class="btn btn-outline-primary" type="button" name="confirm" disabled>Confirm</button>
                                 <button id="cancel-job" class="btn btn-outline-danger" type="button" name="cancel" disabled>Cancel/Unconfirm</button>
                                 <button id="edit" class="btn btn-outline-info" type="button" name="modify" disabled>Edit</button>
-                                <button id="submit-order" class="btn btn-outline-success" type="submit" name="assignment-complete" disabled>Complete Dispatch Order</button>
+                                <button id="submit-order" class="btn btn-outline-success" type="button" name="assignment-complete" disabled>Complete Dispatch Order</button>
                         </section>
                 </form>
         </div>

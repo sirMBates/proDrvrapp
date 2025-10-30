@@ -271,7 +271,7 @@ export async function handleAssignmentFetch(options) {
     }
 
     await queueRequest({
-      url: '/assignmenthandler',
+      url: 'https://prodriver.local/assignmenthandler',
       options: {
         method: options.method,
         headers: options.headers,

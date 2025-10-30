@@ -24,6 +24,54 @@ let assignments = [];
 let currentIndex = 0;
 let pagination = null;
 
+function updateButtonStates(assignment) {
+    if (!assignment) return;
+
+    const isConfirmed = assignment.confirmed_assignment?.toLowerCase() === 'confirmed';
+    const isCanceled =
+        assignment.confirmed_assignment?.toLowerCase() === 'canceled' ||
+        assignment.confirmed_assignment?.toLowerCase() === 'unconfirmed';
+
+    if (isConfirmed) {
+        $(confirmBtn).prop('disabled', true);
+        $(cancelBtn).prop('disabled', true);
+        $(editBtn).prop('disabled', false);
+        $(completeBtn).prop('disabled', false);
+    } else if (isCanceled) {
+        $(confirmBtn).prop('disabled', false);
+        $(cancelBtn).prop('disabled', false);
+        $(editBtn).prop('disabled', true);
+        $(completeBtn).prop('disabled', true);
+    } else {
+        // fallback — unknown state
+        $(confirmBtn).prop('disabled', false);
+        $(cancelBtn).prop('disabled', false);
+        $(editBtn).prop('disabled', true);
+        $(completeBtn).prop('disabled', true);
+    }
+};
+
+// --- Broadcast Helper (BC + Storage Fallback) ---
+function broadcastAssignmentsUpdate(assignments) {
+    // Always update localStorage first (used by Home view & offline)
+    localStorage.setItem('assignments', JSON.stringify(assignments));
+
+    try {
+        // Use BroadcastChannel if available
+        const bc = new BroadcastChannel('assignments');
+        bc.postMessage({ type: 'assignments-updated' });
+        bc.close();
+        console.log('[SYNC] BroadcastChannel update sent.');
+    } catch (err) {
+        // Fallback to StorageEvent simulation (older browsers)
+        console.warn('[SYNC] BC unavailable, using StorageEvent fallback.');
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'assignments',
+            newValue: JSON.stringify(assignments)
+        }));
+    }
+};
+
 function getCurrentAssignment() {
     // safe guard
     return (Array.isArray(assignments) && assignments.length > 0 && typeof currentIndex === 'number') ? assignments[currentIndex] : null;
@@ -39,28 +87,30 @@ function refreshCurrentAssignment() {
 
 async function refreshAssignmentsFromServer() {
   try {
-    const response = await fetchDrvr("https://prodriver.local/assignmenthandler", {
+    const response = await getAssignment("https://prodriver.local/getassignments", {
         method: "GET",
         mode: "cors",
         credentials: "include",
         cache: 'no-store',
         headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            "Content-type": 'application/json',
-            "X-CSRF-Token": drvrToken
+            'X-CSRF-Token': drvrToken
         }
     });
 
-    if (response && Array.isArray(response.assignments)) {
+    if (response && Array.isArray(response.data)) {
       // 🧠 Update your local assignment array
-      window.assignments = response.assignments;
+      assignments = response.data;
       // 🧠 Optionally persist to localStorage for offline access
-      localStorage.setItem("assignments", JSON.stringify(response.assignments));
+      localStorage.setItem("assignments", JSON.stringify(response.data));
       // 🧠 If you have a UI renderer, refresh it
-      if (typeof renderAssignments === "function") {
-        renderAssignments(response.assignments);
+      if (typeof window._refreshAssignmentFromOutside === "function") {
+        window._refreshAssignmentFromOutside();
       }
-      console.log(`[PWA] Assignments refreshed: ${response.assignments.length} loaded`);
+
+      const current = getCurrentAssignment();
+      if ( current ) updateButtonStates(current);
+
+      console.log(`[PWA] Assignments refreshed: ${response.data.length} loaded`);
     } else {
       console.warn("[PWA] No assignment list in response payload");
     }
@@ -118,8 +168,6 @@ async function loadNextAssignment(afterIndex) {
             mode: 'cors',
             credentials: 'include',
             headers: {
-                "X-Requested-With": "XMLHttpRequest",
-                'Content-Type': 'application/json',
                 'X-CSRF-Token': drvrToken
             }
         });
@@ -233,6 +281,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (index < 0 || index >= assignments.length) return; // guard
 
         currentIndex = index;
+        sessionStorage.setItem('lastAssignmentIndex', index);
         const assignment = assignments[index];
 
         // Existing DOM refs
@@ -244,18 +293,18 @@ window.addEventListener('DOMContentLoaded', () => {
         const secondaryStartTime = groupB.childNodes[3].childNodes[1].childNodes[1];
         const secondarySpotTime = groupB.childNodes[3].childNodes[1].childNodes[3];
         const secondaryLeaveTime = groupB.childNodes[3].childNodes[1].childNodes[5];
-        const tertiaryReturnTime = groupC.childNodes[3].childNodes[1].childNodes[1];
-        const tertiaryDropTime = groupC.childNodes[3].childNodes[1].childNodes[3];
-        const tertiaryEndTime = groupC.childNodes[3].childNodes[1].childNodes[5];
-        const tertiaryActEndTime = groupC.childNodes[3].childNodes[1].childNodes[7];
-        const tertiaryShiftTime = groupC.childNodes[3].childNodes[1].childNodes[9];
-        const tertiaryDriveTime = groupC.childNodes[3].childNodes[1].childNodes[11];
-        const quaternaryOrigin = groupD.childNodes[3].childNodes[1].childNodes[1];
-        const quaternaryDestination = groupD.childNodes[3].childNodes[1].childNodes[3];
-        const quaternaryGroupNameandLeader = groupD.childNodes[3].childNodes[1].childNodes[5];
-        const quaternaryGroupLeaderMobile = groupD.childNodes[3].childNodes[1].childNodes[7];
-        const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[9];
-        const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[11];
+        const secondaryReturnTime = groupB.childNodes[3].childNodes[1].childNodes[7];
+        const secondaryDropTime = groupB.childNodes[3].childNodes[1].childNodes[9];
+        const tertiaryEndTime = groupC.childNodes[3].childNodes[1].childNodes[1];
+        const tertiaryActEndTime = groupC.childNodes[3].childNodes[1].childNodes[3];
+        const tertiaryShiftTime = groupC.childNodes[3].childNodes[1].childNodes[5];
+        const tertiaryDriveTime = groupC.childNodes[3].childNodes[1].childNodes[7];
+        const tertiaryOrigin = groupC.childNodes[3].childNodes[1].childNodes[9];
+        const quaternaryDestination = groupD.childNodes[3].childNodes[1].childNodes[1];
+        const quaternaryGroupNameandLeader = groupD.childNodes[3].childNodes[1].childNodes[3];
+        const quaternaryGroupLeaderMobile = groupD.childNodes[3].childNodes[1].childNodes[5];
+        const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[7];
+        const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[9];
         const pickupDetails = locationPickup;
         const destinationDetails = locationDestination;
         const opNotes = operatorNotes;
@@ -269,13 +318,13 @@ window.addEventListener('DOMContentLoaded', () => {
         secondaryStartTime.textContent = dtHelper(assignment['start_date_time']);
         secondarySpotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
         secondaryLeaveTime.textContent = dtHelper(assignment['leave_date_time']);
-        tertiaryReturnTime.textContent = dtHelper(assignment['return_date_drop_time']);
-        tertiaryDropTime.textContent = assignment['actual_drop_time'];
+        secondaryReturnTime.textContent = dtHelper(assignment['return_date_drop_time']);
+        secondaryDropTime.textContent = assignment['actual_drop_time'];
         tertiaryEndTime.textContent = dtHelper(assignment['end_date_time']);
         tertiaryActEndTime.textContent = assignment['actual_end_time'];
         tertiaryShiftTime.textContent = assignment['total_job_time'];
         tertiaryDriveTime.textContent = assignment['driving_time'];
-        quaternaryOrigin.textContent = assignment['origin'];
+        tertiaryOrigin.textContent = assignment['origin'];
         quaternaryDestination.textContent = assignment['destination'];
         quaternaryGroupNameandLeader.textContent = `${assignment['group_name']}, ${assignment['group_leader']}`;
         quaternaryGroupLeaderMobile.textContent = assignment['group_leader_mobile'];
@@ -291,22 +340,7 @@ window.addEventListener('DOMContentLoaded', () => {
             pagination.updateButtons();
         }
 
-        const status = (assignment['confirmed_assignment'] || '').toLowerCase();
-
-        if (status === 'unconfirmed') {
-            $(confirmBtn).prop("disabled", false);
-            $(cancelBtn).prop("disabled", false);
-            $(editBtn).prop("disabled", true);
-            $(completeBtn).prop("disabled", true);
-        } else if (status === 'confirmed') {
-            $(confirmBtn).prop("disabled", true);
-            $(cancelBtn).prop("disabled", true);
-            $(editBtn).prop("disabled", false);
-            $(completeBtn).prop("disabled", false);
-        };/* else {
-            $(editBtn).prop("disabled", false);
-            $(completeBtn).prop("disabled", false);
-        };*/
+        updateButtonStates(assignment);
 
         const assignmentForm = document.querySelector('.assignment-card');
         if (assignmentForm) {
@@ -329,7 +363,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if ( storedAssignments) {
         assignments = JSON.parse( storedAssignments );
         createPaginationControls();
-        showAssignment(0);
+        const savedIndex = parseInt(sessionStorage.getItem('lastAssignmentIndex') || '0', 10);
+        const validIndex = isNaN(savedIndex) || savedIndex < 0 || savedIndex >= assignments.length ? 0 : savedIndex;
+        setTimeout(() => {
+            showAssignment(validIndex);
+            const current = getCurrentAssignment();
+            if ( current ) updateButtonStates(current);
+            console.log(`[INIT] Restored assignment index ${validIndex} after reload.`);
+        }, 100);
     };
 
     getAssignment("https://prodriver.local/getassignments", {
@@ -338,8 +379,6 @@ window.addEventListener('DOMContentLoaded', () => {
         credentials: 'include',
         cache: 'no-store',
         headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            'Content-Type': 'application/json',
             'X-CSRF-Token': drvrToken
         }
     })
@@ -360,8 +399,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 mode: 'cors',
                 credentials: 'include',
                 headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    'Content-Type': 'application/json',
                     'X-CSRF-Token': drvrToken
                 }
             });
@@ -378,23 +415,23 @@ window.addEventListener('DOMContentLoaded', () => {
             const secondaryStartTime = groupB.childNodes[3].childNodes[1].childNodes[1];
             const secondarySpotTime = groupB.childNodes[3].childNodes[1].childNodes[3];
             const secondaryLeaveTime = groupB.childNodes[3].childNodes[1].childNodes[5];
-            const tertiaryReturnTime = groupC.childNodes[3].childNodes[1].childNodes[1];
-            const tertiaryDropTime = groupC.childNodes[3].childNodes[1].childNodes[3];
-            const tertiaryEndTime = groupC.childNodes[3].childNodes[1].childNodes[5];
-            const tertiaryActEndTime = groupC.childNodes[3].childNodes[1].childNodes[7];
-            const tertiaryShiftTime = groupC.childNodes[3].childNodes[1].childNodes[9];
-            const tertiaryDriveTime = groupC.childNodes[3].childNodes[1].childNodes[11];
-            const quaternaryOrigin = groupD.childNodes[3].childNodes[1].childNodes[1];
-            const quaternaryDestination = groupD.childNodes[3].childNodes[1].childNodes[3];
-            const quaternaryGroupNameandLeader = groupD.childNodes[3].childNodes[1].childNodes[5];
-            const quaternaryGroupLeaderMobile = groupD.childNodes[3].childNodes[1].childNodes[7];
-            const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[9];
-            const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[11];
+            const secondaryReturnTime = groupB.childNodes[3].childNodes[1].childNodes[7];
+            const secondaryDropTime = groupB.childNodes[3].childNodes[1].childNodes[9];
+            const tertiaryEndTime = groupC.childNodes[3].childNodes[1].childNodes[1];
+            const tertiaryActEndTime = groupC.childNodes[3].childNodes[1].childNodes[3];
+            const tertiaryShiftTime = groupC.childNodes[3].childNodes[1].childNodes[5];
+            const tertiaryDriveTime = groupC.childNodes[3].childNodes[1].childNodes[7];
+            const tertiaryOrigin = groupC.childNodes[3].childNodes[1].childNodes[9];
+            const quaternaryDestination = groupD.childNodes[3].childNodes[1].childNodes[1];
+            const quaternaryGroupNameandLeader = groupD.childNodes[3].childNodes[1].childNodes[3];
+            const quaternaryGroupLeaderMobile = groupD.childNodes[3].childNodes[1].childNodes[5];
+            const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[7];
+            const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[9];
             
             primaryCoachId.textContent = 'No assignment available...';
             primaryDrvrId.textContent = driver['operatorid'];
             primaryDrvrName.textContent = `${driver['firstName']} ${driver['lastName']}`;
-            const placeholders = [primaryOrderNumber, primaryNumOfCoaches, secondaryStartTime, secondarySpotTime, secondaryLeaveTime, tertiaryReturnTime, tertiaryDropTime, tertiaryEndTime, tertiaryActEndTime, tertiaryShiftTime, tertiaryDriveTime, quaternaryOrigin, quaternaryDestination, quaternaryGroupNameandLeader, quaternaryGroupLeaderMobile, quaternaryCustomerNameandPhone, quaternaryContactNameandMobile];
+            const placeholders = [primaryOrderNumber, primaryNumOfCoaches, secondaryStartTime, secondarySpotTime, secondaryLeaveTime, secondaryReturnTime, secondaryDropTime, tertiaryEndTime, tertiaryActEndTime, tertiaryShiftTime, tertiaryDriveTime, tertiaryOrigin, quaternaryDestination, quaternaryGroupNameandLeader, quaternaryGroupLeaderMobile, quaternaryCustomerNameandPhone, quaternaryContactNameandMobile];
             placeholders.forEach(ph => {
                 const el = eval(ph);
                 if (el) el.textContent = 'No assignment available...';
@@ -417,7 +454,9 @@ window.addEventListener('DOMContentLoaded', () => {
             const currentOrderId = orderCell.textContent.trim();
             
             if (currentOrderId && currentOrderId !== 'No assignment available...' && currentOrderId !== previousOrderId) {
-                const assignment = assignments.find( a => a.order_id == currentOrderId);
+                const assignment = assignments?.find( a => a.order_id == currentOrderId);
+                if (!assignment) return;
+                updateButtonStates(assignment);
                 const requiresSignature = assignment ? assignment.signature_required === 1 : false;
                 // When order ID changes, notify other scripts
                 window.dispatchEvent(new CustomEvent('assignmentChanged', {
@@ -461,8 +500,64 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    
+    window.addEventListener('load', () => {
+        setTimeout(() => restoreButtonStateFromStorage(), 300);
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            restoreButtonStateFromStorage();
+        }
+    });
+
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            console.log('[PWA] Page restored from cache. Re-syncing button states...');
+            restoreButtonStateFromStorage();
+        }
+    });
 });
 
+// === 🧠 Reusable Restoration Function with Visual Debug ===
+function restoreButtonStateFromStorage() {
+    try {
+        const storedAssignments = JSON.parse(localStorage.getItem('assignments') || '[]');
+        const savedIndex = parseInt(sessionStorage.getItem('lastAssignmentIndex') || '0', 10);
+        const current = storedAssignments[savedIndex] || storedAssignments[0];
+
+        if (!current) {
+            console.warn('[STATE] No current assignment found to restore.');
+            return;
+        }
+
+        // Apply correct button logic
+        updateButtonStates(current);
+
+        // Debug log: detailed visual breakdown
+        const isConfirmed = current.confirmed_assignment?.toLowerCase() === 'confirmed';
+        const isCanceled = ['unconfirmed', 'canceled'].includes(current.confirmed_assignment?.toLowerCase());
+
+        console.groupCollapsed('%c[STATE RESTORE]', 'color: #0aa; font-weight: bold;');
+        console.log('Current assignment ID:', current.order_id || '(none)');
+        console.log('Confirmed Assignment Value:', current.confirmed_assignment);
+        console.log('Driver ID:', current.driver_id);
+        console.log('Vehicle ID:', current.vehicle_id);
+        console.log('Status flags:', { isConfirmed, isCanceled });
+
+        console.log('🔘 Button states applied:');
+        console.log('Confirm button:', $(confirmBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
+        console.log('Cancel button:', $(cancelBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
+        console.log('Edit button:', $(editBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
+        console.log('Complete button:', $(completeBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
+        console.groupEnd();
+
+    } catch (err) {
+        console.error('[STATE] Failed to restore button logic:', err);
+    }
+};
+
+// Confirm assignment button 
 confirmBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const assignment = getCurrentAssignment();
@@ -482,8 +577,6 @@ confirmBtn.addEventListener('click', async (e) => {
             mode: 'cors',
             credentials: 'include',
             headers: {
-                "X-Requested-With": "XMLHttpRequest",
-                "Content-Type": 'application/json',
                 'X-CSRF-Token': drvrToken
             },
             body: formData
@@ -491,39 +584,26 @@ confirmBtn.addEventListener('click', async (e) => {
         drvrAlert(result.status, result.message); // toast
         // Only update Local model on confirmed success and refresh the currently displayed assignment in UI
         if (result.status === 'success') {
-            assignment['confirmed_assignment'] = 'confirmed';
-            const fresh = await fetchDrvr("https://prodriver.local/getassignment", {
+            assignment['confirmed_assignment'] = 'confirmed'.toLowerCase();
+            const fresh = await getAssignment("https://prodriver.local/getassignments", {
                 method: 'GET',
                 mode: 'cors',
                 credentials: 'include',
                 cache: 'no-store',
                 headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Content-Type": 'application/json',
                     'X-CSRF-Token': drvrToken
                 }
             });
             if ( fresh && fresh.status === 'success' && Array.isArray(fresh.data)) {
                 assignments = fresh.data;
                 localStorage.setItem('assignments', JSON.stringify(fresh.data));
+            } else {
+                console.warn('[SYNC] Skipped saving invalid assignment data to localStorage.');
             }
-            refreshCurrentAssignment();
-            $(confirmBtn).prop('disabled', true);
-            $(cancelBtn).prop('disabled', true);
-            $(editBtn).prop('disabled', false);
-            $(completeBtn).prop('disabled', false);
-            localStorage.setItem("assignments", JSON.stringify(assignments));
-            // Broadcast storage change so other tabs/pages refresh
-            try {
-                const bc = new BroadcastChannel('assignments');
-                bc.postMessage({ type: 'assignments-updated' });
-                bc.close();
-            } catch {}
-            /*window.dispatchEvent( new StorageEvent('storage', {
-                key: 'assignments',
-                newValue: JSON.stringify(assignments)
-            }));*/
+            broadcastAssignmentsUpdate(assignments);
             await refreshAssignmentsFromServer();
+            const current = getCurrentAssignment();
+            if ( current ) updateButtonStates(current);
         }
     } catch (error) {
         console.error('Error confirmation assignment:', error);
@@ -531,6 +611,7 @@ confirmBtn.addEventListener('click', async (e) => {
     }
 });
 
+// Cancel/Remove assignment button
 cancelBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const assignment = getCurrentAssignment();
@@ -553,8 +634,6 @@ cancelBtn.addEventListener('click', async (e) => {
             mode: 'cors',
             credentials: 'include',
             headers: {
-                "X-Requested-With": "XMLHttpRequest",
-                "Content-Type": 'application/json',
                 'X-CSRF-Token': drvrToken
             },
             body: formData
@@ -565,12 +644,7 @@ cancelBtn.addEventListener('click', async (e) => {
             drvrAlert(result.status, result.message); // toast
             // Remove canceled assignment from array
             assignments.splice(currentIndex, 1);
-            localStorage.setItem("assignments", JSON.stringify(assignments));
-            // Broadcast storage change so other tabs/pages refresh
-            window.dispatchEvent( new StorageEvent('storage', {
-                key: 'assignments',
-                newValue: JSON.stringify(assignments)
-            }));
+            broadcastAssignmentsUpdate(assignments);
             // Immediately clear UI for visual feedback
             clearAssignmentUI();
             // Load next assignment ( or fallback )
@@ -583,5 +657,8 @@ cancelBtn.addEventListener('click', async (e) => {
         drvrAlert('error', 'Something went wrong. Please try again.');
     }
 });
+
+// Update/Modify assignment button
 editBtn.addEventListener('click', () => {});
+// Complete assignment button
 completeBtn.addEventListener('click', () => {});

@@ -2,16 +2,21 @@
 
 requireLoginAjax();
 
-header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
+header("Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS");
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit();
+}
 
 $headers = getallheaders();
 $headerToken = $headers['X-CSRF-Token'] ?? null;
 $sessionToken = $_SESSION['drvr_token'];
 
 if ($sessionToken === null) {
+    header('Content-Type: application/json');
     http_response_code(403);
     echo json_encode([
         'status' => 'error',
@@ -21,6 +26,7 @@ if ($sessionToken === null) {
 }
 
 if ($headerToken !== $sessionToken) {
+    header('Content-Type: application/json');
     http_response_code(403);
     echo json_encode([
         'status' => 'error',
@@ -41,6 +47,7 @@ if ($method === 'POST' && isset($_POST['__method'])) {
 }
 
 if (!in_array($method, ['PATCH', 'DELETE'])) {
+    header('Content-Type: application/json');
     http_response_code(405);
     echo json_encode([
         'status' => 'error',
@@ -61,6 +68,7 @@ if ($method === 'PATCH') {
         $result = $confirmed->confirm();
         $isFetch = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
         if ($isFetch) {
+            header('Content-Type: application/json');
             echo json_encode($result);
             exit();
         }
@@ -76,6 +84,7 @@ if ($method === 'PATCH') {
         $result = $cancelJob->cancel();
         $isFetch = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
         if ($isFetch) {
+            header('Content-Type: application/json');
             echo json_encode($result);
             exit();
         }
