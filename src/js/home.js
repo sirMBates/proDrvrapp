@@ -23,27 +23,7 @@ function resetDailyFlags () {
 };
 resetDailyFlags();
 
-// At top-level of home script (once per load)
-try {
-  const bc = new BroadcastChannel('assignments');
-  bc.onmessage = async (evt) => {
-    if (evt?.data?.type === 'assignments-updated') {
-      // Pull fresh data and re-render the table
-      const fresh = await fetchDrvr("https://prodriver.local/getassignments", {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'include',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': drvrToken }
-      });
-      if (fresh?.status === 'success') {
-        localStorage.setItem('assignments', JSON.stringify(fresh.data));
-        renderHomeTable(fresh.data); // factor your DOM write into a helper
-      }
-    }
-  };
-} catch {}
-
+// --- Centralized Table Render Helper ---
 function renderHomeTable(assignments, fromSync = false) {
   const tableBody = document.querySelector('#dashboard-info tbody');
   tableBody.innerHTML = '';
@@ -63,152 +43,133 @@ function renderHomeTable(assignments, fromSync = false) {
   lastAssignmentsUpdate = Date.now();
 };
 
+// --- BroadcastChannel + Fallback Setup ---
+let bcSupported = false;
+
+try {
+        const bc = new BroadcastChannel('assignments');
+        bcSupported = true;
+        bc.onmessage = async (evt) => {
+                if (evt?.data?.type === 'assignments-updated') {
+                        const fresh = await getAssignment("https://prodriver.local/getassignments", {
+                                method: 'GET',
+                                mode: 'cors',
+                                credentials: 'include',
+                                cache: 'no-store',
+                                headers: {
+                                        'X-CSRF-Token': drvrToken
+                                }
+                        });
+                        if (fresh?.status === 'success') {
+                                localStorage.setItem('assignments', JSON.stringify(fresh.data));
+                                renderHomeTable(fresh.data, true);
+                        }
+                }
+        };
+} catch {
+  bcSupported = false;
+};
+
+// --- Fallback if BroadcastChannel unavailable ---
+if (!bcSupported) {
+        window.addEventListener('storage', (event) => {
+                if (event.key === 'assignments' && event.newValue) {
+                        try {
+                                const updated = JSON.parse(event.newValue);
+                                renderHomeTable(updated, true);
+                                console.log('[SYNC] Home updated from storage fallback.');
+                        } catch (err) {
+                                console.error('Failed to parse updated assignments:', err);
+                        }
+                }
+        });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
         const storedAssignments = localStorage.getItem("assignments");
-        if ( storedAssignments ) {
-                const cached = JSON.parse( storedAssignments );
-                const tableBody = document.querySelector('#dashboard-info tbody');
-                tableBody.innerHTML = '';
-                cached.forEach(a => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                        <td>${a.first_name} ${a.last_name}</td>
-                        <td>${a.operator_id}</td>
-                        <td>${dtHelper(a.start_date_time, 'date')}</td>
-                        <td>${dtHelper(a.start_date_time, 'time')}</td>
-                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
-                        <td class='text-capitalize'>${a.confirmed_assignment}</td>`;
-                        tableBody.appendChild(row);
-                });
+        let cached = [];
+        if (storedAssignments && storedAssignments !== "undefined" && storedAssignments !== "null") {
+                try {
+                        cached = JSON.parse(storedAssignments);
+                        if ( Array.isArray(cached)) {
+                                renderHomeTable(cached);
+                        } else {
+                                console.warn("Assignments cache not an array - resetting.");
+                                localStorage.removeItem("assignments");
+                        }
+                } catch (err) {
+                        console.warn("Invalid JSON in localStorage:", storedAssignments);
+                        localStorage.removeItem("assignments");
+                }
         };
 
         getAssignment("https://prodriver.local/getassignments", {
-                method: 'GET', 
+                method: 'GET',
                 mode: 'cors',
                 credentials: 'include',
                 cache: 'no-store',
                 headers: {
-                        "X-Requested-With": "XMLHttpRequest",
-                        'Content-Type': 'application/json',
                         'X-CSRF-Token': drvrToken
-                } 
+                }
         })
         .then(data => {
-            const driver = data;
-            const drvrMainTable = document.querySelector('#dashboard-info');
-            // Check if assignments exist
-            if (driver.status === 'success' && driver.data.length > 0) {
-                const assignments = driver.data;
-                const tableBody = drvrMainTable.querySelector('tbody');
-                tableBody.innerHTML = ''; // clear old data
-
-                assignments.forEach((assignment, index) => {
-                        if (drvrBirthDate) {
-                                localStorage.setItem('driverName', assignment['first_name']);
-                        };
-                        const row = document.createElement('tr');
-
-                        row.innerHTML = `<td>${assignment['first_name']} ${assignment['last_name']}</td>
-                                <td>${assignment['operator_id']}</td>
-                                <td>${dtHelper(assignment['start_date_time'], 'date')}</td>
-                                <td>${dtHelper(assignment['start_date_time'], 'time')}</td>
-                                <td>${dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time')}</td>
-                                <td class='text-capitalize'>${assignment['confirmed_assignment']}</td>`;
-                        tableBody.appendChild(row);
-                });
-            } else {
-                // No assignments → fallback to getProfile
-                //console.log("No assignments found, loading profile instead...");
-                return getDriver("https://prodriver.local/getprofile", {
-                        method: 'GET', 
-                        mode: 'cors',
-                        credentials: 'include',
-                        headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-Token': drvrToken
-                        } 
-                });
-            }
+                if (data.status === 'success' && data.data.length > 0) {
+                        localStorage.setItem('assignments', JSON.stringify(data.data));
+                        renderHomeTable(data.data);
+                        handleBirthdayTheme();
+                } else {
+                         // Fallback: load profile if no assignments
+                        return getDriver("https://prodriver.local/getprofile", {
+                                method: 'GET',
+                                mode: 'cors',
+                                credentials: 'include',
+                                cache: 'no-store',
+                                headers: {
+                                        'X-CSRF-Token': drvrToken
+                                }
+                        });
+                }
         })
-        .then(data => {
-            if (data) {
-                const driver = data;
-                const drvrMainTable = document.querySelector('#dashboard-info');
-                const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
-                const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
-                const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
-                const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
-                const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
-                fullname.textContent = `${driver['firstName']} ${driver['lastName']}`;
-                if (drvrBirthDate) {
-                        localStorage.setItem('driverName', driver['firstName']);
-                };
-                drvrId.textContent = driver['operatorid'];
-                reportDate.textContent = 'No assignment available...';
-                reportTime.textContent = 'No assignment available...';
-                spotTime.textContent = 'No assignment available...';
-                handleBirthdayTheme();
-            }
+        .then(profile => {
+                if (profile) {
+                        const drvrMainTable = document.querySelector('#dashboard-info');
+                        const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
+                        const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
+                        const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
+                        const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
+                        const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
+
+                        fullname.textContent = `${profile['firstName']} ${profile['lastName']}`;
+                        drvrId.textContent = profile['operatorid'];
+                        reportDate.textContent = 'No assignment available...';
+                        reportTime.textContent = 'No assignment available...';
+                        spotTime.textContent = 'No assignment available...';
+                        handleBirthdayTheme();
+                }
         })
         .catch(error => {
-                const drvrMainTable = document.querySelector('#dashboard-info');
-                const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
-                const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
-                if (error) {
-                        fullname.textContent = 'Pro Driver';
-                        drvrId.textContent = '0000';
-                }
-                console.error('There was a problem with the fetch operation:', error);
-        })
+                console.error('Fetch operation failed:', error);
+        });
 });
 
-// 🧭 Listen for assignment updates from other pages/tabs
-window.addEventListener('storage', (event) => {
-        if (event.key === 'assignments' && event.newValue) {
-                showFlashAlert('info', 'Assignments updated!'); // Show friendly toast to indicate new synced data
-                try {
-                        const updated = JSON.parse(event.newValue);
-                        const tableBody = document.querySelector('#dashboard-info tbody');
-                        tableBody.innerHTML = '';
-                        updated.forEach(a => {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                                        <td>${a.first_name} ${a.last_name}</td>
-                                        <td>${a.operator_id}</td>
-                                        <td>${dtHelper(a.start_date_time, 'date')}</td>
-                                        <td>${dtHelper(a.start_date_time, 'time')}</td>
-                                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
-                                        <td class='text-capitalize'>${a.confirmed_assignment}</td>`;
-                                tableBody.appendChild(row);
-                        });
-                        console.log('[SYNC] Home view updated from assignment changes.');
-                } catch (err) {
-                        console.error('Failed to parse updated assignments:', err);
-                }
-        }
-});
-
-// 🪄 Refresh Home table automatically when the tab regains focus
-document.addEventListener('visibilitychange', () => {
+// --- Tab Focus Auto Refresh (debounced) ---
+document.addEventListener('visibilitychange', async () => {
         if (document.visibilityState === 'visible') {
-                const storedAssignments = localStorage.getItem("assignments");
-                if (storedAssignments) {
-                        const updated = JSON.parse(storedAssignments);
-                        const tableBody = document.querySelector('#dashboard-info tbody');
-                        tableBody.innerHTML = '';
-                        updated.forEach(a => {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                                        <td>${a.first_name} ${a.last_name}</td>
-                                        <td>${a.operator_id}</td>
-                                        <td>${dtHelper(a.start_date_time, 'date')}</td>
-                                        <td>${dtHelper(a.start_date_time, 'time')}</td>
-                                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
-                                        <td class='text-capitalize'>${a.confirmed_assignment}</td>`;
-                                tableBody.appendChild(row);
+                const now = Date.now();
+                if (now - lastAssignmentsUpdate < 5000) return; // prevent too frequent reloads
+                        const fresh = await getAssignment("https://prodriver.local/getassignments", {
+                                method: 'GET',
+                                mode: 'cors',
+                                credentials: 'include',
+                                cache: 'no-store',
+                                headers: {
+                                        'X-CSRF-Token': drvrToken
+                                }
                         });
-                        showFlashAlert('info', 'Dashboard refreshed.');
-                        console.log('[SYNC] Home view refreshed on tab visibility.');
+                if (fresh?.status === 'success') {
+                        localStorage.setItem('assignments', JSON.stringify(fresh.data));
+                        renderHomeTable(fresh.data, true);
+                        console.log('[SYNC] Dashboard refreshed on tab focus.');
                 }
         }
 });

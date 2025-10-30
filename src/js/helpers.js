@@ -25,10 +25,11 @@ export async function fetchDrvr(url, options = {}) {
         headers
     });
     if (!response.ok) {
+        console.error('fetchDrvr failed: ', url, response.status);
         throw new Error('Network response was not ok');
     }
     return await response.json();
-}
+};
 
 export function viewableDateTimeHelper(input, format = 'datetime') {
     if (!input) return 'N/A';
@@ -90,9 +91,20 @@ export function showFlashAlert(type = 'info', message = '', timeout = 4000, useB
         info: 'fa-circle-info',
         error: 'fa-thumbs-down',
         validate: 'fa-circle-exclamation',
-        default: 'fa-circle-info'
+        default: 'fa-circle-question'
     };
 
+    const alertTypeMap = {
+        success: 'success',
+        warning: 'warning',
+        danger: 'danger',
+        error: 'dark',
+        info: 'info',
+        validate: 'primary',
+        default: 'warning'
+    };
+
+    const alertClass = alertTypeMap[type] || alertTypeMap.default;
     const icon = iconMap[type] || iconMap.default;
 
     if (useBanner) {
@@ -104,7 +116,7 @@ export function showFlashAlert(type = 'info', message = '', timeout = 4000, useB
         }
 
         const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show my-2`;
+        alertDiv.className = `alert alert-${alertClass} alert-dismissible fade show my-2`;
         alertDiv.role = 'alert';
         alertDiv.innerHTML = `
             <i class="fs-5 me-2 fa-solid ${icon}"></i>
@@ -141,7 +153,7 @@ export function showFlashAlert(type = 'info', message = '', timeout = 4000, useB
         }
 
         const toast = document.createElement('div');
-        toast.className = `alert alert-${type} d-flex align-items-center shadow`;
+        toast.className = `alert alert-${alertClass} d-flex align-items-center shadow`;
         toast.style.minWidth = '250px';
         toast.style.opacity = 0;
         toast.style.transform = 'translateX(100%)';
