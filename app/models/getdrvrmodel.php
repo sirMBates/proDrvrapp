@@ -12,7 +12,7 @@ class GetDriver {
     protected function retrieveDriver($drvrid) {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
-        $sql = "SELECT * FROM driver
+        $sql = "SELECT * FROM drivers
                 WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':driver_id', $drvrid);
