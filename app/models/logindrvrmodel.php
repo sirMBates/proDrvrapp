@@ -14,7 +14,7 @@ class Login {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT password FROM driver
+        $sql = "SELECT password FROM drivers
                 WHERE username = :username";
         $stmt = $db->connect()->prepare($sql);
         
