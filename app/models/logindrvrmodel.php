@@ -15,7 +15,8 @@ class Login {
         $db = new Database;
         $alert = new Flash();
         $sql = "SELECT password FROM drivers
-                WHERE username = :username";
+                WHERE username = :username
+                LIMIT 1";
         $stmt = $db->connect()->prepare($sql);
         
         $stmt->bindParam(":username", $username);
@@ -27,8 +28,8 @@ class Login {
             exit();
         }
 
-        $hashedPsw = $stmt->fetchAll();
-        $checkPsw = password_verify($password, $hashedPsw[0]["password"]);
+        $hashedPsw = $stmt->fetch();
+        $checkPsw = password_verify($password, $hashedPsw["password"]);
         
         if ($checkPsw === false) {
             $alert::setMsg('danger', 'Incorrect password. Please try again.');
