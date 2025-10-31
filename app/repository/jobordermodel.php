@@ -84,7 +84,7 @@ class JobOrderImporter {
                 $db = new Database();
                 $pdo = $db->connect();
                 $sql = "SELECT driver_id, first_name, last_name
-                        FROM driver
+                        FROM drivers
                         WHERE operator_id = :operator_id
                         LIMIT 1";
                 $stmt = $pdo->prepare($sql);
@@ -187,7 +187,7 @@ class JobOrderImporter {
             $db = new Database();
             $pdo = $db->connect();
             $sql = "SELECT email, first_name, last_name 
-                    FROM driver
+                    FROM drivers
                     WHERE driver_id = :driver_id
                     LIMIT 1";
             $stmt = $pdo->prepare($sql);
