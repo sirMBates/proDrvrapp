@@ -15,7 +15,7 @@ class AddedDrvr {
                 VALUES (?,?,?,?,?,?,?,?,?)";
         $stmt = $db->connect()->prepare($sql);
 
-        $hashPsW = password_hash($password, PASSWORD_BCRYPT);
+        $hashPsW = password_hash($password, PASSWORD_BCRYPT, ['cost' => 16]);
         $tmpFirstName = '';
         $tmpLastName = '';
         $tmpMobileNum = '';

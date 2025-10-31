@@ -58,7 +58,7 @@ return new class {
         $uri = parse_url($_SERVER['REQUEST_URI'])['path'];
         $method = $_POST['__method'] ?? $_SERVER['REQUEST_METHOD'];
 
-        if (isset($_SESSION['driver_id'])) {
+        if (isset($_SESSION['driver_id']) && isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
             // prevent Logged-in users from hitting signup/signin
             if (in_array($uri, ['/signup', '/signin', '/register', '/forget', '/completereset'])) {
                 header("Location: /");

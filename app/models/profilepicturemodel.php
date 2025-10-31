@@ -40,7 +40,7 @@ class ProfileImageUpload extends GetDriver {
         }
 
         // Update the database with the path to the profile picture
-        $sql = "UPDATE driver
+        $sql = "UPDATE drivers
                 SET profile_picture = :profile_picture
                 WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);

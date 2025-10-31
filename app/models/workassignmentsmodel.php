@@ -14,7 +14,7 @@ class WorkAssignments {
         $db = new Database;
         $pdo = $db->connect();
         $sql = "SELECT wo.*, d.operator_id, d.first_name, d.last_name, d.birth_date
-                FROM work_orders wo INNER JOIN driver d ON wo.driver_id = d.driver_id
+                FROM work_orders wo INNER JOIN drivers d ON wo.driver_id = d.driver_id
                 WHERE wo.driver_id = :driver_id";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':driver_id', $drvrid);

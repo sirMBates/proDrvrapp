@@ -15,7 +15,7 @@ class RegistrationInformation {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $alert = new Flash();
-        $sql = "UPDATE driver 
+        $sql = "UPDATE drivers 
                 SET operator_id = ?, first_name = ?, last_name = ?, mobile_number = ?, birth_date = ? 
                 WHERE username = ?";
         $stmt = $db->connect()->prepare($sql);
