@@ -47,7 +47,7 @@ class CompleteReset {
         $driverEmail = $driverResetToken['email'];
         $newHashPwd = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "UPDATE driver
+        $sql = "UPDATE drivers
                 SET password = :password
                 WHERE email = :email";
         $stmt = $db->connect()->prepare($sql);
