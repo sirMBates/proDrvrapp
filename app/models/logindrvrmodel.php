@@ -35,7 +35,7 @@ class Login {
             header("Location: /signin?danger=invalid"); // wrongPassword
             exit();
         } elseif ($checkPsw === true) {
-            $sql2 = "SELECT * FROM driver
+            $sql2 = "SELECT * FROM drivers
                     WHERE username = :username";
             $stmt = $db->connect()->prepare($sql2);
             $stmt->bindParam(":username", $username);
