@@ -21,7 +21,7 @@ class Assignment {
                             FROM work_orders
                             WHERE vehicle_id = :vehicle_id
                             AND start_date_time = :start_date_time
-                            AND driver_id = ( SELECT driver_id FROM driver
+                            AND driver_id = ( SELECT driver_id FROM drivers
                                             WHERE operator_id = :operator_id LIMIT 1)
                                             AND order_ref = :order_ref";
             $dupStmt = $pdo->prepare($dupCheckSql);
@@ -39,7 +39,7 @@ class Assignment {
 
             //$this->logger->debug("Looking up driver with operator_id='{$operatorId}'");
             $driverSql = "SELECT driver_id, first_name, last_name 
-                        FROM driver
+                        FROM drivers
                         WHERE operator_id = :operator_id
                         LIMIT 1";
             $driverStmt = $pdo->prepare($driverSql);
