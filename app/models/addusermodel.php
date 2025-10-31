@@ -10,7 +10,7 @@ class AddedDrvr {
         $db = new Database;
         $alert = new Flash();
         $pdo = $db->connect();
-        $sql = "INSERT INTO driver (
+        $sql = "INSERT INTO drivers (
                 username, email, operator_id, password, first_name, last_name, mobile_number, birth_date, profile_picture) 
                 VALUES (?,?,?,?,?,?,?,?,?)";
         $stmt = $db->connect()->prepare($sql);
@@ -65,7 +65,7 @@ class AddedDrvr {
     protected function checkDriver($username, $email) {
         $db = new Database;
         $alert = new Flash();
-        $sql = "SELECT username, email FROM driver
+        $sql = "SELECT username, email FROM drivers
                 WHERE username = :username OR email = :email";
         $stmt = $db->connect()->prepare($sql);
         $stmt->bindParam(':username', $username);
