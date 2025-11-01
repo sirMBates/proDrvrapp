@@ -17,33 +17,27 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
 
     public function checkAndUpdateDrvrStatus() {
         if ($this->drvrStatusInvalid() === false) {
-            header("Content-Type: application/json");
             http_response_code(401);
-            echo json_encode([
+            return [
                 'status' => 'error',
                 'message' => 'Unauthorized request'
-            ]);
-            exit();
+            ];
         }
 
         if ($this->checkDrvrTimeStamp() === false) {
-            header("Content-Type: application/json");
             http_response_code(415);
-            echo json_encode([
+            return [
                 'status' => 'error',
                 'message' => 'Not acceptable'
-            ]);
-            exit();
+            ];
         }
 
         if ($this->checkDrvrAccess() === false) {
-            header("Content-Type: application/json");
             http_response_code(401);
-            echo json_encode([
+            return [
                 'status' => 'error',
                 'message' => 'Unauthorized access'
-            ]);
-            exit();
+            ];
         }
 
         $this->processUpdateStatus($this->drvrid, $this->drvrStatus, $this->drvrTimeStamp);

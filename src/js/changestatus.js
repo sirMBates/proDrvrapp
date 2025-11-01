@@ -49,7 +49,7 @@ export class ChangeStatus {
 
         localStorage.setItem('status', this.drvrStatus);
         this.bannerMsg.textContent = this.drvrStatus;
-        console.log(`Driver status currently: ${this.drvrStatus} \n Switched at: ${viewedTimeStamp} \n Location point: ${this.endpoint} \n Driver access: ${this.drvrToken}`);
+        console.log(`Driver access: ${this.drvrToken} \n Driver status currently: ${this.drvrStatus} \n Switched at: ${viewedTimeStamp}`);
         this.updateDBStatus(this.drvrToken, this.drvrStatus, this.timeStamp);        
     };
 

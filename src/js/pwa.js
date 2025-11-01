@@ -26,29 +26,25 @@ if ('serviceWorker' in navigator) {
 
           console.log(`[PWA] Offline sync complete — ${total} total: ${statuses} statuses, ${assignments} assignments.`);
 
-          // show user feedback
-          if (statuses > 0) {
-            showFlashAlert('success', `✅ ${statuses} status update${statuses > 1 ? 's' : ''} synced.`);
-          }
-          if (assignments > 0) {
-            showFlashAlert('info', `📋 ${assignments} assignment${assignments > 1 ? 's' : ''} synced.`);
-          }
-          if (total > 0 && statuses === 0 && assignments === 0) {
-            showFlashAlert('success', `✅ ${total} offline request${total > 1 ? 's' : ''} synced.`);
-          }
+          if (statuses > 0)
+            showSyncToast(`✅ ${statuses} status update${statuses > 1 ? 's' : ''} synced.`, '#198754'); // green
+
+          if (assignments > 0)
+            showSyncToast(`📋 ${assignments} assignment${assignments > 1 ? 's' : ''} synced.`, '#0d6efd'); // blue
+
+          if (total > 0 && statuses === 0 && assignments === 0)
+            showSyncToast(`✅ ${total} offline request${total > 1 ? 's' : ''} synced.`, '#1d5283');
         }
       });
     })
     .catch((err) => console.error('[SW] Registration failed:', err));
   });
 
-
-
-    function showUpdateToast() {
-        // Create a simple toast container
-        const toast = document.createElement('div');
-        toast.innerHTML = `
-        <div style="
+  function showUpdateToast() {
+    // Create a simple toast container
+    const toast = document.createElement('div');
+    toast.innerHTML = `
+      <div style="
         position: fixed;
         bottom: 1rem;
         left: 50%;
@@ -63,7 +59,7 @@ if ('serviceWorker' in navigator) {
         display: flex;
         align-items: center;
         gap: 1rem;
-        ">
+      ">
         <span>🚀 New update available!</span>
         <button id="refresh-app" style="
           background: #fff;
@@ -74,8 +70,8 @@ if ('serviceWorker' in navigator) {
           font-weight: bold;
           cursor: pointer;
         ">Reload</button>
-        </div>
-        `;
+      </div>
+      `;
     document.body.appendChild(toast);
 
     // Handle the reload button
@@ -87,8 +83,99 @@ if ('serviceWorker' in navigator) {
       }
       window.location.reload(); // refresh after activation
     });
-  }
-}
+  };
+
+  // === Toast Container for Sync Notifications ===
+  let syncToastContainer = document.getElementById('sync-toast-container');
+  if (!syncToastContainer) {
+    syncToastContainer = document.createElement('div');
+    syncToastContainer.id = 'sync-toast-container';
+    syncToastContainer.style.cssText = `
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      z-index: 99999;
+      pointer-events: none; /* so it doesn’t block clicks */
+    `;
+    document.body.appendChild(syncToastContainer);
+  };
+
+  function showSyncToast(message = 'All offline actions synced!', color = '#1d5283') {
+    // Create the toast element
+    const toast = document.createElement('div');
+    toast.className = 'sync-toast';
+    toast.style.cssText = `
+      background: ${color};
+      color: #fff;
+      padding: 0.9rem 1.4rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      font-family: Roboto, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0;
+      transform: translateX(120%);
+      transition:
+        opacity 0.4s ease,
+        transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      pointer-events: auto;
+    `;
+
+    toast.innerHTML = `
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      <span>${message}</span>
+      <button style="
+        margin-left: 0.75rem;
+        baclground: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0;"
+        title="Dismiss"
+      >&times;</button> 
+    `;
+
+    // Append to container
+    syncToastContainer.appendChild(toast);
+
+    // Allow manual dismiss
+    toast.querySelector('button').addEventListener('click', () => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(120%)';
+      setTimeout(() => toast.remove(), 400);
+    });
+
+
+    // Animate slide-in
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(0)';
+    });
+
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(120%)';
+      setTimeout(() => {
+        toast.remove();
+
+        // If container becomes empty, remove it after a short delay
+        if (!syncToastContainer.hasChildNodes()) {
+          setTimeout(() => {
+            if (!syncToastContainer.hasChildNodes()) syncToastContainer.remove();
+          }, 500);
+        }
+      }, 400);
+    }, 4000);
+  };
+};
 
 window.addEventListener('DOMContentLoaded', () => {
     // 🧩 Custom Install Prompt
@@ -250,7 +337,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (lastState === 'online') return; // debounce duplicate events
     lastState = 'online';
     // Blue/green success look
-    showToast('Back online ✓', '#198754', 2200);
+    showToast('Back online ✓', '#198754', 2500);
   }
 
   function handleOffline() {
@@ -350,12 +437,17 @@ export async function handleStatusFetch(options) {
       serializedBody = options.body;
     }
 
+    let jsonBody = serializedBody;
+    if (typeof serializedBody === 'object' && !(serializedBody instanceof FormData)) {
+      jsonBody = JSON.stringify(serializedBody);
+    }
+
     await queueRequest({
       url: 'https://prodriver.local/setstatus',
       options: {
         method: options.method,
         headers: options.headers,
-        body: serializedBody,
+        body: jsonBody,
       },
     });
 

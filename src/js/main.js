@@ -179,7 +179,7 @@ profileInput.addEventListener('change', (e) => {
 });
 
 // The status controls and the connection to the DB api
-const driverStatus = new ChangeStatus(DSC, statusEndpoint, drvrToken, statusMsg);
+const driverStatus = new ChangeStatus(DSC, drvrToken, statusMsg);
 driverStatus.init();
 
 emergencyBtn.forEach(btn => {
