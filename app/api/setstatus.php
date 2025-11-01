@@ -18,13 +18,9 @@ if ($drvrHiddenToken === $_SESSION['drvr_token']) {
             $timeStringStamp = strtotime($isoTimeStamp);
             $drvrTimeStamp = date('Y-m-d H:i:s', $timeStringStamp);
             $statusUpdater = new UpdateDrvrStatusContr($drvrId, $drvrStatus, $drvrTimeStamp, $drvrHiddenToken);
-            $statusUpdater->checkAndUpdateDrvrStatus();
+            $result = $statusUpdater->checkAndUpdateDrvrStatus();
             header('Content-Type: application/json');
-            http_response_code(200);
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Status updated'
-            ]);
+            echo json_encode($result);
             exit();
         }
     }

@@ -14,17 +14,19 @@ class UpdateDrvrStatus {
         $stmt->execute();
 
         if (!$stmt || $stmt->rowCount() === 0) {
-            header('Content-Type: application/json');
-            http_response_code(404);
-            echo json_encode([
+            return [
                 'status' => 'error',
-                'message' => 'Status not updated',
-                'drvrid' => $drvrid,
+                'message' => 'Status not updated'
+                /*'drvrid' => $drvrid,
                 'status' => $drvrStatus,
-                'timestamp' => $drvrTimeStamp
-            ]);
-            exit();
+                'timestamp' => $drvrTimeStamp*/
+            ];
         }
+
+        return [
+            'status' => 'success',
+            'message' => 'Status updated!'
+        ];
     }
 
     protected function processUpdateStatus($drvrid, $drvrStatus, $drvrTimeStamp) {

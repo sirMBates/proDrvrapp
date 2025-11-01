@@ -348,10 +348,19 @@ async function processOfflineQueue() {
 
   for (const req of requests) {
     try {
+      console.log('[SW] --- DEBUG OUTGOING REQUEST ---');
+      console.log('URL:', req.url);
+      console.log('Method:', req.method);
+      console.log('Headers:', req.headers);
+      console.log('Body (stringified):', typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+
+      console.log('[SW] Replaying request to:', req.url);
+      console.log('[SW] Body:', req.body);
       const res = await fetch(req.url, {
         method: req.method,
         headers: new Headers(req.headers),
         body: req.body,
+        credentials: 'include',
       });
       if (res.ok) console.log('[SW] Synced request:', req.url);
       successCount++;
