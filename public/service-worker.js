@@ -342,6 +342,10 @@ async function processOfflineQueue() {
   const requests = await queue.getAll();
   console.log(`[SW] Processing ${requests.length} queued requests...`);
 
+  let syncedStatusCount = 0;
+  let syncedAssignmentCount = 0;
+  let successCount = 0;
+
   for (const req of requests) {
     try {
       const res = await fetch(req.url, {
@@ -350,11 +354,31 @@ async function processOfflineQueue() {
         body: req.body,
       });
       if (res.ok) console.log('[SW] Synced request:', req.url);
+      successCount++;
+      // Categorize the synced request by its endpoint
+      if ( req.url.includes('/setstatus')) {
+        syncedStatusCount++;
+      } else if ( req.url.includes('/assignmenthandler')) {
+        syncedAssignmentCount++;
+      }
     } catch (err) {
       console.warn('[SW] Failed to re-sync request:', req.url);
     }
   }
 
   await queue.clear();
+  // Notify all connected clients ( tabs/windows )
+  const allClients = await self.clients.matchAll({ includeUncontrolled: true });
+  for ( const client of allClients ) {
+    client.postMessage({
+      type: 'OFFLINE_SYNC_COMPLETE',
+      successCount,
+      synced: {
+        statuses: syncedStatusCount,
+        assignments: syncedAssignmentCount,
+      },
+    });
+  }
+  console.log(`[SW] Sync complete — ${successCount} successful (${syncedStatusCount} status, ${syncedAssignmentCount} assignments)`);
 };
 

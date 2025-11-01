@@ -1,9 +1,9 @@
-import { fetchDrvr } from "./helpers.js";
+import { fetchDrvr, showFlashAlert } from "./helpers.js";
+import { handleStatusFetch } from "./pwa.js";
 const getDriver = fetchDrvr;
 export class ChangeStatus {
-    constructor(array, endpoint, drvrToken, bannerMsg) {
+    constructor(array, drvrToken, bannerMsg) {
         this.array = array;
-        this.endpoint = endpoint;
         this.drvrToken = drvrToken;
         this.bannerMsg = bannerMsg;
         this.drvrStatus = '';
@@ -50,27 +50,40 @@ export class ChangeStatus {
         localStorage.setItem('status', this.drvrStatus);
         this.bannerMsg.textContent = this.drvrStatus;
         console.log(`Driver status currently: ${this.drvrStatus} \n Switched at: ${viewedTimeStamp} \n Location point: ${this.endpoint} \n Driver access: ${this.drvrToken}`);
-        this.updateDBStatus(this.endpoint, this.drvrToken, this.drvrStatus, this.timeStamp);        
+        this.updateDBStatus(this.drvrToken, this.drvrStatus, this.timeStamp);        
     };
 
-    updateDBStatus(endpoint, token, drvrstatus, stamp) {
-        getDriver(endpoint, {
-            mode: 'cors',
-            credentials: 'include',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': token
-            },
-            body: JSON.stringify({
-                drvrStatus: drvrstatus,
-                drvrStamp: stamp
-            })
-        })
+    async updateDBStatus(token, drvrstatus, stamp) {
+        try {
+            const result = await handleStatusFetch({
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': token
+                },
+                body: JSON.stringify({
+                    drvrStatus: drvrstatus,
+                    drvrStamp: stamp
+                })
+            });
+
+            if ( result.status === 'success') {
+                showFlashAlert('success', 'Status updated successfully!');
+            } else if ( result.status === 'queued') {
+                showFlashAlert('info', 'Status saved offline - will sync.');
+            } else {
+                showFlashAlert('error', 'Unable to update status.')
+            }
             /*.then(res => {
                 return res.json()
             })*/
-            .then(data => console.log(data))
-            .catch (error => console.log('Error', error))
+            /*.then(data => console.log(data))
+            .catch (error => console.log('Error', error))*/
+        } catch (err) {
+            console.error('[STATUS] Failed to send status:', err);
+            showFlashAlert('error', 'Error saving status.');
+        }
     }
 }

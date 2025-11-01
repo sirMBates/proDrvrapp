@@ -3,21 +3,45 @@ import { queueRequest, getAllQueued, clearQueued } from "./dbQueue.js";
 import { fetchDrvr, showFlashAlert } from "./helpers.js";
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      //.register(new URL('../service-worker.js', import.meta.url))
-      .register(new URL('/service-worker.js', window.location.origin))
-      .then((reg) => {
-        console.log('[SW] Registered successfully:', reg.scope);
+  navigator.serviceWorker
+    //.register(new URL('../service-worker.js', import.meta.url))
+    .register(new URL('/service-worker.js', window.location.origin))
+    .then((reg) => {
+      console.log('[SW] Registered successfully:', reg.scope);
 
-        // 🔹 Optional: Listen for custom SW messages (e.g., updates)
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data && event.data.type === 'SW_UPDATED') {
-            showUpdateToast(); // You already have this function
+      // 🔹 Listen for messages from the Service Worker (updates, syncs, etc.)
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        const data = event.data;
+        if (!data || !data.type) return;
+
+        // 🟦 New update available
+        if (data.type === 'SW_UPDATED') {
+          showUpdateToast(); // already in your code
+        }
+
+        // 🟩 Offline queue sync completed
+        if (data.type === 'OFFLINE_SYNC_COMPLETE') {
+          const { statuses = 0, assignments = 0 } = data.synced || {};
+          const total = data.successCount || 0;
+
+          console.log(`[PWA] Offline sync complete — ${total} total: ${statuses} statuses, ${assignments} assignments.`);
+
+          // show user feedback
+          if (statuses > 0) {
+            showFlashAlert('success', `✅ ${statuses} status update${statuses > 1 ? 's' : ''} synced.`);
           }
-        });
-      })
-      .catch((err) => console.error('[SW] Registration failed:', err));
+          if (assignments > 0) {
+            showFlashAlert('info', `📋 ${assignments} assignment${assignments > 1 ? 's' : ''} synced.`);
+          }
+          if (total > 0 && statuses === 0 && assignments === 0) {
+            showFlashAlert('success', `✅ ${total} offline request${total > 1 ? 's' : ''} synced.`);
+          }
+        }
+      });
+    })
+    .catch((err) => console.error('[SW] Registration failed:', err));
   });
+
 
 
     function showUpdateToast() {
@@ -314,3 +338,28 @@ window.addEventListener('online', async () => {
   }
 });
 
+export async function handleStatusFetch(options) {
+  try {
+    return await fetchDrvr('https://prodriver.local/setstatus', options);
+  } catch (err) {
+    console.warn('[PWA] Offline — queueing status change');
+    let serializedBody = null;
+    if (options.body instanceof FormData) {
+      serializedBody = serializeFormData(options.body);
+    } else if (typeof options.body === 'object') {
+      serializedBody = options.body;
+    }
+
+    await queueRequest({
+      url: 'https://prodriver.local/setstatus',
+      options: {
+        method: options.method,
+        headers: options.headers,
+        body: serializedBody,
+      },
+    });
+
+    showFlashAlert('warning', 'Status saved offline — will sync when online.');
+    return { status: 'queued', message: 'Offline — queued for sync.' };
+  }
+};
