@@ -117,6 +117,10 @@ window.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem('assignments', JSON.stringify(data.data));
                         renderHomeTable(data.data);
                         handleBirthdayTheme();
+                        if (data.data[0]?.driver_id) {
+                                localStorage.setItem('driver_id', data.data[0].driver_id);
+                                console.log('[Auth] Driver ID cached from assignments:', data.data[0].driver_id)
+                        }
                 } else {
                          // Fallback: load profile if no assignments
                         return getDriver("https://prodriver.local/getprofile", {
@@ -145,6 +149,11 @@ window.addEventListener('DOMContentLoaded', () => {
                         reportTime.textContent = 'No assignment available...';
                         spotTime.textContent = 'No assignment available...';
                         handleBirthdayTheme();
+                        if (profile.driverId) {
+                                const id = profile['driver_id'];
+                                localStorage.setItem('driver_id', id);
+                                console.log('[Auth] Driver ID cached from profile fallback:', id);
+                        }
                 }
         })
         .catch(error => {
