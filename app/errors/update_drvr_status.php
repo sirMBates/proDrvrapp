@@ -17,6 +17,7 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
 
     public function checkAndUpdateDrvrStatus() {
         if ($this->drvrStatusInvalid() === false) {
+            header('Content-Type: application/json');
             http_response_code(401);
             return [
                 'status' => 'error',
@@ -25,6 +26,7 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
         }
 
         if ($this->checkDrvrTimeStamp() === false) {
+            header('Content-Type: application/json');
             http_response_code(415);
             return [
                 'status' => 'error',
@@ -33,6 +35,7 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
         }
 
         if ($this->checkDrvrAccess() === false) {
+            header('Content-Type: application/json');
             http_response_code(401);
             return [
                 'status' => 'error',
@@ -40,7 +43,7 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
             ];
         }
 
-        $this->processUpdateStatus($this->drvrid, $this->drvrStatus, $this->drvrTimeStamp);
+        return $this->processUpdateStatus($this->drvrid, $this->drvrStatus, $this->drvrTimeStamp);
     }
 
     private function drvrStatusInvalid() {

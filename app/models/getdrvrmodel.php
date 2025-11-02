@@ -34,6 +34,7 @@ class GetDriver {
             $result['profile_picture'] = NULL;
         }
         return [
+            'driverId' => $result['driver_id'],
             'username' => $result['username'],
             'email' => $result['email'],
             'operatorid' => $result['operator_id'],

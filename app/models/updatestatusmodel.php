@@ -13,7 +13,7 @@ class UpdateDrvrStatus {
         $stmt->bindParam(3, $drvrTimeStamp);
         $stmt->execute();
 
-        if (!$stmt || $stmt->rowCount() === 0) {
+        if (!$stmt) {
             return [
                 'status' => 'error',
                 'message' => 'Status not updated'

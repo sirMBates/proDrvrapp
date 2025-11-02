@@ -343,51 +343,63 @@ async function processOfflineQueue() {
   console.log(`[SW] Processing ${requests.length} queued requests...`);
 
   let syncedStatusCount = 0;
-  let syncedAssignmentCount = 0;
   let successCount = 0;
 
   for (const req of requests) {
     try {
-      console.log('[SW] --- DEBUG OUTGOING REQUEST ---');
-      console.log('URL:', req.url);
-      console.log('Method:', req.method);
-      console.log('Headers:', req.headers);
-      console.log('Body (stringified):', typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+      // 🧩 Guarantee the body is a string for replay
+      let replayBody = req.body;
+      if (typeof replayBody === 'object') {
+        replayBody = JSON.stringify(replayBody);
+      }
 
-      console.log('[SW] Replaying request to:', req.url);
-      console.log('[SW] Body:', req.body);
+      console.log('[SW] Replaying request:', req.url);
+      console.log('[SW] Body being sent:', replayBody);
+      console.log('[SW] Replaying with body type:', typeof req.body, req.body);
+
+      const isStatusUpdate = req.url.includes('/setstatus');
+
+      if (req.headers && req.headers['Content-Type']) {
+        delete req.headers['Content-Type'];
+      }
+
+      const headersToSend = isStatusUpdate ? {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token':
+          req.headers?.['X-CSRF-Token'] || req.headers?.get?.('X-CSRF-Token') || '',
+      }
+      : new Headers(req.headers);
+
       const res = await fetch(req.url, {
         method: req.method,
-        headers: new Headers(req.headers),
-        body: req.body,
+        headers: headersToSend,
+        body: isStatusUpdate
+          ? replayBody : req.body || null,
         credentials: 'include',
       });
-      if (res.ok) console.log('[SW] Synced request:', req.url);
-      successCount++;
-      // Categorize the synced request by its endpoint
-      if ( req.url.includes('/setstatus')) {
-        syncedStatusCount++;
-      } else if ( req.url.includes('/assignmenthandler')) {
-        syncedAssignmentCount++;
+
+      if (res.ok) {
+        console.log('[SW] ✅ Synced request successfully:', req.url);
+        successCount++;
+        if (req.url.includes('/setstatus')) syncedStatusCount++;
+      } else {
+        console.warn('[SW] ❌ Server returned', res.status, 'for', req.url);
       }
     } catch (err) {
-      console.warn('[SW] Failed to re-sync request:', req.url);
+      console.error('[SW] ⚠️ Failed to re-sync request:', req.url, err);
     }
   }
 
   await queue.clear();
-  // Notify all connected clients ( tabs/windows )
+
+  console.log(`[SW] Sync complete — ${successCount} successful (${syncedStatusCount} statuses)`);
+
   const allClients = await self.clients.matchAll({ includeUncontrolled: true });
-  for ( const client of allClients ) {
+  for (const client of allClients) {
     client.postMessage({
       type: 'OFFLINE_SYNC_COMPLETE',
       successCount,
-      synced: {
-        statuses: syncedStatusCount,
-        assignments: syncedAssignmentCount,
-      },
+      synced: { statuses: syncedStatusCount },
     });
   }
-  console.log(`[SW] Sync complete — ${successCount} successful (${syncedStatusCount} status, ${syncedAssignmentCount} assignments)`);
 };
-

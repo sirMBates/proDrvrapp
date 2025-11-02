@@ -426,32 +426,77 @@ window.addEventListener('online', async () => {
 });
 
 export async function handleStatusFetch(options) {
+  console.log('[PWA] handleStatusFetch called.');
+   // 🟩 Check actual online status first
+  if (!navigator.onLine) {
+    console.warn('[PWA] Offline detected before fetch. Using queue fallback.');
+    return queueStatusRequest(options);
+  }
   try {
-    return await fetchDrvr('https://prodriver.local/setstatus', options);
+    const res = await fetchDrvr('https://prodriver.local/setstatus', options);
+    console.log('[PWA] Online request succeeded.');
+    //return await fetchDrvr('https://prodriver.local/setstatus', options);
+    return res;
   } catch (err) {
+    console.warn('[PWA] Offline - entering queue logic', err);
     console.warn('[PWA] Offline — queueing status change');
+    return queueStatusRequest(options);
+  }
+}
+
+async function queueStatusRequest(options) {
     let serializedBody = null;
+
+    // 🟩 Step 1: Normalize the body into an object
     if (options.body instanceof FormData) {
       serializedBody = serializeFormData(options.body);
+    } else if (typeof options.body === 'string') {
+      try {
+        serializedBody = JSON.parse(options.body);
+      } catch {
+        serializedBody = {};
+      }
     } else if (typeof options.body === 'object') {
       serializedBody = options.body;
+    } else {
+      serializedBody = {};
     }
 
-    let jsonBody = serializedBody;
-    if (typeof serializedBody === 'object' && !(serializedBody instanceof FormData)) {
-      jsonBody = JSON.stringify(serializedBody);
+    // 🟩 Step 2: Inject driver_id before stringifying
+    const driverId = localStorage.getItem('driver_id');
+    if (driverId) {
+      serializedBody.driver_id = parseInt(driverId, 10);
+      console.log('[PWA] Injected driver_id into queued body:', driverId);
+    } else {
+      console.warn('[PWA] No driver_id found in localStorage!');
     }
 
+    // 🟩 Step 3: Convert to JSON string
+    const jsonBody = JSON.stringify(serializedBody);
+
+    const queuedBody = {
+      drvrStatus: serializedBody.drvrStatus,
+      drvrStamp: serializedBody.drvrStamp,
+      driver_id: serializedBody.driver_id || parseInt(localStorage.getItem('driver_id'), 10)
+    };
+
+    console.log('[PWA] Queuing request with driver_id:', serializedBody.driver_id);
+    console.log('[PWA] Queuing request with body:', queuedBody);
+    console.log('[PWA] Ready to queue. driver_id in localStorage =', localStorage.getItem('driver_id'));
+    console.log('[PWA] Body to queue:', serializedBody);
+
+
+    // 🟩 Step 4: Queue the request for background sync
     await queueRequest({
       url: 'https://prodriver.local/setstatus',
       options: {
         method: options.method,
         headers: options.headers,
-        body: jsonBody,
+        // Always store stringified JSON
+        body: JSON.stringify(queuedBody),
       },
     });
 
     showFlashAlert('warning', 'Status saved offline — will sync when online.');
     return { status: 'queued', message: 'Offline — queued for sync.' };
-  }
 };
