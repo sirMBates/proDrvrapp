@@ -17,7 +17,7 @@ class UpdateDrvr {
                 SET password = :password
                 WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);
-        $hashPwd = password_hash($password, PASSWORD_BCRYPT, ['cost' => 16]);
+        $hashPwd = password_hash($password, PASSWORD_BCRYPT);
         $stmt->bindParam(':driver_id', $drvrid);
         $stmt->bindParam(':password', $hashPwd);
 
