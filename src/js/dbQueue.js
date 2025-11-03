@@ -22,16 +22,38 @@ function openDB() {
 
 export async function queueRequest(data) {
   const db = await openDB();
+
+  let cleanData = { ...data };
+
+  // 🧩 Normalize FormData or stringified JSON to plain object
+  if (data?.options?.body instanceof FormData) {
+    const obj = {};
+    for (const [key, value] of data.options.body.entries()) {
+      obj[key] = value;
+    }
+    cleanData.options.body = obj;
+  } else if (typeof data?.options?.body === 'string') {
+    try {
+      cleanData.options.body = JSON.parse(data.options.body);
+    } catch {
+      // keep as string if it’s raw JSON text
+    }
+  }
+
+  // 🧩 Always ensure Content-Type is application/json
+  if (!cleanData.options.headers) cleanData.options.headers = {};
+  cleanData.options.headers['Content-Type'] = 'application/json';
+
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");
-    tx.objectStore(STORE_NAME).add({ ...data, timestamp: Date.now() });
+    tx.objectStore(STORE_NAME).add({ ...cleanData, timestamp: Date.now() });
     tx.oncomplete = () => {
       db.close();
       resolve();
     };
     tx.onerror = (e) => reject(e);
   });
-};
+}
 
 export async function getAllQueued() {
   const db = await openDB();
