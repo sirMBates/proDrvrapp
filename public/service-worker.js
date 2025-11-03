@@ -370,13 +370,25 @@ async function processOfflineQueue() {
       }
       : new Headers(req.headers);
 
+      // Normalize body — ensure it’s always a JSON string
+      let bodyToSend = req.body;
+      if (typeof bodyToSend === 'object') {
+        bodyToSend = JSON.stringify(bodyToSend);
+      } else if (typeof bodyToSend !== 'string') {
+        bodyToSend = JSON.stringify({});
+      }
+
       const res = await fetch(req.url, {
         method: req.method,
-        headers: headersToSend,
-        body: isStatusUpdate
-          ? replayBody : req.body || null,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token':
+            req.headers?.['X-CSRF-Token'] || req.headers?.get?.('X-CSRF-Token') || '',
+        },
+        body: bodyToSend,
         credentials: 'include',
       });
+
 
       if (res.ok) {
         console.log('[SW] ✅ Synced request successfully:', req.url);

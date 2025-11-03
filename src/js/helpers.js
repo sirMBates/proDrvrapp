@@ -16,19 +16,37 @@ Array.from(forms).forEach(form => {
 })();
 
 export async function fetchDrvr(url, options = {}) {
-    const headers = {
-        "X-Requested-With": "XMLHttpRequest",
-        ...(options.headers || {}) // merge any headers passed in
-    };
-    const response = await fetch(url, {
-        ...options,
-        headers
-    });
-    if (!response.ok) {
-        console.error('fetchDrvr failed: ', url, response.status);
-        throw new Error('Network response was not ok');
+  // Merge headers safely
+  const headers = {
+    "X-Requested-With": "XMLHttpRequest",
+    ...(options.headers || {})
+  };
+
+  // 🧩 Auto-set Content-Type if body is a stringified JSON object
+  if (options.body && typeof options.body === "string" && !headers["Content-Type"]) {
+    // Try to detect if it looks like JSON
+    if (options.body.trim().startsWith("{") || options.body.trim().startsWith("[")) {
+      headers["Content-Type"] = "application/json";
     }
-    return await response.json();
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+
+  if (!response.ok) {
+    console.error("fetchDrvr failed: ", url, response.status);
+    throw new Error("Network response was not ok");
+  }
+
+  // Some endpoints may not return JSON (e.g., empty 204 response)
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text; // fallback for non-JSON replies
+  }
 };
 
 export function viewableDateTimeHelper(input, format = 'datetime') {

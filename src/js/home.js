@@ -150,7 +150,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         spotTime.textContent = 'No assignment available...';
                         handleBirthdayTheme();
                         if (profile.driverId) {
-                                const id = profile['driver_id'];
+                                const id = profile['driverId'];
                                 localStorage.setItem('driver_id', id);
                                 console.log('[Auth] Driver ID cached from profile fallback:', id);
                         }
