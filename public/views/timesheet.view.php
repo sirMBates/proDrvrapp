@@ -72,7 +72,7 @@ include "partials/info-modal.php";
                                         <button id="update-info" type="button" name="updateinfo" class="text-capitalize btn btn-lg btn-outline-primary">update & save</button>
                                 </div>
                                 <div class="row my-2 col-lg-10">
-                                        <button id="submit-info" type="button" name="submitinfo" class="text-capitalize btn btn-lg btn-outline-primary">submit</button>
+                                        <button id="submit-info" type="button" name="submitinfo" class="text-capitalize btn btn-lg btn-outline-primary" disabled>submit</button>
                                 </div>
                         </div>
                 </div>

@@ -749,7 +749,9 @@ cancelBtn.addEventListener('click', async (e) => {
 });
 
 // Update/Modify assignment button
-editBtn.addEventListener('click', () => {});
+editBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+});
 // Complete assignment button
 completeBtn.addEventListener('click', () => {});
 

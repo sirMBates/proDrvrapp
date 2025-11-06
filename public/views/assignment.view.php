@@ -7,6 +7,7 @@ include "partials/info-modal.php";
 <main class="w-100 d-flex flex-column justify-content-center p-1">
         <div id="assignmentContainer">
                 <form class="assignment-card" data-index="" action="" method="POST" novalidate>
+                        <input type="hidden" name="__method" value="">
                         <section id="dispatch-info" class="card mb-auto">
                                 <div class="card-header bg-besttrailsclr">
                                         <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
