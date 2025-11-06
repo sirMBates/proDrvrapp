@@ -15,28 +15,37 @@ try {
         }
     }
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {            
-        include_once base_path("app/models/updatestatusmodel.php");
-        include_once base_path("app/errors/update_drvr_status.php");
+    if ($drvrHiddenToken) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {            
+            include_once base_path("app/models/updatestatusmodel.php");
+            include_once base_path("app/errors/update_drvr_status.php");
 
-        $rawBody = file_get_contents("php://input");
-        $data = json_decode($rawBody, true);
+            $rawBody = file_get_contents("php://input");
+            $data = json_decode($rawBody, true);
 
-        $drvrId = $_SESSION['driver_id'] ?? ($data['driver_id'] ?? null);
-        $drvrStatus = $data['drvrStatus'] ?? null;
-        $isoTimeStamp = $data['drvrStamp'] ?? null;
-        $timeStringStamp = strtotime($isoTimeStamp);
-        $drvrTimeStamp = date('Y-m-d H:i:s', $timeStringStamp);
+            $drvrId = $_SESSION['driver_id'] ?? ($data['driver_id'] ?? null);
+            $drvrStatus = $data['drvrStatus'] ?? null;
+            $isoTimeStamp = $data['drvrStamp'] ?? null;
+            $timeStringStamp = strtotime($isoTimeStamp);
+            $drvrTimeStamp = date('Y-m-d H:i:s', $timeStringStamp);
 
-        $statusUpdater = new UpdateDrvrStatusContr($drvrId, $drvrStatus, $drvrTimeStamp, $drvrHiddenToken);
-        $result = $statusUpdater->checkAndUpdateDrvrStatus();
-        echo json_encode($result);
-        exit();
+            $statusUpdater = new UpdateDrvrStatusContr($drvrId, $drvrStatus, $drvrTimeStamp, $drvrHiddenToken);
+            $result = $statusUpdater->checkAndUpdateDrvrStatus();
+            echo json_encode($result);
+            exit();
+        } else {
+            http_response_code(400);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'There was a problem updating status.'
+            ]);
+            exit();
+        }
     } else {
-        http_response_code(400);
+        http_response_code(401);
         echo json_encode([
-            'status' => 'error',
-            'message' => 'There was a problem updating status.'
+            'status' => 'info',
+            'message' => 'You\'re unathorized for this action.'
         ]);
         exit();
     }

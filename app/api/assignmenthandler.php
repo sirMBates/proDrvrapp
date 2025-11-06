@@ -72,7 +72,7 @@ if ($method === 'PATCH') {
             echo json_encode($result);
             exit();
         }
-    }
+    } else if (isset($_POST['modify'])) {}
 } elseif ($method === 'DELETE') {
     if (isset($_POST['cancel'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");

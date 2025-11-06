@@ -72,8 +72,8 @@ export class ChangeStatus {
                 showFlashAlert(result.status, result.message);
             } else if ( result.status === 'queued' ) {
                 showFlashAlert('info', result.message || 'Status saved offline - will sync.');
-            } else {
-                showFlashAlert('error', result.message || 'Unable to update status.');
+            } else if ( result.status === 'error' ) {
+                showFlashAlert(result.status, result.message);
             }
             /*.then(res => {
                 return res.json()
