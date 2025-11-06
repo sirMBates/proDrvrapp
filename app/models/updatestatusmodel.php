@@ -4,29 +4,28 @@ use core\Database;
 
 class UpdateDrvrStatus {
     private function modifyStatus($drvrid, $drvrStatus, $drvrTimeStamp) {
-        $db = new Database;
+        $db = new Database();
         $sql = "INSERT INTO driver_status (driver_id, current_status, status_timestamp)
                 VALUES (?,?,?)";
-        $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(1, $drvrid);
-        $stmt->bindParam(2, $drvrStatus);
-        $stmt->bindParam(3, $drvrTimeStamp);
-        $stmt->execute();
+        try {
+            $pdo = $db->connect();
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(1, $drvrid);
+            $stmt->bindParam(2, $drvrStatus);
+            $stmt->bindParam(3, $drvrTimeStamp);
 
-        if (!$stmt) {
+            $stmt->execute();
+
+            return [
+                'status' => 'success',
+                'message' => 'Your status has been updated!'
+            ];            
+        } catch (Throwable) {
             return [
                 'status' => 'error',
-                'message' => 'Status not updated'
-                /*'drvrid' => $drvrid,
-                'status' => $drvrStatus,
-                'timestamp' => $drvrTimeStamp*/
+                'message' => 'There\'s a problem back here. We\'re fixing it right away!'
             ];
         }
-
-        return [
-            'status' => 'success',
-            'message' => 'Status updated!'
-        ];
     }
 
     protected function processUpdateStatus($drvrid, $drvrStatus, $drvrTimeStamp) {
@@ -37,4 +36,11 @@ class UpdateDrvrStatus {
 //error_log("Status: $drvrStatus");
 //error_log("Timestamp: $drvrTimeStamp");
 //error_log("No rows updated. Possible invalid driver ID.");
+//error_log("[DB ERROR] PDOException: " . $e->getMessage());
+
+/* error_log("[DB DEBUG] Attempting insert:");
+## error_log("Driver ID: " . var_export($drvrid, true));
+## error_log("Status: " . var_export($drvrStatus, true));
+## error_log("Timestamp: " . var_export($drvrTimeStamp, true));
+*/
 ?>

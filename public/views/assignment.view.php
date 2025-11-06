@@ -27,7 +27,7 @@ include "partials/info-modal.php";
                                                 </thead>
                                                 <tbody class="table-group-divider">
                                                         <tr class="text-center">
-                                                                <td scope="row" class="editable-data"></td>
+                                                                <td scope="row" class="editable-data" data-type="number"></td>
                                                                 <td></td>
                                                                 <td></td>
                                                                 <td></td>
@@ -51,7 +51,7 @@ include "partials/info-modal.php";
                                                                 <td></td>
                                                                 <td></td>
                                                                 <td></td>
-                                                                <td class="editable-data"></td>
+                                                                <td class="editable-data" data-type="time"></td>
                                                         </tr>
                                                 </tbody>
                                         </table>
@@ -68,9 +68,9 @@ include "partials/info-modal.php";
                                                 <tbody class="table-group-divider">
                                                         <tr class="text-center">
                                                                 <td scope="row"></td>
-                                                                <td class="editable-data"></td>
-                                                                <td class="editable-data"></td>
-                                                                <td class="editable-data"></td>
+                                                                <td class="editable-data" data-type="datetime"></td>
+                                                                <td class="editable-data" data-type="decimal" data-field="total_hrs"></td>
+                                                                <td class="editable-data" data-type="decimal" data-field="driving_time"></td>
                                                                 <td></td>
                                                         </tr>
                                                 </tbody>

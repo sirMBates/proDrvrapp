@@ -32,11 +32,14 @@ export async function queueRequest(data) {
       obj[key] = value;
     }
     cleanData.options.body = obj;
-  } else if (typeof data?.options?.body === 'string') {
+  } 
+  
+  if (typeof data?.options?.body === 'string') {
     try {
       cleanData.options.body = JSON.parse(data.options.body);
     } catch {
-      // keep as string if it’s raw JSON text
+      // if it's already string, wrap it in an object
+      cleanData.options.body = { raw: data.options.body };
     }
   }
 
@@ -53,7 +56,7 @@ export async function queueRequest(data) {
     };
     tx.onerror = (e) => reject(e);
   });
-}
+};
 
 export async function getAllQueued() {
   const db = await openDB();

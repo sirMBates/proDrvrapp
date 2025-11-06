@@ -165,7 +165,7 @@ async function cacheFirst(request) {
   try {
     const response = await fetch(request, { redirect: 'follow' });
     if (!response.ok || response.type === 'opaqueredirect') {
-      console.warn('[SW] Skipping redirected or invalid response:', request.url);
+      //console.warn('[SW] Skipping redirected or invalid response:', request.url);
       return response;
     }
 
@@ -173,7 +173,7 @@ async function cacheFirst(request) {
     cache.put(request, response.clone());
     return response;
   } catch (err) {
-    console.warn('[SW] CacheFirst failed:', request.url, err);
+    //console.warn('[SW] CacheFirst failed:', request.url, err);
     return new Response('Offline or not cached', { status: 503 });
   }
 };
@@ -182,7 +182,7 @@ async function networkFirst(request) {
   try {
     const response = await fetch(request, { redirect: 'follow' });
     if (!response.ok || response.type === 'opaqueredirect') {
-      console.warn('[SW] Skipping redirected or invalid response:', request.url);
+      //console.warn('[SW] Skipping redirected or invalid response:', request.url);
       return response;
     }
 
@@ -190,7 +190,7 @@ async function networkFirst(request) {
     cache.put(request, response.clone());
     return response;
   } catch (err) {
-    console.warn('[SW] NetworkFirst failed, trying cache:', request.url);
+    //console.warn('[SW] NetworkFirst failed, trying cache:', request.url);
     const cached = await caches.match(request);
     return cached || new Response('Offline or fetch failed', { status: 503 });
   }
@@ -231,7 +231,7 @@ async function cacheGoogleFontCSS(request) {
     }
     return response;
   } catch (err) {
-    console.warn('[SW] Font CSS fetch failed:', request.url, err);
+    //console.warn('[SW] Font CSS fetch failed:', request.url, err);
     return cachedResponse || new Response('', { status: 503 });
   }
 };
@@ -249,7 +249,7 @@ async function cacheGoogleFontFiles(request) {
     }
     return response;
   } catch (err) {
-    console.warn('[SW] Font file fetch failed:', request.url, err);
+    //console.warn('[SW] Font file fetch failed:', request.url, err);
     return cachedResponse || new Response('', { status: 503 });
   }
 };
@@ -295,7 +295,7 @@ self.addEventListener('fetch', (event) => {
             await self.registration.sync.register('prodriver-sync');
           }
 
-          console.warn('[SW] Queued offline request for sync later:', request.url);
+          //console.warn('[SW] Queued offline request for sync later:', request.url);
           return new Response(
             JSON.stringify({ status: 'queued', message: 'Offline — will sync when online.' }),
             { headers: { 'Content-Type': 'application/json' } }
@@ -340,60 +340,51 @@ self.addEventListener('sync', (event) => {
 async function processOfflineQueue() {
   const queue = await openQueue();
   const requests = await queue.getAll();
-  console.log(`[SW] Processing ${requests.length} queued requests...`);
+  //console.log(`[SW] Processing ${requests.length} queued requests...`);
 
   let syncedStatusCount = 0;
   let successCount = 0;
 
   for (const req of requests) {
     try {
-      // 🧩 Guarantee the body is a string for replay
-      let replayBody = req.body;
-      if (typeof replayBody === 'object') {
-        replayBody = JSON.stringify(replayBody);
-      }
+      //console.log('[SW] 🔁 Replaying queued request:', req.url);
 
-      console.log('[SW] Replaying request:', req.url);
-      console.log('[SW] Body being sent:', replayBody);
-      console.log('[SW] Replaying with body type:', typeof req.body, req.body);
+      // Body should always be JSON at this point
+      let bodyToSend = req.options?.body;
+      if (typeof bodyToSend === 'object') {
+        bodyToSend = JSON.stringify(bodyToSend);
+      }
 
       const isStatusUpdate = req.url.includes('/setstatus');
 
-      if (req.headers && req.headers['Content-Type']) {
-        delete req.headers['Content-Type'];
+      // --- 🔹 Extract X-CSRF-Token safely regardless of header structure ---
+      let tokenHeader = '';
+      if (req.options?.headers instanceof Headers) {
+        tokenHeader = req.options.headers.get('X-CSRF-Token') || '';
+      } else if (Array.isArray(req.options?.headers)) {
+        tokenHeader =
+          req.options.headers.find(([k]) => k.toLowerCase() === 'x-csrf-token')?.[1] || '';
+      } else if (typeof req.options?.headers === 'object') {
+        tokenHeader = req.options.headers['X-CSRF-Token'] || req.options.headers['x-csrf-token'] || '';
       }
 
-      const headersToSend = isStatusUpdate ? {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token':
-          req.headers?.['X-CSRF-Token'] || req.headers?.get?.('X-CSRF-Token') || '',
-      }
-      : new Headers(req.headers);
+      // --- Build final headers ---
+      const headers = new Headers();
+      headers.set('Content-Type', 'application/json');
+      if (tokenHeader) headers.set('X-CSRF-Token', tokenHeader);
 
-      // Normalize body — ensure it’s always a JSON string
-      let bodyToSend = req.body;
-      if (typeof bodyToSend === 'object') {
-        bodyToSend = JSON.stringify(bodyToSend);
-      } else if (typeof bodyToSend !== 'string') {
-        bodyToSend = JSON.stringify({});
-      }
-
+      // --- Execute replay ---
       const res = await fetch(req.url, {
-        method: req.method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token':
-            req.headers?.['X-CSRF-Token'] || req.headers?.get?.('X-CSRF-Token') || '',
-        },
+        method: req.options?.method || 'POST',
+        headers,
         body: bodyToSend,
         credentials: 'include',
       });
 
-
       if (res.ok) {
-        console.log('[SW] ✅ Synced request successfully:', req.url);
+        console.log('[SW] ✅ Synced successfully:', req.url);
         successCount++;
-        if (req.url.includes('/setstatus')) syncedStatusCount++;
+        if (isStatusUpdate) syncedStatusCount++;
       } else {
         console.warn('[SW] ❌ Server returned', res.status, 'for', req.url);
       }
@@ -404,7 +395,7 @@ async function processOfflineQueue() {
 
   await queue.clear();
 
-  console.log(`[SW] Sync complete — ${successCount} successful (${syncedStatusCount} statuses)`);
+  //console.log(`[SW] Sync complete — ${successCount} successful (${syncedStatusCount} statuses)`);
 
   const allClients = await self.clients.matchAll({ includeUncontrolled: true });
   for (const client of allClients) {

@@ -78,7 +78,7 @@ if ('serviceWorker' in navigator) {
     document.getElementById('refresh-app').addEventListener('click', async () => {
       const reg = await navigator.serviceWorker.getRegistration();
       if (reg && reg.waiting) {
-        console.log('[PWA] Triggering skip waiting...');
+        //console.log('[PWA] Triggering skip waiting...');
         reg.waiting.postMessage({ type: 'SKIP_WAITING' }); // 💥 tell SW to activate
       }
       window.location.reload(); // refresh after activation
@@ -258,7 +258,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(`[PWA] Install prompt outcome: ${outcome}`);
+        //console.log(`[PWA] Install prompt outcome: ${outcome}`);
         deferredPrompt = null;
       }
     });
@@ -373,7 +373,7 @@ export async function handleAssignmentFetch(options) {
   try {
     return await fetchDrvr('https://prodriver.local/assignmenthandler', options);
   } catch (err) {
-    console.warn('[PWA] Network unavailable - queuing request');
+    //console.warn('[PWA] Network unavailable - queuing request');
     let serializedBody = null;
     if (options.body instanceof FormData) {
       serializedBody = serializeFormData(options.body);
@@ -398,27 +398,39 @@ window.addEventListener('online', async () => {
   const queued = await getAllQueued();
   if (!queued.length) return;
 
-  console.log(`[PWA] Syncing ${queued.length} queued request(s)...`);
+  //console.log(`[PWA] Syncing ${queued.length} queued request(s)...`);
   for (const req of queued) {
     try {
-      const formData = new FormData();
-      for (const [key, value] of Object.entries(req.options.body || {})) {
-        formData.append(key, value);
+      const isStatusUpdate = req.url.includes('/setstatus');
+
+      if (!req.options.body.driver_id && localStorage.getItem('driver_id')) {
+        req.options.body.driver_id = parseInt(localStorage.getItem('driver_id'), 10);
+        //console.log('[PWA] Re-injected missing driver_id before replay:', req.options.body.driver_id);
+      }
+
+      let bodyToSend = req.options.body;
+      if (typeof bodyToSend === 'object') {
+        bodyToSend = JSON.stringify(bodyToSend);
+      }
+
+      const headers = new Headers(req.options.headers || {});
+      if (isStatusUpdate) {
+        headers.set('Content-Type', 'application/json');
       }
 
       const data = await fetchDrvr(req.url, {
         method: req.options.method,
-        headers: req.options.headers,
-        body: formData,
+        headers,
+        body: bodyToSend,
         credentials: 'include',
       });
 
       if (data && data.status === 'success') {
         await clearQueued(req.id);
         showFlashAlert('success', 'Offline request synced!');
-      } else {
+      } /*else {
         console.warn('[PWA] Sync response not successful:', data);
-      }
+      }*/
     } catch (err) {
       console.warn('[PWA] Failed to sync queued request:', err);
     }
@@ -426,20 +438,20 @@ window.addEventListener('online', async () => {
 });
 
 export async function handleStatusFetch(options) {
-  console.log('[PWA] handleStatusFetch called.');
+  //console.log('[PWA] handleStatusFetch called.');
    // 🟩 Check actual online status first
   if (!navigator.onLine) {
-    console.warn('[PWA] Offline detected before fetch. Using queue fallback.');
+    //console.warn('[PWA] Offline detected before fetch. Using queue fallback.');
     return queueStatusRequest(options);
   }
   try {
     const res = await fetchDrvr('https://prodriver.local/setstatus', options);
-    console.log('[PWA] Online request succeeded.');
+    //console.log('[PWA] Online request succeeded.');
     //return await fetchDrvr('https://prodriver.local/setstatus', options);
     return res;
   } catch (err) {
-    console.warn('[PWA] Offline - entering queue logic', err);
-    console.warn('[PWA] Offline — queueing status change');
+    //console.warn('[PWA] Offline - entering queue logic', err);
+    //console.warn('[PWA] Offline — queueing status change');
     return queueStatusRequest(options);
   }
 }
@@ -466,32 +478,37 @@ async function queueStatusRequest(options) {
     const driverId = localStorage.getItem('driver_id');
     if (driverId) {
       serializedBody.driver_id = parseInt(driverId, 10);
-      console.log('[PWA] Injected driver_id into queued body:', driverId);
-    } else {
+      //console.log('[PWA] Injected driver_id into queued body:', driverId);
+    } /*else {
       console.warn('[PWA] No driver_id found in localStorage!');
-    }
+    }*/
 
     // 🟩 Step 3: Convert to JSON string
-    const jsonBody = JSON.stringify(serializedBody);
+    //const jsonBody = JSON.stringify(serializedBody);
+    const csrfToken = options.headers?.['X-CSRF-Token'] || localStorage.getItem('csrf_token') || '';
 
     const queuedBody = {
+      csrf_token: csrfToken,
+      driver_id: serializedBody.driver_id || parseInt(localStorage.getItem('driver_id'), 10),
       drvrStatus: serializedBody.drvrStatus,
       drvrStamp: serializedBody.drvrStamp,
-      driver_id: serializedBody.driver_id || parseInt(localStorage.getItem('driver_id'), 10)
     };
 
-    console.log('[PWA] Queuing request with driver_id:', serializedBody.driver_id);
+    /*console.log('[PWA] Queuing request with driver_id:', serializedBody.driver_id);
     console.log('[PWA] Queuing request with body:', queuedBody);
     console.log('[PWA] Ready to queue. driver_id in localStorage =', localStorage.getItem('driver_id'));
     console.log('[PWA] Body to queue:', serializedBody);
-
+    console.log('[PWA] Headers before queue:', options.headers);*/
 
     // 🟩 Step 4: Queue the request for background sync
     await queueRequest({
       url: 'https://prodriver.local/setstatus',
       options: {
         method: options.method,
-        headers: options.headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
         // Always store stringified JSON
         body: JSON.stringify(queuedBody),
       },

@@ -1,4 +1,4 @@
-import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn } from "./helpers.js";
+import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator } from "./helpers.js";
 import { handleAssignmentFetch } from "./pwa.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
@@ -98,19 +98,18 @@ async function refreshAssignmentsFromServer() {
     });
 
     if (response && Array.isArray(response.data)) {
-      // 🧠 Update your local assignment array
+      // Update your local assignment array
       assignments = response.data;
-      // 🧠 Optionally persist to localStorage for offline access
+      // Optionally persist to localStorage for offline access
       localStorage.setItem("assignments", JSON.stringify(response.data));
-      // 🧠 If you have a UI renderer, refresh it
+      // If you have a UI renderer, refresh it
       if (typeof window._refreshAssignmentFromOutside === "function") {
         window._refreshAssignmentFromOutside();
       }
 
       const current = getCurrentAssignment();
       if ( current ) updateButtonStates(current);
-
-      console.log(`[PWA] Assignments refreshed: ${response.data.length} loaded`);
+      //console.log(`[PWA] Assignments refreshed: ${response.data.length} loaded`);
     } else {
       console.warn("[PWA] No assignment list in response payload");
     }
@@ -479,11 +478,83 @@ window.addEventListener('DOMContentLoaded', () => {
 
     clickCells.forEach(cell => {
         cell.addEventListener('click', () => {
-            if (!cell.querySelector('input')) {
+            const type = cell.dataset.type;
+            const field = cell.dataset.field;
+
+            if ( type === "decimal" && field === "driving_time") {
+                if ( cell.querySelector("input") ) return;
+
+                const currentValue = cell.textContent.trim();
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.step = '0.01';
+                input.min = '0';          
+                input.classList.add('form-control');
+                input.value = currentValue || '';
+                cell.textContent = '';
+                cell.appendChild(input);
+
+                input.focus();
+                input.addEventListener('blur', () => {
+                    const newValue = input.value.trim();
+                    cell.textContent = newValue || currentValue;
+                    // Persist to LocalStorage for this assignment
+                    try {
+                        const orderId = document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim(); // order#
+                        if (orderId) {
+                            const storageKey = `driving_time_${orderId}`;
+                            if (newValue) {
+                                localStorage.setItem(storageKey, newValue);
+                                console.log(`[CACHE] Driving time (${newValue}) saved for order ${orderId}`);
+                            } else {
+                                localStorage.removeItem(storageKey);
+                                console.log(`[CACHE] Driving time removed for order ${orderId}`);
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("Failed to persist driving time:", err);
+                    }
+                });
+            
+                // Save on Enter
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') input.blur();
+                });
+                return;
+            }
+
+            if ( type === "decimal" && field === "total_hrs" ) {
+                try {
+                    const startDateTime = document.querySelector("#tableB tbody tr td:nth-child(1)")?.textContent.trim();
+                    const spotTime = document.querySelector("#tableB tbody tr td:nth-child(2)")?.textContent.trim();
+                    const endDate = document.querySelector("#tableC tbody tr td:nth-child(1)")?.textContent.trim().split(" ")[0];
+                    const actualEndTime = document.querySelector("#tableC tbody tr td:nth-child(2)")?.textContent.trim();
+
+                    if ( !startDateTime || !spotTime || !endDate || !actualEndTime ) {
+                        showFlashAlert("warning", "Missing start or end times.");
+                        return;
+                    }
+
+                    const startObj = new Date(startDateTime);
+                    let endObj = ServiceTimeCalculator.combineDateAndTime(endDate, actualEndTime);
+                    endObj = ServiceTimeCalculator.adjustForOvernight(startObj, endObj);
+
+                    const total = ServiceTimeCalculator.getTotalHours(startObj, endObj);
+                    cell.TextContent = total.decimal.toFixed(2);
+
+                    showFlashAlert("info", `Total hours updated: ${total.formatted} (${total.decimal} hrs)`);
+                } catch (err) {
+                    console.error("[CALC ERROR]", err);
+                    showFlashAlert('error', 'Error calculating total hours.');
+                }
+                return;
+            }
+
+            if ( !cell.querySelector('input') ) {
                 const currentValue = cell.textContent.trim();
                 const input = document.createElement('input');
                 input.type = 'text';
-                input.classList.add('form-control');
+                input.classList.add("form-control");
                 input.value = currentValue;
                 cell.textContent = '';
                 cell.appendChild(input);
@@ -494,7 +565,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     cell.textContent = newValue || currentValue;
                 });
 
-                input.addEventListener('keydown', (e) => {
+                input.addEventListener('keydown', e => {
                     if (e.key === 'Enter') input.blur();
                 });
             }
@@ -519,7 +590,26 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// === 🧠 Reusable Restoration Function with Visual Debug ===
+window.addEventListener("DOMContentLoaded", () => {
+    try {
+        const orderId = document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim();
+        if (orderId) {
+            const storageKey = `driving_time_${orderId}`;
+            const savedTime = localStorage.getItem(storageKey);
+            if (savedTime) {
+                const drivingTimeCell = document.querySelector('[data-field="driving_time"]');
+                if (drivingTimeCell) {
+                    drivingTimeCell.textContent = savedTime;
+                    console.log(`[CACHE] Restored driving time for order ${orderId}: ${savedTime}`);
+                }
+            }
+        }
+    } catch (err) {
+        console.warn("Failed to restore driving time:", err);
+    }
+});
+
+// Reusable Restoration Function with Visual Debug ===
 function restoreButtonStateFromStorage() {
     try {
         const storedAssignments = JSON.parse(localStorage.getItem('assignments') || '[]');
@@ -662,3 +752,71 @@ cancelBtn.addEventListener('click', async (e) => {
 editBtn.addEventListener('click', () => {});
 // Complete assignment button
 completeBtn.addEventListener('click', () => {});
+
+// Auto-refresh Assignments on Tab Focus (debounced, full sync) ===
+let lastAssignmentsUpdate = 0;
+
+document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState !== 'visible') return;
+
+    const now = Date.now();
+    if (now - lastAssignmentsUpdate < 5000) return; // prevent too frequent reloads
+    lastAssignmentsUpdate = now;
+
+    try {
+        const fresh = await getAssignment("https://prodriver.local/getassignments", {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 
+                'X-CSRF-Token': drvrToken 
+            }
+        });
+
+        if (fresh?.status === 'success' && Array.isArray(fresh.data) && fresh.data.length > 0) {
+            assignments = fresh.data;
+            localStorage.setItem('assignments', JSON.stringify(fresh.data));
+
+            const savedIndex = parseInt(sessionStorage.getItem('lastAssignmentIndex') || '0', 10);
+            const validIndex = isNaN(savedIndex) || savedIndex < 0 || savedIndex >= assignments.length ? 0 : savedIndex;
+
+            // Re-render and restore state
+            showAssignment(validIndex);
+            updateButtonStates(assignments[validIndex]);
+
+            // Re-render pagination pills (if pagination exists)
+            if (typeof pagination?.renderPills === 'function') pagination.renderPills();
+            if (typeof pagination?.updateButtons === 'function') pagination.updateButtons();
+
+            showFlashAlert('info', 'Assignments refreshed.');
+            //console.log('[SYNC] Assignment page refreshed on tab focus.');
+        } else {
+            // No assignments — load profile fallback
+            const profile = await getDriver("https://prodriver.local/getprofile", {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                headers: { 
+                    'X-CSRF-Token': drvrToken 
+                }
+            });
+
+            if (profile) {
+                showNoAssignments(profile);
+
+                // Disable pagination if it exists (no assignments to navigate)
+                if (document.querySelector('#assignment-pager')) {
+                    document.querySelector('#assignment-pager').remove();
+                    pagination = null;
+                }
+
+                showFlashAlert('info', 'Profile refreshed.');
+                //console.log('[SYNC] No active assignments — profile fallback loaded.');
+            }
+        }
+    } catch (err) {
+        //console.error('[SYNC] Assignment page refresh failed:', err);
+        showFlashAlert('error', 'Failed to refresh assignments.');
+    }
+});

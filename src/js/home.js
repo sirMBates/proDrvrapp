@@ -163,24 +163,57 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // --- Tab Focus Auto Refresh (debounced) ---
 document.addEventListener('visibilitychange', async () => {
-        if (document.visibilityState === 'visible') {
-                const now = Date.now();
-                if (now - lastAssignmentsUpdate < 5000) return; // prevent too frequent reloads
-                        const fresh = await getAssignment("https://prodriver.local/getassignments", {
-                                method: 'GET',
-                                mode: 'cors',
-                                credentials: 'include',
-                                cache: 'no-store',
-                                headers: {
-                                        'X-CSRF-Token': drvrToken
-                                }
-                        });
-                if (fresh?.status === 'success') {
-                        localStorage.setItem('assignments', JSON.stringify(fresh.data));
-                        renderHomeTable(fresh.data, true);
-                        console.log('[SYNC] Dashboard refreshed on tab focus.');
-                }
+    if (document.visibilityState !== 'visible') return;
+
+    const now = Date.now();
+    if (now - lastAssignmentsUpdate < 5000) return; // prevent too frequent reloads
+
+    try {
+        const fresh = await getAssignment("https://prodriver.local/getassignments", {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'X-CSRF-Token': drvrToken }
+        });
+
+        if (fresh?.status === 'success' && fresh.data.length > 0) {
+            localStorage.setItem('assignments', JSON.stringify(fresh.data));
+            renderHomeTable(fresh.data, true);
+            showFlashAlert('info', 'Assignments refreshed.');
+            //console.log('[SYNC] Dashboard refreshed with new assignments.');
+        } else {
+            // No assignments? Then refresh profile instead
+            const profile = await getDriver("https://prodriver.local/getprofile", {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                cache: 'no-store',
+                headers: { 'X-CSRF-Token': drvrToken }
+            });
+
+            if (profile) {
+                const drvrMainTable = document.querySelector('#dashboard-info');
+                const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
+                const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
+                const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
+                const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
+                const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
+
+                fullname.textContent = `${profile['firstName']} ${profile['lastName']}`;
+                drvrId.textContent = profile['operatorid'];
+                reportDate.textContent = 'No assignment available...';
+                reportTime.textContent = 'No assignment available...';
+                spotTime.textContent = 'No assignment available...';
+                handleBirthdayTheme();
+                showFlashAlert('info', 'Profile refreshed.');
+                //console.log('[SYNC] Dashboard refreshed with profile fallback.');
+            }
         }
+    } catch (err) {
+        //console.error('[SYNC] Failed to refresh on tab focus:', err);
+        showFlashAlert('error', 'Failed to refresh dashboard.');
+    }
 });
 
 function handleBirthdayTheme() {

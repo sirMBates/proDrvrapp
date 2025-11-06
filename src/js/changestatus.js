@@ -1,6 +1,5 @@
-import { fetchDrvr, showFlashAlert } from "./helpers.js";
+import { showFlashAlert } from "./helpers.js";
 import { handleStatusFetch } from "./pwa.js";
-const getDriver = fetchDrvr;
 export class ChangeStatus {
     constructor(array, drvrToken, bannerMsg) {
         this.array = array;
@@ -69,12 +68,12 @@ export class ChangeStatus {
                 })
             });
 
-            if ( result.status === 'success') {
-                showFlashAlert('success', 'Status updated successfully!');
-            } else if ( result.status === 'queued') {
-                showFlashAlert('info', 'Status saved offline - will sync.');
+            if ( result.status === 'success' ) {
+                showFlashAlert(result.status, result.message);
+            } else if ( result.status === 'queued' ) {
+                showFlashAlert('info', result.message || 'Status saved offline - will sync.');
             } else {
-                showFlashAlert('error', 'Unable to update status.')
+                showFlashAlert('error', result.message || 'Unable to update status.');
             }
             /*.then(res => {
                 return res.json()
@@ -82,8 +81,8 @@ export class ChangeStatus {
             /*.then(data => console.log(data))
             .catch (error => console.log('Error', error))*/
         } catch (err) {
-            console.error('[STATUS] Failed to send status:', err);
+            //console.error('[STATUS] Failed to send status:', err);
             showFlashAlert('error', 'Error saving status.');
         }
     }
-}
+};
