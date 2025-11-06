@@ -226,3 +226,75 @@ export function fadeIn(element, duration = 400) {
         setTimeout(resolve, duration);
     });
 };
+
+export class ServiceTimeCalculator {
+    /**
+    * Returns the millisecond difference between two timestamps.
+    * @param {Date|string|number} start - Start time (Date object or parsable date string)
+    * @param {Date|string|number} end - End time (Date object or parsable date string)
+    * @param {number} Time difference in milliseconds
+    */
+
+    static difference(start, end) {
+        const startMS = new Date(start).getTime();
+        const endMS = new Date(end).getTime();
+        return endMS - startMS;
+    };
+
+    /**
+     * Converts a millisecond duration into "HH:MM" format.
+     * @param {number} ms - Duration in milliseconds 
+     * @returns {string} Formatted hours and minutes string
+     */
+
+    static toHourMinute(ms) {
+        const hours = Math.floor(ms / 1000 / 60 / 60);
+        const minutes = Math.floor((ms / 1000 / 60) % 60);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    };
+
+    /**
+    * Converts an "HH:MM" time string into a decimal (e.g., "7:30" → 7.50)
+    * @param {string} timeStr - "HH:MM"
+    * @returns {number} Time as decimal hours, rounded to 2 decimals
+    */
+
+    static toDecimal(timeStr) {
+        const [hh, mm] = timeStr.split(':').map(v => parseInt(v, 10));
+        return parseFloat((hh + mm / 60).toFixed(2));
+    };
+
+    static combineDateAndTime(dateStr, timeStr) {
+        // Example: dateStr = "2025-11-05", timeStr = "03:00"
+        // Normalize both
+        if (!dateStr || !timeStr) return null;
+        const combined = `${dateStr.trim()}T${timeStr.trim()}`;
+        return new Date(combined);
+    };
+
+    /**
+    * Handles cross-midnight adjustment if end < start (next day scenario)
+    */
+
+    static adjustForOvernight(startDateObj, endDateObj) {
+        if (endDateObj < startDateObj) {
+            // Add 1 day to end time
+            endDateObj.setDate(endDateObj.getDate() + 1);
+        }
+        return endDateObj;
+    };
+
+    /**
+    * Full utility: takes two timestamps and returns both HH:MM and decimal format.
+    * @param {Date|string|number} start - Start time
+    * @param {Date|string|number} end - End time
+    * @returns {{ formatted: string, decimal: number }}
+    */
+
+    static getTotalHours(start, end) {
+        const diff = this.difference(start, end);
+        const formatted = this.toHourMinute(diff);
+        const decimal = this.toDecimal(formatted);
+        return { formatted, decimal };
+    };
+};
