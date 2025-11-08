@@ -751,6 +751,63 @@ cancelBtn.addEventListener('click', async (e) => {
 // Update/Modify assignment button
 editBtn.addEventListener('click', (e) => {
     e.preventDefault();
+
+    const form = document.querySelector('.assignment-card');
+    const assignment = getCurrentAssignment();
+    if ( !form || !assignment ) return;
+
+    // Reuse existing __method input
+    const methodInput = form.querySelector('[name="__method"]');
+    if ( methodInput ) methodInput.value = 'PATCH';
+
+    // Remove old temporary inputs
+    form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
+
+    // Collect All editable cells, even blank ones
+    const editableCells = document.querySelectorAll('.editable-data');
+    editableCells.forEach(cell => {
+        const field = cell.dataset.field || '';
+        const inputEl = cell.querySelector('input');
+        let value = '';
+
+        if ( inputEl ) value = inputEl.value.trim();
+        else value = cell.textContent.trim();
+
+        if ( field ) {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = field;
+            hidden.value = value; // Even if empty string
+            hidden.classList.add('temp-hidden');
+            form.appendChild(hidden);
+        }
+    });
+
+    // Include textareas ( even if unchanged or empty )
+    ['pickup_details', 'destination_details', 'drvr_notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if ( el ) {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = el.name;
+            hidden.value = el.value.trim(); // empty still fine
+            hidden.classList.add('temp-hidden');
+            form.appendChild(hidden);
+        }
+    });
+
+    // Add identifiers ( these should always exist )
+    [['order_id', assignment.order_id], ['vehicle_id', assignment.vehicle_id], ['driver_id', assignment.driver_id]].forEach(([name, val]) => {
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = name;
+        hidden.value = val ?? '';
+        hidden.classList.add('temp-hidden');
+        form.appendChild(hidden);
+    });
+    
+    // Submit via standard POST
+    //form.submit();
 });
 // Complete assignment button
 completeBtn.addEventListener('click', () => {});
