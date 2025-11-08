@@ -25,23 +25,23 @@ const signBtnContainer = signBox.childNodes[3];
 let signature;
 let secondSignature;
 
-// 🧩 Show warning modal once per assignment (integrated with MutationObserver)
+// Show warning modal once per assignment (integrated with MutationObserver)
 function showWarnModalForAssignment(orderId, requiresSignature) {
     const lastWarnedId = localStorage.getItem('warnModalShownFor');
 
-    // ❌ If no signature is required - hide it!
+    // If no signature is required - hide it!
     if (!requiresSignature) {
         $(signatureBoxBtn).addClass('d-none');
         return;
     }
 
-    // ✅ If signature required but already warned once
+    // If signature required but already warned once
     if (orderId === lastWarnedId) {
         $(signatureBoxBtn).removeClass('d-none');
         return;
     };
     
-    // ✅ Otherwise, show modal once
+    // Otherwise, show modal once
     setTimeout(() => {
         $(warnModal).modal('show');
     }, 1500);
@@ -57,7 +57,7 @@ function showWarnModalForAssignment(orderId, requiresSignature) {
     });
 }
 
-// 🔔 Listen for the event from jobhandler.js
+// Listen for the event from jobhandler.js
 window.addEventListener('assignmentChanged', (e) => {
     const { orderId, requiresSignature } = e.detail;    
     showWarnModalForAssignment(orderId, requiresSignature);
@@ -65,22 +65,22 @@ window.addEventListener('assignmentChanged', (e) => {
 
 // On confirm modal btn, handle new recorded signature for post trip.
 function confirmPostSignHandler () {
-    localStorage.removeItem("insp-signature");
+    localStorage.removeItem("pre-signature");
     imgInspBox.classList.remove('d-none');
     signBtn.classList.add('d-none');
     $(secondSignBtn).on('click', () => {
         secondSignature = $(signpad).jSignature("getData");
-        localStorage.setItem('secondInsp-signature', secondSignature);
+        localStorage.setItem('post-signature', secondSignature);
         $(signatureCheck).append(`<img src='${secondSignature}'></img>`);
         postInspSign.classList.remove('d-none');
         let div = document.createElement('div');
         let newPostTripSignatureHolder = div;
         postInspSign.firstChild.after(newPostTripSignatureHolder);
-        $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("secondInsp-signature")}'></img>`)
+        $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("post-signature")}'></img>`)
         setTimeout(() => {
             imgInspBox.classList.add('d-none');
             $(signpad).jSignature('clear');
-            localStorage.removeItem('secondInsp-signature');
+            localStorage.removeItem('post-signature');
         }, 500);
         signBtn.classList.remove('d-none');
         secondSignBtn.classList.add('d-none');
@@ -95,8 +95,8 @@ function unConfirmPostSignHandler () {
     let div = document.createElement('div');
     let newPostTripSignatureHolder = div;
     postInspSign.firstChild.after(newPostTripSignatureHolder);
-    $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("insp-signature")}'></img>`);
-    localStorage.removeItem('insp-signature');
+    $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("pre-signature")}'></img>`);
+    localStorage.removeItem('pre-signature');
     signBtn.classList.remove('d-none');
     secondSignBtn.classList.add('d-none');
     signBtnContainer.classList.add('d-none');
@@ -165,13 +165,13 @@ $(clearBtn).on('click', () => {
 // When widget 1st opens, handle 1st signature capture and set rest of buttons and rendered preview.
 $(signBtn).on('click', () => {
     signature = $(signpad).jSignature("getData");
-    localStorage.setItem('insp-signature', signature);
+    localStorage.setItem('pre-signature', signature);
     $(signatureCheck).append(`<img src='${signature}'></img>`);
     preInspSign.classList.remove('d-none');
     let div = document.createElement('div');
     let newPreTripSignatureHolder = div;
     preInspSign.firstChild.after(newPreTripSignatureHolder);
-    $(newPreTripSignatureHolder).append(`<img src='${localStorage.getItem("insp-signature")}'></img>`);
+    $(newPreTripSignatureHolder).append(`<img src='${localStorage.getItem("pre-signature")}'></img>`);
     setTimeout(() => {
         imgInspBox.classList.add('d-none');
         $(signpad).jSignature('clear');

@@ -805,6 +805,46 @@ editBtn.addEventListener('click', (e) => {
         hidden.classList.add('temp-hidden');
         form.appendChild(hidden);
     });
+
+    if (assignment.signature_required === 1) {
+        const preSign = localStorage.getItem('pre-signature');
+        const postSign = localStorage.getItem('post-signature');
+
+        // Signature required flag
+        const sigRequired = document.createElement('input');
+        sigRequired.type = 'hidden';
+        sigRequired.name = 'signature_required';
+        sigRequired.value = '1';
+        sigRequired.classList.add('temp-hidden');
+        form.appendChild(sigRequired);
+
+        // Pre-trip signature ( if captured )
+        if (preSign) {
+            const preHidden = document.createElement('input');
+            preHidden.type = 'hidden';
+            preHidden.name = 'pre_signature_base64';
+            preHidden.value = preSign;
+            preHidden.classList.add('temp-hidden');
+            form.appendChild(preHidden);
+        };
+
+        // Post-trip signature ( if captured )
+        if (postSign) {
+            const postHidden = document.createElement('input');
+            postHidden.type = 'hidden';
+            postHidden.name = 'post_signature_base64';
+            postHidden.value = postSign;
+            postHidden.classList.add('temp-hidden');
+            form.appendChild(postHidden);
+        };
+
+        const sigStatus = document.createElement('input');
+        sigStatus.type = 'hidden';
+        sigStatus.name = 'signature_status';
+        sigStatus.value = preSign && postSign ? 'complete' : preSign ? 'pre-trip-complete' : 'pending';
+        sigStatus.classList.add('temp-hidden');
+        form.appendChild(sigStatus);
+    }
     
     // Submit via standard POST
     //form.submit();
