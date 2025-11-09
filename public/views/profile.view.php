@@ -57,11 +57,12 @@ include "partials/info-modal.php";
                                                         <label for="mobileDev" class="text-capitalize"><b>mobile number</b></label>
                                                 </div>
                                         </div>
-                                        <div class="input-group mb-2">
-                                                <span class="input-group-text"><button id="pwd-change" type="button" class="btn"><i class="fa-solid fa-lock fs-4 text-primary"></i></button></span>
-                                                <div class="form-floating">
+                                        <div class="input-group mb-2 position-relative">
+                                                <span class="input-group-text"><button id="pwd-change" type="button" class="btn p-0 border-0 bg-transparent"><i class="fa-solid fa-lock fs-4 text-primary"></i></button></span>
+                                                <div class="form-floating flex-grow-1">
                                                         <input type="password" id="password" class="form-control" name="password" placeholder="Password" disabled>
                                                         <label for="password" class="text-capitalize"><b>password</b></label>
+                                                        <i id="psword-icon" class="fa-solid fa-eye position-absolute end-0 top-50 translate-middle-y me-3 text-muted" role="button" style="cursor: pointer; z-index: 5;"></i>
                                                 </div>
                                         </div>
                                         <div class="input-group mb-2">

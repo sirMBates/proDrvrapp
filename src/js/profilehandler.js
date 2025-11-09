@@ -14,6 +14,7 @@ const drvrEmail = profileInputs[5];
 const drvrBirthDate = profileInputs[6];
 const drvrPhoneNumber = profileInputs[7];
 const drvrPsword = profileInputs[8];
+const pswordIcon = document.querySelector('#psword-icon');
 const drvrStatus = profileInputs[9];
 const drvrToken = document.querySelector('#drvrToken').value;
 const updatePswordBtn = document.querySelector('#updatePsword');
@@ -139,13 +140,20 @@ $(drvrUserName).on('input', () => {
 });
 
 $(drvrPsword).on('input', () => {
-    let isValid = Validation.validate($(drvrPsword).val(), $(drvrPsword).attr('type'));
+    let isValid = Validation.validate($(drvrPsword).val(), 'password');
     if (!isValid) {
         $(drvrPsword).addClass('is-invalid');
     } else {
         $(drvrPsword).removeClass('is-invalid');
         $(drvrPsword).addClass('is-valid');
     }
+});
+
+$(pswordIcon).on('click', function() {
+    if ($(drvrPsword).prop('disabled')) return;
+    const isHidden = $(drvrPsword).attr('type') === 'password';
+    $(drvrPsword).attr('type', isHidden ? 'text' : 'password');
+    $(pswordIcon).toggleClass('fa-eye fa-eye-slash')
 });
 
 $(updatePswordBtn).on('submit', () => {
