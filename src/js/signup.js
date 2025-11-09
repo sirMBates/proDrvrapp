@@ -39,7 +39,7 @@ $(function () {
     })
 
     $(passwordInput).on('input', () => {
-        let isValid = Validation.validate($(passwordInput).val(), $(passwordInput).attr('type'));
+        let isValid = Validation.validate($(passwordInput).val(), 'password');
         if (!isValid) {
             $(passwordInput).addClass('is-invalid');
         } else {
@@ -49,7 +49,7 @@ $(function () {
     })
         
     $(confPasswordInput).on('input', () => {
-        let isValid = Validation.validate($(confPasswordInput).val(), $(confPasswordInput).attr('type'));
+        let isValid = Validation.validate($(confPasswordInput).val(), 'password');
         let pswordVal = $(passwordInput).val();
         let confPswordVal = $(confPasswordInput).val();
         if (pswordVal.length > 0 && confPswordVal.length > 0) {
@@ -72,37 +72,15 @@ $(function () {
 
 // Checkbox functionality. Enables password to be hidden or viewed.
     $(pwdIcon).on("click", function() {
-        if ($(pwdIcon).hasClass("fa-eye")) {
-            $(pwdIcon).removeClass("fa-eye");
-            $(pwdIcon).addClass("fa-eye-slash");
-            if ($(passwordInput).attr("type") === "password") {
-                $(passwordInput).attr("type", "text");
-            }
-        } else {
-            $(pwdIcon).removeClass("fa-eye-slash");
-            $(pwdIcon).addClass("fa-eye");
-            $(passwordInput).attr("type", "password");
-            if($(passwordInput).attr("type") === "text") {
-                $(passwordInput).attr("type", "password");
-            }
-        }
+        const isHidden = $(passwordInput).attr("type") === "password";
+        $(passwordInput).attr("type", isHidden ? "text" : "password");
+        $(pwdIcon).toggleClass("fa-eye fa-eye-slash");
     })
 
     $(confPwdIcon).on("click", function() {
-        if ($(confPwdIcon).hasClass("fa-eye")) {
-            $(confPwdIcon).removeClass("fa-eye");
-            $(confPwdIcon).addClass("fa-eye-slash");
-            if ($(confPasswordInput).attr("type") === "password") {
-                $(confPasswordInput).attr("type", "text");
-            }
-        } else {
-            $(confPwdIcon).removeClass("fa-eye-slash");
-            $(confPwdIcon).addClass("fa-eye");
-            $(confPasswordInput).attr("type", "password");
-            if($(confPasswordInput).attr("type") === "text") {
-                $(confPasswordInput).attr("type", "password");
-            }
-        }
+        const isHidden = $(confPasswordInput).attr("type") === "password";
+        $(confPasswordInput).attr("type", isHidden ? "text" : "password");
+        $(confPwdIcon).toggleClass("fa-eye fa-eye-slash");
     })
 
     $(signUpBtn).on('submit', () => {

@@ -22,6 +22,9 @@ export class Validation {
     static validate(input, type) {
         switch (type) {
             case 'text':
+                if (input && (this.isPasswordField(input))) {
+                    return this.validatePassword(input);
+                }
                 return this.validateName(input);
             case 'number':
                 return this.validateNumber(input);
@@ -119,5 +122,9 @@ export class Validation {
 
     static validateText(input) {
         return textPattern.test(input);
+    }
+
+    static isPasswordField(inputValue) {
+        return pswordPattern.test(inputValue);
     }
 }

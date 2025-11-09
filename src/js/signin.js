@@ -20,10 +20,10 @@ $(function() {
             $(usernameInput).removeClass('is-invalid');
             $(usernameInput).addClass('is-valid');
         }
-    })
+    });
 
     $(passwordInput).on('input', () => {
-        let isValid = Validation.validate($(passwordInput).val(), $(passwordInput).attr('type'));
+        let isValid = Validation.validate($(passwordInput).val(), 'password');
         if (!isValid) {
             $(passwordInput).addClass('is-invalid');
             $(signInBtn).prop("disabled", true);
@@ -32,28 +32,17 @@ $(function() {
             $(passwordInput).addClass('is-valid');
             $(signInBtn).prop('disabled', false);
         }
-    })
+    });
 
     $(pwdIcon).on("click", function() {
-        if ($(pwdIcon).hasClass("fa-eye")) {
-            $(pwdIcon).removeClass("fa-eye");
-            $(pwdIcon).addClass("fa-eye-slash");
-            if ($(passwordInput).attr("type") === "password") {
-                $(passwordInput).attr("type", "text");
-            }
-        } else {
-            $(pwdIcon).removeClass("fa-eye-slash");
-            $(pwdIcon).addClass("fa-eye");
-            $(passwordInput).attr("type, password");
-            if ($(passwordInput).attr("type") === "text") {
-                $(passwordInput).attr("type", "password");
-            }
-        }
-    })
+        const isHidden = $(passwordInput).attr("type") === "password";
+        $(passwordInput).attr("type", isHidden ? "text" : "password");
+        $(pwdIcon).toggleClass("fa-eye fa-eye-slash");
+    });
 
     $(signInBtn).on('submit', () => {
         return formValidation();
-    })
+    });
 });
 
 const qString = window.location.search;
