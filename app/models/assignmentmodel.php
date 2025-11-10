@@ -54,12 +54,12 @@ class Assignment {
             }
 
             $sql = "INSERT INTO work_orders (order_ref, vehicle_id, driver_id, num_of_coaches, start_date_time, spot_time, 
-                    leave_date_time, return_date_drop_time, actual_drop_time, end_date_time, actual_end_time, total_job_time, driving_time, origin, destination, group_name, group_leader, group_leader_mobile, customer_name, customer_phone, contact_name, contact_mobile, pickup_details, destination_details,
-                    signature_required, signature_path, driver_notes)
+                    leave_date_time, return_date_drop_time, actual_drop_time, end_date_time, actual_end_time, total_job_time, driving_time, origin, destination, group_name, group_leader, group_leader_mobile, customer_name, customer_phone, contact_name, contact_mobile, pickup_details, destination_details, driver_notes,
+                    signature_required, pre_signature_path, post_signature_path)
 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                            ?, ?, ?, ?, ?, ?, ?)";
+                            ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $pdo->prepare($sql);
             // Loop over each and set each property and value.
@@ -90,9 +90,10 @@ class Assignment {
             $stmt->bindValue(22, $data['contact_mobile'] ?? null);
             $stmt->bindValue(23, $data['pickup_details'] ?? null);
             $stmt->bindValue(24, $data['destination_details'] ?? null);
-            $stmt->bindValue(25, $data['signature_required'] ?? 0);
-            $stmt->bindValue(26, $data['signature_path'] ?? null);
-            $stmt->bindValue(27, $data['driver_notes'] ?? null);
+            $stmt->bindValue(25, $data['driver_notes'] ?? null);
+            $stmt->bindValue(26, $data['signature_required'] ?? 0);
+            $stmt->bindValue(27, $data['pre_signature_path'] ?? null);
+            $stmt->bindValue(28, $data['post_signature_path'] ?? null);
             $dataInserted = $stmt->execute();
 
             if ($dataInserted) {
