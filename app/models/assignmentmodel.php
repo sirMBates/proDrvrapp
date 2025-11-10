@@ -92,8 +92,8 @@ class Assignment {
             $stmt->bindValue(24, $data['destination_details'] ?? null);
             $stmt->bindValue(25, $data['driver_notes'] ?? null);
             $stmt->bindValue(26, $data['signature_required'] ?? 0);
-            $stmt->bindValue(27, $data['pre_signature_path'] ?? null);
-            $stmt->bindValue(28, $data['post_signature_path'] ?? null);
+            $stmt->bindValue(27, $data['pre_signature'] ?? null);
+            $stmt->bindValue(28, $data['post_signature'] ?? null);
             $dataInserted = $stmt->execute();
 
             if ($dataInserted) {
