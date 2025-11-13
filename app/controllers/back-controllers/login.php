@@ -28,7 +28,7 @@ if (isset($_POST['loginAcct'])) {
         );
     }
     // Redirect to home page upon successful login with valid message.
-    $alert::setMsg('success', 'Hello there, '. $_SESSION['first_name'] . '!');
+    $alert::setMsg('success', $_SESSION['first_name']);
     header("Location: /");
     exit();
 }
