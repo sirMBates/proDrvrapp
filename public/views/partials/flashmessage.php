@@ -33,6 +33,9 @@ elseif ($msg = $alert::getMsg('validate')) { ?>
 ?>
 <script>
         document.addEventListener("DOMContentLoaded", function() {
+                const flash = document.querySelector('#flash-alert');
+                if (!flash) return;
+
                 const alertSpan = document.querySelector("#flash-alert span");
                 if (!alertSpan) return;
 
@@ -57,7 +60,7 @@ elseif ($msg = $alert::getMsg('validate')) { ?>
                 // ===== ANIMATION STYLE =====
                 flash.style.opacity = 0;
                 flash.style.transform = "translateY(-15px)";
-                flash.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+                flash.style.transition = "opacity 0.5s ease-in, transform 0.5s ease";
 
                 // Animate in
                 requestAnimationFrame(() => {
@@ -66,7 +69,7 @@ elseif ($msg = $alert::getMsg('validate')) { ?>
                 });
 
                 // Auto remove after 3.5 seconds (matches your helper default)
-                const timeout = 3500;
+                const timeout = 4000;
 
                 setTimeout(() => {
                         flash.style.opacity = 0;
