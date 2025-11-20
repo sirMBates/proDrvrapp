@@ -796,8 +796,14 @@ editBtn.addEventListener('click', (e) => {
         }
     });
 
+    const editableFieldNames = new Set(
+        Array.from(document.querySelectorAll('.editable-data')).map(cell => cell.dataset.field).filter(Boolean)
+    );
+
     // Add identifiers ( these should always exist )
     [['order_id', assignment.order_id], ['vehicle_id', assignment.vehicle_id], ['driver_id', assignment.driver_id]].forEach(([name, val]) => {
+        if (editableFieldNames.has(name)) return;
+        
         const hidden = document.createElement('input');
         hidden.type = 'hidden';
         hidden.name = name;
@@ -844,10 +850,9 @@ editBtn.addEventListener('click', (e) => {
         sigStatus.value = preSign && postSign ? 'complete' : preSign ? 'pre-trip-complete' : 'pending';
         sigStatus.classList.add('temp-hidden');
         form.appendChild(sigStatus);
-    }
-    
+    };    
     // Submit via standard POST
-    //form.submit();
+    // form.submit();
 });
 // Complete assignment button
 completeBtn.addEventListener('click', () => {});

@@ -65,7 +65,9 @@ class UpdateAssignment {
             'status' => 'success',
             'message' => 'Assignment successfully canceled!'
         ];
-    } 
+    }
+    
+    protected function modifyAssignment(array $data) {}
 }
 
 ?>

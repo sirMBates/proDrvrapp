@@ -72,7 +72,13 @@ if ($method === 'PATCH') {
             echo json_encode($result);
             exit();
         }
-    } else if (isset($_POST['modify'])) {}
+    } else if (isset($_POST['modify'])) {
+        include_once base_path("app/models/assignmenthandlermodel.php");
+        include_once base_path("app/errors/check_assignment_details.php");
+        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        $modification = new UpdateAssignmentDetailsContr($data);
+        $result = $modification->modify();
+    }
 } elseif ($method === 'DELETE') {
     if (isset($_POST['cancel'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");
