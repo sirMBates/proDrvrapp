@@ -850,7 +850,21 @@ editBtn.addEventListener('click', (e) => {
         sigStatus.value = preSign && postSign ? 'complete' : preSign ? 'pre-trip-complete' : 'pending';
         sigStatus.classList.add('temp-hidden');
         form.appendChild(sigStatus);
-    };    
+    };
+
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'X-CSRF-Token';
+    csrf.value = document.querySelector('#drvrToken').value;
+    csrf.classList.add('temp-hidden');
+    form.appendChild(csrf);
+    
+    const modifyFlag = document.createElement('input');
+    modifyFlag.type = 'hidden';
+    modifyFlag.name = 'modify';
+    modifyFlag.value = '1';
+    modifyFlag.classList.add('temp-hidden');
+    form.appendChild(modifyFlag);
     // Submit via standard POST
     // form.submit();
 });

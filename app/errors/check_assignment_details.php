@@ -15,6 +15,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $driverNotes;
     private $preSignature;
     private $postSignature;
+    private $signatureStatus;
 
     public function __construct(array $data) {
         $this->driverId = $data['driver_id'] ?? null;
@@ -29,6 +30,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $this->driverNotes = $this->validateTextarea($data['drvr-notes'] ?? '');
         $this->preSignature = $data['pre_signature_base64'] ?? null;
         $this->postSignature = $data['post_signature_base64'] ?? null;
+        $this->signatureStatus = $data['signature_status'] ?? null;
     }
 
     public function modify() {
@@ -72,7 +74,13 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             exit();
         }
 
-        return $this->modifyAssignment([
+        if (!$this->validateSignatureStatus()) {
+            $alert::setMsg('error', 'Invalid signature status.');
+            header("Location: /assignment?error=invalid+signature+state");
+            exit();
+        }
+
+        $this->modifyAssignment([
             'driver_id' => $this->driverId,
             'order_id' => $this->orderId,
             'vehicle_id' => $this->vehicleId,
@@ -83,8 +91,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             'pickup-details' => $this->pickupDetails,
             'destination-details' => $this->destinationDetails,
             'drvr-notes' => $this->driverNotes,
-            'pre_signature' => $this->preSignature,
-            'post_signature' => $this->postSignature
+            'pre_signature_base64' => $this->preSignature,
+            'post_signature_base64' => $this->postSignature,
+            'signature_status' => $this->signatureStatus
         ]);
     }
 
@@ -178,6 +187,12 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             return false;
         }
         return true;
+    }
+
+    private function validateSignatureStatus(): bool {
+        if ($this->signatureStatus === null) return true;
+        $valid = ['pending', 'pre-trip-complete', 'complete'];
+        return in_array($this->signatureStatus, $valid, true);
     }
 
     private function validateTextarea(string $value): string {

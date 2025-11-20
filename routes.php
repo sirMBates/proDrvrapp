@@ -29,5 +29,6 @@ $router->patch('/register', 'app/controllers/back-controllers/registration.php')
 $router->patch('/profile', 'app/controllers/back-controllers/updateprofileacct.php');
 $router->patch('/setprofilepicture', 'app/api/setprofilepicture.php');
 $router->patch('/assignmenthandler', 'app/api/assignmenthandler.php');
+$router->patch('/assignment', 'app/controllers/back-controllers/updateassignment.php');
 
 $router->delete('/assignmenthandler', 'app/api/assignmenthandler.php');
