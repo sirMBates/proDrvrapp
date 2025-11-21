@@ -1,3 +1,4 @@
+import { Validation } from "./validation.js";
 import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator } from "./helpers.js";
 import { handleAssignmentFetch } from "./pwa.js";
 const primaryA = document.querySelector('#tableA');
@@ -767,11 +768,14 @@ editBtn.addEventListener('click', (e) => {
     const editableCells = document.querySelectorAll('.editable-data');
     editableCells.forEach(cell => {
         const field = cell.dataset.field || '';
+        const type = cell.dataset.type || '';
         const inputEl = cell.querySelector('input');
-        let value = '';
+        let value = inputEl ? inputEl.value.trim() : cell.textContent.trim();
 
-        if ( inputEl ) value = inputEl.value.trim();
-        else value = cell.textContent.trim();
+        if (!Validation.validate(value, type)) {
+            showFlashAlert('error', `Invalid value for ${field.replace('_', ' ')}.`);
+            return;
+        }
 
         if ( field ) {
             const hidden = document.createElement('input');
@@ -787,6 +791,13 @@ editBtn.addEventListener('click', (e) => {
     ['pickup_details', 'destination_details', 'drvr_notes'].forEach(id => {
         const el = document.getElementById(id);
         if ( el ) {
+            const value = el.value.trim();
+
+            if (!Validation.validateMessage(value, 'assignment-textarea')) {
+                showFlashAlert('error', 'Please remove invalid characters from your notes/details.');
+                return;
+            }
+            
             const hidden = document.createElement('input');
             hidden.type = 'hidden';
             hidden.name = el.name;

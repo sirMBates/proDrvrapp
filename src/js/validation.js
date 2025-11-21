@@ -7,8 +7,12 @@ const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])
 const usernamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
 const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$/;
 const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
+const decimalPattern = /^\d+(\.\d{1,2})?$/;
+const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+const datetimePattern = /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/;
 //const photoPattern = /^[a-zA-Z0-9./_-]+\.(jpg|jpeg|png|gif)$/i;
 const textPattern = /^[A-Za-z0-9\s.,!?'"()\-@#%$&_+=:;\/\n\r\t\p{Emoji}]{20,300}$/u;
+const assignmentTextareaPattern = /^[^\x00-\x08\x0B\x0C\x0E-\x1F\x7F<>]*$/u;
 /**
  * Validation class to validate various types of input using regular expressions.
  */
@@ -26,22 +30,43 @@ export class Validation {
                     return this.validatePassword(input);
                 }
                 return this.validateName(input);
+
             case 'number':
                 return this.validateNumber(input);
+
+            case 'vehicle':
+                return this.validateVehicleId(input);
+
+            case 'decimal':
+                return this.validateDecimal(input);
+
             case 'tel':
                 return this.validatePhoneNumber(input);
+
             case 'date':
                 return this.validateDate(input);
+
+            case 'time':
+                return this.validateTime(input);
+
+            case 'datetime':
+            case 'datetime-local':
+                return this.validateDatetime(input);
+
             case 'email':
                 return this.validateEmail(input);
+
             case 'password':
                 return this.validatePassword(input);
+
             case 'file':
                 return this.validatePhoto(input);
+
             default:
-                throw new Error('Invalid validation type');
-        }
-    }
+                return true;
+                //throw new Error('Invalid validation type');
+        };
+    };
 
     static validateOnlyUsername(input, type) {
         switch(type) {
@@ -65,6 +90,10 @@ export class Validation {
         switch(type) {
             case 'textarea':
                 return this.validateText(input);
+
+            case 'assignment-textarea':
+                return this.validateAssignmentTextarea(input);
+
             default:
                 throw new Error('Invalid validation type');
         }
@@ -78,12 +107,30 @@ export class Validation {
         return numberPattern.test(input);
     }
 
+    static validateDecimal(input) {
+        return decimalPattern.test(input);
+    }
+
+    static validateVehicleId(input) {
+        return /^\d{3,}$/.test(input);
+    }
+
     static validatePhoneNumber(input) {
         return phoneNumberPattern.test(input);
     }
 
     static validateDate(input) {
         return datePattern.test(input);
+    }
+
+    static validateTime(input) {
+        return timePattern.test(input);
+    }
+
+    static validateDatetime(input) {
+        if (!datetimePattern.test(input)) return false;
+        // Also ensure it's a valid date
+        return !isNaN(Date.parse(input));
     }
 
     static validateUsername(input) {
@@ -127,4 +174,8 @@ export class Validation {
     static isPasswordField(inputValue) {
         return pswordPattern.test(inputValue);
     }
-}
+
+    static validateAssignmentTextarea(input) {
+        return assignmentTextareaPattern.test(input);
+    }
+};
