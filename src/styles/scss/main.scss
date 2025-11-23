@@ -59,6 +59,21 @@ body, .offcanvas-body {
     min-height: 50px;
 }
 
+.input-error {
+    outline: 2px solid #ff3b3b !important;
+    background-color: rgba(255, 0, 0, 0.08) !important;
+    transition: background-color 0.3s ease, outline 0.3s ease;
+}
+
+.input-error-flash {
+    animation: flashError 0.4s ease;
+}
+
+@keyframes flashError {
+    0% { background-color: rgba(255, 0, 0, 0.35); }
+    100% { background-color: rgba(255, 0, 0, 0.08); }
+}
+
 /*#offline-indicator {
     display: none;
     position: fixed;
