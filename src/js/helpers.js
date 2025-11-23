@@ -227,6 +227,15 @@ export function fadeIn(element, duration = 400) {
     });
 };
 
+export function highlightErrorElement(el) {
+    if (!el) return;
+
+    el.classList.add('input-error', 'input-error-flash');
+
+    setTimeout(() => el.classList.remove('input-error-flash'), 500);
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
 export class ServiceTimeCalculator {
     /**
     * Returns the millisecond difference between two timestamps.

@@ -1,5 +1,5 @@
 import { Validation } from "./validation.js";
-import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator } from "./helpers.js";
+import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, highlightErrorElement } from "./helpers.js";
 import { handleAssignmentFetch } from "./pwa.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
@@ -764,6 +764,8 @@ editBtn.addEventListener('click', (e) => {
     // Remove old temporary inputs
     form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
 
+    let foundError = false;
+
     // Collect All editable cells, even blank ones
     const editableCells = document.querySelectorAll('.editable-data');
     editableCells.forEach(cell => {
@@ -774,9 +776,15 @@ editBtn.addEventListener('click', (e) => {
 
         if (!Validation.validate(value, type)) {
             showFlashAlert('error', `Invalid value for ${field.replace('_', ' ')}.`);
+            highlightErrorElement(inputEl || cell);  // 🔥 highlight here
+            foundError = true;
             return;
         }
 
+        // Remove previous highlight if now valid
+        (inputEl || cell).classList.remove('input-error');
+
+        // Add hidden field
         if ( field ) {
             const hidden = document.createElement('input');
             hidden.type = 'hidden';
@@ -787,25 +795,33 @@ editBtn.addEventListener('click', (e) => {
         }
     });
 
+    if (foundError) return; // Stop submission early
+
     // Include textareas ( even if unchanged or empty )
     ['pickup_details', 'destination_details', 'drvr_notes'].forEach(id => {
         const el = document.getElementById(id);
-        if ( el ) {
-            const value = el.value.trim();
+        if ( !el ) return;
 
-            if (!Validation.validateMessage(value, 'assignment-textarea')) {
-                showFlashAlert('error', 'Please remove invalid characters from your notes/details.');
-                return;
-            }
-            
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = el.name;
-            hidden.value = el.value.trim(); // empty still fine
-            hidden.classList.add('temp-hidden');
-            form.appendChild(hidden);
+        const value = el.value.trim();
+
+        if (!Validation.validateMessage(value, 'assignment-textarea')) {
+            showFlashAlert('error', 'Please remove invalid characters from your notes/details.');
+            highlightErrorElement(el); // 🔥 highlight textarea
+            foundError = true;
+            return;
         }
+
+        el.classList.remove('input-error');
+            
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = el.name;
+        hidden.value = el.value.trim(); // empty still fine
+        hidden.classList.add('temp-hidden');
+        form.appendChild(hidden);
     });
+
+    if (foundError) return;
 
     const editableFieldNames = new Set(
         Array.from(document.querySelectorAll('.editable-data')).map(cell => cell.dataset.field).filter(Boolean)
@@ -879,6 +895,7 @@ editBtn.addEventListener('click', (e) => {
     // Submit via standard POST
     // form.submit();
 });
+
 // Complete assignment button
 completeBtn.addEventListener('click', () => {});
 
