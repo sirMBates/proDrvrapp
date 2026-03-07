@@ -59,8 +59,8 @@
                 </div>
         </div>
 </div>
-<div class="sticky-top shadow" style="width: 100vw;">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-besttrailsclr px-3 w-100">
+<div class="banner-nav shadow w-100">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-besttrailsclr w-100">
                 <div class="container-fluid">
                         <a class="navbar-brand m-0" data-bs-toggle="offcanvas" role="button" aria-controls="useraccess" href="#useraccess"><img src="../../dist/images-videos/logoandicons/prodrvr-bus-icon.png" alt="N/A" width="50" height="50" class="d-inline-block align-text-center"></a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
