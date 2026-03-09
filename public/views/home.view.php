@@ -1,11 +1,10 @@
 <?php
 require "partials/head.php";
-##require "partials/nav.php";
 require "partials/banner.php";
 include "partials/info-modal.php";
 include "partials/custom-modal.php";
 ?>
-<main class="container-fluid mb-1">
+<main class="container-fluid mb-1 d-flex flex-column align-items-center">
         <button id="birthday-theme-btn" type="button" class="btn-sm position-absolute rounded-1 z-3 me-2 end-0 text-capitalize d-none"><i class="me-2 fa-solid fa-cake-candles"></i>happy birthday</button>
         <div class="card mb-auto">
                 <div class="card-header bg-besttrailsclr text-btd-white-off">

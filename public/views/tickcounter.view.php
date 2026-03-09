@@ -1,6 +1,5 @@
 <?php
 require_once "partials/head.php";
-##require_once "partials/nav.php";
 require_once "partials/banner.php";
 ?>
 <main class="container-fluid m-2 p-2">
