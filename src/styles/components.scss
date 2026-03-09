@@ -4,8 +4,8 @@
     flex-shrink: 0;
     background-color: var(--banner-infobar-bg) !important;
     border-color: var(--banner-infobar-border) !important;
-    backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
     color: var(--infobar-text);
 }
 
@@ -73,8 +73,8 @@
     width: 100%;
     background-color: var(--banner-nav-bg) !important;
     border-bottom: 1px solid var(--banner-nav-border);
-    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
     box-shadow: 0 4px 10px var(--banner-nav-shadow);
 }
 
