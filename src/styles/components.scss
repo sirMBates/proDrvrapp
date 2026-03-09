@@ -1,27 +1,41 @@
 #infobar {
-    height: 25px;
+    width: 100%;
+    min-height: 28px;
+    flex-shrink: 0;
+    background-color: var(--banner-infobar-bg) !important;
+    border-color: var(--banner-infobar-border) !important;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: var(--infobar-text);
 }
 
-#infobar > div {
+#infobar > .container-fluid {
     height: 100%;
 }
 
 #infobar #title {
-    text-shadow: -1px -1px 0 #4c4c4c, 1px 1px 0 #ececec !important;
+    color: var(--infobar-title);
+    text-shadow: var(--infobar-title-shadow);
     font-weight: 500 !important;
 }
 
-#infobar #title, #clock_container {
+#infobar #title, #clock_container,
+#dateCon, #timeCon,
+#dateCon > div,
+#timeCon > div {
+    color: var(--infobar-text);
     font-size: clamp(0.6rem, 1.5vw, 0.8rem); 
     line-height: 1;
 }
 
 .site-banner {
+    width: 100%;
     background: url("../images-videos/headerbkgd.jpg") no-repeat scroll 35% 55%;
     background-size: cover;
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 370px;
     padding: 0 !important;
 }
 
@@ -39,16 +53,12 @@
 }
 
 .banner-top {
-    min-height: 300px; // adjust as needed
     width: 100%;
     padding: 1rem;
     display: flex;
-    justify-content: space-around;
+    flex: 1 1 auto;
+    justify-content: space-between;
     align-items: center;
-}
-
-.banner-logo {
-    width: 20%;
 }
 
 .banner-nav {
@@ -56,10 +66,52 @@
     margin: 0;
     padding: 0;
     position: relative;
-    z-index: 2;
+    z-index: 1030;
 }
 
-header img {
+.banner-main-nav {
+    width: 100%;
+    background-color: var(--banner-nav-bg) !important;
+    border-bottom: 1px solid var(--banner-nav-border);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 4px 10px var(--banner-nav-shadow);
+}
+
+.banner-main-nav .navbar-brand,
+.banner-main-nav .nav-link {
+    color: var(--banner-link-color) !important;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.banner-main-nav .navbar-brand:hover,
+.banner-main-nav .nav-link:hover {
+    color: var(--banner-link-hover) !important;
+    text-shadow: 0 0 8px rgba(255, 250, 240, 0.25);
+}
+
+.banner-main-nav .nav-link.active {
+    color: var(--banner-link-active) !important;
+    text-shadow: 0 0 8px rgba(138, 222, 255, 0.35);
+}
+
+.banner-main-nav .navbar-toggler {
+    border-color: rgba(250, 249, 246, 0.25);
+}
+
+.banner-main-nav .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.15rem rgba(138, 222, 255, 0.25);
+}
+
+.banner-logo {
+    flex: 0 0 auto;
+    max-width: 24%;
+    min-width: 140px;
+}
+
+.banner-logo img {
+    width: clamp(140px, 14vw, 280px);
+    height: auto;
     opacity: .85;
 }
 
@@ -87,10 +139,15 @@ body::-webkit-scrollbar-thumb:hover {
     }
 }
 
-@media only screen and (width <= 991px) {
-    #useraccess {
-        position: absolute;
-        top: 0; 
+@media (max-width: 576px) {
+    .banner-top {
+        flex-wrap: wrap;
+        gap: .5rem; 
+    }
+
+    #alert-container {
+        order: 3;
+        width: 100%;
     }
 }
 
