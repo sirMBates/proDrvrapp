@@ -1,7 +1,7 @@
 <?php
 $alert = new core\Flash();
 ?>
-<header class="site-banner mb-2 bg-btd-gray-silver border-bottom border-1 border-black">
+<header class="site-banner container-fluid mb-2 bg-btd-gray-silver border-bottom border-1 border-black">
         <?php
                 require "nav.php";
         ?>
