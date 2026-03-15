@@ -51,7 +51,7 @@ const paramValue = urlParams.get('success');
 if (paramValue === 'logged out') {
     setInterval(() => {
         window.location.href = '/signin';
-    }, 1000);
+    }, 2000);
 }
 
 // Check if the client has agreed already

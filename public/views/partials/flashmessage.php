@@ -1,7 +1,10 @@
 <?php
 
-if ($msg = $alert::getMsg('success')) { ?>
-        <div id="flash-alert" class="my-2 alert alert-success alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-thumbs-up"></i><span class="fs-5"><?= $msg;?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+if ($flash = $alert::getMsg('success')) { 
+        $msg = $flash['message'];
+        $greet = $flash['options']['greet'] ?? false;
+?>
+        <div id="flash-alert" data-greet="<?= $greet ? 'true' : 'false'; ?>" class="my-2 alert alert-success alert-dismissible" role="alert"><i class="fs-5 me-2 fa-solid fa-thumbs-up"></i><span class="fs-5"><?= htmlspecialchars($msg); ?></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 <?php
 } 
@@ -36,26 +39,28 @@ elseif ($msg = $alert::getMsg('validate')) { ?>
                 const flash = document.querySelector('#flash-alert');
                 if (!flash) return;
 
-                const alertSpan = document.querySelector("#flash-alert span");
+                const alertSpan = flash.querySelector("span");
                 if (!alertSpan) return;
 
-                const name = alertSpan.textContent.trim();
-                if (!name) return;
+                const shouldGreet = flash.dataset.greet === "true";
 
-                const hour = new Date().getHours();
-                let greeting = 'Hello';
+                if (shouldGreet) {
+                        const name = alertSpan.textContent.trim();
+                        if (name) {
+                                const hour = new Date().getHours();
+                                let greeting = 'Hello';
 
-                if ( hour >= 5 && hour < 12 ) {
-                        greeting = "Good morning";
-                } else if ( hour >= 12 && hour < 18 ) {
-                        greeting = "Good afternoon";
-                } else if ( hour >= 18 && hour <= 23 ) {
-                        greeting = "Good evening";
-                } else {
-                        greeting = "Hello";
+                                if ( hour >= 5 && hour < 12 ) {
+                                        greeting = "Good morning";
+                                } else if ( hour >= 12 && hour < 18 ) {
+                                        greeting = "Good afternoon";
+                                } else if ( hour >= 18 && hour <= 23 ) {
+                                        greeting = "Good evening";
+                                }
+
+                                alertSpan.textContent = `${greeting}, ${name}`;
+                        }
                 }
-
-                alertSpan.textContent = `${greeting}, ${name}`;
 
                 // ===== ANIMATION STYLE =====
                 flash.style.opacity = 0;
