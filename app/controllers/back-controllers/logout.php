@@ -14,5 +14,4 @@ $alert::setMsg('success', 'See you next time!');
 header("Location: /signin?success=logged+out&status=unofficial", true, 303);
 exit();
 
-
 ?>
