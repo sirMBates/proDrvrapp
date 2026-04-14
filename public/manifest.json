@@ -74,7 +74,7 @@
             ]
         },
         {
-            "name": "Messege Center",
+            "name": "Message Center",
             "short_name": "Messages",
             "url": "/int_messages",
             "icons": [
