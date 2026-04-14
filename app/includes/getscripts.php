@@ -74,12 +74,16 @@ function pageScripts($value) {
                 echo "<script type='module' src='../dist/js/assignment.js'></script>\n";
                 break;
 
-            case "/profile":
-                echo "<script type='module' src='../dist/js/profilehandler.js'></script>\n";
+            case "/int_messages":
+                echo "<script type='module' src='../dist/js/int_messages.js'></script>\n";
                 break;
 
             case "/timesheet":
                 echo "<script type='module' src='../dist/js/tsheet.js'></script>\n";
+                break;
+
+            case "/profile":
+                echo "<script type='module' src='../dist/js/profilehandler.js'></script>\n";
                 break;
 
             default:

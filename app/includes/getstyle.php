@@ -42,12 +42,16 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='../dist/styles/jobsview.css'>\n";
                         break;
 
-                case "/profile":
+                case "/int_messages":
                         return;
                         break;
 
                 case "/timesheet":
                         echo "<link rel='stylesheet' href='../dist/styles/tsheet.css'>\n";
+                        break;
+
+                case "/profile":
+                        return;
                         break;
 
                 case "/views/404.php":
