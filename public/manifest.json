@@ -74,9 +74,9 @@
             ]
         },
         {
-            "name": "Profile",
-            "short_name": "Profile",
-            "url": "/profile",
+            "name": "Messege Center",
+            "short_name": "Messages",
+            "url": "/int_messages",
             "icons": [
                 {
                     "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
@@ -89,6 +89,18 @@
             "name": "Timesheet",
             "short_name": "Tsheet",
             "url": "/timesheet",
+            "icons": [
+                {
+                    "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "short_name": "Profile",
+            "url": "/profile",
             "icons": [
                 {
                     "src": "/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png",

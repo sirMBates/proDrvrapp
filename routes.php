@@ -8,8 +8,9 @@ $router->get('/completereset', 'app/controllers/front-controllers/completereset.
 $router->get('/reset', 'app/controllers/back-controllers/reset.php');
 $router->get('/', 'app/controllers/front-controllers/index.php', true);
 $router->get('/assignments', 'app/controllers/front-controllers/assignments.php', true);
-$router->get('/profile', 'app/controllers/front-controllers/profile.php', true);
+$router->get('/int_messages', 'app/controllers/front-controllers/int_messages.php', true);
 $router->get('/timesheet', 'app/controllers/front-controllers/timesheet.php', true);
+$router->get('/profile', 'app/controllers/front-controllers/profile.php', true);
 $router->get('/contact', 'app/controllers/front-controllers/contact.php', true);
 $router->get('/help', 'app/controllers/front-controllers/help.php', true);
 $router->get('/counter', 'app/controllers/front-controllers/counter.php', true);
