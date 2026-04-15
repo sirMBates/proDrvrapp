@@ -7,7 +7,7 @@ $alert = new core\Flash();
 ?>
         <div class="banner-top">
                 <div class="flex-shrink-0 d-flex align-items-center banner-logo">                                
-                        <img src="../../dist/images-videos/prodrvrbkgd.png" class="img-fluid m-3" id="logo" alt="companylogo">                     
+                        <img src="../../dist/images-videos/pro_drvr_logo.png" class="img-fluid m-3" id="logo" alt="companylogo">                     
                 </div>
 
                 <div id="alert-container" class="flex-grow-1 d-flex justify-content-center align-items-center">

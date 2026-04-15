@@ -178,6 +178,8 @@ include "partials/info-modal.php";
                                                     placeholder="Type your message..."></textarea>
                                             </div>
 
+                                            <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                            
                                             <div class="col-12 col-md-auto">
                                                 <button type="submit" class="btn btn-primary w-100">
                                                     Send
@@ -196,3 +198,7 @@ include "partials/info-modal.php";
         </div>
     </div>
 </main>
+
+<?php
+        require "partials/footer.php";
+?>

@@ -43,7 +43,7 @@ function pageStyle($value) {
                         break;
 
                 case "/int_messages":
-                        return;
+                        echo "<link rel='stylesheet' href='../dist/styles/messages.css'>\n";
                         break;
 
                 case "/timesheet":
