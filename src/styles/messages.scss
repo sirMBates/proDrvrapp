@@ -1,0 +1,80 @@
+.messenger-layout {
+  min-height: 72vh;
+}
+
+.messenger-sidebar {
+  background-color: var(--bs-body-bg);
+}
+
+.messenger-chat-pane {
+  min-height: 72vh;
+}
+
+.messenger-thread-list,
+.messenger-message-area {
+  overflow-y: auto;
+}
+
+.messenger-thread-list {
+  max-height: calc(72vh - 165px);
+}
+
+.messenger-message-area {
+  max-height: calc(72vh - 145px);
+}
+
+.dispatch-section {
+  background: rgba(255, 193, 7, 0.08); // soft amber wash
+}
+
+.dispatch-section .messenger-section-label {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dispatch-thread {
+  border-left: 4px solid #ffc107;
+}
+
+.dispatch-thread.active {
+  background-color: rgba(255, 193, 7, 0.18);
+  color: inherit;
+}
+
+.driver-section .messenger-section-label {
+  background: transparent;
+}
+
+.messenger-thread-list .list-group-item {
+  border-left: 4px solid transparent;
+}
+
+.messenger-thread-list .list-group-item.active {
+  border-left-color: var(--bs-primary);
+}
+
+.dispatch-bubble {
+  display: inline-block;
+  max-width: 75%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  color: #664d03;
+}
+
+.sent-bubble {
+  max-width: 75%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: var(--bs-primary);
+  color: #fff;
+}
+
+.received-bubble {
+  display: inline-block;
+  max-width: 75%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+}

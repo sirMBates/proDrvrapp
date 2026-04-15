@@ -33,7 +33,7 @@ const statusMsg = document.querySelector('#statusMessage');
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq
-        if (myCurrentView === '/help' || myCurrentView === '/counter') {
+        if (myCurrentView === '/help' || myCurrentView === '/counter' || myCurrentView === '/int_messages') {
                 return;
         }
 
