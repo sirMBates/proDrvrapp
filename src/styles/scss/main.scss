@@ -61,6 +61,166 @@ header.nightMode {
     --infobar-title-shadow: 0 0 4px rgba(255, 250, 240, 0.12);
 }
 
+.messenger-header {
+    background: var(--banner-infobar-bg);
+    color: var(--bs-body-color);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(6px);
+}
+
+.messenger-header h2,
+.messenger-header p {
+    color: inherit;
+}
+
+body.niteMode .messenger-header {
+    background: var(--banner-nav-bg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.niteMode .dispatch-bubble {
+    background: rgba(255, 193, 7, 0.12);
+    border-left: 4px solid #ffc107;
+    color: #ffecb5;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.niteMode .dispatch-label {
+    color: #ffe08a;
+}
+
+body.niteMode .sent-bubble {
+    background: rgba(29, 82, 131, 0.92);
+    color: #f8f9fa;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.niteMode .received-bubble {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f1f3f5;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.niteMode .message-meta {
+    color: rgba(255, 255, 255, 0.62);
+}
+
+body.niteMode .messenger-thread-list .list-group-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.niteMode .messenger-thread-list .list-group-item.active {
+    background: rgba(29, 82, 131, 0.22);
+    border-left-color: rgba(86, 156, 214, 0.95);
+    color: #f8f9fa;
+}
+
+body.niteMode .messenger-thread-list .list-group-item .thread-preview,
+body.niteMode .messenger-thread-list .list-group-item small {
+  color: rgba(255, 255, 255, 0.58);
+}
+
+body.niteMode .messenger-thread-list .list-group-item.active .thread-preview,
+body.niteMode .messenger-thread-list .list-group-item.active small {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+body.niteMode .dispatch-thread:hover {
+    background: rgba(255, 193, 7, 0.08);
+}
+
+body.niteMode .dispatch-thread.active {
+    background: rgba(255, 193, 7, 0.14);
+    border-left-color: #ffc107;
+    color: #f8f9fa;
+}
+
+body.niteMode .messenger-thread-list .badge,
+body.niteMode .dispatch-thread .badge {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+}
+
+body.niteMode .messenger-sidebar {
+    background: var(--banner-nav-bg);
+    border-right: 1px solid var(--banner-nav-border);
+}
+
+body.niteMode .dispatch-section {
+    background: rgba(255, 193, 7, 0.05);
+    border-bottom: 1px solid rgba(255, 193, 7, 0.08);
+}
+
+body.niteMode .driver-section {
+    background: transparent;
+}
+
+body.niteMode .messenger-section-label {
+    color: rgba(255, 255, 255, 0.68);
+}
+
+body.niteMode .dispatch-section .messenger-section-label {
+    color: #ffd86b;
+}
+
+body.niteMode .messenger-sidebar .form-control {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f8f9fa;
+}
+
+body.niteMode .messenger-sidebar .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+body.niteMode .messenger-sidebar .form-control:focus {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(86, 156, 214, 0.65);
+  box-shadow: 0 0 0 0.2rem rgba(29, 82, 131, 0.18);
+  color: #fff;
+}
+
+body.niteMode .dispatch-section,
+body.niteMode .driver-section {
+  position: relative;
+}
+
+body.niteMode .dispatch-section::after {
+  content: "";
+  display: block;
+  margin: 0.5rem 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.niteMode .messenger-thread-list {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+body.niteMode .messenger-thread-list::-webkit-scrollbar-thumb,
+body.niteMode .messenger-message-area::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+body.niteMode .messenger-thread-list::-webkit-scrollbar-thumb:hover,
+body.niteMode .messenger-message-area::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+body.niteMode .messenger-thread-list:hover::-webkit-scrollbar-thumb,
+body.niteMode .messenger-message-area:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+body:not(.niteMode) .messenger-thread-list::-webkit-scrollbar-thumb,
+body:not(.niteMode) .messenger-message-area::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+body:not(.niteMode) .messenger-thread-list::-webkit-scrollbar-thumb:hover,
+body:not(.niteMode) .messenger-message-area::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
 .bkgd {
     @include input-bkgd-color(rgba(250, 250, 210, .85));
 }

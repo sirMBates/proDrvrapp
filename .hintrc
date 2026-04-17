@@ -8,7 +8,11 @@
       {
         "ignore": [
           "backdrop-filter",
-          "text-size-adjust"
+          "text-size-adjust",
+          "scrollbar-color",
+          "scrollbar-width",
+          "scrollbar-width: thin",
+          "scrollbar-width: none"
         ]
       }
     ]
