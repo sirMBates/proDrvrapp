@@ -132,7 +132,7 @@ include "partials/info-modal.php";
 
                                     <!-- Dispatch incoming -->
                                     <div class="message-row message-row-received mb-3">
-                                        <div class="message-meta small text-body-secondary mb-1">
+                                        <div class="message-meta small mb-1 dispatch-label">
                                             Dispatch · 10:02 AM
                                         </div>
                                         <div class="message-bubble dispatch-bubble">
