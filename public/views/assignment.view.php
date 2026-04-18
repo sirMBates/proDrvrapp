@@ -26,7 +26,7 @@ include "partials/info-modal.php";
                                                 </thead>
                                                 <tbody class="table-group-divider">
                                                         <tr class="text-center">
-                                                                <td scope="row" class="editable-data" data-type="number" data-field="vehicle_id"></td>
+                                                                <td scope="row" class="editable-data" data-type="vehicle" data-field="vehicle_id"></td>
                                                                 <td></td>
                                                                 <td></td>
                                                                 <td></td>
