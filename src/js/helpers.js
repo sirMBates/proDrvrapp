@@ -307,3 +307,69 @@ export class ServiceTimeCalculator {
         return { formatted, decimal };
     };
 };
+
+export function clearValidationState(el) {
+    if (!el) return;
+
+    el.classList.remove('input-error', 'input-error-flash', 'input-valid');
+
+    const container = el.closest('td, .col, .d-block, .mb-2, .p-1') || el.parentElement;
+    if (!container) return;
+
+    container.querySelectorAll('.field-error-message, .field-valid-icon, .field-error-icon')
+        .forEach(node => node.remove());
+};
+
+export function setFieldError(el, message = 'Invalid value.') {
+    if (!el) return;
+
+    clearValidationState(el);
+    el.classList.add('input-error', 'input-error-flash');
+
+    const container = el.closest('td, .col, .d-block, .mb-2, .p-1') || el.parentElement;
+    if (container) {
+        const icon = document.createElement('span');
+        icon.className = 'field-error-icon';
+        icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+
+        const msg = document.createElement('div');
+        msg.className = 'field-error-message';
+        msg.textContent = message;
+
+        container.appendChild(icon);
+        container.appendChild(msg);
+    }
+
+    setTimeout(() => el.classList.remove('input-error-flash'), 500);
+};
+
+export function setFieldValid(el) {
+    if (!el) return;
+
+    clearValidationState(el);
+    el.classList.add('input-valid');
+
+    const container = el.closest('td, .col, .d-block, .mb-2, .p-1') || el.parentElement;
+    if (container) {
+        const icon = document.createElement('span');
+        icon.className = 'field-valid-icon';
+        icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+        container.appendChild(icon);
+    }
+};
+
+export function focusFirstInvalid(errors) {
+    if (!errors.length) return;
+    const first = errors[0];
+    first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (typeof first.focus === 'function') first.focus();
+};
+
+export function setSubmittingState(button, isSubmitting) {
+    if (!button) return;
+
+    button.disabled = isSubmitting;
+    button.dataset.originalText ??= button.textContent;
+
+    button.textContent = isSubmitting ? 'Saving...' : button.dataset.originalText;
+};

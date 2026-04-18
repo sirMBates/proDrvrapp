@@ -1,5 +1,5 @@
 import { Validation } from "./validation.js";
-import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, highlightErrorElement } from "./helpers.js";
+import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, highlightErrorElement, clearValidationState, setFieldError, setFieldValid, focusFirstInvalid, setSubmittingState } from "./helpers.js";
 import { handleAssignmentFetch } from "./pwa.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
@@ -206,6 +206,72 @@ async function clearAssignmentUI() {
     await fadeIn(assignmentCard); // smooth fade back in
 };
 
+function validateEditableElement(el, type, field) {
+    const value = (el?.value ?? el?.textContent ?? '').trim();
+
+    if (!Validation.validate(value, type)) {
+        setFieldError(el, `Invalid ${field.replaceAll('_', ' ')}.`);
+        return false;
+    }
+
+    setFieldValid(el);
+    return true;
+};
+
+function validateAssignmentTextarea(el) {
+    const value = (el?.value ?? '').trim();
+
+    if (!Validation.validateMessage(value, 'assignment-textarea')) {
+        setFieldError(el, 'Please remove invalid characters.');
+        return false;
+    }
+
+    setFieldValid(el);
+    return true;
+};
+
+function validateCrossFieldRules() {
+    const errors = [];
+
+    const totalHrsCell = document.querySelector('[data-field="total_hrs"]');
+    const drivingTimeCell = document.querySelector('[data-field="driving_time"]');
+    const endTimeCell = document.querySelector('[data-field="act_end_time"]');
+    const dropTimeCell = document.querySelector('[data-field="act_drop_time"]');
+
+    const totalInput = totalHrsCell?.querySelector('input');
+    const driveInput = drivingTimeCell?.querySelector('input');
+    const endInput = endTimeCell?.querySelector('input');
+    const dropInput = dropTimeCell?.querySelector('input');
+
+    const totalVal = parseFloat((totalInput?.value ?? totalHrsCell?.textContent ?? '').trim());
+    const driveVal = parseFloat((driveInput?.value ?? drivingTimeCell?.textContent ?? '').trim());
+
+    if (!Number.isNaN(totalVal) && !Number.isNaN(driveVal) && driveVal > totalVal) {
+        setFieldError(driveInput || drivingTimeCell, 'Driving time cannot exceed total hours.');
+        setFieldError(totalInput || totalHrsCell, 'Total hours must be at least driving time.');
+        errors.push(driveInput || drivingTimeCell);
+    }
+
+    const endVal = (endInput?.value ?? endTimeCell?.textContent ?? '').trim();
+    const dropVal = (dropInput?.value ?? dropTimeCell?.textContent ?? '').trim();
+
+    if (endVal && dropVal) {
+        const endDate = Date.parse(endVal);
+        const today = new Date().toISOString().slice(0, 10);
+        const dropDate = Date.parse(`${today}T${dropVal}`);
+
+        if (!Number.isNaN(endDate) && !Number.isNaN(dropDate)) {
+            if (endDate < dropDate) {
+                setFieldError(endInput || endTimeCell, 'Actual end time cannot be earlier than drop time.');
+                setFieldError(dropInput || dropTimeCell, 'Drop time must be before end time.');
+                errors.push(endInput || endTimeCell);
+            }
+        }
+    }
+
+    return errors;
+};
+
 window.addEventListener('DOMContentLoaded', () => {
     // Create pagination controls (Bootstrap)
     function createPaginationControls() {
@@ -333,6 +399,20 @@ window.addEventListener('DOMContentLoaded', () => {
         pickupDetails.value = assignment['pickup_details'];
         destinationDetails.value = assignment['destination_details'];
         opNotes.value = assignment['driver_notes'];
+
+        document.querySelector('.assignment-card')?.setAttribute(
+            'data-original-assignment',
+            JSON.stringify({
+                vehicle_id: assignment['vehicle_id'] ?? '',
+                act_drop_time: assignment['actual_drop_time'] ?? '',
+                act_end_time: assignment['actual_end_time'] ?? '',
+                total_hrs: assignment['total_job_time'] ?? '',
+                driving_time: assignment['driving_time'] ?? '',
+                pickup_details: assignment['pickup_details'] ?? '',
+                destination_details: assignment['destination_details'] ?? '',
+                drvr_notes: assignment['driver_notes'] ?? ''
+            })
+        );
 
         // Update pills and buttons if pagination exists
         if (pagination) {
@@ -496,9 +576,16 @@ window.addEventListener('DOMContentLoaded', () => {
                 cell.appendChild(input);
 
                 input.focus();
+                input.addEventListener('input', () => {
+                    validateEditableElement(input, type, field);
+                });
+                
                 input.addEventListener('blur', () => {
+                    const isValid = validateEditableElement(input, type, field);
                     const newValue = input.value.trim();
                     cell.textContent = newValue || currentValue;
+
+                    if (!isValid) return;
                     // Persist to LocalStorage for this assignment
                     try {
                         const orderId = document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim(); // order#
@@ -554,16 +641,53 @@ window.addEventListener('DOMContentLoaded', () => {
             if ( !cell.querySelector('input') ) {
                 const currentValue = cell.textContent.trim();
                 const input = document.createElement('input');
-                input.type = 'text';
+
+                if (type === 'time') {
+                    input.type = 'time';
+                } else if (type === 'datetime') {
+                    input.type = 'datetime-local';
+                } else if (type === 'decimal') {
+                    input.type = 'number';
+                    input.step = '0.01';
+                    input.min = '0';
+                } else if (type === 'vehicle' || type === 'number') {
+                    input.type = 'number';
+                    input.step = '1';
+                    input.min = '0';
+                } else {
+                    input.type = 'text';
+                }
+
                 input.classList.add("form-control");
-                input.value = currentValue;
+                // convert displayed datetime to datetime-local input format if needed
+                if (type === 'datetime' && currentValue) {
+                    input.value = currentValue.replace(' ', 'T').slice(0, 16);
+                } else {
+                    input.value = currentValue;
+                }
+
                 cell.textContent = '';
                 cell.appendChild(input);
 
                 input.focus();
+
+                input.addEventListener('input', () => {
+                    validateEditableElement(input, type, field);
+                });
+                //
                 input.addEventListener('blur', () => {
+                    const isValid = validateEditableElement(input, type, field);
                     const newValue = input.value.trim();
-                    cell.textContent = newValue || currentValue;
+
+                    if (type === 'datetime' && newValue) {
+                        cell.textContent = newValue.replace('T', ' ');
+                    } else {
+                        cell.textContent = newValue || currentValue;
+                    }
+
+                    if (isValid) {
+                        cell.classList.remove('input-error');
+                    }
                 });
 
                 input.addEventListener('keydown', e => {
@@ -588,6 +712,19 @@ window.addEventListener('DOMContentLoaded', () => {
             console.log('[PWA] Page restored from cache. Re-syncing button states...');
             restoreButtonStateFromStorage();
         }
+    });
+
+    ['pickup_details', 'destination_details', 'drvr_notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener('input', () => {
+            validateAssignmentTextarea(el);
+        });
+
+        el.addEventListener('blur', () => {
+            validateAssignmentTextarea(el);
+        });
     });
 });
 
@@ -768,21 +905,20 @@ editBtn.addEventListener('click', (e) => {
 
     // Collect All editable cells, even blank ones
     const editableCells = document.querySelectorAll('.editable-data');
-    editableCells.forEach(cell => {
+    for (const cell of editableCells) {
         const field = cell.dataset.field || '';
         const type = cell.dataset.type || '';
         const inputEl = cell.querySelector('input');
-        let value = inputEl ? inputEl.value.trim() : cell.textContent.trim();
+        const target = inputEl || cell;
+        const value = inputEl ? inputEl.value.trim() : cell.textContent.trim();
 
         if (!Validation.validate(value, type)) {
-            showFlashAlert('error', `Invalid value for ${field.replace('_', ' ')}.`);
-            highlightErrorElement(inputEl || cell);  // 🔥 highlight here
-            foundError = true;
-            return;
+            setFieldError(target, `Invalid ${field.replaceAll('_', ' ')}.`);
+            errors.push(target);
+            continue;
         }
 
-        // Remove previous highlight if now valid
-        (inputEl || cell).classList.remove('input-error');
+        setFieldValid(target);
 
         // Add hidden field
         if ( field ) {
@@ -793,39 +929,50 @@ editBtn.addEventListener('click', (e) => {
             hidden.classList.add('temp-hidden');
             form.appendChild(hidden);
         }
-    });
+    };
 
-    if (foundError) return; // Stop submission early
+    if (errors.length) {
+        showFlashAlert('error', 'Please correct the highlighted fields.');
+        focusFirstInvalid(errors);
+        return;
+    }
 
     // Include textareas ( even if unchanged or empty )
-    ['pickup_details', 'destination_details', 'drvr_notes'].forEach(id => {
+    for (const id of ['pickup_details', 'destination_details', 'drvr_notes']) {
         const el = document.getElementById(id);
         if ( !el ) return;
 
         const value = el.value.trim();
 
-        if (!Validation.validateMessage(value, 'assignment-textarea')) {
-            showFlashAlert('error', 'Please remove invalid characters from your notes/details.');
-            highlightErrorElement(el); // 🔥 highlight textarea
-            foundError = true;
-            return;
+        if (!validateAssignmentTextarea(el)) {
+            errors.push(el);
+            continue;
         }
-
-        el.classList.remove('input-error');
             
         const hidden = document.createElement('input');
         hidden.type = 'hidden';
         hidden.name = el.name;
-        hidden.value = el.value.trim(); // empty still fine
+        hidden.value = value; // empty still fine
         hidden.classList.add('temp-hidden');
         form.appendChild(hidden);
-    });
+    };
 
-    if (foundError) return;
+    if (errors.length) {
+        showFlashAlert('error', 'Please correct the highlighted fields.');
+        focusFirstInvalid(errors);
+        return;
+    }
 
     const editableFieldNames = new Set(
         Array.from(document.querySelectorAll('.editable-data')).map(cell => cell.dataset.field).filter(Boolean)
     );
+
+    const crossFieldErrors = validateCrossFieldRules();
+    if (crossFieldErrors.length) {
+        showFlashAlert('error', 'Please fix the highlighted time or hour values.');
+        focusFirstInvalid(crossFieldErrors);
+        return;
+    }
 
     // Add identifiers ( these should always exist )
     [['order_id', assignment.order_id], ['vehicle_id', assignment.vehicle_id], ['driver_id', assignment.driver_id]].forEach(([name, val]) => {
@@ -893,6 +1040,7 @@ editBtn.addEventListener('click', (e) => {
     modifyFlag.classList.add('temp-hidden');
     form.appendChild(modifyFlag);
     // Submit via standard POST
+    // setSubmittingState(editBtn, true);
     // form.submit();
 });
 
