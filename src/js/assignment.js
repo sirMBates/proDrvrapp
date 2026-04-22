@@ -272,6 +272,48 @@ function validateCrossFieldRules() {
     return errors;
 };
 
+function getCurrentOrderId() {
+    return document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim() || '';
+};
+
+function getAssignmentDraftKey(orderId) {
+    return `assignment_draft_${orderId}`;
+};
+
+function saveAssignmentDraft(orderId, field, value) {
+    if ( !orderID || field ) return;
+
+    try {
+        const key = getAssignmentDraftKey(orderId);
+        const existing = JSON.parse(localStorage.getItem(key) || '{}');
+        existing[field] = value;
+        localStorage.setItem(key, JSON.stringify(existing));
+    } catch (err) {
+        console.warn('Failed to save assignment draft: ', err);
+    }
+};
+
+function getAssignmentDraft(orderId) {
+    if (!orderId) return {};
+
+    try {
+        return JSON.parse(localStorage.getItem(getAssignmentDraftKey(orderId)) || '{}');
+    } catch(err) {
+        console.warn('Failed to read assignment draft: ', err);
+        return {};
+    }
+};
+
+function clearAssignmentDraft(orderId) {
+    if (!orderId) return;
+
+    try {
+        localStorage.removeItem(getAssignmentDraftKey(orderId));
+    } catch (err) {
+        console.warn('Failed to clear assignment draft: ', err);
+    }
+};
+
 window.addEventListener('DOMContentLoaded', () => {
     // Create pagination controls (Bootstrap)
     function createPaginationControls() {
@@ -399,6 +441,41 @@ window.addEventListener('DOMContentLoaded', () => {
         pickupDetails.value = assignment['pickup_details'];
         destinationDetails.value = assignment['destination_details'];
         opNotes.value = assignment['driver_notes'];
+
+        // Apply local draft values on top of server values
+        const draft = getAssignmentDraft(assignment['order_id']);
+
+        if (draft.vehicle_id !== undefined) {
+            primaryCoachId.textContent = draft.vehicle_id;
+        };
+
+        if (draft.act_drop_time !== undefined) {
+            secondaryDropTime.textContent = draft.act_drop_time;
+        };
+
+        if (draft.act_end_time !== undefined) {
+            tertiaryActEndTime.textContent = draft.act_end_time;
+        };
+
+        if (draft.total_hrs !== undefined) {
+            tertiaryShiftTime.textContent = draft.total_hrs;
+        };
+
+        if (draft.driving_time !== undefined) {
+            tertiaryDriveTime.textContent = draft.driving_time;
+        };
+
+        if (draft['pickup-details'] !== undefined) {
+            pickupDetails.value = draft['pickup-details'];
+        };
+
+        if (draft['destination-details'] !== undefined) {
+            destinationDetails.value = draft['destination-details'];
+        };
+
+        if (draft['drvr-notes'] !== undefined) {
+            opNotes.value = draft['drvr-notes'];
+        };
 
         document.querySelector('.assignment-card')?.setAttribute(
             'data-original-assignment',
@@ -586,8 +663,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     cell.textContent = newValue || currentValue;
 
                     if (!isValid) return;
+
+                    const orderId = getCurrentOrderId();
+                    saveAssignmentDraft(orderId, field, newValue || currentValue);
                     // Persist to LocalStorage for this assignment
-                    try {
+                    /*try {
                         const orderId = document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim(); // order#
                         if (orderId) {
                             const storageKey = `driving_time_${orderId}`;
@@ -601,7 +681,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         }
                     } catch (err) {
                         console.warn("Failed to persist driving time:", err);
-                    }
+                    }*/
                 });
             
                 // Save on Enter
@@ -644,7 +724,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 if (type === 'time') {
                     input.type = 'time';
-                } else if (type === 'datetime') {
+                } else if (type === 'datetime' || type === 'datetime-local') {
                     input.type = 'datetime-local';
                 } else if (type === 'decimal') {
                     input.type = 'number';
@@ -660,7 +740,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 input.classList.add("form-control");
                 // convert displayed datetime to datetime-local input format if needed
-                if (type === 'datetime' && currentValue) {
+                if ((type === 'datetime' || type === 'datetime-local') && currentValue) {
                     input.value = currentValue.replace(' ', 'T').slice(0, 16);
                 } else {
                     input.value = currentValue;
@@ -679,15 +759,18 @@ window.addEventListener('DOMContentLoaded', () => {
                     const isValid = validateEditableElement(input, type, field);
                     const newValue = input.value.trim();
 
-                    if (type === 'datetime' && newValue) {
-                        cell.textContent = newValue.replace('T', ' ');
-                    } else {
-                        cell.textContent = newValue || currentValue;
+                    let displayValue = newValue || currentValue;
+
+                    if ((type === 'datetime' || type === 'datetime-local') && newValue) {
+                        displayValue = newValue.replace('T', ' ');
                     }
 
-                    if (isValid) {
-                        cell.classList.remove('input-error');
-                    }
+                    cell.textContent = displayValue;
+
+                    if (!isValid) return;
+                    
+                    const orderId = getCurrentOrderId();
+                    saveAssignmentDraft(orderId, field, displayValue);
                 });
 
                 input.addEventListener('keydown', e => {
@@ -720,15 +803,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
         el.addEventListener('input', () => {
             validateAssignmentTextarea(el);
+            const orderId = getCurrentOrderId();
+            saveAssignmentDraft(orderId, el.name, el.value.trim());
         });
 
         el.addEventListener('blur', () => {
             validateAssignmentTextarea(el);
+            const orderId = getCurrentOrderId();
+            saveAssignmentDraft(orderId, el.name, el.value.trim());
         });
     });
 });
 
-window.addEventListener("DOMContentLoaded", () => {
+/*window.addEventListener("DOMContentLoaded", () => {
     try {
         const orderId = document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim();
         if (orderId) {
@@ -745,7 +832,7 @@ window.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
         console.warn("Failed to restore driving time:", err);
     }
-});
+});*/
 
 // Reusable Restoration Function with Visual Debug ===
 function restoreButtonStateFromStorage() {
