@@ -125,10 +125,10 @@ class JobOrderImporter {
                     'contact_mobile'              => trim($rowData['contact_mobile'] ?? ''),
                     'pickup_details'              => trim($rowData['pickup_location_details'] ?? ''),
                     'destination_details'         => trim($rowData['destination_location_details'] ?? ''),
-                    'driver_notes'                => trim($rowData['driver_notes'] ?? ''),
                     'signature_required'          => strtolower(trim($rowData['signature_required'] ?? 'no')) === 'yes' ? 1 : 0,
                     'pre_signature_path'          => trim($rowData['pre_signature'] ?? ''),
                     'post_signature_path'         => trim($rowData['post_signature'] ?? '')
+                    /*'driver_notes'                => trim($rowData['driver_notes'] ?? ''),*/
                 ];
             }
             $this->logger->info("Total valid rows prepared for insert: " . count($rows));
