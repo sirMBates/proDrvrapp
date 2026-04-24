@@ -7,7 +7,7 @@ const groupC = document.querySelector('#tableC');
 const groupD = document.querySelector('#tableD');
 const locationPickup = document.querySelector('#pickup_details');
 const locationDestination = document.querySelector('#destination_details');
-const operatorNotes = document.querySelector('#drvr_notes');
+const operatorNotes = document.querySelector('#shared_job_note');
 const clickCells = document.querySelectorAll('.editable-data');
 const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
@@ -382,6 +382,34 @@ window.addEventListener('DOMContentLoaded', () => {
         return { renderPills, updateButtons };
     };
 
+    function renderSharedNotes(assignment) {
+        const container = document.querySelector('#existing-shared-notes');
+        const list = document.querySelector('#shared-notes-list');
+
+        if ( !container || !list ) return;
+
+        list.innerHTML = '';
+
+        const notes = assignment.shared_notes || [];
+
+        if ( !notes.length ) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        notes.forEach(note => {
+            const item = document.createElement('div');
+            item.className = 'border rounded p-2 mb-2 bg-light';
+            
+            item.innerHTML = `<small class="text-muted d-block mb-1">
+                                    Updated: ${note.updated_at || ''}
+                                </small>
+                                <p class="mb-0">${note.note_body || ''}</p>`;
+            list.appendChild(item);
+        });
+        container.classList.remove('hidden');
+    }
+
     // Renders the assignment details to your existing UI tables
     showAssignment = function(index) {
         if (assignments.length === 0) return;
@@ -440,7 +468,8 @@ window.addEventListener('DOMContentLoaded', () => {
         quaternaryContactNameandMobile.textContent = `${assignment['contact_name']}, ${assignment['contact_mobile']}`;
         pickupDetails.value = assignment['pickup_details'];
         destinationDetails.value = assignment['destination_details'];
-        opNotes.value = assignment['driver_notes'];
+        opNotes.value = assignment['current_driver_shared_note'] || '';
+        renderSharedNotes(assignment);
 
         // Apply local draft values on top of server values
         const draft = getAssignmentDraft(assignment['order_id']);
@@ -473,8 +502,8 @@ window.addEventListener('DOMContentLoaded', () => {
             destinationDetails.value = draft['destination-details'];
         };
 
-        if (draft['drvr-notes'] !== undefined) {
-            opNotes.value = draft['drvr-notes'];
+        if (draft['shared_job_note'] !== undefined) {
+            opNotes.value = draft['shared_job_note'];
         };
 
         document.querySelector('.assignment-card')?.setAttribute(
@@ -487,7 +516,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 driving_time: assignment['driving_time'] ?? '',
                 pickup_details: assignment['pickup_details'] ?? '',
                 destination_details: assignment['destination_details'] ?? '',
-                drvr_notes: assignment['driver_notes'] ?? ''
+                shared_job_note: assignment['current_driver_shared_note'] ?? ''
             })
         );
 
@@ -595,7 +624,9 @@ window.addEventListener('DOMContentLoaded', () => {
             });
             locationPickup.value = 'No assignment available...';
             locationDestination.value = 'No assignment available...';
-            operatorNotes.value = 'No stored notes available...';
+            operatorNotes.value = '';
+            document.querySelector('#existing-shared-notes')?.classList.add('hidden');
+            document.getElementById('shared-notes-list')?.replaceChildren();
         }
     })
     .catch(error => console.error('There was a problem with the fetch operation:', error));
@@ -797,7 +828,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    ['pickup_details', 'destination_details', 'drvr_notes'].forEach(id => {
+    ['pickup_details', 'destination_details', 'shared_job_note'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
 
@@ -1025,7 +1056,7 @@ editBtn.addEventListener('click', (e) => {
     }
 
     // Include textareas ( even if unchanged or empty )
-    for (const id of ['pickup_details', 'destination_details', 'drvr_notes']) {
+    for (const id of ['pickup_details', 'destination_details', 'shared_job_note']) {
         const el = document.getElementById(id);
         if ( !el ) return;
 

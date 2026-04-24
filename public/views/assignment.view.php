@@ -123,12 +123,18 @@ include "partials/info-modal.php";
 ?>
                         <section id="driver-notes-box" class="card my-3">
                                 <div class="card-header bg-besttrailsclr">
-                                        <h4 class="text-center text-capitalize text-light">driver trip notes</h4>
+                                        <h4 class="text-center text-capitalize text-light">shared job notes</h4>
                                 </div>
+                                
                                 <div class="card-body">
+                                        <div id="existing-shared-notes" class="hidden mb-3">
+                                                <h6 class="text-muted">existing notes for this pickup:</h6>
+                                                <div id="shared-notes-list"></div>
+                                        </div>
+
                                         <div class="d-block mb-2 p-1">
-                                                <label for="drvr_notes" class="h6 label-form text-capitalize">notes:</label>
-                                                <textarea class="form-control bg-btd-textarea-clr text-dark" style="height: 200px;" id="drvr_notes" name="drvr-notes"></textarea>
+                                                <label for="shared_job_note" class="h6 label-form text-capitalize">your note:</label>
+                                                <textarea id="shared_job_note" class="form-control bg-btd-textarea-clr text-dark editable-data" style="height: 200px;" name="shared_job_note" placeholder="Add helpful pickup/location details for other drivers..."></textarea>
                                         </div>
                                 </div>
                         </section>
