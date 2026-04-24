@@ -19,7 +19,7 @@ class GetWorkContr extends WorkAssignments {
             http_response_code(404);
             echo json_encode([
                 'status' => 'error',
-                'message' => 'There was a problem: ' . $e->getMessage('There are no assignments currently.') 
+                'message' => 'There was a problem: ' . $e->getMessage() 
             ]);
             exit();
         }
