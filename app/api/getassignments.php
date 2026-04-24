@@ -11,7 +11,7 @@ $headers = getallheaders();
 $headerToken = $headers['X-CSRF-Token'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;
 
-if (!$headerToken || $sessionToken || !hash_equals($sessionToken, $headerToken)) {
+if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)) {
     http_response_code(403);
     echo json_encode([
         'status' => 'error',
