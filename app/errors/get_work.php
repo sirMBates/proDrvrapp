@@ -7,7 +7,7 @@ class GetWorkContr extends WorkAssignments {
     public function workInformation() {
         try {
             $jobAssignment = new WorkAssignments();
-            $operator = htmlspecialchars(trim($_SESSION['driver_id']));
+            $operator = (int) $_SESSION['driver_id'];
             $assignments = $jobAssignment->driverWorkAssignments($operator);
             //dd($assignments);
             echo json_encode([
