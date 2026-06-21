@@ -12,7 +12,7 @@ require base_path('vendor/autoload.php');
 
 use core\Logger;
 
-$app = new class {
+return new class {
     private Logger $logger;
 
     public function __construct() {
@@ -85,13 +85,6 @@ $app = new class {
         $router->route($uri, $method);
     }
 };
-
-if (PHP_SAPI === 'cli') {
-    $app->handleCli($argv);
-    exit;
-}
-
-return $app;
 
 /*spl_autoload_register(function ($class) {
     $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
