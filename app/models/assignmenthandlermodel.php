@@ -50,7 +50,7 @@ class UpdateAssignment {
         if (!$success) {
             return [
                 'status' => 'error',
-                'message' => 'My bad! There was a problem but don\'t worry. Just try again.'
+                'message' => 'I\'m sorry but there seems to be a problem. Please try again.'
             ];
         }
 
@@ -93,23 +93,35 @@ class UpdateAssignment {
         $originAddress = trim($assignment['origin']);
         $originKey = $this->normalizeAddressKey($originAddress);
 
-        // Update existing driver note if it exists
-        $updateSql = "UPDATE driver_shared_notes
-                    SET note_body = :note_body, updated_at = NOW()
+        // Check if note exist first
+        $checkSql = "SELECT note_id
+                    FROM driver_shared_notes
                     WHERE driver_id = :driver_id
                     AND customer_name = :customer_name
                     AND origin_address_key = :origin_key
-                    AND is_active = 1";
+                    AND is_active = 1 LIMIT 1";
 
-        $updateStmt = $pdo->prepare($updateSql);
-        $updateStmt->execute([
-            ':note_body' => $data['shared_job_note'],
+        $checkStmt = $pdo->prepare($checkSql);
+        $checkStmt->execute([
             ':driver_id' => $data['driver_id'],
             ':customer_name' => $customerName,
             ':origin_key' => $originKey
         ]);
 
-        if ($updateStmt->rowCount() > 0) {
+        $existingNote = $checkStmt->fetch();
+        
+        // Update existing driver note if it exists
+        if ($existingNote) {
+            $updateSql = "UPDATE driver_shared_notes
+                    SET note_body = :note_body, updated_at = NOW()
+                    WHERE note_id = :note_id";
+            
+            $updateStmt = $pdo->prepare($updateSql);
+            $updateStmt->execute([
+                ':note_body' => $data['shared_job_note'],
+                ':note_id' => $existingNote['note_id']
+            ]);
+
             return;
         }
 
@@ -128,46 +140,47 @@ class UpdateAssignment {
             ':note_body' => $data['shared_job_note']
         ]);
     }
-    
-    protected function modifyAssignment(array $data) {
-        $db = new core\Database();
 
-        private function normalizeAddressKey($address) {
-            $address = strtolower(trim((string)$address));
-            $address = preg_replace('/[^a-z0-9\s]/', '', $address);
+    private function normalizeAddressKey($address) {
+        $address = strtolower(trim((string)$address));
+        $address = preg_replace('/[^a-z0-9\s]/', '', $address);
             $address = preg_replace('/\s+/', ' ', $address);
 
-            $replace = [
-                ' street' => ' st',
-                ' avenue' => ' ave',
-                ' road' => ' rd',
-                ' boulevard' => ' blvd',
-                ' drive' => ' dr',
-                ' lane' => ' ln',
-                ' court' => ' ct',
-                ' place' => ' pl',
-                ' circle' => ' cir'
-            ];
+        $replace = [
+            ' street' => ' st',
+            ' avenue' => ' ave',
+            ' road' => ' rd',
+            ' boulevard' => ' blvd',
+            ' drive' => ' dr',
+            ' lane' => ' ln',
+            ' court' => ' ct',
+            ' place' => ' pl',
+            ' circle' => ' cir'
+        ];
 
-            return str_replace(array_keys($replace), array_values($replace), $address);
-        }
+        return str_replace(array_keys($replace), array_values($replace), $address);
+    }
+    
+    protected function modifyAssignment(array $data) {
+        $db = new Database();
+        $pdo = $db->connect();
 
         //Convert datetime-local to MYSQL DATETIME
-        $actualEndTime = str_replace('T', ' ', $data['act_end_time']) . ':00';
+        $actualEndTime = str_replace('T', ' ', $data['actual_end_time']) . ':00';
 
         $sql = "UPDATE work_orders
-                SET vehicle_id = :vehicle_id, actual_drop_time = :actual_drop_time
+                SET vehicle_id = :vehicle_id, actual_drop_time = :actual_drop_time,
                 actual_end_time = :actual_end_time, total_job_time = :total_job_time,
                 driving_time = :driving_time, pickup_details = :pickup_details,
                 destination_details = :destination_details, signature_status = :signature_status
                 WHERE order_id = :order_id AND driver_id = :driver_id";
 
-        $stmt = $db->connect()->prepare($sql);
+        $stmt = $pdo->prepare($sql);
 
         $stmt->bindValue(':vehicle_id', $data['vehicle_id']);
-        $stmt->bindValue(':actual_drop_time', $data['actual_;drop_time']);
-        $stmt->bindValue(':actual_end_time', $data['actual_end_time']);
-        $stmt->bindValue(':total_job_time', $data['total_job_time']);
+        $stmt->bindValue(':actual_drop_time', $data['actual_drop_time']);
+        $stmt->bindValue(':actual_end_time', $actualEndTime);
+        $stmt->bindValue(':total_job_time', $data['total_hrs']);
         $stmt->bindValue(':driving_time', $data['driving_time']);
         $stmt->bindValue(':pickup_details', $data['pickup_details']);
         $stmt->bindValue(':destination_details', $data['destination_details']);
@@ -184,13 +197,13 @@ class UpdateAssignment {
             ];
         }
 
+        $this->saveSharedJobNote($pdo, $data);
+        
         return [
             'status' => 'success',
             'message' => 'Assignment updated successfully.',
             'order_id' => $data['order_id']
         ];
-
-        $this->saveSharedJobNote($pdo, $data);
     }
 }
 

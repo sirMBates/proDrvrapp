@@ -50,7 +50,7 @@ include "partials/info-modal.php";
                                                                 <td></td>
                                                                 <td></td>
                                                                 <td></td>
-                                                                <td class="editable-data" data-type="time" data-field="act_drop_time"></td>
+                                                                <td class="editable-data" data-type="time" data-field="actual_drop_time"></td>
                                                         </tr>
                                                 </tbody>
                                         </table>
@@ -67,7 +67,7 @@ include "partials/info-modal.php";
                                                 <tbody class="table-group-divider">
                                                         <tr class="text-center">
                                                                 <td scope="row"></td>
-                                                                <td class="editable-data" data-type="datetime-local" data-field="act_end_time"></td>
+                                                                <td class="editable-data" data-type="datetime-local" data-field="actual_end_time"></td>
                                                                 <td class="editable-data" data-type="decimal" data-field="total_hrs"></td>
                                                                 <td class="editable-data" data-type="decimal" data-field="driving_time"></td>
                                                                 <td></td>
