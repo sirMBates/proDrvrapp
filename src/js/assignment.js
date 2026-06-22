@@ -1020,6 +1020,7 @@ editBtn.addEventListener('click', (e) => {
     form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
 
     let foundError = false;
+    const errors = [];
 
     // Collect All editable cells, even blank ones
     const editableCells = document.querySelectorAll('.editable-data');
@@ -1158,8 +1159,8 @@ editBtn.addEventListener('click', (e) => {
     modifyFlag.classList.add('temp-hidden');
     form.appendChild(modifyFlag);
     // Submit via standard POST
-    // setSubmittingState(editBtn, true);
-    // form.submit();
+    setSubmittingState(editBtn, true);
+    form.submit();
 });
 
 // Complete assignment button

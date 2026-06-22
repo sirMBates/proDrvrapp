@@ -12,7 +12,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $totalDriveTime;
     private $pickupDetails;
     private $destinationDetails;
-    private $driverNotes;
+    private $sharedJobNote;
     private $preSignature;
     private $postSignature;
     private $signatureStatus;
@@ -21,13 +21,13 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $this->driverId = $data['driver_id'] ?? null;
         $this->orderId = $data['order_id'] ?? null;
         $this->vehicleId = $data['vehicle_id'] ?? null;
-        $this->actualDropTime = $data['act_drop_time'] ?? null;
-        $this->actualEndTime = $data['act_end_time'] ?? null;
+        $this->actualDropTime = $data['actual_drop_time'] ?? null;
+        $this->actualEndTime = $data['actual_end_time'] ?? null;
         $this->totalShiftTime = $data['total_hrs'] ?? null;
         $this->totalDriveTime = $data['driving_time'] ?? null;
-        $this->pickupDetails = $this->validateTextarea($data['pickup-details'] ?? '');
-        $this->destinationDetails = $this->validateTextarea($data['destination-details'] ?? '');
-        $this->driverNotes = $this->validateTextarea($data['drvr-notes'] ?? '');
+        $this->pickupDetails = $this->validateTextarea($data['pickup_details'] ?? '');
+        $this->destinationDetails = $this->validateTextarea($data['destination_details'] ?? '');
+        $this->sharedJobNote = $this->validateTextarea($data['shared_job_note'] ?? '');
         $this->preSignature = $data['pre_signature_base64'] ?? null;
         $this->postSignature = $data['post_signature_base64'] ?? null;
         $this->signatureStatus = $data['signature_status'] ?? null;
@@ -40,57 +40,57 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
 
         if ($this->isMissingInfo($signatureRequired)) {
             $alert::setMsg('error', 'Please complete all fields before updating.');
-            header("Location: /assignment?error=incomplete");
+            header("Location: /assignments?error=incomplete");
             exit();
         }
 
         if (!$this->validateSignature($this->preSignature)) {
             $alert::setMsg('error', 'Invalid pre-trip signature format.');
-            header("Location: /assignment?error=invalid+signature");
+            header("Location: /assignments?error=invalid+signature");
             exit();
         }
 
         if (!$this->validateSignature($this->postSignature)) {
             $alert::setMsg('error', 'Invalid post-trip signature format.');
-            header("Location: /assignment?error=invalid+signature");
+            header("Location: /assignments?error=invalid+signature");
             exit();
         }
 
         if (!$this->checkDatesAndTimes()) {
             $alert::setMsg('warning', 'Please check your dates or times and try again.');
-            header("Location: /assignment?warning=incompatible+date+or+time");
+            header("Location: /assignments?warning=incompatible+date+or+time");
             exit();
         }
 
         if (!$this->checkHoursOfService()) {
             $alert::setMsg('warning', 'Please check your total hours and try again.');
-            header("Location: /assignment?warning=tot+hrs+incorrect");
+            header("Location: /assignments?warning=tot+hrs+incorrect");
             exit();
         }
 
         if (!$this->checkCoachId()) {
             $alert::setMsg('warning', 'Please check your vehicle number and try again.');
-            header("Location: /assignment?warning=incorrect+coach+id");
+            header("Location: /assignments?warning=incorrect+coach+id");
             exit();
         }
 
         if (!$this->validateSignatureStatus()) {
             $alert::setMsg('error', 'Invalid signature status.');
-            header("Location: /assignment?error=invalid+signature+state");
+            header("Location: /assignments?error=invalid+signature+state");
             exit();
         }
 
-        $this->modifyAssignment([
+        return $this->modifyAssignment([
             'driver_id' => $this->driverId,
             'order_id' => $this->orderId,
             'vehicle_id' => $this->vehicleId,
-            'act_drop_time' => $this->actualDropTime,
-            'act_end_time' => $this->actualEndTime,
+            'actual_drop_time' => $this->actualDropTime,
+            'actual_end_time' => $this->actualEndTime,
             'total_hrs' => $this->totalShiftTime,
             'driving_time' => $this->totalDriveTime,
-            'pickup-details' => $this->pickupDetails,
-            'destination-details' => $this->destinationDetails,
-            'drvr-notes' => $this->driverNotes,
+            'pickup_details' => $this->pickupDetails,
+            'destination_details' => $this->destinationDetails,
+            'shared_job_note' => $this->sharedJobNote,
             'pre_signature_base64' => $this->preSignature,
             'post_signature_base64' => $this->postSignature,
             'signature_status' => $this->signatureStatus

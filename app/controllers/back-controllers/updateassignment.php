@@ -18,7 +18,7 @@ if ($sessionToken === null) {
 
 if ($headerToken !== $sessionToken) {
     $alert::setMsg('error', 'Access denied due to invalid token.');
-    header("Location: /assignment?error=csrf");
+    header("Location: /assignments?error=csrf");
     exit();
 }
 
@@ -35,6 +35,17 @@ if ($method === 'PATCH') {
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
         $modification = new UpdateAssignmentDetailsContr($data);
         $modification->modify();
+
+        if ( ($result['status'] ?? '') === 'success' ) {
+            $alert::setMsg('success', $result['message'] ?? 'Assignment updated successfully.');
+            $orderId = urlencode( (string)($result['order_id'] ?? ($data['order_id'] ?? '')) );
+            header("Location: /assignments?updated=1&order_id={$orderId}");
+            exit();
+        }
+
+        $alert::setMsg('error', $result['message'] ?? 'Assignment update failed.');
+        header("Location: /assignments?error=update+failed");
+        exit();
     }
 }
 
