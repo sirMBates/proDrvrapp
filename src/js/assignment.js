@@ -452,12 +452,16 @@ window.addEventListener('DOMContentLoaded', () => {
         primaryOrderNumber.textContent = assignment['order_id'];
         primaryNumOfCoaches.textContent = assignment['num_of_coaches'];
         secondaryStartTime.textContent = dtHelper(assignment['start_date_time']);
+        secondaryStartTime.dataset.raw = assignment['start_date_time'];
         secondarySpotTime.textContent = dtHelper(`1970-01-01 ${assignment['spot_time']}`, 'time');
         secondaryLeaveTime.textContent = dtHelper(assignment['leave_date_time']);
         secondaryReturnTime.textContent = dtHelper(assignment['return_date_drop_time']);
-        secondaryDropTime.textContent = assignment['actual_drop_time'];
+        secondaryDropTime.textContent = assignment['actual_drop_time'] || '';
+        secondaryDropTime.dataset.raw = assignment['actual_drop_time'] || '';
         tertiaryEndTime.textContent = dtHelper(assignment['end_date_time']);
-        tertiaryActEndTime.textContent = assignment['actual_end_time'];
+        tertiaryEndTime.dataset.raw = assignment['end_date_time'];
+        tertiaryActEndTime.textContent = assignment['actual_end_time'] || '';
+        tertiaryActEndTime.dataset.raw = assignment['actual_end_time'] || '';
         tertiaryShiftTime.textContent = assignment['total_job_time'];
         tertiaryDriveTime.textContent = assignment['driving_time'];
         tertiaryOrigin.textContent = assignment['origin'];
@@ -478,12 +482,12 @@ window.addEventListener('DOMContentLoaded', () => {
             primaryCoachId.textContent = draft.vehicle_id;
         };
 
-        if (draft.act_drop_time !== undefined) {
-            secondaryDropTime.textContent = draft.act_drop_time;
+        if (draft.actual_drop_time !== undefined) {
+            secondaryDropTime.textContent = draft.actual_drop_time;
         };
 
-        if (draft.act_end_time !== undefined) {
-            tertiaryActEndTime.textContent = draft.act_end_time;
+        if (draft.actual_end_time !== undefined) {
+            tertiaryActEndTime.textContent = draft.actual_end_time;
         };
 
         if (draft.total_hrs !== undefined) {
@@ -510,8 +514,8 @@ window.addEventListener('DOMContentLoaded', () => {
             'data-original-assignment',
             JSON.stringify({
                 vehicle_id: assignment['vehicle_id'] ?? '',
-                act_drop_time: assignment['actual_drop_time'] ?? '',
-                act_end_time: assignment['actual_end_time'] ?? '',
+                actual_drop_time: assignment['actual_drop_time'] ?? '',
+                actual_end_time: assignment['actual_end_time'] ?? '',
                 total_hrs: assignment['total_job_time'] ?? '',
                 driving_time: assignment['driving_time'] ?? '',
                 pickup_details: assignment['pickup_details'] ?? '',
@@ -614,10 +618,10 @@ window.addEventListener('DOMContentLoaded', () => {
             const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[7];
             const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[9];
             
-            primaryCoachId.textContent = 'No assignment available...';
+            //primaryCoachId.textContent = 'No assignment available...';
             primaryDrvrId.textContent = driver['operatorid'];
             primaryDrvrName.textContent = `${driver['firstName']} ${driver['lastName']}`;
-            const placeholders = [primaryOrderNumber, primaryNumOfCoaches, secondaryStartTime, secondarySpotTime, secondaryLeaveTime, secondaryReturnTime, secondaryDropTime, tertiaryEndTime, tertiaryActEndTime, tertiaryShiftTime, tertiaryDriveTime, tertiaryOrigin, quaternaryDestination, quaternaryGroupNameandLeader, quaternaryGroupLeaderMobile, quaternaryCustomerNameandPhone, quaternaryContactNameandMobile];
+            const placeholders = [primaryCoachId, primaryOrderNumber, primaryNumOfCoaches, secondaryStartTime, secondarySpotTime, secondaryLeaveTime, secondaryReturnTime, secondaryDropTime, tertiaryEndTime, tertiaryActEndTime, tertiaryShiftTime, tertiaryDriveTime, tertiaryOrigin, quaternaryDestination, quaternaryGroupNameandLeader, quaternaryGroupLeaderMobile, quaternaryCustomerNameandPhone, quaternaryContactNameandMobile];
             placeholders.forEach(ph => {
                 const el = eval(ph);
                 if (el) el.textContent = 'No assignment available...';
@@ -724,24 +728,39 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if ( type === "decimal" && field === "total_hrs" ) {
                 try {
-                    const startDateTime = document.querySelector("#tableB tbody tr td:nth-child(1)")?.textContent.trim();
-                    const spotTime = document.querySelector("#tableB tbody tr td:nth-child(2)")?.textContent.trim();
-                    const endDate = document.querySelector("#tableC tbody tr td:nth-child(1)")?.textContent.trim().split(" ")[0];
-                    const actualEndTime = document.querySelector("#tableC tbody tr td:nth-child(2)")?.textContent.trim();
+                    const assignment = getCurrentAssignment();
 
-                    if ( !startDateTime || !spotTime || !endDate || !actualEndTime ) {
-                        showFlashAlert("warning", "Missing start or end times.");
+                    const actualEndCell = document.querySelector('[data-field="actual_end_time"]');
+                    const actualEndInput = actualEndCell?.querySelector('input');
+
+                    const actualEndValue = actualEndInput ? actualEndInput.value.trim() : (actualEndCell?.dataset.raw || actualEndCell?.textContent.trim());
+
+                    if (!assignment?.start_date_time || !actualEndValue) {
+                        showFlashAlert('warning', 'Please enter the actual end time first.');
                         return;
                     }
 
-                    const startObj = new Date(startDateTime);
-                    let endObj = ServiceTimeCalculator.combineDateAndTime(endDate, actualEndTime);
+                    const startValue = assignment.start_date_time.replace(' ', 'T').slice(0, 16);
+                    const endValue = actualEndValue.replace(' ', 'T').slice(0, 16);
+
+                    const startObj = new Date(startValue);
+                    let endObj = new Date(endValue);
+
+                    if (Number.isNaN(startObj.getTime()) || Number.isNaN(endObj.getTime())) {
+                        showFlashAlert('warning', 'Invalid start or end time.');
+                        return;
+                    }
+
                     endObj = ServiceTimeCalculator.adjustForOvernight(startObj, endObj);
 
                     const total = ServiceTimeCalculator.getTotalHours(startObj, endObj);
-                    cell.TextContent = total.decimal.toFixed(2);
+                    const totalValue = total.decimal.toFixed(2);
 
-                    showFlashAlert("info", `Total hours updated: ${total.formatted} (${total.decimal} hrs)`);
+                    cell.textContent = totalValue;
+
+                    const orderId = getCurrentOrderId();
+                    saveAssignmentDraft(orderId, field, totalValue);
+                    showFlashAlert('info', `Total hours updated: ${total.formatted} (${totalValue} hrs)`);
                 } catch (err) {
                     console.error("[CALC ERROR]", err);
                     showFlashAlert('error', 'Error calculating total hours.');
@@ -769,10 +788,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     input.type = 'text';
                 }
 
+                const rawValue = cell.dataset.raw || currentValue;
                 input.classList.add("form-control");
                 // convert displayed datetime to datetime-local input format if needed
-                if ((type === 'datetime' || type === 'datetime-local') && currentValue) {
-                    input.value = currentValue.replace(' ', 'T').slice(0, 16);
+                if ((type === 'datetime' || type === 'datetime-local') && rawValue) {
+                    input.value = rawValue.replace(' ', 'T').slice(0, 16);
                 } else {
                     input.value = currentValue;
                 }
@@ -794,6 +814,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                     if ((type === 'datetime' || type === 'datetime-local') && newValue) {
                         displayValue = newValue.replace('T', ' ');
+                        cell.dataset.raw = displayValue + ':00';
                     }
 
                     cell.textContent = displayValue;
