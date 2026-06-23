@@ -351,7 +351,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 pill.type = 'button';
                 pill.classList.add('btn', i === currentIndex ? 'btn-primary' : 'btn-outline-secondary');
                 pill.textContent = i + 1;
-                pill.addEventListener('click', () => showAssignment(i));
+                pill.addEventListener('click', () => {
+                    showAssignment(i);
+                    renderPills();
+                    updateButtons();
+                });
                 stepIndicator.appendChild(pill);
             });
         };
@@ -702,21 +706,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     const orderId = getCurrentOrderId();
                     saveAssignmentDraft(orderId, field, newValue || currentValue);
                     // Persist to LocalStorage for this assignment
-                    /*try {
-                        const orderId = document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim(); // order#
-                        if (orderId) {
-                            const storageKey = `driving_time_${orderId}`;
-                            if (newValue) {
-                                localStorage.setItem(storageKey, newValue);
-                                console.log(`[CACHE] Driving time (${newValue}) saved for order ${orderId}`);
-                            } else {
-                                localStorage.removeItem(storageKey);
-                                console.log(`[CACHE] Driving time removed for order ${orderId}`);
-                            }
-                        }
-                    } catch (err) {
-                        console.warn("Failed to persist driving time:", err);
-                    }*/
                 });
             
                 // Save on Enter
@@ -866,25 +855,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
-/*window.addEventListener("DOMContentLoaded", () => {
-    try {
-        const orderId = document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim();
-        if (orderId) {
-            const storageKey = `driving_time_${orderId}`;
-            const savedTime = localStorage.getItem(storageKey);
-            if (savedTime) {
-                const drivingTimeCell = document.querySelector('[data-field="driving_time"]');
-                if (drivingTimeCell) {
-                    drivingTimeCell.textContent = savedTime;
-                    console.log(`[CACHE] Restored driving time for order ${orderId}: ${savedTime}`);
-                }
-            }
-        }
-    } catch (err) {
-        console.warn("Failed to restore driving time:", err);
-    }
-});*/
 
 // Reusable Restoration Function with Visual Debug ===
 function restoreButtonStateFromStorage() {
