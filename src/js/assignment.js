@@ -281,7 +281,7 @@ function getAssignmentDraftKey(orderId) {
 };
 
 function saveAssignmentDraft(orderId, field, value) {
-    if ( !orderID || field ) return;
+    if ( !orderId || field ) return;
 
     try {
         const key = getAssignmentDraftKey(orderId);
@@ -502,12 +502,12 @@ window.addEventListener('DOMContentLoaded', () => {
             tertiaryDriveTime.textContent = draft.driving_time;
         };
 
-        if (draft['pickup-details'] !== undefined) {
-            pickupDetails.value = draft['pickup-details'];
+        if (draft['pickup_details'] !== undefined) {
+            pickupDetails.value = draft['pickup_details'];
         };
 
-        if (draft['destination-details'] !== undefined) {
-            destinationDetails.value = draft['destination-details'];
+        if (draft['destination_details'] !== undefined) {
+            destinationDetails.value = draft['destination_details'];
         };
 
         if (draft['shared_job_note'] !== undefined) {
@@ -672,7 +672,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     clickCells.forEach(cell => {
         cell.addEventListener('click', () => {
             const type = cell.dataset.type;
@@ -694,6 +693,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 input.focus();
                 input.addEventListener('input', () => {
                     validateEditableElement(input, type, field);
+
+                    const orderId = getCurrentOrderId();
+                    saveAssignmentDraft(orderId, field, input.value.trim());
                 });
                 
                 input.addEventListener('blur', () => {
@@ -719,30 +721,43 @@ window.addEventListener('DOMContentLoaded', () => {
                 try {
                     const assignment = getCurrentAssignment();
 
+                    if (!assignment) {
+                        showFlashAlert('warning', 'Missing assignment data.');
+                        return;
+                    }
+
                     const actualEndCell = document.querySelector('[data-field="actual_end_time"]');
                     const actualEndInput = actualEndCell?.querySelector('input');
 
                     const actualEndValue = actualEndInput ? actualEndInput.value.trim() : (actualEndCell?.dataset.raw || actualEndCell?.textContent.trim());
 
-                    if (!assignment?.start_date_time || !actualEndValue) {
-                        showFlashAlert('warning', 'Please enter the actual end time first.');
+                    const spotTime = assignment.spot_time;
+
+                    if (!assignment?.start_date_time || !spotTime || !actualEndValue) {
+                        showFlashAlert('warning', 'Please enter spot time and/or actual end time.');
                         return;
                     }
 
-                    const startValue = assignment.start_date_time.replace(' ', 'T').slice(0, 16);
-                    const endValue = actualEndValue.replace(' ', 'T').slice(0, 16);
+                    const serviceDate = assignment.start_date_time.split(' ')[0];
+                    const spotStart = `${serviceDate}T${spotTime.slice(0, 5)}`;
+                    const actualEnd = actualEndValue.replace(' ', 'T').slice(0, 16);
 
-                    const startObj = new Date(startValue);
-                    let endObj = new Date(endValue);
+                    const startObj = new Date(spotStart);
+                    let endObj = new Date(actualEnd);
 
                     if (Number.isNaN(startObj.getTime()) || Number.isNaN(endObj.getTime())) {
-                        showFlashAlert('warning', 'Invalid start or end time.');
+                        showFlashAlert('warning', 'Invalid spot time or actual end time.');
                         return;
                     }
 
                     endObj = ServiceTimeCalculator.adjustForOvernight(startObj, endObj);
-
                     const total = ServiceTimeCalculator.getTotalHours(startObj, endObj);
+
+                    if (Number.isNaN(total.decimal)) {
+                        showFlashAlert('warning', 'Unable to calculate total hours.');
+                        return;
+                    }
+
                     const totalValue = total.decimal.toFixed(2);
 
                     cell.textContent = totalValue;
@@ -793,6 +808,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 input.addEventListener('input', () => {
                     validateEditableElement(input, type, field);
+
+                    const orderId = getCurrentOrderId();
+                    let liveValue = input.value.trim();
+
+                    if ( (type === 'datetime' || type === 'datetime-local') && liveValue) {
+                        liveValue = liveValue.replace('T', ' ');
+                    }
+                    saveAssignmentDraft(orderId, field, liveValue);
                 });
                 //
                 input.addEventListener('blur', () => {
@@ -826,16 +849,75 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            saveCurrentVisibleAssignmentDraft();
+            return;
+        }
+
         if (document.visibilityState === 'visible') {
             restoreButtonStateFromStorage();
+            if (typeof window._refreshAssignmentFromOutside === 'function') {
+                window._refreshAssignmentFromOutside();
+            }
         }
     });
+
+    function saveCurrentVisibleAssignmentDraft() {
+        const orderId = getCurrentOrderId();
+        if (!orderId) return;
+
+        document.querySelectorAll('.editable-data').forEach(cell => {
+            const field = cell.dataset.field;
+            const type = cell.dataset.type;
+            if (!field) return;
+
+            const input = cell.querySelector('input');
+            let value = input ? input.value.trim() : cell.textContent.trim();
+
+            if ((type === 'datetime' || type === 'datetime-local') && value) {
+                value = value.replace('T', ' ');
+            }
+
+            saveAssignmentDraft(orderId, field, value);
+        });
+
+        ['pickup_details', 'destination_details', 'shared_job_note'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            saveAssignmentDraft(orderId, el.name, el.value.trim());
+        });
+    }
+
+    function saveActiveEditableInputDraft () {
+        const active = document.activeElement;
+        if (!active || active.tagName !== 'INPUT') return;
+
+        const cell = active.closest('.editable-data');
+        if (!cell) return;
+
+        const field = cell.dataset.field;
+        const type = cell.dataset.type;
+
+        let value = active.value.trim();
+
+        if ( (type === 'datetime' || type === 'datetime-local') && value ) {
+            value = value.replace('T', ' ');
+        }
+
+        const orderId = getCurrentOrderId();
+        saveAssignmentDraft(orderId, field, value);
+    }
 
     window.addEventListener('pageshow', (event) => {
         if (event.persisted) {
             console.log('[PWA] Page restored from cache. Re-syncing button states...');
             restoreButtonStateFromStorage();
         }
+    });
+
+    window.addEventListener('pagehide', () => {
+        saveCurrentVisibleAssignmentDraft();
     });
 
     ['pickup_details', 'destination_details', 'shared_job_note'].forEach(id => {
