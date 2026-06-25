@@ -314,6 +314,14 @@ function clearAssignmentDraft(orderId) {
     }
 };
 
+function hasCurrentAssignmentDraft () {
+    const orderId = getCurrentOrderId();
+    if (!orderId) return false;
+
+    const draft = getAssignmentDraft(orderId);
+    return Object.keys(draft).length > 0;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     // Create pagination controls (Bootstrap)
     function createPaginationControls() {
@@ -848,20 +856,6 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => restoreButtonStateFromStorage(), 300);
     });
 
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-            saveCurrentVisibleAssignmentDraft();
-            return;
-        }
-
-        if (document.visibilityState === 'visible') {
-            restoreButtonStateFromStorage();
-            if (typeof window._refreshAssignmentFromOutside === 'function') {
-                window._refreshAssignmentFromOutside();
-            }
-        }
-    });
-
     function saveCurrentVisibleAssignmentDraft() {
         const orderId = getCurrentOrderId();
         if (!orderId) return;
@@ -1092,7 +1086,6 @@ editBtn.addEventListener('click', (e) => {
     // Remove old temporary inputs
     form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
 
-    let foundError = false;
     const errors = [];
 
     // Collect All editable cells, even blank ones
@@ -1102,7 +1095,12 @@ editBtn.addEventListener('click', (e) => {
         const type = cell.dataset.type || '';
         const inputEl = cell.querySelector('input');
         const target = inputEl || cell;
-        const value = inputEl ? inputEl.value.trim() : cell.textContent.trim();
+
+        let value = inputEl ? inputEl.value.trim() : ( (type === 'datetime' || type === 'datetime-local') ? (cell.dataset.raw || cell.textContent.trim()) : cell.textContent.trim());
+
+        if ( (type === 'datetime' || type === 'datetime-local') && value ) {
+            value = value.replace(' ', 'T').slice(0, 16);
+        }
 
         if (!Validation.validate(value, type)) {
             setFieldError(target, `Invalid ${field.replaceAll('_', ' ')}.`);
@@ -1132,7 +1130,7 @@ editBtn.addEventListener('click', (e) => {
     // Include textareas ( even if unchanged or empty )
     for (const id of ['pickup_details', 'destination_details', 'shared_job_note']) {
         const el = document.getElementById(id);
-        if ( !el ) return;
+        if ( !el ) continue;
 
         const value = el.value.trim();
 
@@ -1155,16 +1153,16 @@ editBtn.addEventListener('click', (e) => {
         return;
     }
 
-    const editableFieldNames = new Set(
-        Array.from(document.querySelectorAll('.editable-data')).map(cell => cell.dataset.field).filter(Boolean)
-    );
-
     const crossFieldErrors = validateCrossFieldRules();
     if (crossFieldErrors.length) {
         showFlashAlert('error', 'Please fix the highlighted time or hour values.');
         focusFirstInvalid(crossFieldErrors);
         return;
     }
+
+    const editableFieldNames = new Set(
+        Array.from(document.querySelectorAll('.editable-data')).map(cell => cell.dataset.field).filter(Boolean)
+    );
 
     // Add identifiers ( these should always exist )
     [['order_id', assignment.order_id], ['vehicle_id', assignment.vehicle_id], ['driver_id', assignment.driver_id]].forEach(([name, val]) => {
@@ -1243,7 +1241,19 @@ completeBtn.addEventListener('click', () => {});
 let lastAssignmentsUpdate = 0;
 
 document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'hidden') {
+        saveCurrentVisibleAssignmentDraft();
+        return;
+    }
+
     if (document.visibilityState !== 'visible') return;
+    saveCurrentVisibleAssignmentDraft();
+
+    if ( hasCurrentAssignmentDraft() ) {
+        console.log('[SYNC] Skipped refresh because unsaved assignment edits exist.');
+        showFlashAlert('info', 'Unsaved edits preserved.');
+        return;
+    }
 
     const now = Date.now();
     if (now - lastAssignmentsUpdate < 5000) return; // prevent too frequent reloads

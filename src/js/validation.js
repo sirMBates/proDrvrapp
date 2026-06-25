@@ -9,7 +9,7 @@ const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$/;
 const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
 const decimalPattern = /^\d+(\.\d{1,2})?$/;
 const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
-const datetimePattern = /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/;
+const datetimePattern = /^\d{4}-\d{2}-\d{2}[T ]([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 //const photoPattern = /^[a-zA-Z0-9./_-]+\.(jpg|jpeg|png|gif)$/i;
 const textPattern = /^[A-Za-z0-9\s.,!?'"()\-@#%$&_+=:;\/\n\r\t\p{Emoji}]{20,300}$/u;
 const assignmentTextareaPattern = /^[^\x00-\x08\x0B\x0C\x0E-\x1F\x7F<>]*$/u;
@@ -129,8 +129,8 @@ export class Validation {
 
     static validateDatetime(input) {
         if (!datetimePattern.test(input)) return false;
-        // Also ensure it's a valid date
-        return !isNaN(Date.parse(input));
+        const normalized = input.replace(' ', 'T').slice(0, 16);
+        return !Number.isNaN(new Date(normalized).getTime());
     }
 
     static validateUsername(input) {
