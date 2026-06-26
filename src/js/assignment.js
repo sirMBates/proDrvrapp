@@ -293,6 +293,33 @@ function saveAssignmentDraft(orderId, field, value) {
     }
 };
 
+function saveCurrentVisibleAssignmentDraft() {
+    const orderId = getCurrentOrderId();
+    if (!orderId) return;
+
+    document.querySelectorAll('.editable-data').forEach(cell => {
+        const field = cell.dataset.field;
+        const type = cell.dataset.type;
+        if (!field) return;
+
+        const input = cell.querySelector('input');
+        let value = input ? input.value.trim() : cell.textContent.trim();
+
+        if ((type === 'datetime' || type === 'datetime-local') && value) {
+            value = value.replace('T', ' ');
+        }
+
+        saveAssignmentDraft(orderId, field, value);
+    });
+
+    ['pickup_details', 'destination_details', 'shared_job_note'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        saveAssignmentDraft(orderId, el.name, el.value.trim());
+    });
+}
+
 function getAssignmentDraft(orderId) {
     if (!orderId) return {};
 
@@ -320,6 +347,15 @@ function hasCurrentAssignmentDraft () {
 
     const draft = getAssignmentDraft(orderId);
     return Object.keys(draft).length > 0;
+}
+
+function normalizeDecimalValue(value) {
+    const num = parseFloat(value);
+
+    if (Number.isNaN(num)) {
+        return '';
+    }
+    return num.toFixed(2);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -709,12 +745,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 input.addEventListener('blur', () => {
                     const isValid = validateEditableElement(input, type, field);
                     const newValue = input.value.trim();
-                    cell.textContent = newValue || currentValue;
 
-                    if (!isValid) return;
+                    if (!isValid) {
+                        cell.textContent = newValue || currentValue; 
+                        return;
+                    }
+
+                    const normalizedValue = normalizeDecimalValue(newValue || currentValue);
+                    cell.textContent = normalizedValue;
 
                     const orderId = getCurrentOrderId();
-                    saveAssignmentDraft(orderId, field, newValue || currentValue);
+                    saveAssignmentDraft(orderId, field, normalizedValue);
                     // Persist to LocalStorage for this assignment
                 });
             
@@ -855,33 +896,6 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('load', () => {
         setTimeout(() => restoreButtonStateFromStorage(), 300);
     });
-
-    function saveCurrentVisibleAssignmentDraft() {
-        const orderId = getCurrentOrderId();
-        if (!orderId) return;
-
-        document.querySelectorAll('.editable-data').forEach(cell => {
-            const field = cell.dataset.field;
-            const type = cell.dataset.type;
-            if (!field) return;
-
-            const input = cell.querySelector('input');
-            let value = input ? input.value.trim() : cell.textContent.trim();
-
-            if ((type === 'datetime' || type === 'datetime-local') && value) {
-                value = value.replace('T', ' ');
-            }
-
-            saveAssignmentDraft(orderId, field, value);
-        });
-
-        ['pickup_details', 'destination_details', 'shared_job_note'].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-
-            saveAssignmentDraft(orderId, el.name, el.value.trim());
-        });
-    }
 
     function saveActiveEditableInputDraft () {
         const active = document.activeElement;
@@ -1075,6 +1089,12 @@ cancelBtn.addEventListener('click', async (e) => {
 editBtn.addEventListener('click', (e) => {
     e.preventDefault();
 
+    if (document.activeElement && document.activeElement.matches('.editable-data input')) {
+        document.activeElement.blur();
+    }
+
+    saveCurrentVisibleAssignmentDraft();
+
     const form = document.querySelector('.assignment-card');
     const assignment = getCurrentAssignment();
     if ( !form || !assignment ) return;
@@ -1096,10 +1116,18 @@ editBtn.addEventListener('click', (e) => {
         const inputEl = cell.querySelector('input');
         const target = inputEl || cell;
 
-        let value = inputEl ? inputEl.value.trim() : ( (type === 'datetime' || type === 'datetime-local') ? (cell.dataset.raw || cell.textContent.trim()) : cell.textContent.trim());
+        let value = inputEl ? inputEl.value.trim() : ((type === 'datetime' || type === 'datetime-local') ? (cell.dataset.raw || cell.textContent.trim()) : cell.textContent.trim());
 
-        if ( (type === 'datetime' || type === 'datetime-local') && value ) {
+        if (type === 'time' && value) {
+            value = value.slice(0, 5);
+        }
+
+        if ((type === 'datetime' || type === 'datetime-local') && value ) {
             value = value.replace(' ', 'T').slice(0, 16);
+        }
+
+        if (type === 'decimal' && value) {
+            value = normalizeDecimalValue(value);
         }
 
         if (!Validation.validate(value, type)) {

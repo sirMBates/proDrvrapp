@@ -266,6 +266,12 @@ const OFFLINE_QUEUE = 'prodriver-sync-queue';
 // Intercept POST / PATCH / DELETE requests
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  const url = new URL(request.url);
+
+  // Do not intercept standard assignment form submissions
+  if (url.pathname === '/assignment') {
+    return;
+  }
 
   if (
     request.method === 'POST' ||
