@@ -34,7 +34,8 @@ if ($method === 'PATCH') {
         include_once base_path("app/errors/check_assignment_details.php");
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
         $modification = new UpdateAssignmentDetailsContr($data);
-        $modification->modify();
+        $result = $modification->modify();
+        file_put_contents('D:/webapps/logs/updateassignment_debug.log', "[" . date('Y-m-d H:i:s') . "] RESULT:\n" . print_r($result, true) . "\nPOST:\n" . print_r($_POST, true) . "\n\n", FILE_APPEND);
 
         if ( ($result['status'] ?? '') === 'success' ) {
             $alert::setMsg('success', $result['message'] ?? 'Assignment updated successfully.');
