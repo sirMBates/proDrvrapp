@@ -1,5 +1,6 @@
 import { Validation } from "./validation.js";
 import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, highlightErrorElement, clearValidationState, setFieldError, setFieldValid, focusFirstInvalid, setSubmittingState } from "./helpers.js";
+import { buildModal } from "./appmodal.js";
 import { handleAssignmentFetch } from "./pwa.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
@@ -14,6 +15,10 @@ const cancelBtn = document.querySelector('#cancel-job');
 const editBtn = document.querySelector('#edit');
 const completeBtn = document.querySelector('#submit-order');
 const drvrToken = document.querySelector('#drvrToken').value;
+const confirmModalEl = document.querySelector('#confirm-modal');
+const confirmModal = new bootstrap.Modal(confirmModalEl);
+const confirmModalBtn = document.querySelector('#confirm');
+const unconfirmModalBtn = document.querySelector('#unconfirm');
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 const confirmAssignment = fetchDrvr;
@@ -281,7 +286,7 @@ function getAssignmentDraftKey(orderId) {
 };
 
 function saveAssignmentDraft(orderId, field, value) {
-    if ( !orderId || field ) return;
+    if ( !orderId || !field ) return;
 
     try {
         const key = getAssignmentDraftKey(orderId);
@@ -363,6 +368,10 @@ window.addEventListener('DOMContentLoaded', () => {
     function createPaginationControls() {
         const existing = document.querySelector('#assignment-pager');
         if ( existing ) existing.remove();
+
+        if (assignments.length <= 1) {
+            return null;
+        }
 
         const container = document.createElement('div');
         container.id = 'assignment-pager';
@@ -946,6 +955,19 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function getCompletePayrollData(assignment) {
+    return {
+        order_id: assignment.order_id ?? '',
+        origin: assignment.origin ?? '',
+        destination: assignment.destination ?? '',
+        vehicle_id: document.querySelector('[data-field="vehicle_id"]')?.textContent.trim() ?? '',
+        assignment_date: assignment.start_date_time?.split(' ')[0] ?? '',
+        spot_time: assignment.spot_time ?? '',
+        actual_drop_time: document.querySelector('[data-field="actual_drop_time"]')?.textContent.trim() ?? '',
+        total_hrs: document.querySelector('[data-field="total_hrs"]')?.textContent.trim() ?? ''
+    };
+};
+
 // Reusable Restoration Function with Visual Debug ===
 function restoreButtonStateFromStorage() {
     try {
@@ -983,6 +1005,39 @@ function restoreButtonStateFromStorage() {
         console.error('[STATE] Failed to restore button logic:', err);
     }
 };
+
+function completeAssignment() {
+    const payrollData = getCompletePayrollData(assignment);
+    localStorage.setItem('completedAssignmentData', JSON.stringify(payrollData));
+
+    console.log('[COMPLETE] Final completed assignment data:', payrollData);
+    const modalInstance = bootstrap.Modal.getInstance(confirmModalEl);
+    modalInstance?.hide();
+
+    showFlashAlert('info', 'Completed assignment data saved.');
+};
+
+// Modal display confirm btn set up
+confirmModalBtn.addEventListener('click', () => {
+    switch (confirmModalEl.dataset.action) {
+        case 'complete-assignment':
+            completeAssignment();
+            break;
+
+        default:
+            console.warn('Unknown confirm action.');
+            break;
+    }
+    confirmModal.hide();
+
+    delete confirmModalEl.dataset.action;
+});
+
+// Modal display unconfirm btn set up
+unconfirmModalBtn.addEventListener('click', () => {
+    const modalInstance = bootstrap.Modal.getInstance(confirmModalEl);
+    modalInstance?.hide();
+});
 
 // Confirm assignment button 
 confirmBtn.addEventListener('click', async (e) => {
@@ -1263,7 +1318,21 @@ editBtn.addEventListener('click', (e) => {
 });
 
 // Complete assignment button
-completeBtn.addEventListener('click', () => {});
+completeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const assignment = getCurrentAssignment();
+
+    if (!assignment) {
+        showFlashAlert('warning', 'No assignment selected.');
+        return;
+    }
+
+    buildModal.confirm('Are you sure you want to complete this assignment? Once completed, it will be submitted back to dispatch and removed from your active assignments.', 'Complete assignment', 'Go back');
+
+    confirmModalEl.dataset.action = 'complete-assignment';
+    confirmModal.show();
+});
 
 // Auto-refresh Assignments on Tab Focus (debounced, full sync) ===
 let lastAssignmentsUpdate = 0;

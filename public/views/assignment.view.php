@@ -2,6 +2,7 @@
 require "partials/head.php";
 require "partials/banner.php";
 include "partials/info-modal.php";
+include "partials/confirm-modal.php";
 ?>       
 <main class="w-100 d-flex flex-column justify-content-center p-1">
         <div id="assignmentContainer">
