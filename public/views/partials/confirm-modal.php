@@ -9,8 +9,8 @@
                 <p class='fs-5'></p>
             </div>
             <div class="modal-footer">
-                <button id="confirm" type="button" class="btn btn-md btn-primary"></button>
-                <button id="unconfirm" type="button" class="btn btn-md btn-secondary"></button>
+                <button id="confirm-modal-btn" type="button" class="btn btn-md btn-primary"></button>
+                <button id="unconfirm-modal-btn" type="button" class="btn btn-md btn-secondary"></button>
             </div>
         </div>
     </div>
