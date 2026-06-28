@@ -144,8 +144,8 @@ include "partials/confirm-modal.php";
                                 <input type="hidden" name="__method" value="">
                                 <button id="confirm-job" class="btn btn-outline-primary" type="button" name="confirm" disabled>Confirm</button>
                                 <button id="cancel-job" class="btn btn-outline-danger" type="button" name="cancel" disabled>Cancel/Unconfirm</button>
-                                <button id="edit" class="btn btn-outline-info" type="button" name="modify" disabled>Edit</button>
-                                <button id="submit-order" class="btn btn-outline-success" type="button" name="assignment-complete" disabled>Complete Dispatch Order</button>
+                                <button id="edit" class="btn btn-outline-info" type="submit" name="modify" disabled>Edit</button>
+                                <button id="submit-order" class="btn btn-outline-success" type="submit" name="assignment-complete" disabled>Complete Dispatch Order</button>
                         </section>
                 </form>
         </div>

@@ -1007,12 +1007,17 @@ function restoreButtonStateFromStorage() {
 };
 
 function completeAssignment() {
-    const payrollData = getCompletePayrollData(assignment);
-    localStorage.setItem('completedAssignmentData', JSON.stringify(payrollData));
+    const assignment = getCurrentAssignment();
 
-    console.log('[COMPLETE] Final completed assignment data:', payrollData);
-    const modalInstance = bootstrap.Modal.getInstance(confirmModalEl);
-    modalInstance?.hide();
+    if (!assignment) {
+        showFlashAlert('warning', 'No assignment selected.');
+        return;
+    }
+
+    const completedAssignmentData = getCompletePayrollData(assignment);
+    localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
+
+    console.log('[COMPLETE] Completed assignment data saved.', completedAssignmentData);
 
     showFlashAlert('info', 'Completed assignment data saved.');
 };
@@ -1028,8 +1033,8 @@ confirmModalBtn.addEventListener('click', () => {
             console.warn('Unknown confirm action.');
             break;
     }
+    
     confirmModal.hide();
-
     delete confirmModalEl.dataset.action;
 });
 
@@ -1328,7 +1333,7 @@ completeBtn.addEventListener('click', (e) => {
         return;
     }
 
-    buildModal.confirm('Are you sure you want to complete this assignment? Once completed, it will be submitted back to dispatch and removed from your active assignments.', 'Complete assignment', 'Go back');
+    buildModal.confirm('Are you sure you want to complete this assignment?\n Once completed, it will be submitted back to dispatch\n and removed from your active assignments.', 'Complete assignment', 'Go back');
 
     confirmModalEl.dataset.action = 'complete-assignment';
     confirmModal.show();
