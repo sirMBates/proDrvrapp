@@ -59,14 +59,22 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
         // Normalize MySQL-style "YYYY-MM-DD HH:mm:ss" string
         date = input;
     } else if (typeof input === 'string') {
-        date = new Date(input.replace(' ', 'T'));
+        const trimmed = input.trim();
+        // Only replace space with T for MySql-style dates
+        if(/^\d{4}-\d{2}-\d{2}\s/.test(trimmed)) {
+            date = new Date(trimmed.replace(' ', 'T'));
+        } else {
+            date = new Date(trimmed);
+        }
     } else if (typeof input === 'number') {
         date = new Date(input);
     } else {
         return 'Invalid input';
     };
 
-    if (isNaN(date)) return 'Invalid date';
+    if (Number.isNaN(date.getTime())) {
+        return 'Invalid date';
+    }
 
     // Choose formatting options based on desired output
     let options;
@@ -77,14 +85,14 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
                 month: '2-digit',
                 day: '2-digit'
             };
-            return date.toLocaleDateString('en-us', options);
+            return date.toLocaleDateString('en-US', options);
         case 'time':
             options = {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
             };
-            return date.toLocaleTimeString('en-us', options);
+            return date.toLocaleTimeString('en-US', options);
         case 'datetime':
         default:
             options = {
@@ -95,7 +103,7 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
                 minute: '2-digit', 
                 hour12: true
             };
-            return date.toLocaleString('en-us', options);
+            return date.toLocaleString('en-US', options);
     }
 };
 
