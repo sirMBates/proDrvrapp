@@ -7,7 +7,7 @@ export function normalizeDecimalValue(value) {
         return '';
     }
     return num.toFixed(2);
-}
+};
 
 export function validateEditableElement(el, type, field) {
     const value = (el?.value ?? el?.textContent ?? '').trim();
@@ -55,8 +55,8 @@ export function validateCrossFieldRules() {
         errors.push(driveInput || drivingTimeCell);
     }
 
-    const endVal = (endInput?.value ?? endTimeCell?.textContent ?? '').trim();
-    const dropVal = (dropInput?.value ?? dropTimeCell?.textContent ?? '').trim();
+    const endVal = (endInput?.value || endTimeCell?.dataset.raw || '').trim();
+    const dropVal = (dropInput?.value || dropTimeCell?.dataset.raw || dropTimeCell?.textContent || '').trim();
 
     if (endVal && dropVal) {
         const normalizedEndVal = endVal.replace(' ', 'T').slice(0, 16);
@@ -138,23 +138,45 @@ export function appendHiddenFields(form, fields) {
     Object.entries(fields).forEach(([name, value]) => {
         const hidden = document.createElement('input');
         hidden.type = 'hidden';
-        hidden.name = 'name';
+        hidden.name = name;
         hidden.value = value ?? '';
         hidden.classList.add('temp-hidden');
         form.appendChild(hidden);
     })
 };
 
+export function appendEditableFields(form) {
+    // Collect All editable cells, even blank ones
+    const editableCells = document.querySelectorAll('.editable-data');
+    for (const cell of editableCells) {
+        const field = cell.dataset.field || '';
+        const type = cell.dataset.type || '';
+        const inputEl = cell.querySelector('input');
+
+        let value = inputEl ? inputEl.value.trim() : (cell.dataset.raw || cell.textContent.trim());
+
+        if (type === 'datetime' || type === 'datetime-local') {
+            value = inputEl ? inputEl.value.trim() : toInputDateTime(cell.dataset.raw || '');
+        }
+
+        if (type === 'time' && value) {
+            value = value.slice(0, 5);
+        }
+
+        if (type === 'decimal' && value) {
+            value = normalizeDecimalValue(value);
+        }
+
+        // Add hidden field
+        if (!field) continue;
+        appendHiddenFields(form, { [field]: value });
+    };
+};
+
 export function toInputDateTime(value) {
     if (!value) return '';
 
     return value.replace(' ', 'T').slice(0, 16);
-};
-
-export function toRawDateTime(value) {
-    if (!value) return '';
-
-    return value.replace('T', ' ').slice(0, 16) + ':00';
 };
 
 export function toDisplayDateTime(value, formatter) {

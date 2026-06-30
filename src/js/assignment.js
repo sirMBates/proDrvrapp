@@ -1,6 +1,6 @@
 import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, highlightErrorElement, clearValidationState, focusFirstInvalid, setSubmittingState } from "./helpers.js";
 import { buildModal } from "./appmodal.js";
-import { normalizeDecimalValue, validateEditableElement, validateAssignmentTextarea, validateCrossFieldRules, validateCurrentAssignmentFields, appendHiddenFields, toInputDateTime, toRawDateTime, toDisplayDateTime } from "./assignment-form.js";
+import { normalizeDecimalValue, validateEditableElement, validateAssignmentTextarea, validateCrossFieldRules, validateCurrentAssignmentFields, appendHiddenFields, toInputDateTime, toDisplayDateTime, appendEditableFields } from "./assignment-form.js";
 import { handleAssignmentFetch } from "./pwa.js";
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
@@ -238,16 +238,21 @@ function saveCurrentVisibleAssignmentDraft() {
 
     document.querySelectorAll('.editable-data').forEach(cell => {
         const field = cell.dataset.field;
-        const type = cell.dataset.type;
         if (!field) return;
 
         const input = cell.querySelector('input');
-        let value = input ? input.value.trim() : cell.textContent.trim();
+        let value;
+        if (input) {
+            value = input.value.trim();
 
-        if ((type === 'datetime' || type === 'datetime-local') && value) {
-            value = value.replace('T', ' ');
+            if (cell.dataset.type === 'datetime' || cell.dataset.type === 'datetime-local') {
+                value = value.slice(0, 16);
+            }
+        } else if (cell.dataset.type === 'datetime' || cell.dataset.type === 'datetime-local') {
+            value = cell.dataset.raw || '';
+        } else {
+            value = cell.textContent.trim();
         }
-
         saveAssignmentDraft(orderId, field, value);
     });
 
@@ -257,7 +262,7 @@ function saveCurrentVisibleAssignmentDraft() {
 
         saveAssignmentDraft(orderId, el.name, el.value.trim());
     });
-}
+};
 
 function getAssignmentDraft(orderId) {
     if (!orderId) return {};
@@ -443,7 +448,7 @@ window.addEventListener('DOMContentLoaded', () => {
         tertiaryEndTime.textContent = dtHelper(assignment['end_date_time']);
         tertiaryEndTime.dataset.raw = assignment['end_date_time'];
         tertiaryActEndTime.textContent = assignment['actual_end_time'] ? dtHelper(assignment['actual_end_time'], 'datetime') :  '';
-        tertiaryActEndTime.dataset.raw = assignment['actual_end_time'] || '';
+        tertiaryActEndTime.dataset.raw = assignment['actual_end_time'] ? assignment['actual_end_time'].replace(' ', 'T').slice(0, 16) : '';
         tertiaryShiftTime.textContent = assignment['total_job_time'];
         tertiaryDriveTime.textContent = assignment['driving_time'];
         tertiaryOrigin.textContent = assignment['origin'];
@@ -798,7 +803,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     let liveValue = input.value.trim();
 
                     if ( (type === 'datetime' || type === 'datetime-local') && liveValue) {
-                        liveValue = liveValue.replace('T', ' ');
+                        saveAssignmentDraft(orderId, field, liveValue.slice(0, 16));
                     }
                     saveAssignmentDraft(orderId, field, liveValue);
                 });
@@ -810,10 +815,15 @@ window.addEventListener('DOMContentLoaded', () => {
                     let displayValue = newValue || currentValue;
 
                     if ((type === 'datetime' || type === 'datetime-local') && newValue) {
-                        const rawValue = toRawDateTime(newValue);
-                        
-                        cell.dataset.raw = rawValue;
-                        displayValue = toDisplayDateTime(rawValue, dtHelper);
+                        const normalized = newValue.replace(' ', 'T').slice(0, 16);
+                        cell.dataset.raw = normalized;
+                        displayValue = toDisplayDateTime(normalized, dtHelper);
+
+                        const orderId = getCurrentOrderId();
+                        saveAssignmentDraft(orderId, field, normalized);
+
+                        cell.textContent = displayValue;
+                        return;
                     }
 
                     cell.textContent = displayValue;
@@ -936,18 +946,20 @@ function restoreButtonStateFromStorage() {
 };
 
 function completeAssignment() {
-    if (document.activeElement && document.activeElement.matches('.editable-data input')) {
-        document.activeElement.blur();
-    }
-    saveCurrentVisibleAssignmentDraft();
-
+    const form = document.querySelector('.assignment-card');
     const assignment = getCurrentAssignment();
 
-    if (!assignment) {
-        showFlashAlert('warning', 'No assignment selected.');
-        return;
+    if (!form || !assignment) return;
+
+    // Blur active input
+    if (document.activeElement?.matches('.editable-data input')) {
+        document.activeElement.blur();
     }
 
+    // Save latest UI state
+    saveCurrentVisibleAssignmentDraft();
+
+    // Validate
     if (!validateCurrentAssignmentFields({
         showFlashAlert,
         focusFirstInvalid
@@ -955,36 +967,48 @@ function completeAssignment() {
         return;
     }
 
-    const form = document.querySelector('.assignment-card');
-    if (!form) {
-        showFlashAlert('error', 'Assignment form not found.');
-        return;
-    }
+    // Confirm modal
+    buildModal.confirm('Are you sure you want to complete this assignment?', 'Yes, Complete', 'Cancel');
+    const confirmBtn = document.querySelector('#confirm-modal-confirm');
+    const unconfirmBtn = document.querySelector('#confirm-modal-cancel');
 
-    const completedAssignmentData = getCompletePayrollData(assignment);
-    localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
+    confirmBtn.onclick = () => {
+        // Clean old temp fields
+        form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
 
-    form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
-    const methodInput = form.querySelector('[name="__method"]');
-    if (methodInput) {
-        methodInput.value = 'PATCH';
-    }
+        // Build payload using same system as edit btn
+        appendEditableFields(form);
 
-    const hiddenFields = {
-        assignment_complete: '1',
-        order_id: assignment.order_id ?? '',
-        driver_id: assignment.driver_id ?? '',
-        vehicle_id: completedAssignmentData.vehicle_id ?? '',
-        actual_drop_time: completedAssignmentData.actual_drop_time ?? '',
-        total_hrs: completedAssignmentData.total_hrs ?? '',
-        'X-CSRF-Token': document.querySelector('#drvrToken')?.value ?? ''
+        // Add identifiers
+        const assignment = getCurrentAssignment();
+        const identifiers = {
+            assignment_complete: '1',
+            order_id: assignment.order_id,
+            driver_id: assignment.driver_id,
+            vehicle_id: assignment.vehicle_id,
+            __method: 'PATCH'
+        };
+        appendHiddenFields(form, identifiers);
+
+        // CSRF
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'X-CSRF-Token';
+        csrf.value = document.querySelector('#drvrToken').value;
+        csrf.classList.add('temp-hidden');
+        form.appendChild(csrf);
+
+        // Payroll snapshot
+        const completedAssignmentData = getCompletePayrollData(assignment);
+        localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
+
+        // Submit
+        form.requestSubmit(editBtn);
     };
-
-    appendHiddenFields(form, hiddenFields);
-
-    console.log('[COMPLETE] Form payload ready.', hiddenFields);
-
-    showFlashAlert('info', 'Completed assignment payload ready.');
+    
+    unconfirmBtn.onclick = () => {
+        bootstrap.Modal.getInstance(document.getElementById('confirm-modal'))?.hide();
+    };
 };
 
 // Modal display confirm btn set up
@@ -1113,6 +1137,7 @@ cancelBtn.addEventListener('click', async (e) => {
 // Update/Modify assignment button
 editBtn.addEventListener('click', (e) => {
     e.preventDefault();
+    //console.log('[EDIT CLICKED]');
 
     if (document.activeElement && document.activeElement.matches('.editable-data input')) {
         document.activeElement.blur();
@@ -1137,52 +1162,7 @@ editBtn.addEventListener('click', (e) => {
 
     // Remove old temporary inputs
     form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
-
-    // Collect All editable cells, even blank ones
-    const editableCells = document.querySelectorAll('.editable-data');
-    for (const cell of editableCells) {
-        const field = cell.dataset.field || '';
-        const type = cell.dataset.type || '';
-        const inputEl = cell.querySelector('input');
-        const target = inputEl || cell;
-
-        let value = inputEl ? inputEl.value.trim() : ((type === 'datetime' || type === 'datetime-local') ? (cell.dataset.raw || cell.textContent.trim()) : cell.textContent.trim());
-
-        if (type === 'time' && value) {
-            value = value.slice(0, 5);
-        }
-
-        if ((type === 'datetime' || type === 'datetime-local') && value ) {
-            value = value.replace(' ', 'T').slice(0, 16);
-        }
-
-        if (type === 'decimal' && value) {
-            value = normalizeDecimalValue(value);
-        }
-
-        // Add hidden field
-        if ( field ) {
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = field;
-            hidden.value = value; // Even if empty string
-            hidden.classList.add('temp-hidden');
-            form.appendChild(hidden);
-        }
-    };
-
-    // Include textareas ( even if unchanged or empty )
-    for (const id of ['pickup_details', 'destination_details', 'shared_job_note']) {
-        const el = document.getElementById(id);
-        if ( !el ) continue;
-            
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = el.name;
-        hidden.value = el.value.trim(); // empty still fine
-        hidden.classList.add('temp-hidden');
-        form.appendChild(hidden);
-    };
+    appendEditableFields(form);
 
     const editableFieldNames = new Set(
         Array.from(document.querySelectorAll('.editable-data')).map(cell => cell.dataset.field).filter(Boolean)
@@ -1255,6 +1235,10 @@ editBtn.addEventListener('click', (e) => {
     form.appendChild(modifyFlag);
     // Submit via standard POST
     setSubmittingState(editBtn, true);
+    //console.log('[EDIT PAYLOAD]');
+    /*new FormData(form).forEach((value, key) => {
+        console.log(key, value);
+    })*/
     form.requestSubmit(editBtn);
 });
 
