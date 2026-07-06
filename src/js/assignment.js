@@ -1007,7 +1007,7 @@ function submitAssignment(options) {
             appendHiddenFields(form, { 'X-CSRF-Token': drvrtokenInput.value });
         }
 
-        // Payrolll snapshot
+        // Payroll snapshot
         const completedAssignmentData = getCompletePayrollData(assignment);
         localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
 
