@@ -130,6 +130,9 @@ self.addEventListener('fetch', (event) => {
   // Skip browser extension requests
   if (request.url.startsWith('chrome-extension://')) return;
 
+  // Skip favicon requests
+  if (url.pathname === '/favicon.ico') return;
+
   // Skip caching / intercepting sensitive/auth routes
   if (
     url.pathname.startsWith('/signin') ||
@@ -268,16 +271,13 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Do not intercept standard assignment form submissions
-  if (url.pathname === '/assignment') {
-    return;
-  }
-
-  if (
-    request.method === 'POST' ||
-    request.method === 'PATCH' ||
-    request.method === 'DELETE'
-  ) {
+  // Bypass SW for assignment form submissions and API endpoints
+  if ( request.method === 'POST' || request.method === 'PATCH' || request.method === 'DELETE') {
+    if (url.pathname.startsWith('/assignments') || url.pathname.startsWith('/api')) {
+      // Let these go directly to network
+      return;
+    }
+    
     event.respondWith(
       (async () => {
         try {
@@ -309,6 +309,7 @@ self.addEventListener('fetch', (event) => {
         }
       })()
     );
+    return;
   }
 });
 

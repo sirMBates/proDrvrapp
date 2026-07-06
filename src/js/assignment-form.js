@@ -114,7 +114,7 @@ export function validateCurrentAssignmentFields(options) {
         setFieldValid(target);
     }
 
-    for (const id of ['pickup_details', 'destination_details', 'shared_job_note']) {
+    for (const id of ['pickup-details', 'destination-details', 'shared-job-note']) {
         const el = document.getElementById(id);
         if (!el) continue;
         if (!validateAssignmentTextarea(el)) {

@@ -6,19 +6,15 @@ const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');
 const groupD = document.querySelector('#tableD');
-const locationPickup = document.querySelector('#pickup_details');
-const locationDestination = document.querySelector('#destination_details');
-const operatorNotes = document.querySelector('#shared_job_note');
+const locationPickup = document.querySelector('#pickup-details');
+const locationDestination = document.querySelector('#destination-details');
+const operatorNotes = document.querySelector('#shared-job-note');
 const clickCells = document.querySelectorAll('.editable-data');
 const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
-const editBtn = document.querySelector('#edit');
-const completeBtn = document.querySelector('#submit-order');
+const editBtn = document.querySelector('#edit-assignment');
+const completeBtn = document.querySelector('#submit-assignment');
 const drvrToken = document.querySelector('#drvrToken').value;
-const confirmModalEl = document.querySelector('#confirm-modal');
-const confirmModal = new bootstrap.Modal(confirmModalEl);
-const confirmModalBtn = document.querySelector('#confirm-modal-confirm');
-const unconfirmModalBtn = document.querySelector('#confirm-modal-cancel');
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 const confirmAssignment = fetchDrvr;
@@ -945,10 +941,10 @@ function restoreButtonStateFromStorage() {
     }
 };
 
-function completeAssignment() {
+function submitAssignment(options) {
+    const { buttonEl, flagName, flagValue, confirmMessage } = options;
     const form = document.querySelector('.assignment-card');
     const assignment = getCurrentAssignment();
-
     if (!form || !assignment) return;
 
     // Blur active input
@@ -963,75 +959,89 @@ function completeAssignment() {
     if (!validateCurrentAssignmentFields({
         showFlashAlert,
         focusFirstInvalid
-    })) {
-        return;
-    }
+    })) return;
 
-    // Confirm modal
-    buildModal.confirm('Are you sure you want to complete this assignment?', 'Yes, Complete', 'Cancel');
-    const confirmBtn = document.querySelector('#confirm-modal-confirm');
-    const unconfirmBtn = document.querySelector('#confirm-modal-cancel');
-
-    confirmBtn.onclick = () => {
+    // Actual submission logic
+    const doSubmit = () => {
         // Clean old temp fields
         form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
 
         // Build payload using same system as edit btn
         appendEditableFields(form);
 
+        // Append textareas
+        ['pickup-details', 'destination-details', 'shared-job-note'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            form.querySelectorAll(`input[name="${el.name}"]`).forEach(h => h.remove());
+            appendHiddenFields(form, { [el.name]: el.value.trim() });
+        });
+
+        // Default driving time to 0.00 if empty
+        const drivingTimeEl = document.querySelector('[data-field="driving_time"] input');
+        if (drivingTimeEl && !drivingTimeEl.value.trim()) {
+            drivingTimeEl.value = '0.00';
+        }
+
+        // Add action-specific flag if provided
+        if (flagName && flagValue) {
+            appendHiddenFields(form, { [flagName]: flagValue });
+        }
         // Add identifiers
-        const assignment = getCurrentAssignment();
         const identifiers = {
-            assignment_complete: '1',
-            order_id: assignment.order_id,
-            driver_id: assignment.driver_id,
-            vehicle_id: assignment.vehicle_id,
-            __method: 'PATCH'
+                order_id: assignment.order_id,
+                driver_id: assignment.driver_id,
+                vehicle_id: assignment.vehicle_id,
+                __method: 'PATCH'
         };
+        Object.keys(identifiers).forEach(name => {
+            // Remove existing hidden inputs with this name
+            form.querySelectorAll(`input[name="${name}"]`).forEach(h => h.remove());
+        });
         appendHiddenFields(form, identifiers);
 
-        // CSRF
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = 'X-CSRF-Token';
-        csrf.value = document.querySelector('#drvrToken').value;
-        csrf.classList.add('temp-hidden');
-        form.appendChild(csrf);
+        // Add CSRF token from drvrtoken input only once
+        const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
+        if (drvrtokenInput) {
+            form.querySelectorAll(`input[name='X-CSRF-Token']`).forEach(h => h.remove());
+            appendHiddenFields(form, { 'X-CSRF-Token': drvrtokenInput.value });
+        }
 
-        // Payroll snapshot
+        // Payrolll snapshot
         const completedAssignmentData = getCompletePayrollData(assignment);
         localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
 
-        // Submit
-        form.requestSubmit(editBtn);
+        // Submit form
+        setSubmittingState(buttonEl, true);
+        form.requestSubmit(buttonEl);
     };
+
+    if (confirmMessage) {
+        // Show confirmation modal
+        const confirmModalEl = document.querySelector('#confirm-modal');
+        const confirmModal = new bootstrap.Modal(confirmModalEl);
+        const confirmModalBtn = document.querySelector('#confirm-modal-confirm');
+        const unconfirmModalBtn = document.querySelector('#confirm-modal-cancel');
+        buildModal.confirm(confirmMessage, 'Yes', 'Cancel');
+        confirmModalBtn.replaceWith(confirmModalBtn.cloneNode(true));
+        unconfirmModalBtn.replaceWith(unconfirmModalBtn.cloneNode(true));
+        const newConfirmBtn = document.querySelector('#confirm-modal-confirm');
+        const newUnConfirmBtn = document.querySelector('#confirm-modal-cancel');
+
+        newConfirmBtn.addEventListener('click', () => {
+            doSubmit();
+            console.log('[SUCCESS] Assignment submitted!');
+            bootstrap.Modal.getInstance(confirmModalEl)?.hide();
+        });
     
-    unconfirmBtn.onclick = () => {
-        bootstrap.Modal.getInstance(document.getElementById('confirm-modal'))?.hide();
-    };
-};
-
-// Modal display confirm btn set up
-confirmModalBtn.addEventListener('click', () => {
-    switch (confirmModalEl.dataset.action) {
-        case 'complete-assignment':
-            completeAssignment();
-            break;
-
-        default:
-            console.warn('Unknown confirm action.');
-            break;
+        newUnconfirmBtn.addEventListener('click', () => {
+            bootstrap.Modal.getInstance(confirmModalEl)?.hide();
+        });
+        confirmModal.show();
+    } else {
+        doSubmit();
     }
-    
-    confirmModal.hide();
-    delete confirmModalEl.dataset.action;
-});
-
-// Modal display unconfirm btn set up
-unconfirmModalBtn.addEventListener('click', () => {
-    const modalInstance = bootstrap.Modal.getInstance(confirmModalEl);
-    modalInstance?.hide();
-});
+};
 
 // Confirm assignment button 
 confirmBtn.addEventListener('click', async (e) => {
@@ -1137,126 +1147,22 @@ cancelBtn.addEventListener('click', async (e) => {
 // Update/Modify assignment button
 editBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    //console.log('[EDIT CLICKED]');
-
-    if (document.activeElement && document.activeElement.matches('.editable-data input')) {
-        document.activeElement.blur();
-    }
-
-    saveCurrentVisibleAssignmentDraft();
-
-    const form = document.querySelector('.assignment-card');
-    const assignment = getCurrentAssignment();
-    if ( !form || !assignment ) return;
-
-    if (!validateCurrentAssignmentFields({
-        showFlashAlert,
-        focusFirstInvalid
-    })) {
-        return;
-    }
-
-    // Reuse existing __method input
-    const methodInput = form.querySelector('[name="__method"]');
-    if ( methodInput ) methodInput.value = 'PATCH';
-
-    // Remove old temporary inputs
-    form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
-    appendEditableFields(form);
-
-    const editableFieldNames = new Set(
-        Array.from(document.querySelectorAll('.editable-data')).map(cell => cell.dataset.field).filter(Boolean)
-    );
-
-    // Add identifiers ( these should always exist )
-    [['order_id', assignment.order_id], ['vehicle_id', assignment.vehicle_id], ['driver_id', assignment.driver_id]].forEach(([name, val]) => {
-        if (editableFieldNames.has(name)) return;
-        
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = name;
-        hidden.value = val ?? '';
-        hidden.classList.add('temp-hidden');
-        form.appendChild(hidden);
+    submitAssignment({
+        buttonEl: editBtn,
+        flagName: 'modify',
+        flagValue: '1'
     });
-
-    if (assignment.signature_required === 1) {
-        const preSign = localStorage.getItem('pre-signature');
-        const postSign = localStorage.getItem('post-signature');
-
-        // Signature required flag
-        const sigRequired = document.createElement('input');
-        sigRequired.type = 'hidden';
-        sigRequired.name = 'signature_required';
-        sigRequired.value = '1';
-        sigRequired.classList.add('temp-hidden');
-        form.appendChild(sigRequired);
-
-        // Pre-trip signature ( if captured )
-        if (preSign) {
-            const preHidden = document.createElement('input');
-            preHidden.type = 'hidden';
-            preHidden.name = 'pre_signature_base64';
-            preHidden.value = preSign;
-            preHidden.classList.add('temp-hidden');
-            form.appendChild(preHidden);
-        };
-
-        // Post-trip signature ( if captured )
-        if (postSign) {
-            const postHidden = document.createElement('input');
-            postHidden.type = 'hidden';
-            postHidden.name = 'post_signature_base64';
-            postHidden.value = postSign;
-            postHidden.classList.add('temp-hidden');
-            form.appendChild(postHidden);
-        };
-
-        const sigStatus = document.createElement('input');
-        sigStatus.type = 'hidden';
-        sigStatus.name = 'signature_status';
-        sigStatus.value = preSign && postSign ? 'complete' : preSign ? 'pre-trip-complete' : 'pending';
-        sigStatus.classList.add('temp-hidden');
-        form.appendChild(sigStatus);
-    };
-
-    const csrf = document.createElement('input');
-    csrf.type = 'hidden';
-    csrf.name = 'X-CSRF-Token';
-    csrf.value = document.querySelector('#drvrToken').value;
-    csrf.classList.add('temp-hidden');
-    form.appendChild(csrf);
-    
-    const modifyFlag = document.createElement('input');
-    modifyFlag.type = 'hidden';
-    modifyFlag.name = 'modify';
-    modifyFlag.value = '1';
-    modifyFlag.classList.add('temp-hidden');
-    form.appendChild(modifyFlag);
-    // Submit via standard POST
-    setSubmittingState(editBtn, true);
-    //console.log('[EDIT PAYLOAD]');
-    /*new FormData(form).forEach((value, key) => {
-        console.log(key, value);
-    })*/
-    form.requestSubmit(editBtn);
 });
 
 // Complete assignment button
 completeBtn.addEventListener('click', (e) => {
     e.preventDefault();
-
-    const assignment = getCurrentAssignment();
-
-    if (!assignment) {
-        showFlashAlert('warning', 'No assignment selected.');
-        return;
-    }
-
-    buildModal.confirm('Are you sure you want to complete this assignment?\n Once completed, it will be submitted back to dispatch\n and removed from your active assignments.', 'Complete assignment', 'Go back');
-
-    confirmModalEl.dataset.action = 'complete-assignment';
-    confirmModal.show();
+    submitAssignment({
+        buttonEl: completeBtn,
+        flagName: 'assignment-complete',
+        flagValue: '1',
+        confirmMessage: 'Are you sure you want to complete this assignment?\n Once completed, the assignment is no longer available and\n you will not be able to make any changes.'
+    });
 });
 
 // Auto-refresh Assignments on Tab Focus (debounced, full sync) ===
