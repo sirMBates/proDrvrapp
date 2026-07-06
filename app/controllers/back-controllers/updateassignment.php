@@ -48,6 +48,7 @@ if ($method === 'PATCH') {
         header("Location: /assignments?error=update+failed");
         exit();
     }
+    elseif (isset($_POST['assignment-complete'])) {}
 }
 
 ?>

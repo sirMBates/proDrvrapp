@@ -6,13 +6,11 @@ include "partials/confirm-modal.php";
 ?>       
 <main class="w-100 d-flex flex-column justify-content-center p-1">
         <div id="assignmentContainer">
-                <form class="assignment-card" data-index="" action="/assignment" method="POST" novalidate>
+                <form class="assignment-card" data-index="" action="/assignments" method="POST" novalidate>
                         <section id="dispatch-info" class="card mb-auto">
                                 <div class="card-header bg-besttrailsclr">
                                         <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
                                 </div>
-                        
-                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
 
                                 <div class="card-body overflow-x-auto">                        
                                         <table id="tableA" class="table m-auto" style="width: 1300px;">
@@ -104,15 +102,15 @@ include "partials/confirm-modal.php";
                                 </div>
                                 <div class="card-body conatiner">
                                         <div class="d-block w-100 mb-2 p-1">
-                                                <label for="pickup_details" class="h6 form-label text-capitalize"><u>pickup details:</u></label>
+                                                <label for="pickup-details" class="h6 form-label text-capitalize"><u>pickup details:</u></label>
                                                 <div class="col">
-                                                        <textarea id="pickup_details" class="form-control bg-btd-textarea-clr text-dark" name="pickup-details" style="height: 200px;"></textarea>
+                                                        <textarea id="pickup-details" class="form-control bg-btd-textarea-clr text-dark" name="pickup_details" style="height: 200px;"></textarea>
                                                 </div>
                                         </div>
                                         <div class="d-block w-100 mb-2 p-1">
-                                                <label for="destination_details" class="h6 form-label text-capitalize"><u>destination details:</u></label>
+                                                <label for="destination-details" class="h6 form-label text-capitalize"><u>destination details:</u></label>
                                                 <div class="col">
-                                                        <textarea id="destination_details" class="form-control bg-btd-textarea-clr text-dark" name="destination-details" style="height: 200px;"></textarea>
+                                                        <textarea id="destination-details" class="form-control bg-btd-textarea-clr text-dark" name="destination_details" style="height: 200px;"></textarea>
                                                 </div>
                                         </div>
                                 </div>
@@ -134,18 +132,19 @@ include "partials/confirm-modal.php";
                                         </div>
 
                                         <div class="d-block mb-2 p-1">
-                                                <label for="shared_job_note" class="h6 label-form text-capitalize">your note:</label>
-                                                <textarea id="shared_job_note" class="form-control bg-btd-textarea-clr text-dark editable-data" style="height: 200px;" name="shared_job_note" placeholder="Add helpful pickup/location details for other drivers..."></textarea>
+                                                <label for="shared-job-note" class="h6 label-form text-capitalize">your note:</label>
+                                                <textarea id="shared-job-note" class="form-control bg-btd-textarea-clr text-dark editable-data" style="height: 200px;" name="shared_job_note" placeholder="Add helpful pickup/location details for other drivers..."></textarea>
                                         </div>
                                 </div>
                         </section>
 
                         <section id="workOrder-btns" class="vstack gap-2 col-lg-12 mx-auto">
-                                <input type="hidden" name="__method" value="">
+                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                <input type="hidden" name="__method" value="PATCH">
                                 <button id="confirm-job" class="btn btn-outline-primary" type="button" name="confirm" disabled>Confirm</button>
                                 <button id="cancel-job" class="btn btn-outline-danger" type="button" name="cancel" disabled>Cancel/Unconfirm</button>
-                                <button id="edit" class="btn btn-outline-info" type="submit" name="modify" disabled>Edit</button>
-                                <button id="submit-order" class="btn btn-outline-success" type="button" name="assignment-complete" disabled>Complete Dispatch Order</button>
+                                <button id="edit-assignment" class="btn btn-outline-info" type="submit" name="modify" value="1" disabled>Edit</button>
+                                <button id="submit-assignment" class="btn btn-outline-success" type="submit" name="assignment-complete" value="1" disabled>Complete Dispatch Order</button>
                         </section>
                 </form>
         </div>
