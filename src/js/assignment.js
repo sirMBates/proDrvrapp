@@ -25,6 +25,8 @@ let showAssignment;
 let assignments = [];
 let currentIndex = 0;
 let pagination = null;
+// Auto-refresh Assignments on Tab Focus (debounced, full sync) ===
+let lastAssignmentsUpdate = 0;
 
 function updateButtonStates(assignment) {
     if (!assignment) return;
@@ -446,7 +448,7 @@ window.addEventListener('DOMContentLoaded', () => {
         tertiaryActEndTime.textContent = assignment['actual_end_time'] ? dtHelper(assignment['actual_end_time'], 'datetime') :  '';
         tertiaryActEndTime.dataset.raw = assignment['actual_end_time'] ? assignment['actual_end_time'].replace(' ', 'T').slice(0, 16) : '';
         tertiaryShiftTime.textContent = assignment['total_job_time'];
-        tertiaryDriveTime.textContent = assignment['driving_time'];
+        tertiaryDriveTime.textContent = assignment['driving_time'] || '0.00';
         tertiaryOrigin.textContent = assignment['origin'];
         quaternaryDestination.textContent = assignment['destination'];
         quaternaryGroupNameandLeader.textContent = `${assignment['group_name']}, ${assignment['group_leader']}`;
@@ -661,7 +663,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if ( type === "decimal" && field === "driving_time") {
                 if ( cell.querySelector("input") ) return;
 
-                const currentValue = cell.textContent.trim();
+                const currentValue = cell.textContent.trim() || '0.00';
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.step = '0.01';
@@ -872,7 +874,7 @@ window.addEventListener('DOMContentLoaded', () => {
         saveCurrentVisibleAssignmentDraft();
     });
 
-    ['pickup_details', 'destination_details', 'shared_job_note'].forEach(id => {
+    ['pickup-details', 'destination-details', 'shared-job-note'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
 
@@ -955,18 +957,27 @@ function submitAssignment(options) {
     // Save latest UI state
     saveCurrentVisibleAssignmentDraft();
 
-    // Validate
-    if (!validateCurrentAssignmentFields({
-        showFlashAlert,
-        focusFirstInvalid
-    })) return;
+    // Validate fields
+    if (!validateCurrentAssignmentFields({ showFlashAlert, focusFirstInvalid })) return;
 
     // Actual submission logic
     const doSubmit = () => {
+        // Disable all buttons
+        const buttons = document.querySelectorAll('#workOrder-btns button');
+        buttons.forEach(btn => btn.disabled = true);
+
+        // Overlay/fade assignment card
+        const assignmentCard = document.querySelector('.assignment-card');
+        assignmentCard.style.opacity = '0.5';
+        assignmentCard.style.pointerEvents = 'none';
+
+        // Set button to submitting state with spinner on button when clicked
+        setSubmittingState(buttonEl, true);
+
         // Clean old temp fields
         form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
 
-        // Build payload using same system as edit btn
+        // Build payload from editable cells
         appendEditableFields(form);
 
         // Append textareas
@@ -977,11 +988,15 @@ function submitAssignment(options) {
             appendHiddenFields(form, { [el.name]: el.value.trim() });
         });
 
-        // Default driving time to 0.00 if empty
+        // Ensure driving time to 0.00 if empty
         const drivingTimeEl = document.querySelector('[data-field="driving_time"] input');
-        if (drivingTimeEl && !drivingTimeEl.value.trim()) {
-            drivingTimeEl.value = '0.00';
+        let drivingTimeValue = '0.00';
+        if (drivingTimeEl) {
+            drivingTimeValue = drivingTimeEl.value.trim() || '0.00';
+            drivingTimeEl.value = drivingTimeValue;
         }
+        form.querySelectorAll(`input[name="driving_time"]`).forEach(h => h.remove());
+        appendEditableFields(form, { driving_time: drivingTimeValue });
 
         // Add action-specific flag if provided
         if (flagName && flagValue) {
@@ -1012,7 +1027,6 @@ function submitAssignment(options) {
         localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
 
         // Submit form
-        setSubmittingState(buttonEl, true);
         form.requestSubmit(buttonEl);
     };
 
@@ -1022,11 +1036,16 @@ function submitAssignment(options) {
         const confirmModal = new bootstrap.Modal(confirmModalEl);
         const confirmModalBtn = document.querySelector('#confirm-modal-confirm');
         const unconfirmModalBtn = document.querySelector('#confirm-modal-cancel');
+
+        // Show modal
         buildModal.confirm(confirmMessage, 'Yes', 'Cancel');
+        confirmModal.show();
+
+        // Clone buttons to remove old event listeners
         confirmModalBtn.replaceWith(confirmModalBtn.cloneNode(true));
         unconfirmModalBtn.replaceWith(unconfirmModalBtn.cloneNode(true));
         const newConfirmBtn = document.querySelector('#confirm-modal-confirm');
-        const newUnConfirmBtn = document.querySelector('#confirm-modal-cancel');
+        const newUnconfirmBtn = document.querySelector('#confirm-modal-cancel');
 
         newConfirmBtn.addEventListener('click', () => {
             doSubmit();
@@ -1037,7 +1056,6 @@ function submitAssignment(options) {
         newUnconfirmBtn.addEventListener('click', () => {
             bootstrap.Modal.getInstance(confirmModalEl)?.hide();
         });
-        confirmModal.show();
     } else {
         doSubmit();
     }
@@ -1161,12 +1179,9 @@ completeBtn.addEventListener('click', (e) => {
         buttonEl: completeBtn,
         flagName: 'assignment-complete',
         flagValue: '1',
-        confirmMessage: 'Are you sure you want to complete this assignment?\n Once completed, the assignment is no longer available and\n you will not be able to make any changes.'
+        confirmMessage: 'Are you sure you want to complete this assignment? Once completed, the assignment is no longer available and you will not be able to make any changes.'
     });
 });
-
-// Auto-refresh Assignments on Tab Focus (debounced, full sync) ===
-let lastAssignmentsUpdate = 0;
 
 document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'hidden') {

@@ -376,8 +376,17 @@ export function focusFirstInvalid(errors) {
 export function setSubmittingState(button, isSubmitting) {
     if (!button) return;
 
-    button.disabled = isSubmitting;
+    // Save original button text if not already saved
     button.dataset.originalText ??= button.textContent;
 
-    button.textContent = isSubmitting ? 'Saving...' : button.dataset.originalText;
+    if (isSubmitting) {
+        // Replace text with spinner + original text
+        button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        ${button.dataset.originalText}`;
+        button.disabled = true;
+    } else {
+        // Restore original text
+        button.textContent = button.dataset.originalText;
+        button.disabled = false;
+    }
 };
