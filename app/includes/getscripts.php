@@ -59,7 +59,7 @@ function pageScripts($value) {
                 echo "<script type='module' src='../dist/js/contacthandler.js'></script>";
                 break;
 
-            case "/help":
+            case "/faqs":
                 return;
                 break;
 

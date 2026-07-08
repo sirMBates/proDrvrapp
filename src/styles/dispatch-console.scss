@@ -1,0 +1,23 @@
+.dispatch-console {
+    min-height: 100vh;
+}
+
+.dispatch-sidebar {
+    background: #102a43;
+    color: #fff;
+
+    .nav-link {
+        color: rgba(255, 255, 255, 0.75);
+        border-radius: 0.5rem;
+    }
+
+    .nav-link.active,
+    .nav-link:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.12);
+    }
+}
+
+.emergency-card {
+    border-left: 4px solid var(--bs-danger) !important;
+}

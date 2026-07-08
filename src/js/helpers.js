@@ -15,6 +15,10 @@ Array.from(forms).forEach(form => {
 })
 })();
 
+export function getCurrentView() {
+    window.location.pathname;
+};
+
 export async function fetchDrvr(url, options = {}) {
   // Merge headers safely
   const headers = {

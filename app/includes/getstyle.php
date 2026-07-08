@@ -30,7 +30,7 @@ function pageStyle($value) {
                         return;
                         break;
 
-                case "/help":
+                case "/faqs":
                         return;
                         break;
 
