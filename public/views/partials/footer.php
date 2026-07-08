@@ -1,3 +1,10 @@
+<?php
+use Dotenv\Dotenv;
+require_once base_path("vendor/autoload.php");
+require_once "../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../../', '.local.env');
+$dotenv->load();
+?>
 <footer class="<?= urlIs('/printable') ? 'd-none' : 'mt-auto justify-content-center d-flex bg-besttrailsclr border border-start-0 border-end-0 border-1 border-black container-fluid';?>">
         <div class="container text-center">
                 <h4 class="text-uppercase text-light">pro-driver<br><!--<em class="fs-6 text-capitalize">best trails and travel edition</em>--></h4>
@@ -7,7 +14,7 @@
 </footer>
 <script src='../../dist/js/app.js'></script>
 <!-- Load JQuery Color CDN(Content Delivery Network) -->
-<script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity='sha256-KfnxwOV3FhXN7A/28TCtqslo5fRS23cxO5XcxVO5we8=' crossorigin='anonymous'></script>
+<script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity='<?= $_ENV['JQUERY_COLOR_INTEGRITY']?>' crossorigin='anonymous'></script>
 <script src="../../dist/js/pwa.js"></script>
 <?php
         require base_path("app/includes/getscripts.php");

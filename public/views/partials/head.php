@@ -1,3 +1,10 @@
+<?php
+use Dotenv\Dotenv;
+require_once base_path("vendor/autoload.php");
+require_once "../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../../', '.local.env');
+$dotenv->load();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +26,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />        
         <script src="https://kit.fontawesome.com/f2acae2623.js" crossorigin="anonymous"></script>
-        <script src='https://code.jquery.com/jquery-3.7.1.min.js' integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' crossorigin='anonymous'></script>
+        <script src="https://code.jquery.com/jquery-4.0.0.min.js" integrity="<?= $_ENV['JQUERY_INTEGRITY']?>" crossorigin="anonymous"></script>
         <link rel="icon" type="image/png" sizes="50x50" href="/dist/images-videos/logoandicons/prodrvr-bus-icon.png">                
         <title><?= $title;?></title>
 </head>

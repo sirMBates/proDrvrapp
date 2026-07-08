@@ -1,25 +1,25 @@
 import { buildModal } from './appmodal.js';
-import { fetchDrvr, showFlashAlert} from './helpers.js';
+import { fetchDrvr, showFlashAlert, getCurrentView } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
 import { Validation } from './validation.js';
 
-const myCurrentView = window.location.pathname;
+const curView = getCurrentView();
 //const profCon = document.querySelector("#profilecon");
 // Profile image display in navbar.
 // [default image is firstChild.nextElementSibling] & [file selector is 3]
 const profileImage = document.querySelector('#profile-pic');
 const profileInput = document.querySelector('#profile-upload');
 const defaultProfileImage = "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
-const getMenuItems = document.querySelectorAll(".nav-link");
-//const textLink = document.querySelector("#useraccess");
+const mainMenuItems = document.querySelectorAll("#navbarSupportedContent .nav-link");
+//const textLink = document.querySelector("#drivermenu");
 const driverMenu = document.querySelector(".offcanvas-body");
 const viewPayCard = driverMenu.childNodes[5];
 let isDarkMode;
 const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn.nextElementSibling;
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
-const changeStatusCon = document.querySelector('.offcanvas-body').childNodes[3]//.firstElementChild;
-const logoutLink = document.querySelector('.offcanvas-body').childNodes[11].firstElementChild;
+const changeStatusCon = document.querySelector('#driver-status-contlr');
+const logoutLink = driverMenu.childNodes[11].firstElementChild;
 const emergencyBtn = document.querySelectorAll('.status-emergency');
 let isActiveEmergency;
 const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
@@ -33,7 +33,7 @@ const statusMsg = document.querySelector('#statusMessage');
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq
-        if (myCurrentView === '/help' || myCurrentView === '/counter' || myCurrentView === '/int_messages') {
+        if (curView === '/faqs' || curView === '/counter' || curView === '/int_messages') {
                 return;
         }
 
@@ -76,7 +76,7 @@ $(document).ready(() => {
         });
 
         infoModal.addEventListener('shown.bs.modal', () => {
-                const path = window.location.pathname;
+                const path = curView;
                 if (modalMessages[path]) {
                         const { text, button } = modalMessages[path];
                         infoModalMsg.info(text, button);
@@ -100,7 +100,7 @@ window.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             const driver = data;
-            const drvrMainMenu = document.querySelector('#useraccess');
+            const drvrMainMenu = document.querySelector('#drivermenu');
             const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
             if (driver) {
                 drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
@@ -113,7 +113,7 @@ window.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
                 if (error) {
-                        const drvrMainMenu = document.querySelector('#useraccess');
+                        const drvrMainMenu = document.querySelector('#drivermenu');
                         const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3];
                         drvrMainHeader.textContent = 'Pro Driver';
                 }
@@ -193,16 +193,6 @@ emergencyBtn.forEach(btn => {
         })
 });
 
-window.addEventListener('load', () => {
-        isActiveEmergency = localStorage.getItem('isActiveEmergency');
-        if (isActiveEmergency === 'true') {
-                emergencyBackground.forEach(background => {
-                        background.classList.remove('bg-besttrailsclr');
-                        background.classList.add('bg-danger');
-                })
-        }
-})
-
 // Set the theme.
 const themeSet = {
         // Set dark theme.
@@ -212,7 +202,7 @@ const themeSet = {
                 const header = document.querySelector('header');
                 const btnSwitch = themeBtn.childNodes[1];
                 const textbox = document.querySelectorAll('textarea');
-                if (myCurrentView === '/help') {
+                if (curView === '/help') {
                         const cardImage = document.querySelector('#card-img');
                         cardImage.src = "../../dist/images-videos/busnitepics/drvr-area-nite.jpg";
                 };
@@ -235,7 +225,7 @@ const themeSet = {
                 const header = document.querySelector('header');
                 const btnSwitch = themeBtn.childNodes[1];
                 const textbox = document.querySelectorAll('textarea');
-                if (myCurrentView === '/help') {
+                if (curView === '/help') {
                         const cardImage = document.querySelector('#card-img');
                         cardImage.src = "../../dist/images-videos/drvrarea1.jpg";
                 };
@@ -272,7 +262,7 @@ function themeSwitcher(e) {
     }
     themeSet.savePreference(true); // user override
     updateThemeIndicator();
-}
+};
 
 themeBtn.addEventListener('click', themeSwitcher, false);
 
@@ -291,58 +281,28 @@ function autoThemeSwitcher() {
         themeSet.savePreference(false);
     }
     updateThemeIndicator();
-}
+};
 
 // Run auto theme every minute
 setInterval(autoThemeSwitcher, 60 * 1000); // 60 seconds
 
 // Load theme on page load
 window.addEventListener('load', () => {
-    const userOverride = localStorage.getItem('userThemeOverride');
-    const lastTheme = localStorage.getItem('isDarkMode');
+        const userOverride = localStorage.getItem('userThemeOverride');
+        const lastTheme = localStorage.getItem('isDarkMode');
 
-    if (userOverride === 'dark') {
-        themeSet.darkTheme();
-    } else if (userOverride === 'light') {
-        themeSet.lightTheme();
-    } else if (lastTheme === 'true') {
-        themeSet.darkTheme();
-    } else {
-        themeSet.lightTheme();
-        autoThemeSwitcher(); // initial check
-    }
-    updateThemeIndicator();
-});
+        if (userOverride === 'dark') {
+                themeSet.darkTheme();
+        } else if (userOverride === 'light') {
+                themeSet.lightTheme();
+        } else if (lastTheme === 'true') {
+                themeSet.darkTheme();
+        } else {
+                themeSet.lightTheme();
+                autoThemeSwitcher(); // initial check
+        }
+        updateThemeIndicator();
 
-function updateThemeIndicator() {
-    const userOverride = localStorage.getItem('userThemeOverride');
-    if (userOverride) {
-        themeModeIndicator.textContent = 'Manual';
-        themeModeIndicator.classList.remove('theme-auto');
-        themeModeIndicator.classList.add('theme-manual');
-    } else {
-        themeModeIndicator.textContent = 'Auto';
-        themeModeIndicator.classList.remove('theme-manual');
-        themeModeIndicator.classList.add('theme-auto');
-    }
-}
-
-// Highlight the active link of the current page.
-function activeLink () {
-        getMenuItems.forEach(link => {
-                let linkLocation = link.pathname;
-                if (myCurrentView === linkLocation) {
-                        link.setAttribute('aria-current', 'page'); //aria-current, page
-                        link.classList.add('active'); //active                       
-                } else {
-                        link.removeAttribute('aria-current'); //aria-current
-                        link.classList.remove('active'); //active 
-                }
-        })
-}
-activeLink();
-
-window.addEventListener('load', () => {
         if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
                 sessionStorage.setItem('status', 'Official');
                 let startUpStatus = sessionStorage.getItem('status');
@@ -355,7 +315,47 @@ window.addEventListener('load', () => {
                 let drvrStatus = sessionStorage.getItem('status');
                 statusMsg.textContent = drvrStatus;
         }
+
+        isActiveEmergency = localStorage.getItem('isActiveEmergency');
+        if (isActiveEmergency === 'true') {
+                emergencyBackground.forEach(background => {
+                        background.classList.remove('bg-besttrailsclr');
+                        background.classList.add('bg-danger');
+                })
+        }
+
+        if (curView !== '/') {
+                $(changeStatusCon).removeClass('d-none');
+        }
 }, false);
+
+function updateThemeIndicator() {
+    const userOverride = localStorage.getItem('userThemeOverride');
+    if (userOverride) {
+        themeModeIndicator.textContent = 'Manual';
+        themeModeIndicator.classList.remove('theme-auto');
+        themeModeIndicator.classList.add('theme-manual');
+    } else {
+        themeModeIndicator.textContent = 'Auto';
+        themeModeIndicator.classList.remove('theme-manual');
+        themeModeIndicator.classList.add('theme-auto');
+    }
+};
+
+// Highlight the active link of the current page.
+function activeLink () {
+        mainMenuItems.forEach(link => {
+                let linkLocation = link.pathname;
+                if (curView === linkLocation) {
+                        link.setAttribute('aria-current', 'page'); //aria-current, page
+                        link.classList.add('active'); //active                       
+                } else {
+                        link.removeAttribute('aria-current'); //aria-current
+                        link.classList.remove('active'); //active 
+                }
+        })
+};
+activeLink();
 
 $(logoutLink).on('click', () => {
         if (localStorage.getItem('status') === 'End of Shift') {
@@ -377,10 +377,3 @@ $(logoutLink).on('click', () => {
         updateThemeIndicator();
         localStorage.removeItem('warnModalShownFor');
 });
-
-if (myCurrentView !== '/') {
-        $(changeStatusCon).removeClass('d-none');
-};
-        
-/*const dropdownElementList = document.querySelectorAll('.dropdown-toggle')
-const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl))*/

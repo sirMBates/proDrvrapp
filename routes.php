@@ -12,7 +12,7 @@ $router->get('/int_messages', 'app/controllers/front-controllers/int_messages.ph
 $router->get('/timesheet', 'app/controllers/front-controllers/timesheet.php', true);
 $router->get('/profile', 'app/controllers/front-controllers/profile.php', true);
 $router->get('/contact', 'app/controllers/front-controllers/contact.php', true);
-$router->get('/help', 'app/controllers/front-controllers/help.php', true);
+$router->get('/faqs', 'app/controllers/front-controllers/faqs.php', true);
 $router->get('/counter', 'app/controllers/front-controllers/counter.php', true);
 $router->get('/logout', 'app/controllers/back-controllers/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
