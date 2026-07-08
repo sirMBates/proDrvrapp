@@ -348,7 +348,7 @@ function activeLink () {
                 let linkLocation = link.pathname;
                 if (curView === linkLocation) {
                         link.setAttribute('aria-current', 'page'); //aria-current, page
-                        link.classList.add('active'); //active                       
+                        link.classList.add('active'); //active                      
                 } else {
                         link.removeAttribute('aria-current'); //aria-current
                         link.classList.remove('active'); //active 

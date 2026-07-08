@@ -16,7 +16,7 @@ Array.from(forms).forEach(form => {
 })();
 
 export function getCurrentView() {
-    window.location.pathname;
+    return window.location.pathname;
 };
 
 export async function fetchDrvr(url, options = {}) {
