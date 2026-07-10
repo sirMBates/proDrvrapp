@@ -1,46 +1,104 @@
 // src/js/pwa.js
 import { queueRequest, getAllQueued, clearQueued } from "./dbQueue.js";
 import { fetchDrvr, showFlashAlert } from "./helpers.js";
-if ('serviceWorker' in navigator) {
+
+const isBrowserSync = window.location.port === '3000';
+
+if (isBrowserSync) {
+  console.info('[SW] Disabled during BrowserSync development');
+
+  // Remove any service worker that may already be registered
+  // specifically for the BrowserSync origin.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const registrations =
+          await navigator.serviceWorker.getRegistrations();
+
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+
+        console.info('[SW] BrowserSync registrations removed');
+      } catch (error) {
+        console.warn(
+          '[SW] Could not remove BrowserSync registration:',
+          error
+        );
+      }
+    });
+  }
+} else if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-  navigator.serviceWorker
-    //.register(new URL('../service-worker.js', import.meta.url))
-    .register(new URL('/service-worker.js', window.location.origin))
-    .then((reg) => {
-      console.log('[SW] Registered successfully:', reg.scope);
+    navigator.serviceWorker
+      .register(new URL('/service-worker.js', window.location.origin))
+      .then((reg) => {
+        console.log('[SW] Registered successfully:', reg.scope);
 
-      // 🔹 Listen for messages from the Service Worker (updates, syncs, etc.)
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        const data = event.data;
-        if (!data || !data.type) return;
+        // Listen for messages from the Service Worker.
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          const data = event.data;
 
-        // 🟦 New update available
-        if (data.type === 'SW_UPDATED') {
-          showUpdateToast(); // already in your code
-        }
+          if (!data || !data.type) {
+            return;
+          }
 
-        // 🟩 Offline queue sync completed
-        if (data.type === 'OFFLINE_SYNC_COMPLETE') {
-          const { statuses = 0, assignments = 0 } = data.synced || {};
-          const total = data.successCount || 0;
+          // New update available.
+          if (data.type === 'SW_UPDATED') {
+            showUpdateToast();
+          }
 
-          console.log(`[PWA] Offline sync complete — ${total} total: ${statuses} statuses, ${assignments} assignments.`);
+          // Offline queue sync completed.
+          if (data.type === 'OFFLINE_SYNC_COMPLETE') {
+            const {
+              statuses = 0,
+              assignments = 0
+            } = data.synced || {};
 
-          if (statuses > 0)
-            showSyncToast(`✅ ${statuses} status update${statuses > 1 ? 's' : ''} synced.`, '#198754'); // green
+            const total = data.successCount || 0;
 
-          if (assignments > 0)
-            showSyncToast(`📋 ${assignments} assignment${assignments > 1 ? 's' : ''} synced.`, '#0d6efd'); // blue
+            console.log(
+              `[PWA] Offline sync complete — ${total} total: ` +
+              `${statuses} statuses, ${assignments} assignments.`
+            );
 
-          if (total > 0 && statuses === 0 && assignments === 0)
-            showSyncToast(`✅ ${total} offline request${total > 1 ? 's' : ''} synced.`, '#1d5283');
-        }
+            if (statuses > 0) {
+              showSyncToast(
+                `✅ ${statuses} status update` +
+                `${statuses > 1 ? 's' : ''} synced.`,
+                '#198754'
+              );
+            }
+
+            if (assignments > 0) {
+              showSyncToast(
+                `📋 ${assignments} assignment` +
+                `${assignments > 1 ? 's' : ''} synced.`,
+                '#0d6efd'
+              );
+            }
+
+            if (
+              total > 0 &&
+              statuses === 0 &&
+              assignments === 0
+            ) {
+              showSyncToast(
+                `✅ ${total} offline request` +
+                `${total > 1 ? 's' : ''} synced.`,
+                '#1d5283'
+              );
+            }
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('[SW] Registration failed:', err);
       });
-    })
-    .catch((err) => console.error('[SW] Registration failed:', err));
   });
+};
 
-  function showUpdateToast() {
+function showUpdateToast() {
     // Create a simple toast container
     const toast = document.createElement('div');
     toast.innerHTML = `
@@ -132,7 +190,7 @@ if ('serviceWorker' in navigator) {
       <span>${message}</span>
       <button style="
         margin-left: 0.75rem;
-        baclground: transparent;
+        background: transparent;
         border: none;
         color: #fff;
         font-size: 1.1rem;
@@ -175,7 +233,6 @@ if ('serviceWorker' in navigator) {
       }, 400);
     }, 4000);
   };
-};
 
 window.addEventListener('DOMContentLoaded', () => {
     // 🧩 Custom Install Prompt

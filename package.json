@@ -4,7 +4,10 @@
   "description": "<h1>ProDriver</h1>",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel watch src/js/*.js src/styles/scss/main.scss src/styles/components.scss src/styles/jobsview.scss src/styles/register.scss src/styles/style.scss src/styles/tsheet.scss src/styles/messages.scss --dist-dir public/dist && shx cp -r src/images-videos public/dist && shx cp -r src/audio public/dist",
+    "copy-assets": "shx cp -r src/images-videos public/dist && shx cp -r src/audio public/dist",
+    "watch": "parcel watch src/js/*.js src/styles/scss/main.scss src/styles/components.scss src/styles/jobsview.scss src/styles/register.scss src/styles/style.scss src/styles/tsheet.scss src/styles/messages.scss --dist-dir public/dist",
+    "serve": "browser-sync start --config bs-config.js",
+    "dev": "npm run copy-assets && concurrently \"npm run watch\" \"npm run serve\"",
     "build": "parcel build src/js/*.js src/styles/scss/main.scss src/styles/components.scss src/styles/jobsview.scss src/styles/register.scss src/styles/style.scss src/styles/tsheet.scss src/styles/messages.scss --dist-dir public/dist --no-scope-hoist && shx cp -r src/images-videos public/dist && shx cp -r src/audio public/dist"
   },
   "keywords": [],
@@ -12,6 +15,8 @@
   "license": "ISC",
   "devDependencies": {
     "@parcel/transformer-sass": "^2.15.4",
+    "browser-sync": "^3.0.4",
+    "concurrently": "^8.2.2",
     "parcel": "^2.15.4",
     "shx": "^0.4.0"
   },
