@@ -1,6 +1,7 @@
 module.exports = {
     proxy: "https://prodriver.local",
 
+    host: "prodriver.local",
     port: 3000,
 
     https: {
@@ -16,6 +17,5 @@ module.exports = {
     ],
 
     open: false,
-
     notify: true
 };

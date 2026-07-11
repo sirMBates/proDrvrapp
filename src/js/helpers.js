@@ -20,37 +20,75 @@ export function getCurrentView() {
 };
 
 export async function fetchDrvr(url, options = {}) {
-  // Merge headers safely
+  const requestUrl = normalizeProDrvrUrl(url);
+
   const headers = {
     "X-Requested-With": "XMLHttpRequest",
     ...(options.headers || {})
   };
 
-  // 🧩 Auto-set Content-Type if body is a stringified JSON object
-  if (options.body && typeof options.body === "string" && !headers["Content-Type"]) {
-    // Try to detect if it looks like JSON
-    if (options.body.trim().startsWith("{") || options.body.trim().startsWith("[")) {
+  if (typeof options.body === "string" && !headers["Content-Type"]) {
+    const trimmedBody = options.body.trim();
+
+    if (trimmedBody.startsWith("{") || trimmedBody.startsWith("[")) {
       headers["Content-Type"] = "application/json";
     }
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(requestUrl, {
     ...options,
-    headers
+    headers,
+    credentials: options.credentials ?? "same-origin"
   });
 
-  if (!response.ok) {
-    console.error("fetchDrvr failed: ", url, response.status);
-    throw new Error("Network response was not ok");
+  const text = await response.text();
+
+  let data = null;
+
+  if (text.trim()) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
   }
 
-  // Some endpoints may not return JSON (e.g., empty 204 response)
-  const text = await response.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text; // fallback for non-JSON replies
+  if (!response.ok) {
+    console.error("fetchDrvr failed:", {
+      requestUrl,
+      status: response.status,
+      statusText: response.statusText,
+      response: data
+    });
+
+    const message = data?.message || data?.error || `Network response was not OK: ${response.status}`;
+    throw new Error(message);
   }
+
+  if (response.status === 204 || !text.trim()) {
+    return null;
+  }
+
+  return data;
+}
+
+function normalizeProDrvrUrl(url) {
+  const parsedUrl = new URL(url, window.location.origin);
+
+  if (
+    parsedUrl.hostname === "prodriver.local" ||
+    parsedUrl.hostname === "localhost" ||
+    parsedUrl.hostname === window.location.hostname
+  ) {
+    return (
+      window.location.origin +
+      parsedUrl.pathname +
+      parsedUrl.search +
+      parsedUrl.hash
+    );
+  }
+
+  return parsedUrl.toString();
 };
 
 export function viewableDateTimeHelper(input, format = 'datetime') {

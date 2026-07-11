@@ -12,11 +12,13 @@ header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-Wi
 exit();*/
 
 requireLoginAjax();
-$headers = getallheaders();
+$headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+$sessionToken = $_SESSION['drvr_token'] ?? null;
+/*$headers = getallheaders();
 $headerToken = $headers['X-CSRF-Token'];
-$sessionToken = $_SESSION['drvr_token'];
+$sessionToken = $_SESSION['drvr_token'];*/
 
-if ($headerToken !== $sessionToken) {
+if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)) {
     http_response_code(403);
     echo json_encode([
         'status' => 'error',

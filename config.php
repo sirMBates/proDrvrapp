@@ -12,11 +12,11 @@ error_reporting(E_ALL);
 session_set_cookie_params([
     //↓lifetime is set in seconds (1 hr).
     'lifetime' => 3600,
-    'domain' => 'prodriver.local',
+    //'domain' => 'prodriver.local',
     'path' => '/',
     'secure' => true,
     'httponly' => true,
-    'samesite' => 'None'
+    'samesite' => 'Lax'
 ]);
 
 session_start();
