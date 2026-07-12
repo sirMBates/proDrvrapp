@@ -205,6 +205,88 @@ class UpdateAssignment {
             'order_id' => $data['order_id']
         ];
     }
+
+    protected function completeAssignment(array $data) {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        // 1. Fetch current assignment from DB
+        $sql = "SELECT * FROM work_orders 
+                WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id
+                LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':order_id' => $data['order_id'],
+            ':driver_id' => $data['driver_id'],
+            ':vehicle_id' => $data['vehicle_id']
+        ]);
+
+        $current = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$current) {
+            return [
+                'status' => 'error',
+                'message' => 'Assignment not found in database.'
+            ];
+        }
+
+        // 2. Compare submitted values with current DB values
+        $changes = [];
+        $fieldsToCompare = [
+            'vehicle_id',
+            'actual_drop_time',
+            'actual_end_time',
+            'total_job_time',
+            'driving_time',
+            'pickup_details',
+            'destination_details',
+            'signature_status'
+        ];
+
+        foreach ($fieldsToCompare as $field) {
+            $submitted = $data[$field] ?? null;
+            $dbValue = $current[$field] ?? null;
+
+            // Normalize datetime for comparison if needed
+            if (strpos($field, 'time') !== false && $submitted) {
+                $submitted = str_replace('T', ' ', $submitted) . (strlen($submitted) === 16 ? ':00' : '');
+            }
+
+            if ($submitted !== null && $submitted != $dbValue) {
+                $changes[$field] = $submitted;
+            }
+        }
+
+        // 3. Only update DB if there are differences
+        if (!empty($changes)) {
+            $setClauses = [];
+            foreach ($changes as $field => $val) {
+                $setClauses[] = "$field = :$field";
+            }
+
+            $sqlUpdate = "UPDATE work_orders SET " . implode(', ', $setClauses) . " WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id";
+            $stmtUpdate = $pdo->prepare($sqlUpdate);
+
+            foreach ($changes as $field => $val) {
+                $stmtUpdate->bindValue(":$field", $val);
+            }
+            $stmtUpdate->bindValue(':order_id', $data['order_id']);
+            $stmtUpdate->bindValue(':driver_id', $data['driver_id']);
+            $stmtUpdate->bindValue(':vehicle_id', $data['vehicle_id']);
+
+            $stmtUpdate->execute();
+        }
+
+        // 4. After DB update (if any), send values to Excel
+        // JobOrderImporter::updateAssignmentInExcel($latestValues); 
+        // You can merge $current + $changes to get the latest
+
+        $latestValues = array_merge($current, $changes);
+        return [
+            'status' => 'success',
+            'message' => 'Assignment completed successfully.',
+            'data' => $latestValues
+        ];
+    }
 }
 
 ?>

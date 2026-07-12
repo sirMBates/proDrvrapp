@@ -97,6 +97,67 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         ]);
     }
 
+    public function complete(array $data): array {
+        $alert = new Flash();
+
+        // Basic required fields
+        $requiredFields = [
+            'driver_id',
+            'order_id',
+            'vehicle_id',
+            'actual_drop_time',
+            'actual_end_time',
+            'total_hrs',
+            'driving_time'
+        ];
+
+        $errors = [];
+        foreach ($requiredFields as $field) {
+            if (empty($data[$field])) {
+                $errors[$field] = 'This field is required.';
+            }
+        }
+
+        // Validate datetime
+        if (!empty($data['actual_drop_time']) && !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $data['actual_drop_time'])) {
+            $errors['actual_drop_time'] = 'Invalid drop time format.';
+        }
+
+        if (!empty($data['actual_end_time']) && !preg_match('/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/', $data['actual_end_time'])) {
+            $errors['actual_end_time'] = 'Invalid end time format.';
+        }
+
+        // Validate decimal fields
+        if (!empty($data['total_hrs']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['total_hrs'])) {
+            $errors['total_hrs'] = 'Invalid total hours.';
+        }
+
+        if (!empty($data['driving_time']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['driving_time'])) {
+            $errors['driving_time'] = 'Invalid driving time.';
+        }
+
+        // Validate coach/vehicle number
+        if (!empty($data['vehicle_id']) && !preg_match('/^\d{3,}$/', $data['vehicle_id'])) {
+            $errors['vehicle_id'] = 'Invalid vehicle number.';
+        }
+
+        // Signature check
+        if (isset($data['signature_status']) && !in_array($data['signature_status'], ['pending','pre-trip-complete','complete'], true)) {
+            $errors['signature_status'] = 'Invalid signature status.';
+        }
+
+        // Sanitize shared job note
+        if (!empty($data['shared_job_note'])) {
+            $data['shared_job_note'] = $this->validateTextarea($data['shared_job_note']);
+        }
+
+        return [
+            'is_valid' => empty($errors),
+            'errors' => $errors,
+            'data' => $data
+        ];
+    }
+
     private function isMissingInfo(bool $signatureRequired = false): bool {
         $requiredFields = [
             $this->driverId,
