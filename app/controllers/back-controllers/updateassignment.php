@@ -1,5 +1,7 @@
 <?php
 
+use core\Logger;
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -48,7 +50,45 @@ if ($method === 'PATCH') {
         header("Location: /assignments?error=update+failed");
         exit();
     }
-    elseif (isset($_POST['assignment-complete'])) {}
+    elseif (isset($_POST['assignment-complete'])) {
+        include_once base_path("app/models/assignmenthandlermodel.php");
+        include_once base_path("app/errors/check_assignment_details.php");
+        include_once base_path("app/repository/jobexportmodel.php");
+
+        // Sanitize incoming POST data
+        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+
+        // Validate & check assignment details using existing error checker
+        $checker = new UpdateAssignmentDetailsContr($data);
+        $errorCheck = $checker->complete($data);
+
+        // 2. Update database
+        $model = new UpdateAssignment();
+        $dbResult = $model->completeAssignment($data);
+
+        if ($dbResult['status'] === 'error') {
+            $alert::setMsg($dbResult['status'], $dbResult['message']);
+            header("Location: /assignments?error=db+update");
+            exit();
+        }
+        
+        // Update Excel sheet using AssignmentExporter
+        try {
+            // Pass updated data to excel exporter
+            $filePath = 'C:/Users/bates/onedrive/documents/testworkassignments.xlsx';
+            $exporter = new AssignmentExporter($filePath, $logger);
+            $exporter->assignmentSubmitted($dbResult['data']);
+        } catch (\Throwable $e) {
+            $logger->error("[Endpoint] Excel export failed: " . $e->getMessage());
+            $alert::setMsg('error', 'Assignment not sent to dispatch');
+            header("Location: /assignments?error=assignment+sent+failed");
+            exit();
+        }
+
+        $alert::setMsg('success', 'assignment has been submitted to dispatch and marked as completed.');
+        header("Location: /assignments?success=assignment_completed&completed=1&order_id=" . urlencode($data['order_id']));
+        exit();
+    }
 }
 
 ?>

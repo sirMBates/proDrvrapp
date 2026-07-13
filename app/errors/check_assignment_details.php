@@ -120,30 +120,48 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
 
         // Validate datetime
         if (!empty($data['actual_drop_time']) && !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $data['actual_drop_time'])) {
-            $errors['actual_drop_time'] = 'Invalid drop time format.';
+            $errors['actual_drop_time'] = 
+            $alert::setMsg('error,', 'Invalid drop time format.');
+            header("Location: /assignments?error=invalid+drop+time");
+            exit();
         }
 
         if (!empty($data['actual_end_time']) && !preg_match('/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/', $data['actual_end_time'])) {
-            $errors['actual_end_time'] = 'Invalid end time format.';
+            $errors['actual_end_time'] = 
+            $alert::setMsg('error', 'Invalid end time format.');
+            header("Location: /assignments?error=invalid+end+time");
+            exit();
         }
 
         // Validate decimal fields
         if (!empty($data['total_hrs']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['total_hrs'])) {
-            $errors['total_hrs'] = 'Invalid total hours.';
+            $errors['total_hrs'] = 
+            $alert::setMsg('error', 'Invalid total hours.');
+            header("Location: /assignments?error=invalid+total");
+            exit();
         }
 
         if (!empty($data['driving_time']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['driving_time'])) {
-            $errors['driving_time'] = 'Invalid driving time.';
+            $errors['driving_time'] = 
+            $alert::setMsg('error', 'Invalid driving time.');
+            header("Location: /assignments?error=invalid+drive+time");
+            exit();
         }
 
         // Validate coach/vehicle number
         if (!empty($data['vehicle_id']) && !preg_match('/^\d{3,}$/', $data['vehicle_id'])) {
-            $errors['vehicle_id'] = 'Invalid vehicle number.';
+            $errors['vehicle_id'] = 
+            $alert::setMsg('error', 'Invalid vehicle number.');
+            header("Location: /assignments?error=invalid+vehicle");
+            exit();
         }
 
         // Signature check
         if (isset($data['signature_status']) && !in_array($data['signature_status'], ['pending','pre-trip-complete','complete'], true)) {
-            $errors['signature_status'] = 'Invalid signature status.';
+            $errors['signature_status'] = 
+            $alert::setMsg('error', 'Invalid signature status.');
+            header("Location: /assignments?error=no+signature");
+            exit();
         }
 
         // Sanitize shared job note

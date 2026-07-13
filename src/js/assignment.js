@@ -1028,6 +1028,27 @@ function submitAssignment(options) {
 
         // Submit form
         form.requestSubmit(buttonEl);
+
+        // --- Immediately remove completed assignment from view ---
+        if (flagName === 'assignment-complete') {
+            const completedIndex = assignments.findIndex(a =>
+                a.order_id === assignment.order_id &&
+                a.driver_id === assignment.driver_id &&
+                a.vehicle_id === assignment.vehicle_id
+            );
+
+            if (completedIndex !== -1) {
+                assignments.splice(completedIndex, 1);
+            }
+
+            if (assignments.length > 0) {
+                currentIndex = Math.min(currentIndex, assignments.length - 1);
+                showAssignment(assignments[currentIndex]);
+            } else {
+                showNoAssignments();
+            }
+            broadcastAssignmentsUpdate(assignments);
+        }
     };
 
     if (confirmMessage) {
