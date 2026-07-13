@@ -221,7 +221,7 @@ class UpdateAssignment {
             ':vehicle_id' => $data['vehicle_id']
         ]);
 
-        $current = $stmt->fetch(PDO::FETCH_ASSOC);
+        $current = $stmt->fetch();
         if (!$current) {
             return [
                 'status' => 'error',
@@ -256,14 +256,17 @@ class UpdateAssignment {
             }
         }
 
+        // Mark as completed
+        $changes['completed_at'] = date('Y-m-d H:i:s');
+
         // 3. Only update DB if there are differences
         if (!empty($changes)) {
-            $setClauses = [];
+            $setParts = [];
             foreach ($changes as $field => $val) {
-                $setClauses[] = "$field = :$field";
+                $setParts[] = "$field = :$field";
             }
 
-            $sqlUpdate = "UPDATE work_orders SET " . implode(', ', $setClauses) . " WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id";
+            $sqlUpdate = "UPDATE work_orders SET " . implode(', ', $setParts) . " WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id";
             $stmtUpdate = $pdo->prepare($sqlUpdate);
 
             foreach ($changes as $field => $val) {
@@ -273,7 +276,14 @@ class UpdateAssignment {
             $stmtUpdate->bindValue(':driver_id', $data['driver_id']);
             $stmtUpdate->bindValue(':vehicle_id', $data['vehicle_id']);
 
-            $stmtUpdate->execute();
+            try {
+                $stmtUpdate->execute();
+            } catch (\Throwable $e) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Database update failed: ' . $e->getMessage()
+                ];
+            }
         }
 
         // 4. After DB update (if any), send values to Excel
@@ -283,9 +293,8 @@ class UpdateAssignment {
         $latestValues = array_merge($current, $changes);
         return [
             'status' => 'success',
-            'message' => 'Assignment completed successfully.',
-            'data' => $latestValues
-        ];
+            'data' => array_merge($current, $changes)
+        ];       
     }
 }
 
