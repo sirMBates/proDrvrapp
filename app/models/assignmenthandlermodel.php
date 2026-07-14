@@ -219,7 +219,7 @@ class UpdateAssignment {
         // 1. Fetch current assignment from DB
         $sql = "SELECT wo.*, d.first_name, d.last_name 
                 FROM work_orders wo
-                INNER JOIN driver d ON d.driver_id = wo.driver_id
+                INNER JOIN drivers d ON d.driver_id = wo.driver_id
                 WHERE wo.order_id = :order_id AND wo.driver_id = :driver_id AND wo.vehicle_id = :vehicle_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
@@ -315,7 +315,7 @@ class UpdateAssignment {
         // Fetch assignment + driver name
         $sql = "SELECT wo.*, d.first_name, d.last_name 
                 FROM work_orders wo
-                INNER JOIN driver d ON d.driver_id = wo.driver_id
+                INNER JOIN drivers d ON d.driver_id = wo.driver_id
                 WHERE wo.order_id = :order_id
                 AND wo.driver_id = :driver_id
                 AND wo.vehicle_id = :vehicle_id
