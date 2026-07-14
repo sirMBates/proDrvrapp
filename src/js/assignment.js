@@ -184,6 +184,10 @@ async function loadNextAssignment(afterIndex) {
     }
 };
 
+function filterActiveAssignments(assignments) {
+    return assignments.filter(a => !a.completed_at || a.completed_at === null);
+}
+
 async function clearAssignmentUI() {
     const assignmentCard = document.querySelector('.assignment-card');
     if (!assignmentCard) return;
@@ -397,7 +401,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Renders the assignment details to your existing UI tables
     showAssignment = function(index) {
-        if (assignments.length === 0) return;
+        // Filter out completed assignments
+        assignments = assignments.filter(a => !a.completed_at);
+
+        if (assignments.length === 0) {
+            showNoAssignments();
+            return;
+        }
 
         if (index < 0 || index >= assignments.length) return; // guard
 
@@ -965,14 +975,12 @@ function submitAssignment(options) {
         // Disable all buttons
         const buttons = document.querySelectorAll('#workOrder-btns button');
         buttons.forEach(btn => btn.disabled = true);
+        setSubmittingState(buttonEl, true);
 
         // Overlay/fade assignment card
         const assignmentCard = document.querySelector('.assignment-card');
         assignmentCard.style.opacity = '0.5';
         assignmentCard.style.pointerEvents = 'none';
-
-        // Set button to submitting state with spinner on button when clicked
-        setSubmittingState(buttonEl, true);
 
         // Clean old temp fields
         form.querySelectorAll('.temp-hidden').forEach(el => el.remove());
@@ -990,29 +998,15 @@ function submitAssignment(options) {
 
         // Ensure driving time to 0.00 if empty
         const drivingTimeEl = document.querySelector('[data-field="driving_time"] input');
-        let drivingTimeValue = '0.00';
-        if (drivingTimeEl) {
-            drivingTimeValue = drivingTimeEl.value.trim() || '0.00';
-            drivingTimeEl.value = drivingTimeValue;
-        }
+        const drivingTimeValue = drivingTimeEl?.value.trim() || '0.00';
+        if (drivingTimeEl) drivingTimeEl.value = drivingTimeValue;
         form.querySelectorAll(`input[name="driving_time"]`).forEach(h => h.remove());
-        appendEditableFields(form, { driving_time: drivingTimeValue });
+        appendHiddenFields(form, { driving_time: drivingTimeValue });
 
-        // Add action-specific flag if provided
-        if (flagName && flagValue) {
-            appendHiddenFields(form, { [flagName]: flagValue });
-        }
-        // Add identifiers
-        const identifiers = {
-                order_id: assignment.order_id,
-                driver_id: assignment.driver_id,
-                vehicle_id: assignment.vehicle_id,
-                __method: 'PATCH'
-        };
-        Object.keys(identifiers).forEach(name => {
-            // Remove existing hidden inputs with this name
-            form.querySelectorAll(`input[name="${name}"]`).forEach(h => h.remove());
-        });
+        // Add action-specific flag and identifiers
+        if (flagName && flagValue) appendHiddenFields(form, { [flagName]: flagValue });
+        const identifiers = { order_id: assignment.order_id, driver_id: assignment.driver_id, vehicle_id: assignment.vehicle_id, __method: 'PATCH' };
+        Object.keys(identifiers).forEach(name => form.querySelectorAll(`input[name="${name}"]`).forEach(h => h.remove()));
         appendHiddenFields(form, identifiers);
 
         // Add CSRF token from drvrtoken input only once
@@ -1028,27 +1022,6 @@ function submitAssignment(options) {
 
         // Submit form
         form.requestSubmit(buttonEl);
-
-        // --- Immediately remove completed assignment from view ---
-        if (flagName === 'assignment-complete') {
-            const completedIndex = assignments.findIndex(a =>
-                a.order_id === assignment.order_id &&
-                a.driver_id === assignment.driver_id &&
-                a.vehicle_id === assignment.vehicle_id
-            );
-
-            if (completedIndex !== -1) {
-                assignments.splice(completedIndex, 1);
-            }
-
-            if (assignments.length > 0) {
-                currentIndex = Math.min(currentIndex, assignments.length - 1);
-                showAssignment(assignments[currentIndex]);
-            } else {
-                showNoAssignments();
-            }
-            broadcastAssignmentsUpdate(assignments);
-        }
     };
 
     if (confirmMessage) {
@@ -1070,7 +1043,6 @@ function submitAssignment(options) {
 
         newConfirmBtn.addEventListener('click', () => {
             doSubmit();
-            console.log('[SUCCESS] Assignment submitted!');
             bootstrap.Modal.getInstance(confirmModalEl)?.hide();
         });
     

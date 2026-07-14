@@ -11,8 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$headers = getallheaders();
-$headerToken = $headers['X-CSRF-Token'] ?? null;
+
+$headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
 $sessionToken = $_SESSION['drvr_token'];
 
 if ($sessionToken === null) {

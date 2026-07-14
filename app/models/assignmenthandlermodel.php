@@ -1,6 +1,12 @@
 <?php
 
 use core\Database;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
+use Dotenv\Dotenv;
+require_once __DIR__ . "/../../vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
+$dotenv->load();
 
 class UpdateAssignment {
     protected function confirmAssignment ($driverId, $orderId, $vehicleId, $assignmentStatus) {
@@ -206,13 +212,15 @@ class UpdateAssignment {
         ];
     }
 
-    protected function completeAssignment(array $data) {
+    protected function completeAssignment(array $data, bool $markCompleted = true) {
         $db = new Database();
         $pdo = $db->connect();
 
         // 1. Fetch current assignment from DB
-        $sql = "SELECT * FROM work_orders 
-                WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id
+        $sql = "SELECT wo.*, d.first_name, d.last_name 
+                FROM work_orders wo
+                INNER JOIN driver d ON d.driver_id = wo.driver_id
+                WHERE wo.order_id = :order_id AND wo.driver_id = :driver_id AND wo.vehicle_id = :vehicle_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -239,7 +247,8 @@ class UpdateAssignment {
             'driving_time',
             'pickup_details',
             'destination_details',
-            'signature_status'
+            'pre_signature_base64',
+            'post_signature_base64'
         ];
 
         foreach ($fieldsToCompare as $field) {
@@ -256,10 +265,12 @@ class UpdateAssignment {
             }
         }
 
-        // Mark as completed
-        $changes['completed_at'] = date('Y-m-d H:i:s');
+        // 3. Mark as completed only if requested
+        if ($markCompleted) {
+            $changes['completed_at'] = date('Y-m-d H:i:s');
+        }
 
-        // 3. Only update DB if there are differences
+        // 4. Only update DB if there are differences
         if (!empty($changes)) {
             $setParts = [];
             foreach ($changes as $field => $val) {
@@ -286,15 +297,48 @@ class UpdateAssignment {
             }
         }
 
-        // 4. After DB update (if any), send values to Excel
-        // JobOrderImporter::updateAssignmentInExcel($latestValues); 
-        // You can merge $current + $changes to get the latest
-
         $latestValues = array_merge($current, $changes);
         return [
             'status' => 'success',
-            'data' => array_merge($current, $changes)
-        ];       
+            'data' => $latestValues
+        ];
+    }
+
+    public function completeAssignmentPublic(array $data, bool $markCompleted = true): array {
+        return $this->completeAssignment($data, $markCompleted);
+    }
+
+    public function getAssignmentForExcel(array $data): array {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        // Fetch assignment + driver name
+        $sql = "SELECT wo.*, d.first_name, d.last_name 
+                FROM work_orders wo
+                INNER JOIN driver d ON d.driver_id = wo.driver_id
+                WHERE wo.order_id = :order_id
+                AND wo.driver_id = :driver_id
+                AND wo.vehicle_id = :vehicle_id
+                LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':order_id' => $data['order_id'],
+            ':driver_id' => $data['driver_id'],
+            ':vehicle_id' => $data['vehicle_id']
+        ]);
+
+        $assignment = $stmt->fetch();
+        if (!$assignment) {
+            throw new \Exception('Assignment not found in database.');
+        }
+
+        // Decrypt driver names
+        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+        $firstName = Crypto::decrypt($assignment['first_name'], $key);
+        $lastName  = Crypto::decrypt($assignment['last_name'], $key);
+        $assignment['operator_name'] = trim($firstName . ' ' . $lastName);
+
+        return $assignment;
     }
 }
 

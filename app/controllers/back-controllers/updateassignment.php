@@ -1,15 +1,14 @@
 <?php
 
-use core\Logger;
-
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 $alert = new core\Flash();
+$logFilePath = 'D:/webapps/logs/job_export_master.log';
+$devLogger = new core\Logger($logFilePath);
 
-$headers = getallheaders();
-$headerToken = $headers['X-CSRF-Token'] ?? $_POST['X-CSRF-Token'] ?? null;
+$headerToken = $_POST['X-CSRF-Token'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;
 
 if ($sessionToken === null) {
@@ -59,33 +58,55 @@ if ($method === 'PATCH') {
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
 
         // Validate & check assignment details using existing error checker
-        $checker = new UpdateAssignmentDetailsContr($data);
-        $errorCheck = $checker->complete($data);
-
-        // 2. Update database
-        $model = new UpdateAssignment();
-        $dbResult = $model->completeAssignment($data);
-
-        if ($dbResult['status'] === 'error') {
-            $alert::setMsg($dbResult['status'], $dbResult['message']);
+        $jobValidator = new UpdateAssignmentDetailsContr($data);
+        $errorCheck = $jobValidator->complete($data);
+        if (isset($errorCheck['status']) && $errorCheck['status'] === 'error') {
+            $alert::setMsg('error', $errorCheck['message']);
             header("Location: /assignments?error=db+update");
             exit();
         }
-        
-        // Update Excel sheet using AssignmentExporter
+
+        $model = new UpdateAssignment();
+
         try {
-            // Pass updated data to excel exporter
-            $filePath = 'C:/Users/bates/onedrive/documents/testworkassignments.xlsx';
-            $exporter = new AssignmentExporter($filePath, $logger);
-            $exporter->assignmentSubmitted($dbResult['data']);
+            $assignmentForExcel = $model->getAssignmentForExcel($data);
         } catch (\Throwable $e) {
-            $logger->error("[Endpoint] Excel export failed: " . $e->getMessage());
-            $alert::setMsg('error', 'Assignment not sent to dispatch');
-            header("Location: /assignments?error=assignment+sent+failed");
+            $logger->error("[Endpoint] Failed to fetch assignment for Excel: " . $e->getMessage());
+            $alert::setMsg('error', 'Could not fetch assignment for dispatch. Please try again.');
+            header("Location: /assignments?error=fetch_failed");
             exit();
         }
 
-        $alert::setMsg('success', 'assignment has been submitted to dispatch and marked as completed.');
+        // Pass updated data to excel exporter
+        try {
+            $filePath = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
+            $exporter = new AssignmentExporter($filePath, $devLogger);
+            $exportSuccess = $exporter->assignmentSubmitted($data, $assignmentForExcel);
+        } catch (\Throwable $e) {
+            $devLogger->error("[Endpoint] Excel export failed: " . $e->getMessage());
+            $alert::setMsg('error', 'Assignment was not submitted. Please try again.');
+            header("Location: /assignments?error=submission+failed");
+            exit();
+        }
+
+        try {
+            $dbResult = $model->completeAssignment($data);
+            if (isset($dbResult['status']) && $dbResult['status'] === 'error') {
+                $alert::setMsg('error', $dbResult['message']);
+                header("Location: /assignments?error=db_update_failed");
+                exit();
+            }
+        } catch (\Throwable $e) {
+            $devLogger->error("[Endpoint] Failed to mark assignment completed: " . $e->getMessage());
+            $alert::setMsg('error', 'Could not mark assignment completed.');
+            header("Location: /assignments?error=complete_failed");
+            exit();
+        }
+
+        $dbMarkComplete = $model->completeAssignment($data, true);
+
+        $devLogger->info('[Updated] Operation was executed.');
+        $alert::setMsg('success', 'Assignment has been submitted to dispatch and marked as completed.');
         header("Location: /assignments?success=assignment_completed&completed=1&order_id=" . urlencode($data['order_id']));
         exit();
     }

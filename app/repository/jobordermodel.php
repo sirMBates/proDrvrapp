@@ -9,11 +9,8 @@ use Dotenv\Dotenv;
 require_once __DIR__ . "/../../vendor/autoload.php";
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
 $dotenv->load();
-
-// require __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . "/../../vendor/autoload.php";
 require_once __DIR__ . "/../../app/models/assignmentmodel.php";
-// require_once 'D:/webapps/prodrvrapp/app/models/assignmentmodel.php';
+
 
 class JobOrderImporter {
     protected string $excelFile;
@@ -36,16 +33,12 @@ class JobOrderImporter {
             $spreadsheet = IOFactory::load($this->excelFile);
             $sheet = $spreadsheet->getActiveSheet();
             $data = $sheet->toArray(null, true, true, true);
-            //$this->logger->debug("Excel data read: " . json_encode($data));
-
-            //$this->logger->debug("Raw sheet row count (including header): " . count($data));
-            //$this->logger->debug("First 3 rows: " . json_encode(array_slice($data, 0, 3)));
+            
             // Read headers
             $headers = [];
             foreach ($data[1] as $col => $value) {
                 $headers[$col] = strtolower(str_replace(' ', '_', trim($value)));
             }
-            //$this->logger->debug("Normalized headers: " . json_encode($headers));
 
             $orderRef = 'JOB-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
             $this->logger->info("Generated order reference: {$orderRef}");
@@ -74,11 +67,6 @@ class JobOrderImporter {
                     $this->logger->warning("Skipping row {$index} with empty operator_id");
                     continue;
                 }
-
-                //$this->logger->debug("Mapped row data: " . json_encode($rowData));
-                //$this->logger->debug("Parsed row {$index}: " . json_encode($rowData));
-                /*$this->logger->debug("Parsed row data: " . json_encode($rowData));
-                $this->logger->info("Rows found in Excel: " . (count($data) - 1));*/
 
                 // Lookup driver_id from drivers table
                 $db = new Database();
