@@ -14,31 +14,44 @@ class AssignmentExporter {
     }
 
     public function assignmentSubmitted(array $data, array $dbValues): bool {
+        $alert = new core\Flash();
         try {
             // Load spreadsheet
             $spreadsheet = IOFactory::load($this->filePath);
             $sheet = $spreadsheet->getActiveSheet();
 
+            $dbStartDT = new \DateTime($dbValues['start_date_time']);
+            $operatorName = $dbValues['operator_name'];
+            $vehicleNumber = $dbValues['vehicle_id'];
+
             // Find matching row by operator, vehicle, start datetime
             $highestRow = $sheet->getHighestDataRow();
             $matchRow = null;
 
-            $dbStartDT = \DateTime::createFromFormat('Y-m-d H:i:s', $dbValues['start_date_time']);
-
             for ($row = 2; $row <= $highestRow; $row++) {
-                $operatorName = trim((string)$sheet->getCell("B$row")->getValue());
-                $vehicleNumber = trim((string)$sheet->getCell("A$row")->getValue());
-                $excelStartDT = \DateTime::createFromFormat('m-d-Y h:ia', trim((string)$sheet->getCell("E$row")->getValue()));
+                $excelOperator = trim((string)$sheet->getCell("B$row")->getValue());
+                $excelVehicle = trim((string)$sheet->getCell("A$row")->getValue());
+                $excelStartValue = $sheet->getCell("E$row")->getValue();
 
-                if ($operatorName === $dbValues['operator_name'] && $vehicleNumber === $dbValues['vehicle_id'] && $excelStartDT && $dbStartDT && $excelStartDT->format('Y-m-d H:i:s') === $dbStartDT->format('Y-m-d H:i:s')) {
+                // Handle Excel date format
+                if (is_numeric($excelStartValue)) {
+                    $excelStartDT = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($excelStartValue);
+                } else {
+                    $excelStartDT = \DateTime::createFromFormat('m-d-Y h:ia', $excelStartValue);
+                }
+
+                if ($excelStartDT && $excelStartDT->format('Y-m-d H:i:s') === $dbStartDT->format('Y-m-d H:i:s')
+                && $excelOperator === $operatorName && $excelVehicle === $vehicleNumber) {
                     $matchRow = $row;
                     break;
                 }
             }
 
             if (!$matchRow) {
-                $this->logger->error("[AssignmentExporter] No matching row found for operator {$dbValues['operator_name']}, vehicle {$dbValues['vehicle_id']}, start {$dbValues['start_date_time']}");
-                return false;
+                $this->logger->error("[AssignmentExporter] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$dbValues['start_date_time']}");
+                $alert::setMsg('error', 'Can\'t find assignment for Operator. Please contact dispatch.');
+                header("Location: /assignments?error=missing_assignment");
+                exit();
             }
 
             // Map database fields to Excel columns
@@ -54,16 +67,16 @@ class AssignmentExporter {
             ];
 
             foreach ($columns as $field => $col) {
+                $valueToWrite = $data[$field] ?? $dbValues[$field] ?? '';
+
+                // Skip signatures if not required
+                if (in_array($field, ['pre_signature_base64','post_signature_base64']) && empty($data['signature_required'])) {
+                    $this->logger->debug("[AssignmentExporter] Skipping $field as signature not required.");
+                    continue;
+                }
+
                 $currentValue = trim((string)$sheet->getCell("$col$matchRow")->getValue());
-                $valueToWrite = $submittedData[$field] ?? $dbValues[$field] ?? '';
-
                 if ($currentValue !== $valueToWrite && $valueToWrite !== '') {
-                    if (in_array($field, ['pre_signature_base64','post_signature_base64']) &&
-                        empty($submittedData['signature_required'])) {
-                        $this->logger->debug("[AssignmentExporter] Skipping $field as signature not required.");
-                        continue;
-                    }
-
                     $sheet->setCellValue("$col$matchRow", $valueToWrite);
                     $this->logger->info("[AssignmentExporter] Updated $field in row $matchRow: '$currentValue' → '$valueToWrite'");
                 } else {
@@ -78,7 +91,9 @@ class AssignmentExporter {
             return true;
         } catch (\Throwable $e) {
             $this->logger->error("[AssignmentExporter] Error updating Excel: " . $e->getMessage());
-            return false;
+            $alert::setMsg('error', 'Assignment was not submitted. Please try again!');
+            header("Location: /assignments?error=submission+failed");
+            exit();
         }
     }
 };

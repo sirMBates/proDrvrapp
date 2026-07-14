@@ -90,7 +90,7 @@ if ($method === 'PATCH') {
         }
 
         try {
-            $dbResult = $model->completeAssignment($data);
+            $dbResult = $model->completeAssignmentPublic($data);
             if (isset($dbResult['status']) && $dbResult['status'] === 'error') {
                 $alert::setMsg('error', $dbResult['message']);
                 header("Location: /assignments?error=db_update_failed");
