@@ -114,7 +114,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $errors = [];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
-                $errors[$field] = 'This field is required.';
+                $alert::setMsg('error', "Missing required fields: $field");
+                header("Location: /assignments?error=missing+$field");
+                exit();
             }
         }
 
@@ -169,11 +171,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             $data['shared_job_note'] = $this->validateTextarea($data['shared_job_note']);
         }
 
-        return [
-            'is_valid' => empty($errors),
-            'errors' => $errors,
-            'data' => $data
-        ];
+        return $this->completeAssignment($data);
     }
 
     private function isMissingInfo(bool $signatureRequired = false): bool {
