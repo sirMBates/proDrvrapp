@@ -82,6 +82,9 @@ if ($method === 'PATCH') {
             $filePath = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
             $exporter = new AssignmentExporter($filePath, $devLogger);
             $exportSuccess = $exporter->assignmentSubmitted($data, $assignmentForExcel);
+            if (!$exportSuccess) {
+                throw new \Exception('Excel export did not succeed.');
+            }
         } catch (\Throwable $e) {
             $devLogger->error("[Endpoint] Excel export failed: " . $e->getMessage());
             $alert::setMsg('error', 'Assignment was not submitted. Please try again.');
@@ -102,8 +105,6 @@ if ($method === 'PATCH') {
             header("Location: /assignments?error=complete_failed");
             exit();
         }
-
-        $dbMarkComplete = $model->completeAssignment($data, true);
 
         $devLogger->info('[Updated] Operation was executed.');
         $alert::setMsg('success', 'Assignment has been submitted to dispatch and marked as completed.');
