@@ -16,32 +16,42 @@ class AssignmentExporter {
     public function assignmentSubmitted(array $data, array $dbValues): bool {
         $alert = new core\Flash();
         try {
-            // Load spreadsheet
             $spreadsheet = IOFactory::load($this->filePath);
             $sheet = $spreadsheet->getActiveSheet();
 
-            $dbStartDT = new \DateTime($dbValues['start_date_time']);
-            $operatorName = $dbValues['operator_name'];
-            $vehicleNumber = $dbValues['vehicle_id'];
+            $operatorName = trim($dbValues['operator_name']);
+            $vehicleNumber = (string)$dbValues['vehicle_id'];
 
-            // Find matching row by operator, vehicle, start datetime
+            // Convert DB start_date_time to DateTime
+            $dbStartDT = \DateTime::createFromFormat('Y-m-d H:i:s', $dbValues['start_date_time']);
+            if (!$dbStartDT) {
+                $this->logger->error("[AssignmentExporter] Invalid DB start_date_time: {$dbValues['start_date_time']}");
+                return false;
+            }
+
             $highestRow = $sheet->getHighestDataRow();
             $matchRow = null;
 
             for ($row = 2; $row <= $highestRow; $row++) {
-                $excelOperator = trim((string)$sheet->getCell("B$row")->getValue());
-                $excelVehicle = trim((string)$sheet->getCell("A$row")->getValue());
-                $excelStartValue = $sheet->getCell("E$row")->getValue();
+                $excelOperator = trim((string)$sheet->getCell("C$row")->getValue());
+                $excelVehicle = (string)trim($sheet->getCell("A$row")->getValue());
+                $excelStartValue = trim((string)$sheet->getCell("E$row")->getValue());
 
-                // Handle Excel date format
+                // Convert Excel date/time
                 if (is_numeric($excelStartValue)) {
                     $excelStartDT = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($excelStartValue);
                 } else {
-                    $excelStartDT = \DateTime::createFromFormat('m-d-Y h:ia', $excelStartValue);
+                    // Handle m/d/Y h:ia format without leading zeros
+                    $excelStartDT = \DateTime::createFromFormat('n/j/Y g:ia', $excelStartValue);
                 }
 
-                if ($excelStartDT && $excelStartDT->format('Y-m-d H:i:s') === $dbStartDT->format('Y-m-d H:i:s')
-                && $excelOperator === $operatorName && $excelVehicle === $vehicleNumber) {
+                if (!$excelStartDT) continue;
+
+                // Compare DB vs Excel only up to minutes
+                $excelStr = $excelStartDT->format('Y-m-d H:i');
+                $dbStr = $dbStartDT->format('Y-m-d H:i');
+
+                if ($excelOperator === $operatorName && $excelVehicle === $vehicleNumber && $excelStr === $dbStr) {
                     $matchRow = $row;
                     break;
                 }
@@ -49,7 +59,7 @@ class AssignmentExporter {
 
             if (!$matchRow) {
                 $this->logger->error("[AssignmentExporter] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$dbValues['start_date_time']}");
-                $alert::setMsg('error', 'Can\'t find assignment for Operator. Please contact dispatch.');
+                $alert::setMsg('error', "Can't find assignment for Operator. Please contact dispatch.");
                 header("Location: /assignments?error=missing_assignment");
                 exit();
             }
@@ -68,8 +78,6 @@ class AssignmentExporter {
 
             foreach ($columns as $field => $col) {
                 $valueToWrite = $data[$field] ?? $dbValues[$field] ?? '';
-
-                // Skip signatures if not required
                 if (in_array($field, ['pre_signature_base64','post_signature_base64']) && empty($data['signature_required'])) {
                     $this->logger->debug("[AssignmentExporter] Skipping $field as signature not required.");
                     continue;
@@ -85,10 +93,11 @@ class AssignmentExporter {
             }
 
             // Save spreadsheet
-            $writer = IOFactory::createWriter($spreadsheet, 'xlsx');
+            $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
             $writer->save($this->filePath);
             $this->logger->info("[AssignmentExporter] Excel sheet saved successfully: {$this->filePath}");
             return true;
+
         } catch (\Throwable $e) {
             $this->logger->error("[AssignmentExporter] Error updating Excel: " . $e->getMessage());
             $alert::setMsg('error', 'Assignment was not submitted. Please try again!');
