@@ -212,7 +212,7 @@ class UpdateAssignment {
         ];
     }
 
-    protected function completeAssignment(array $data, bool $markCompleted = true) {
+    protected function completeAssignment(array $data, bool $markCompleted = false) {
         $db = new Database();
         $pdo = $db->connect();
 
