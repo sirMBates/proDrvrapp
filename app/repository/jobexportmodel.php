@@ -78,6 +78,26 @@ class AssignmentExporter {
 
             foreach ($columns as $field => $col) {
                 $valueToWrite = $data[$field] ?? $dbValues[$field] ?? '';
+
+                if (in_array($field, ['actual_drop_time']) && $valueToWrite !== '') {
+                    $dt = new \DateTime($valueToWrite);
+                    $valueToWrite = $dt->format('h:ia');
+                    $sheet->setCellValue("$col$matchRow", $valueToWrite);
+                    $sheet->getStyle("$col$matchRow")->getNumberFormat()->setFormatCode('h:mma');
+                }
+
+                if ($field === 'actual_end_time' && !empty($valueToWrite)) {
+                    $dt = new \DateTime($valueToWrite);
+                    $valueToWrite = $dt->format('m-d-Y h:ia');
+                }
+
+                if (in_array($field, ['total_job_time', 'driving_time']) && $valueToWrite !== '') {
+                    $num = number_format((float)$valueToWrite, 2, '.', '');
+                    $sheet->setCellValue("$col$matchRow", (float)$num);
+                    $sheet->getStyle("$col$matchRow")->getNumberFormat()->setFormatCode('0.00');
+                }
+
+                // Skip signatures if not required
                 if (in_array($field, ['pre_signature_base64','post_signature_base64']) && empty($data['signature_required'])) {
                     $this->logger->debug("[AssignmentExporter] Skipping $field as signature not required.");
                     continue;

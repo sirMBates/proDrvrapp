@@ -27,17 +27,27 @@ resetDailyFlags();
 function renderHomeTable(assignments, fromSync = false) {
   const tableBody = document.querySelector('#dashboard-info tbody');
   tableBody.innerHTML = '';
-  assignments.forEach(a => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${a.first_name} ${a.last_name}</td>
-      <td>${a.operator_id}</td>
-      <td>${dtHelper(a.start_date_time, 'date')}</td>
-      <td>${dtHelper(a.start_date_time, 'time')}</td>
-      <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
-      <td class="text-capitalize">${a.confirmed_assignment}</td>`;
-    tableBody.appendChild(row);
-  });
+
+  // Filter out completed assignments
+  const activeAssignments = assignments.filter(a => !a.completed_at && !a.completed);
+  if (activeAssignments.length === 0) {
+        // Show a placeholder row when no assignments
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `<td colspan="6" class="text-center text-muted">No assignments available</td>`;
+        tableBody.appendChild(emptyRow);
+  } else {
+        activeAssignments.forEach(a => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${a.first_name} ${a.last_name}</td>
+                        <td>${a.operator_id}</td>
+                        <td>${dtHelper(a.start_date_time, 'date')}</td>
+                        <td>${dtHelper(a.start_date_time, 'time')}</td>
+                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
+                        <td class="text-capitalize">${a.confirmed_assignment}</td>`;
+                tableBody.appendChild(row);
+        });
+  }
 
   if (fromSync) showFlashAlert('info', 'Assignments updated!');
   lastAssignmentsUpdate = Date.now();
