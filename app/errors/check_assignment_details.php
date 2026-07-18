@@ -1,6 +1,8 @@
 <?php
 
 use core\Flash;
+use core\Storage;
+use core\Logger;
 
 class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $driverId;
@@ -16,8 +18,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $preSignature;
     private $postSignature;
     private $signatureStatus;
+    private Storage $storage;
 
-    public function __construct(array $data) {
+    public function __construct(array $data, Storage $storage) {
         $this->driverId = $data['driver_id'] ?? null;
         $this->orderId = $data['order_id'] ?? null;
         $this->vehicleId = $data['vehicle_id'] ?? null;
@@ -31,14 +34,16 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $this->preSignature = $data['pre_signature_base64'] ?? null;
         $this->postSignature = $data['post_signature_base64'] ?? null;
         $this->signatureStatus = $data['signature_status'] ?? null;
+        $this->storage = $storage;
     }
 
     public function modify() {
         $alert = new Flash();
+        $devLogger = new Logger('D:/webapps/logs');
 
         $signatureRequired = (isset($_POST['signature_required']) && $_POST['signature_required'] === "1");
 
-        if ($this->isMissingInfo($signatureRequired)) {
+        if ($this->isMissingInfo()) {
             $alert::setMsg('error', 'Please complete all fields before updating.');
             header("Location: /assignments?error=incomplete");
             exit();
@@ -80,7 +85,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             exit();
         }
 
-        return $this->modifyAssignment([
+        $updateData = [
             'driver_id' => $this->driverId,
             'order_id' => $this->orderId,
             'vehicle_id' => $this->vehicleId,
@@ -90,11 +95,29 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             'driving_time' => $this->totalDriveTime,
             'pickup_details' => $this->pickupDetails,
             'destination_details' => $this->destinationDetails,
-            'shared_job_note' => $this->sharedJobNote,
-            'pre_signature_base64' => $this->preSignature,
-            'post_signature_base64' => $this->postSignature,
-            'signature_status' => $this->signatureStatus
-        ]);
+            'shared_job_note' => $this->sharedJobNote
+        ];
+
+        if ($signatureRequired) {
+            try {
+                $signatureData = $this->storage->saveSignatures([
+                    'order_id' => $this->orderId,
+                    'pre_signature_base64' => $this->preSignature,
+                    'post_signature_base64' => $this->postSignature
+                ]);
+
+                $signatureData = array_filter($signatureData, static fn (mixed $value): bool => $value !== null);
+                $updateData = array_merge($updateData, $signatureData);
+            } catch (\RuntimeException $exception) {
+                $devLogger->error('[SIGNATURE STORAGE ERROR] ' . $exception->getMessage());
+                $alert::setMsg('error', 'This signature could not be saved.');
+                header("Location: /assignments?error=signature+not+saved");
+                exit();
+            }
+        } else {
+            $updateData['signature_status'] = 'not-required';
+        }
+        return $this->modifyAssignment($updateData);
     }
 
     public function complete(array $data): array {
@@ -174,7 +197,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         return $this->completeAssignment($data);
     }
 
-    private function isMissingInfo(bool $signatureRequired = false): bool {
+    private function isMissingInfo(): bool {
         $requiredFields = [
             $this->driverId,
             $this->orderId,
@@ -189,14 +212,6 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             if (empty($value)) {
                 return true;
             }
-        }
-
-        if (!$signatureRequired) {
-            return false;
-        }
-
-        if (empty($this->preSignature) && empty($this->postSignature)) {
-            return true;
         }
         return false;
     }

@@ -59,7 +59,7 @@ class AssignmentExporter {
 
             if (!$matchRow) {
                 $this->logger->error("[AssignmentExporter] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$dbValues['start_date_time']}");
-                $alert::setMsg('error', "Can't find assignment for Operator. Please contact dispatch.");
+                $alert::setMsg('error', "Assignment not found for operator. Please contact dispatch.");
                 header("Location: /assignments?error=missing_assignment");
                 exit();
             }
@@ -120,7 +120,7 @@ class AssignmentExporter {
 
         } catch (\Throwable $e) {
             $this->logger->error("[AssignmentExporter] Error updating Excel: " . $e->getMessage());
-            $alert::setMsg('error', 'Assignment was not submitted. Please try again!');
+            $alert::setMsg('error', 'Assignment not submitted. Please try again!');
             header("Location: /assignments?error=submission+failed");
             exit();
         }

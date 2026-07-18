@@ -13,7 +13,7 @@ class ProfileImageUpload extends GetDriver {
         ];
         $firstInitial = $operatorBasicInfo[0][0];
 
-        $uploadBase = 'D:/prodrvr_uploads/public/profiles/';
+        $uploadBase = 'D:/prodrvr/public/profiles/';
         // Create a directory for the user if it doesn't exist
         $uploadDir = $uploadBase . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/';
         if (!file_exists($uploadDir)) {
