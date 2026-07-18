@@ -4,7 +4,9 @@ use core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Dotenv\Dotenv;
+use core\Flash;
 require_once __DIR__ . "/../../vendor/autoload.php";
+$devLogger = new core\Logger($logFilePath);
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
 $dotenv->load();
 
@@ -170,6 +172,7 @@ class UpdateAssignment {
     protected function modifyAssignment(array $data) {
         $db = new Database();
         $pdo = $db->connect();
+        $alert = new Flash();
 
         //Convert datetime-local to MYSQL DATETIME
         $actualEndTime = str_replace('T', ' ', $data['actual_end_time']) . ':00';
@@ -197,17 +200,14 @@ class UpdateAssignment {
         $success = $stmt->execute();
 
         if (!$success) {
-            return [
-                'status' => 'error',
-                'message' => 'Assignment update failed.'
-            ];
+            $alert::setMsg('error', 'Assignment update failed! Please try again.');
+            header("Location: /assignments?error=update_failed&order_id=" . urlencode($data['order_id']));
+            exit();
         }
 
         $this->saveSharedJobNote($pdo, $data);
         
         return [
-            'status' => 'success',
-            'message' => 'Assignment updated successfully.',
             'order_id' => $data['order_id']
         ];
     }
@@ -215,6 +215,7 @@ class UpdateAssignment {
     protected function completeAssignment(array $data, bool $markCompleted = false) {
         $db = new Database();
         $pdo = $db->connect();
+        $alert = new core\Flash();
 
         // 1. Fetch current assignment from DB
         $sql = "SELECT wo.*, d.first_name, d.last_name 
@@ -231,10 +232,9 @@ class UpdateAssignment {
 
         $current = $stmt->fetch();
         if (!$current) {
-            return [
-                'status' => 'error',
-                'message' => 'Assignment not found in database.'
-            ];
+            $alert::setMsg('error', 'Assignment not found. Contact dispatch for more details.');
+            header("Location: /assignments?error=no+assignment+found");
+            exit();
         }
 
         // 2. Compare submitted values with current DB values
@@ -290,18 +290,15 @@ class UpdateAssignment {
             try {
                 $stmtUpdate->execute();
             } catch (\Throwable $e) {
-                return [
-                    'status' => 'error',
-                    'message' => 'Database update failed: ' . $e->getMessage()
-                ];
+                $logger->error("[Endpoint] Failed to fetch assignment for Excel: " . $e->getMessage());
+                $alert::setMsg('error', 'Could not update. Please try again!');
+                header("Location: /assignments?error=not+updated&order_id=" . urlencode($data['order_id']));
+                exit();
             }
         }
 
         $latestValues = array_merge($current, $changes);
-        return [
-            'status' => 'success',
-            'data' => $latestValues
-        ];
+        return $latestValues;
     }
 
     public function completeAssignmentPublic(array $data, bool $markCompleted = true): array {
@@ -311,6 +308,7 @@ class UpdateAssignment {
     public function getAssignmentForExcel(array $data): array {
         $db = new Database();
         $pdo = $db->connect();
+        $alert = new core\flash();
 
         // Fetch assignment + driver name
         $sql = "SELECT wo.*, d.first_name, d.last_name 
@@ -329,7 +327,10 @@ class UpdateAssignment {
 
         $assignment = $stmt->fetch();
         if (!$assignment) {
-            throw new \Exception('Assignment not found in database.');
+            //throw new \Exception('Assignment not found in database.');
+            $alert::setMsg('error', 'Assignmentnot not found. Contact dispatch for more details.');
+            header("Location: /assignments?error=no+assignment+found");
+            exit();
         }
 
         // Decrypt driver names
