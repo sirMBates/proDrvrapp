@@ -1,14 +1,15 @@
 <?php
 
 use core\Flash;
+use core\storage;
 $alert = new Flash();
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$logFilePath = 'D:/webapps/logs/job_export_master.log';
-$devLogger = new core\Logger($logFilePath);
+$logFilePath = 'D:/webapps/logs/error.log';
+$devLogger = new $Logger($logFilePath);
 
 $headerToken = $_POST['X-CSRF-Token'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;
@@ -36,7 +37,7 @@ if ($method === 'PATCH') {
         include_once base_path("app/models/assignmenthandlermodel.php");
         include_once base_path("app/errors/check_assignment_details.php");
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
-        $storage = new core\Storage();  // Could also use the directory location i.e. 'D:/prodrvr/public/signatures/'
+        $storage = new Storage();  // Could also use the directory location i.e. 'D:/prodrvr/public/signatures/'
         $modification = new UpdateAssignmentDetailsContr($data, $storage);
         $result = $modification->modify();
         /*file_put_contents('D:/webapps/logs/updateassignment_debug.log', "[" . date('Y-m-d H:i:s') . "] RESULT:\n" . print_r($result, true) . "\nPOST:\n" . print_r($_POST, true) . "\n\n", FILE_APPEND);*/
@@ -57,10 +58,11 @@ if ($method === 'PATCH') {
 
         // Sanitize incoming POST data
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        $storage = new Storage();
 
         // Validate & check assignment details using existing error checker
-        $jobValidator = new UpdateAssignmentDetailsContr($data);
-        $errorCheck = $jobValidator->complete($data);
+        $jobValidator = new UpdateAssignmentDetailsContr($data, $storage);
+        $jobValidator->complete($data);
 
         $model = new UpdateAssignment();
         $assignmentForExcel = $model->getAssignmentForExcel($data);
@@ -71,9 +73,9 @@ if ($method === 'PATCH') {
         $exportSuccess = $exporter->assignmentSubmitted($data, $assignmentForExcel);
         $dbResult = $model->completeAssignmentPublic($data, true);
 
-        $devLogger->info('[Updated] Operation was executed.');
+        $devLogger->info('[ASSIGNMENT COMPLETE] Operation executed.');
         $alert::setMsg('success', 'Assignment submitted and marked as completed.');
-        header("Location: /assignments?success=assignment_completed&completed=1&order_id=" . urlencode($data['order_id']));
+        header("Location: /assignments?success=assignment_completed&completed=1&order_id=" . urlencode((string) $data['order_id']));
         exit();
     }
 }

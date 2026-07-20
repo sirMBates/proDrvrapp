@@ -5,8 +5,8 @@ use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Dotenv\Dotenv;
 use core\Flash;
+use core\Logger;
 require_once __DIR__ . "/../../vendor/autoload.php";
-$devLogger = new core\Logger($logFilePath);
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
 $dotenv->load();
 
@@ -177,16 +177,64 @@ class UpdateAssignment {
         //Convert datetime-local to MYSQL DATETIME
         $actualEndTime = str_replace('T', ' ', $data['actual_end_time']) . ':00';
 
-        $sql = "UPDATE work_orders
+        $setClauses = [
+            'vehicle_id = :vehicle_id',
+            'actual_drop_time = :actual_drop_time',
+            'actual_end_time = :actual_end_time',
+            'total_job_time = :total_job_time',
+            'driving_time = :driving_time',
+            'pickup_details = :pickup_details',
+            'destination_details = :destination_details'
+        ];
+
+        $parameters = [
+            ':vehicle_id' => $data['vehicle_id'],
+            ':actual_drop_time' => $data['actual_drop_time'],
+            ':actual_end_time' => $actualEndTime,
+            ':total_job_time' => $data['total_hrs'],
+            ':driving_time' => $data['driving_time'],
+            ':pickup_details' => $data['pickup_details'],
+            ':destination_details' => $data['destination_details'],
+            ':order_id' => $data['order_id'],
+            ':driver_id' => $data['driver_id']
+        ];
+
+        $signatureFields = [
+            'pre_signature_path',
+            'pre_signature_hash',
+            'pre_signature_at',
+            'post_signature_path',
+            'post_signature_hash',
+            'post_signature_at',
+            'signature_status'
+        ];
+
+        forEach ($signatureFields as $field) {
+            if (!array_key_exists($field, $data)) {
+                continue;
+            }
+
+            $setClauses[] = "{$field} = :{$field}";
+            $parameters[":{$field}"] = $data[$field];
+        }
+
+        $sql = sprintf(
+            'UPDATE work_orders
+            SET %s
+            WHERE order_id = :order_id AND driver_id = :driver_id',
+            implode(', ', $setClauses)
+        );
+
+        /*$sql = "UPDATE work_orders
                 SET vehicle_id = :vehicle_id, actual_drop_time = :actual_drop_time,
                 actual_end_time = :actual_end_time, total_job_time = :total_job_time,
                 driving_time = :driving_time, pickup_details = :pickup_details,
                 destination_details = :destination_details, signature_status = :signature_status
-                WHERE order_id = :order_id AND driver_id = :driver_id";
+                WHERE order_id = :order_id AND driver_id = :driver_id";*/
 
         $stmt = $pdo->prepare($sql);
 
-        $stmt->bindValue(':vehicle_id', $data['vehicle_id']);
+        /*$stmt->bindValue(':vehicle_id', $data['vehicle_id']);
         $stmt->bindValue(':actual_drop_time', $data['actual_drop_time']);
         $stmt->bindValue(':actual_end_time', $actualEndTime);
         $stmt->bindValue(':total_job_time', $data['total_hrs']);
@@ -195,13 +243,15 @@ class UpdateAssignment {
         $stmt->bindValue(':destination_details', $data['destination_details']);
         $stmt->bindValue(':signature_status', $data['signature_status'] ?? null);
         $stmt->bindValue(':order_id', $data['order_id']);
-        $stmt->bindValue(':driver_id', $data['driver_id']);
+        $stmt->bindValue(':driver_id', $data['driver_id']);*/
 
-        $success = $stmt->execute();
+        //$success = $stmt->execute();
+        $success = $stmt->execute($parameters);
 
         if (!$success) {
             $alert::setMsg('error', 'Assignment update failed! Please try again.');
-            header("Location: /assignments?error=update_failed&order_id=" . urlencode($data['order_id']));
+            //header("Location: /assignments?error=update_failed&order_id=" . urlencode($data['order_id']));
+            header("Location: /assignments?error=update_failed&order_id=" . urlencode((string) $data['order_id']));
             exit();
         }
 
@@ -212,23 +262,31 @@ class UpdateAssignment {
         ];
     }
 
-    protected function completeAssignment(array $data, bool $markCompleted = false) {
+    protected function completeAssignment(array $data, bool $markCompleted = false): array {
         $db = new Database();
         $pdo = $db->connect();
         $alert = new core\Flash();
+        $devLogger = new core\Logger('D:/webapps/logs/error.log');
 
-        // 1. Fetch current assignment from DB
+        // Fetch current assignment from DB
         $sql = "SELECT wo.*, d.first_name, d.last_name 
                 FROM work_orders wo
                 INNER JOIN drivers d ON d.driver_id = wo.driver_id
                 WHERE wo.order_id = :order_id AND wo.driver_id = :driver_id AND wo.vehicle_id = :vehicle_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':order_id' => $data['order_id'],
-            ':driver_id' => $data['driver_id'],
-            ':vehicle_id' => $data['vehicle_id']
-        ]);
+        try {
+            $stmt->execute([
+                ':order_id' => $data['order_id'],
+                ':driver_id' => $data['driver_id'],
+                ':vehicle_id' => $data['vehicle_id']
+            ]);
+        } catch (\PDOException $exception) {
+            $devLogger->error('[COMPLETE ASSIGNMENT FETCH ERROR] ' . $exception->getMessage());
+            $alert::setMsg('error', 'The assignment could not be retrieved. Please try again.');
+            header("Location: /assignments?error=assignment+fetch+failed");
+            exit();
+        }
 
         $current = $stmt->fetch();
         if (!$current) {
@@ -237,68 +295,45 @@ class UpdateAssignment {
             exit();
         }
 
-        // 2. Compare submitted values with current DB values
-        $changes = [];
-        $fieldsToCompare = [
-            'vehicle_id',
-            'actual_drop_time',
-            'actual_end_time',
-            'total_job_time',
-            'driving_time',
-            'pickup_details',
-            'destination_details',
-            'pre_signature_base64',
-            'post_signature_base64'
-        ];
-
-        foreach ($fieldsToCompare as $field) {
-            $submitted = $data[$field] ?? null;
-            $dbValue = $current[$field] ?? null;
-
-            // Normalize datetime for comparison if needed
-            if (strpos($field, 'time') !== false && $submitted) {
-                $submitted = str_replace('T', ' ', $submitted) . (strlen($submitted) === 16 ? ':00' : '');
-            }
-
-            if ($submitted !== null && $submitted != $dbValue) {
-                $changes[$field] = $submitted;
-            }
+        // Mark as completed only if requested
+        if (!$markCompleted) {
+            return $current;
         }
 
-        // 3. Mark as completed only if requested
-        if ($markCompleted) {
-            $changes['completed_at'] = date('Y-m-d H:i:s');
+        $signatureRequired = (int) ($current['signature_required'] ?? 0) === 1;
+        if ($signatureRequired && ($current['signature_status'] ?? '') !== 'complete') {
+            $alert::setMsg('error', 'Both required signatures must be saved before completing this assignment.');
+            header("Location: /assignments?error=signatures+incomplete&order_id=" . urlencode((string) $data['order_id']));
+            exit();
         }
 
-        // 4. Only update DB if there are differences
-        if (!empty($changes)) {
-            $setParts = [];
-            foreach ($changes as $field => $val) {
-                $setParts[] = "$field = :$field";
-            }
-
-            $sqlUpdate = "UPDATE work_orders SET " . implode(', ', $setParts) . " WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id";
-            $stmtUpdate = $pdo->prepare($sqlUpdate);
-
-            foreach ($changes as $field => $val) {
-                $stmtUpdate->bindValue(":$field", $val);
-            }
-            $stmtUpdate->bindValue(':order_id', $data['order_id']);
-            $stmtUpdate->bindValue(':driver_id', $data['driver_id']);
-            $stmtUpdate->bindValue(':vehicle_id', $data['vehicle_id']);
-
-            try {
-                $stmtUpdate->execute();
-            } catch (\Throwable $e) {
-                $logger->error("[Endpoint] Failed to fetch assignment for Excel: " . $e->getMessage());
-                $alert::setMsg('error', 'Could not update. Please try again!');
-                header("Location: /assignments?error=not+updated&order_id=" . urlencode($data['order_id']));
-                exit();
-            }
+        if (!empty($current['completed_at'])) {
+            return $current;
         }
 
-        $latestValues = array_merge($current, $changes);
-        return $latestValues;
+        $completedAt = date('Y-m-d H:i:s');
+
+        $sqlUpdate = "UPDATE work_orders 
+                    SET completed_at = :completed_at
+                    WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id";
+        $stmtUpdate = $pdo->prepare($sqlUpdate);
+
+        try {
+            $stmtUpdate->execute([
+                ':completed_at' => $completedAt,
+                ':order_id' => $data['order_id'],
+                ':driver_id' => $data['driver_id'],
+                ':vehicle_id' => $data['vehicle_id']
+            ]);
+        } catch (\PDOException $exception) {
+            $devLogger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] ' . $exception->getMessage());
+            $alert::setMsg('error', 'Could not complete the assignment. Please try again.');
+            header("Location: /assignments?error=not+complete&order_id=" . urlencode((string) $data['order_id']));
+            exit();
+        }
+
+        $current['completed_at'] = $completedAt;
+        return $current;
     }
 
     public function completeAssignmentPublic(array $data, bool $markCompleted = true): array {
@@ -328,7 +363,7 @@ class UpdateAssignment {
         $assignment = $stmt->fetch();
         if (!$assignment) {
             //throw new \Exception('Assignment not found in database.');
-            $alert::setMsg('error', 'Assignmentnot not found. Contact dispatch for more details.');
+            $alert::setMsg('error', 'Assignment not found. Contact dispatch for more details.');
             header("Location: /assignments?error=no+assignment+found");
             exit();
         }

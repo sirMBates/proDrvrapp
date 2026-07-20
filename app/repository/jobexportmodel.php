@@ -25,8 +25,10 @@ class AssignmentExporter {
             // Convert DB start_date_time to DateTime
             $dbStartDT = \DateTime::createFromFormat('Y-m-d H:i:s', $dbValues['start_date_time']);
             if (!$dbStartDT) {
-                $this->logger->error("[AssignmentExporter] Invalid DB start_date_time: {$dbValues['start_date_time']}");
-                return false;
+                $this->logger->error("[ASSIGNMENT EXPORTER] Invalid DB start_date_time: {$dbValues['start_date_time']}");
+                $alert::setMsg('error', 'The assignment start time could not be processed. Please contact dispatch.');
+                header("Location: /assignments?error=invalid+start+time");
+                exit();
             }
 
             $highestRow = $sheet->getHighestDataRow();
@@ -58,68 +60,99 @@ class AssignmentExporter {
             }
 
             if (!$matchRow) {
-                $this->logger->error("[AssignmentExporter] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$dbValues['start_date_time']}");
+                $this->logger->error("[ASSIGNMENT EXPORTER] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$dbValues['start_date_time']}");
                 $alert::setMsg('error', "Assignment not found for operator. Please contact dispatch.");
                 header("Location: /assignments?error=missing_assignment");
                 exit();
             }
 
+            $signatureRequired = (int) ($dbValues['signature_required'] ?? 0) === 1;
+
             // Map database fields to Excel columns
             $columns = [
-                'actual_drop_time' => 'I',
-                'actual_end_time' => 'K',
-                'total_job_time' => 'L',
-                'driving_time' => 'M',
-                'pickup_details' => 'W',
-                'destination_details' => 'X',
-                'pre_signature_base64' => 'Z',
-                'post_signature_base64' => 'AA'
+                'actual_drop_time' => [
+                    'column' => 'I',
+                    'submitted_key' => 'actual_drop_time'
+                ],
+                'actual_end_time' => [
+                    'column' => 'K',
+                    'submitted_key' => 'actual_end_time'
+                ],
+                'total_job_time' => [
+                    'column' => 'L',
+                    'submitted_key' => 'total_hrs'
+                ],
+                'driving_time' => [
+                    'column' => 'M',
+                    'submitted_key' => 'driving_time'
+                ],
+                'pickup_details' => [
+                    'column' => 'W',
+                    'submitted_key' => 'pickup_details'
+                ],
+                'destination_details' => [
+                    'column' => 'X',
+                    'submitted_key' => 'destination_details'
+                ],
+                'pre_signature_path' => [
+                    'column' => 'Z',
+                    'submitted_key' => null
+                ],
+                'post_signature_path' => [
+                    'column' => 'AA',
+                    'submitted_key' => null
+                ]
             ];
 
-            foreach ($columns as $field => $col) {
-                $valueToWrite = $data[$field] ?? $dbValues[$field] ?? '';
+            foreach ($columns as $field => $config) {
+                $col = $config['column'];
+                $submittedKey = $config['submitted_key'];
 
-                if (in_array($field, ['actual_drop_time']) && $valueToWrite !== '') {
+                $hasSubmittedValue = $submittedKey !== null && array_key_exists($submittedKey, $data) && $data[$submittedKey] !== null && trim((string) $data[$submittedKey]) !== '';
+                $valueToWrite = $hasSubmittedValue ? $data[$submittedKey] : ($dbValues[$field] ?? '');
+
+                if ($field === 'actual_drop_time' && $valueToWrite !== '') {
                     $dt = new \DateTime($valueToWrite);
                     $valueToWrite = $dt->format('h:ia');
-                    $sheet->setCellValue("$col$matchRow", $valueToWrite);
+                    //$sheet->setCellValue("$col$matchRow", $valueToWrite);
                     $sheet->getStyle("$col$matchRow")->getNumberFormat()->setFormatCode('h:mma');
                 }
 
-                if ($field === 'actual_end_time' && !empty($valueToWrite)) {
+                if ($field === 'actual_end_time' && $valueToWrite !== '') {
                     $dt = new \DateTime($valueToWrite);
                     $valueToWrite = $dt->format('m-d-Y h:ia');
                 }
 
-                if (in_array($field, ['total_job_time', 'driving_time']) && $valueToWrite !== '') {
-                    $num = number_format((float)$valueToWrite, 2, '.', '');
-                    $sheet->setCellValue("$col$matchRow", (float)$num);
+                if (in_array($field, ['total_job_time', 'driving_time'], true) && $valueToWrite !== '') {
+                    $valueToWrite = (float) number_format((float) $valueToWrite, 2, '.', '');
+                    //$num = number_format((float)$valueToWrite, 2, '.', '');
+                    //$sheet->setCellValue("$col$matchRow", (float)$num);
                     $sheet->getStyle("$col$matchRow")->getNumberFormat()->setFormatCode('0.00');
                 }
 
                 // Skip signatures if not required
-                if (in_array($field, ['pre_signature_base64','post_signature_base64']) && empty($data['signature_required'])) {
-                    $this->logger->debug("[AssignmentExporter] Skipping $field as signature not required.");
+                if (in_array($field, ['pre_signature_path', 'post_signature_path'], true) && !$signatureRequired) {
+                    $this->logger->debug("[ASSIGNMENT EXPORTER] Skipping {$field} signatures are not required.");
                     continue;
                 }
 
                 $currentValue = trim((string)$sheet->getCell("$col$matchRow")->getValue());
-                if ($currentValue !== $valueToWrite && $valueToWrite !== '') {
+                if ((string) $currentValue !== (string) $valueToWrite && $valueToWrite !== '') {
                     $sheet->setCellValue("$col$matchRow", $valueToWrite);
-                    $this->logger->info("[AssignmentExporter] Updated $field in row $matchRow: '$currentValue' → '$valueToWrite'");
+                    $this->logger->info("[ASSIGNMENT EXPORTER] Updated {$field} " . "in row {$matchRow}: " . "'{$currentValue}' → '{$valueToWrite}'");
                 } else {
-                    $this->logger->debug("[AssignmentExporter] No change for $field in row $matchRow (current: '$currentValue')");
+                    $this->logger->debug("[ASSIGNMENT EXPORTER] No change for {$field} " . "in row {$matchRow} " . "(current: '{$currentValue}')");
                 }
             }
 
             // Save spreadsheet
             $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
             $writer->save($this->filePath);
-            $this->logger->info("[AssignmentExporter] Excel sheet saved successfully: {$this->filePath}");
+            $this->logger->info("[ASSIGNMENT EXPORTER] Excel sheet saved successfully: {$this->filePath}");
             return true;
 
         } catch (\Throwable $e) {
-            $this->logger->error("[AssignmentExporter] Error updating Excel: " . $e->getMessage());
+            $this->logger->error("[ASSIGNMENT EXPORTER] Error updating Excel: " . $e->getMessage());
             $alert::setMsg('error', 'Assignment not submitted. Please try again!');
             header("Location: /assignments?error=submission+failed");
             exit();
