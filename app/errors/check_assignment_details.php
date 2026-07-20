@@ -39,7 +39,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
 
     public function modify() {
         $alert = new Flash();
-        $devLogger = new Logger('D:/webapps/logs');
+        $devLogger = new Logger('D:/webapps/logs/error.log');
 
         $signatureRequired = (isset($_POST['signature_required']) && $_POST['signature_required'] === "1");
 
