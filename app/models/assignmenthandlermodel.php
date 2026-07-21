@@ -272,14 +272,13 @@ class UpdateAssignment {
         $sql = "SELECT wo.*, d.first_name, d.last_name 
                 FROM work_orders wo
                 INNER JOIN drivers d ON d.driver_id = wo.driver_id
-                WHERE wo.order_id = :order_id AND wo.driver_id = :driver_id AND wo.vehicle_id = :vehicle_id
+                WHERE wo.order_id = :order_id AND wo.driver_id = :driver_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
         try {
             $stmt->execute([
                 ':order_id' => $data['order_id'],
-                ':driver_id' => $data['driver_id'],
-                ':vehicle_id' => $data['vehicle_id']
+                ':driver_id' => $data['driver_id']
             ]);
         } catch (\PDOException $exception) {
             $devLogger->error('[COMPLETE ASSIGNMENT FETCH ERROR] ' . $exception->getMessage());
@@ -315,16 +314,21 @@ class UpdateAssignment {
 
         $sqlUpdate = "UPDATE work_orders 
                     SET completed_at = :completed_at
-                    WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id";
+                    WHERE order_id = :order_id AND driver_id = :driver_id";
         $stmtUpdate = $pdo->prepare($sqlUpdate);
 
         try {
             $stmtUpdate->execute([
                 ':completed_at' => $completedAt,
                 ':order_id' => $data['order_id'],
-                ':driver_id' => $data['driver_id'],
-                ':vehicle_id' => $data['vehicle_id']
+                ':driver_id' => $data['driver_id']
             ]);
+            if ($stmtUpdate->rowCount() !== 1) {
+                $devLogger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] No assignment row was updated.');
+                $alert::setMsg('error', 'Could not complete assignment. Please try again.');
+                header("Location: /assignments?error=not+complete&order_id=" . urlencode((string) $data['order_id']));
+                exit();
+            }
         } catch (\PDOException $exception) {
             $devLogger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] ' . $exception->getMessage());
             $alert::setMsg('error', 'Could not complete the assignment. Please try again.');
@@ -351,13 +355,11 @@ class UpdateAssignment {
                 INNER JOIN drivers d ON d.driver_id = wo.driver_id
                 WHERE wo.order_id = :order_id
                 AND wo.driver_id = :driver_id
-                AND wo.vehicle_id = :vehicle_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':order_id' => $data['order_id'],
-            ':driver_id' => $data['driver_id'],
-            ':vehicle_id' => $data['vehicle_id']
+            ':driver_id' => $data['driver_id']
         ]);
 
         $assignment = $stmt->fetch();

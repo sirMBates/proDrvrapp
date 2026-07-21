@@ -1,15 +1,16 @@
 <?php
 
 use core\Flash;
-use core\storage;
-$alert = new Flash();
+use core\Storage;
+use core\Logger;
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+$alert = new Flash();
 $logFilePath = 'D:/webapps/logs/error.log';
-$devLogger = new $Logger($logFilePath);
+$devLogger = new Logger($logFilePath);
 
 $headerToken = $_POST['X-CSRF-Token'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;
@@ -62,15 +63,17 @@ if ($method === 'PATCH') {
 
         // Validate & check assignment details using existing error checker
         $jobValidator = new UpdateAssignmentDetailsContr($data, $storage);
-        $jobValidator->complete($data);
+        $originalAssignment = $jobValidator->complete($data, false);
+        $jobValidator->modify();
 
         $model = new UpdateAssignment();
-        $assignmentForExcel = $model->getAssignmentForExcel($data);
+        $updatedAssignment = $model->getAssignmentForExcel($data);
+        $jobValidator->verifySignaturesForCompletion($updatedAssignment);
 
         // Pass updated data to excel exporter
         $filePath = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
         $exporter = new AssignmentExporter($filePath, $devLogger);
-        $exportSuccess = $exporter->assignmentSubmitted($data, $assignmentForExcel);
+        $exportSuccess = $exporter->assignmentSubmitted($data, $updatedAssignment, $originalAssignment);
         $dbResult = $model->completeAssignmentPublic($data, true);
 
         $devLogger->info('[ASSIGNMENT COMPLETE] Operation executed.');

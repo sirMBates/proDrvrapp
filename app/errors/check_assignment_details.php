@@ -27,7 +27,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $this->actualDropTime = $data['actual_drop_time'] ?? null;
         $this->actualEndTime = $data['actual_end_time'] ?? null;
         $this->totalShiftTime = $data['total_hrs'] ?? null;
-        $this->totalDriveTime = $data['driving_time'] ?? null;
+        $this->totalDriveTime = isset($data['driving_time']) && trim((string) $data['driving_time']) !== '' ? $data['driving_time'] : '0.00';
         $this->pickupDetails = $this->validateTextarea($data['pickup_details'] ?? '');
         $this->destinationDetails = $this->validateTextarea($data['destination_details'] ?? '');
         $this->sharedJobNote = $this->validateTextarea($data['shared_job_note'] ?? '');
@@ -120,8 +120,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         return $this->modifyAssignment($updateData);
     }
 
-    public function complete(array $data): array {
+    public function complete(array $data, bool $verifyStoredSignatures = true): array {
         $alert = new Flash();
+        $devLogger = new Logger('D:/webapps/logs/error.log');
 
         // Basic required fields
         $requiredFields = [
@@ -130,62 +131,47 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             'vehicle_id',
             'actual_drop_time',
             'actual_end_time',
-            'total_hrs',
-            'driving_time'
+            'total_hrs'
         ];
 
-        $errors = [];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 $alert::setMsg('error', "Missing required fields: $field");
-                header("Location: /assignments?error=missing+$field");
+                header("Location: /assignments?error=missing+" . urlencode($field));
                 exit();
             }
         }
 
         // Validate datetime
-        if (!empty($data['actual_drop_time']) && !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $data['actual_drop_time'])) {
-            $errors['actual_drop_time'] = 
-            $alert::setMsg('error,', 'Invalid drop time format.');
+        if (!empty($data['actual_drop_time']) && !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $data['actual_drop_time'])) { 
+            $alert::setMsg('error', 'Invalid drop time format.');
             header("Location: /assignments?error=invalid+drop+time");
             exit();
         }
 
         if (!empty($data['actual_end_time']) && !preg_match('/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/', $data['actual_end_time'])) {
-            $errors['actual_end_time'] = 
             $alert::setMsg('error', 'Invalid end time format.');
             header("Location: /assignments?error=invalid+end+time");
             exit();
         }
 
         // Validate decimal fields
-        if (!empty($data['total_hrs']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['total_hrs'])) {
-            $errors['total_hrs'] = 
+        if (!empty($data['total_hrs']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['total_hrs'])) { 
             $alert::setMsg('error', 'Invalid total hours.');
             header("Location: /assignments?error=invalid+total");
             exit();
         }
 
-        if (!empty($data['driving_time']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['driving_time'])) {
-            $errors['driving_time'] = 
+        if (!empty($data['driving_time']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['driving_time'])) { 
             $alert::setMsg('error', 'Invalid driving time.');
             header("Location: /assignments?error=invalid+drive+time");
             exit();
         }
 
         // Validate coach/vehicle number
-        if (!empty($data['vehicle_id']) && !preg_match('/^\d{3,}$/', $data['vehicle_id'])) {
-            $errors['vehicle_id'] = 
+        if (!empty($data['vehicle_id']) && !preg_match('/^\d{3,}$/', $data['vehicle_id'])) { 
             $alert::setMsg('error', 'Invalid vehicle number.');
             header("Location: /assignments?error=invalid+vehicle");
-            exit();
-        }
-
-        // Signature check
-        if (isset($data['signature_status']) && !in_array($data['signature_status'], ['pending','pre-trip-complete','complete'], true)) {
-            $errors['signature_status'] = 
-            $alert::setMsg('error', 'Invalid signature status.');
-            header("Location: /assignments?error=no+signature");
             exit();
         }
 
@@ -194,7 +180,37 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             $data['shared_job_note'] = $this->validateTextarea($data['shared_job_note']);
         }
 
-        return $this->completeAssignment($data);
+        $currentAssignment = $this->completeAssignment($data, false);
+        $signatureRequired = (int) ($currentAssignment['signature_required'] ?? 0) === 1;
+        if ($verifyStoredSignatures) {
+            $this->verifySignaturesForCompletion($currentAssignment);
+        }
+
+        return $currentAssignment;
+    }
+
+    public function verifySignaturesForCompletion(array $assignment): void {
+        $alert = new Flash();
+        $devLogger = new Logger('D:/webapps/logs/error.log');
+        $signatureRequired = (int) ($assignment['signature_required'] ?? 0) === 1;
+
+        if (!$signatureRequired) {
+            return;
+        }
+
+        try {
+            $this->storage->verifySignatures([
+                'order_id' => $assignment['order_id'],
+                'pre_signature_path' => $assignment['pre_signature_path'] ?? null,
+                'post_signature_path' => $assignment['post_signature_path'] ?? null,
+                'signature_status' => $assignment['signature_status'] ?? null
+            ]);
+        } catch (\RuntimeException $exception) {
+            $devLogger->error('[ASSIGNMENT SIGNATURE CHECKER] ' . $exception->getMessage());
+            $alert::setMsg('error', 'Both required signatures must be saved before completing this assignment.');
+            header("Location: /assignments?error=missing+signature&order_id=" . urlencode((string) $assignment['order_id']));
+            exit();
+        }
     }
 
     private function isMissingInfo(): bool {
@@ -204,12 +220,11 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             $this->vehicleId,
             $this->actualDropTime,
             $this->actualEndTime,
-            $this->totalShiftTime,
-            $this->totalDriveTime
+            $this->totalShiftTime
         ];
 
         foreach($requiredFields as $value) {
-            if (empty($value)) {
+            if ($value === null || (is_string($value) && trim($value) === '')) {
                 return true;
             }
         }
