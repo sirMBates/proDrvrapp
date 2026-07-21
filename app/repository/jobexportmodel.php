@@ -13,17 +13,17 @@ class AssignmentExporter {
         $this->logger = $logger;
     }
 
-    public function assignmentSubmitted(array $data, array $dbValues): bool {
+    public function assignmentSubmitted(array $data, array $dbValues, array $matchValues): bool {
         $alert = new core\Flash();
         try {
             $spreadsheet = IOFactory::load($this->filePath);
             $sheet = $spreadsheet->getActiveSheet();
 
-            $operatorName = trim($dbValues['operator_name']);
-            $vehicleNumber = (string)$dbValues['vehicle_id'];
+            $operatorName = trim($matchValues['operator_name']);
+            $vehicleNumber = (string)$matchValues['vehicle_id'];
 
             // Convert DB start_date_time to DateTime
-            $dbStartDT = \DateTime::createFromFormat('Y-m-d H:i:s', $dbValues['start_date_time']);
+            $dbStartDT = \DateTime::createFromFormat('Y-m-d H:i:s', $matchValues['start_date_time']);
             if (!$dbStartDT) {
                 $this->logger->error("[ASSIGNMENT EXPORTER] Invalid DB start_date_time: {$dbValues['start_date_time']}");
                 $alert::setMsg('error', 'The assignment start time could not be processed. Please contact dispatch.');
@@ -60,7 +60,7 @@ class AssignmentExporter {
             }
 
             if (!$matchRow) {
-                $this->logger->error("[ASSIGNMENT EXPORTER] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$dbValues['start_date_time']}");
+                $this->logger->error("[ASSIGNMENT EXPORTER] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$matchValues['start_date_time']}");
                 $alert::setMsg('error', "Assignment not found for operator. Please contact dispatch.");
                 header("Location: /assignments?error=missing_assignment");
                 exit();
@@ -70,6 +70,10 @@ class AssignmentExporter {
 
             // Map database fields to Excel columns
             $columns = [
+                'vehicle_id' => [
+                    'column' => 'A',
+                    'submitted_key' => 'vehicle_id'
+                ],
                 'actual_drop_time' => [
                     'column' => 'I',
                     'submitted_key' => 'actual_drop_time'
@@ -114,7 +118,6 @@ class AssignmentExporter {
                 if ($field === 'actual_drop_time' && $valueToWrite !== '') {
                     $dt = new \DateTime($valueToWrite);
                     $valueToWrite = $dt->format('h:ia');
-                    //$sheet->setCellValue("$col$matchRow", $valueToWrite);
                     $sheet->getStyle("$col$matchRow")->getNumberFormat()->setFormatCode('h:mma');
                 }
 
@@ -125,14 +128,12 @@ class AssignmentExporter {
 
                 if (in_array($field, ['total_job_time', 'driving_time'], true) && $valueToWrite !== '') {
                     $valueToWrite = (float) number_format((float) $valueToWrite, 2, '.', '');
-                    //$num = number_format((float)$valueToWrite, 2, '.', '');
-                    //$sheet->setCellValue("$col$matchRow", (float)$num);
                     $sheet->getStyle("$col$matchRow")->getNumberFormat()->setFormatCode('0.00');
                 }
 
                 // Skip signatures if not required
                 if (in_array($field, ['pre_signature_path', 'post_signature_path'], true) && !$signatureRequired) {
-                    $this->logger->debug("[ASSIGNMENT EXPORTER] Skipping {$field} signatures are not required.");
+                    $this->logger->debug("[ASSIGNMENT EXPORTER] Skipping {$field}; signatures are not required.");
                     continue;
                 }
 
