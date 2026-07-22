@@ -85,6 +85,9 @@ class JobOrderImporter {
                     continue; // skip this row
                 }
 
+                $signatureRequired = strtolower(trim($rowData['signature_required'] ?? 'no')) === 'yes' ? 1 : 0;
+                $signatureStatus = $signatureRequired === 1 ? 'pending' : 'not-required';
+
                 // Map Excel data to database fields
                 $rows[] = [
                     'order_ref'                   => $orderRef, // shared across all rows in this file
@@ -113,9 +116,8 @@ class JobOrderImporter {
                     'contact_mobile'              => trim($rowData['contact_mobile'] ?? ''),
                     'pickup_details'              => trim($rowData['pickup_location_details'] ?? ''),
                     'destination_details'         => trim($rowData['destination_location_details'] ?? ''),
-                    'signature_required'          => strtolower(trim($rowData['signature_required'] ?? 'no')) === 'yes' ? 1 : 0,
-                    'pre_signature_path'          => trim($rowData['pre_signature'] ?? ''),
-                    'post_signature_path'         => trim($rowData['post_signature'] ?? '')
+                    'signature_required'          => $signatureRequired,
+                    'signature_status'            => $signatureStatus
                     /*'driver_notes'                => trim($rowData['driver_notes'] ?? ''),*/
                 ];
             }

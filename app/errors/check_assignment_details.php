@@ -181,7 +181,6 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         }
 
         $currentAssignment = $this->completeAssignment($data, false);
-        $signatureRequired = (int) ($currentAssignment['signature_required'] ?? 0) === 1;
         if ($verifyStoredSignatures) {
             $this->verifySignaturesForCompletion($currentAssignment);
         }
@@ -199,12 +198,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         }
 
         try {
-            $this->storage->verifySignatures([
-                'order_id' => $assignment['order_id'],
-                'pre_signature_path' => $assignment['pre_signature_path'] ?? null,
-                'post_signature_path' => $assignment['post_signature_path'] ?? null,
-                'signature_status' => $assignment['signature_status'] ?? null
-            ]);
+            $this->storage->verifySignatures($assignment, $signatureRequired);
         } catch (\RuntimeException $exception) {
             $devLogger->error('[ASSIGNMENT SIGNATURE CHECKER] ' . $exception->getMessage());
             $alert::setMsg('error', 'Both required signatures must be saved before completing this assignment.');

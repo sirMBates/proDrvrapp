@@ -1,5 +1,6 @@
 import { Validation } from "./validation.js";
 import { setFieldError, setFieldValid } from "./helpers.js";
+
 export function normalizeDecimalValue(value) {
     const num = parseFloat(value);
 
@@ -147,7 +148,7 @@ export function appendHiddenFields(form, fields) {
 
 export function appendEditableFields(form) {
     // Collect All editable cells, even blank ones
-    const editableCells = document.querySelectorAll('.editable-data');
+    const editableCells = form.querySelectorAll('.editable-data');
     for (const cell of editableCells) {
         const field = cell.dataset.field || '';
         const type = cell.dataset.type || '';

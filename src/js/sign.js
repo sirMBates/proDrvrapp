@@ -18,8 +18,8 @@ const warnModal = document.querySelector('#warn-modal');
 const warnModalBtn = warnModal.childNodes[1].childNodes[1].childNodes[5].childNodes[1];
 const confirmModalMsg = buildModal;
 const confirmModal = document.querySelector('#confirm-modal');
-const confirmModalOptBtn = document.querySelector('#confirm');
-const unconfirmModalOptBtn = document.querySelector('#unconfirm');
+const confirmModalOptBtn = document.querySelector('#confirm-modal-confirm');
+const unconfirmModalOptBtn = document.querySelector('#confirm-modal-cancel');
 const signBtnContainer = signBox.childNodes[3];
 //const completedInspBox = document.querySelector('#inspect-signature-box');
 let signature;
@@ -65,22 +65,19 @@ window.addEventListener('assignmentChanged', (e) => {
 
 // On confirm modal btn, handle new recorded signature for post trip.
 function confirmPostSignHandler () {
-    localStorage.removeItem("pre-signature");
     imgInspBox.classList.remove('d-none');
     signBtn.classList.add('d-none');
-    $(secondSignBtn).on('click', () => {
+    $(secondSignBtn).off('click.postSignature').on('click.postSignature', () => {
         secondSignature = $(signpad).jSignature("getData");
         localStorage.setItem('post-signature', secondSignature);
-        $(signatureCheck).append(`<img src='${secondSignature}'></img>`);
+        $(signatureCheck).append(`<img src='${secondSignature}' alt='Post-trip signature'></img>`);
         postInspSign.classList.remove('d-none');
-        let div = document.createElement('div');
-        let newPostTripSignatureHolder = div;
+        const newPostTripSignatureHolder = document.createElement('div');
         postInspSign.firstChild.after(newPostTripSignatureHolder);
-        $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("post-signature")}'></img>`)
+        $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("post-signature")}' alt='Post-trip signature'></img>`);
         setTimeout(() => {
             imgInspBox.classList.add('d-none');
             $(signpad).jSignature('clear');
-            localStorage.removeItem('post-signature');
         }, 500);
         signBtn.classList.remove('d-none');
         secondSignBtn.classList.add('d-none');
@@ -90,13 +87,17 @@ function confirmPostSignHandler () {
 
 // On unconfirm modal btn, handle signature already recorded for post trip.
 function unConfirmPostSignHandler () {
+    const preSignature = localStorage.getItem('pre-signature');
+    if (!preSignature) {
+        console.error('[SIGNATURE] No pre-trip signature is available to reuse.');
+        return;
+    }
     signBtn.classList.add('d-none');
     postInspSign.classList.remove('d-none');
-    let div = document.createElement('div');
-    let newPostTripSignatureHolder = div;
+    const newPostTripSignatureHolder = document.createElement('div');
     postInspSign.firstChild.after(newPostTripSignatureHolder);
-    $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("pre-signature")}'></img>`);
-    localStorage.removeItem('pre-signature');
+    $(newPostTripSignatureHolder).append(`<img src='${localStorage.getItem("pre-signature")}' alt='Post-trip signature'></img>`);
+    localStorage.setItem('post-signature', preSignature);
     signBtn.classList.remove('d-none');
     secondSignBtn.classList.add('d-none');
     signBtnContainer.classList.add('d-none');
@@ -109,16 +110,20 @@ $(openSignBoxBtn).on('click', () => {
 
 // show confirm dialog modal for signature handlers.
 getPostSignatureBtn.addEventListener('click', () => {
-    $(confirmModal).modal('toggle'); 
-    confirmModal.addEventListener('shown.bs.modal', () => {
-        confirmModalMsg.confirm('You already have a signature on file. Would you like to add a different signature?', 'Yes', 'No');
-    });
+    buildModal.confirm('You already have a signature on file. Would you like to add a different signature?', 'Yes', 'No');
 
-    // confirm button on modal to record new signature.
-    $(confirmModalOptBtn).on('click', () => {
-        $(confirmModal).modal('hide');
+    const modalInstance = bootstrap.Modal.getOrCreateInstance(confirmModal);
+
+    // Remove handlers from previous openings
+    $(confirmModalOptBtn).off('click.signature');
+    $(unconfirmModalOptBtn).off('click.signature');
+
+    // Yes: capture a different post-trip signature
+    $(confirmModalOptBtn).on('click.signature', () => {
+        modalInstance.hide();
         signpad.classList.remove('d-none');
         signBtnContainer.classList.remove('d-none');
+
         confirmPostSignHandler();
         setTimeout(() => {
             getPostSignatureBtn.classList.add('d-none');
@@ -126,9 +131,10 @@ getPostSignatureBtn.addEventListener('click', () => {
         }, 1000);
     });
 
-    // unconfirm button on modal to reuse recorded signature. 
-    $(unconfirmModalOptBtn).on('click', () => {
-        $(confirmModal).modal('hide');
+    // No: reuse the pre-trip signature
+    $(unconfirmModalOptBtn).on('click.signature', () => {
+        modalInstance.hide();
+
         signBtnContainer.classList.remove('d-none');
         unConfirmPostSignHandler();
         setTimeout(() => {
@@ -136,6 +142,8 @@ getPostSignatureBtn.addEventListener('click', () => {
             closeSignPadBtn.classList.remove('d-none');
         }, 1000);
     });
+
+    modalInstance.show();
 });
 
 // Close sign pad and rendered preview of signature. Also disable open button so no longer can be used.
@@ -147,6 +155,7 @@ closeSignPadBtn.addEventListener('click', () => {
         openSignBoxBtn.classList.remove('d-none');
     });
     $(openSignBoxBtn).attr('disabled', true);
+    console.log({preSignature: localStorage.getItem('pre-signature'), postSignature: localStorage.getItem('post-signature')});
 });
 
 // Instantiate jSignature and set up for capture.

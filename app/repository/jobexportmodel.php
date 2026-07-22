@@ -19,8 +19,15 @@ class AssignmentExporter {
             $spreadsheet = IOFactory::load($this->filePath);
             $sheet = $spreadsheet->getActiveSheet();
 
-            $operatorName = trim($matchValues['operator_name']);
-            $vehicleNumber = (string)$matchValues['vehicle_id'];
+            $operatorName = trim((string) ($dbValues['operator_name'] ?? ''));
+            $vehicleNumber = trim((string) ($matchValues['vehicle_id'] ?? ''));
+
+            if ($operatorName === '') {
+                $this->logger->error('[ASSIGNMENT EXPORTER] Updated assignment has no operator_name.');
+                $alert::setMsg('error', 'The driver name could not be processed. Please contact dispatch.');
+                header("Location: /assignments?error=missing+operator");
+                exit();
+            }
 
             // Convert DB start_date_time to DateTime
             $dbStartDT = \DateTime::createFromFormat('Y-m-d H:i:s', $matchValues['start_date_time']);
@@ -123,7 +130,7 @@ class AssignmentExporter {
 
                 if ($field === 'actual_end_time' && $valueToWrite !== '') {
                     $dt = new \DateTime($valueToWrite);
-                    $valueToWrite = $dt->format('m-d-Y h:ia');
+                    $valueToWrite = $dt->format('m/d/Y h:ia');
                 }
 
                 if (in_array($field, ['total_job_time', 'driving_time'], true) && $valueToWrite !== '') {

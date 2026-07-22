@@ -41,7 +41,6 @@ if ($method === 'PATCH') {
         $storage = new Storage();  // Could also use the directory location i.e. 'D:/prodrvr/public/signatures/'
         $modification = new UpdateAssignmentDetailsContr($data, $storage);
         $result = $modification->modify();
-        /*file_put_contents('D:/webapps/logs/updateassignment_debug.log', "[" . date('Y-m-d H:i:s') . "] RESULT:\n" . print_r($result, true) . "\nPOST:\n" . print_r($_POST, true) . "\n\n", FILE_APPEND);*/
 
         $alert::setMsg('success', 'Assignment updated successfully.');
         $orderId = urlencode( (string)($result['order_id'] ?? ($data['order_id'] ?? '')) );

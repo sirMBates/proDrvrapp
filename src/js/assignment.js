@@ -997,15 +997,16 @@ function submitAssignment(options) {
         });
 
         // Ensure driving time to 0.00 if empty
-        const drivingTimeEl = document.querySelector('[data-field="driving_time"] input');
-        const drivingTimeValue = drivingTimeEl?.value.trim() || '0.00';
-        if (drivingTimeEl) drivingTimeEl.value = drivingTimeValue;
-        form.querySelectorAll(`input[name="driving_time"]`).forEach(h => h.remove());
-        appendHiddenFields(form, { driving_time: drivingTimeValue });
+        const drivingTimeCell = document.querySelector("[data-field='driving_time']");
+        const drivingTimeInput = drivingTimeCell?.querySelector('input');
+        const rawDrivingTime = (drivingTimeInput?.value ?? drivingTimeCell?.textContent ?? '').trim();
+        const drivingTimeValue = rawDrivingTime === '' ? '0.00' : normalizeDecimalValue(rawDrivingTime);
+        form.querySelectorAll("input[name='driving_time']").forEach(h => h.remove()); // h = hidden
+        appendHiddenFields(form, { driving_time: drivingTimeValue }); 
 
         // Add action-specific flag and identifiers
         if (flagName && flagValue) appendHiddenFields(form, { [flagName]: flagValue });
-        const identifiers = { order_id: assignment.order_id, driver_id: assignment.driver_id, vehicle_id: assignment.vehicle_id, __method: 'PATCH' };
+        const identifiers = { order_id: assignment.order_id, driver_id: assignment.driver_id, __method: 'PATCH' };
         Object.keys(identifiers).forEach(name => form.querySelectorAll(`input[name="${name}"]`).forEach(h => h.remove()));
         appendHiddenFields(form, identifiers);
 
@@ -1019,6 +1020,11 @@ function submitAssignment(options) {
         // Payroll snapshot
         const completedAssignmentData = getCompletePayrollData(assignment);
         localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
+
+        appendHiddenFields(form, {
+            pre_signature_base64: localStorage.getItem('pre-signature') ?? '',
+            post_signature_base64: localStorage.getItem('post-signautre') ?? ''
+        })
 
         // Submit form
         form.requestSubmit(buttonEl);
