@@ -58,7 +58,7 @@ class Assignment {
 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                            ?, ?, ?, ?, ?, ?, ?)";
+                            ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $pdo->prepare($sql);
             // Loop over each and set each property and value.
@@ -90,8 +90,9 @@ class Assignment {
             $stmt->bindValue(23, $data['pickup_details'] ?? null);
             $stmt->bindValue(24, $data['destination_details'] ?? null);
             $stmt->bindValue(25, $data['signature_required'] ?? 0);
-            $stmt->bindValue(26, $data['pre_signature'] ?? null);
-            $stmt->bindValue(27, $data['post_signature'] ?? null);
+            $stmt->bindValue(26, $data['pre_signature_path'] ?? null);
+            $stmt->bindValue(27, $data['post_signature_path'] ?? null);
+            $stmt->bindValue(28, $data['signature_status'] ?? ((int) ($data['signature_required'] ?? 0) === 1 ? 'pending' : 'not-required'));
             /*$stmt->bindValue(28, $data['driver_notes'] ?? null);*/
             $dataInserted = $stmt->execute();
 
