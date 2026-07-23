@@ -646,7 +646,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 const assignment = assignments?.find( a => a.order_id == currentOrderId);
                 if (!assignment) return;
                 updateButtonStates(assignment);
-                const requiresSignature = assignment ? assignment.signature_required === 1 : false;
+                const requiresSignature = Number(assignment?.signature_required) === 1;
                 // When order ID changes, notify other scripts
                 window.dispatchEvent(new CustomEvent('assignmentChanged', {
                     detail: { 
@@ -1006,7 +1006,12 @@ function submitAssignment(options) {
 
         // Add action-specific flag and identifiers
         if (flagName && flagValue) appendHiddenFields(form, { [flagName]: flagValue });
-        const identifiers = { order_id: assignment.order_id, driver_id: assignment.driver_id, __method: 'PATCH' };
+        const identifiers = { 
+            order_id: assignment.order_id, 
+            driver_id: assignment.driver_id,
+            signature_required: Number(assignment.signature_required) === 1 ? '1' : '0', 
+            __method: 'PATCH' 
+        };
         Object.keys(identifiers).forEach(name => form.querySelectorAll(`input[name="${name}"]`).forEach(h => h.remove()));
         appendHiddenFields(form, identifiers);
 
@@ -1023,10 +1028,24 @@ function submitAssignment(options) {
         
         form.querySelectorAll("input[name='pre_signature_base64'], " + "input[name='post_signature_base64']").forEach(input => input.remove());
 
-        appendHiddenFields(form, {
+        const requiresSignature = Number(assignment.signature_required) === 1;
+        const signaturePayload = requiresSignature ? {
             pre_signature_base64: localStorage.getItem('pre-signature') ?? '',
             post_signature_base64: localStorage.getItem('post-signature') ?? ''
-        });
+        } : {
+            pre_signature_base64: '',
+            post_signature_base64: ''
+        };
+
+        appendHiddenFields(form, signaturePayload);
+
+        console.group('[SIGNATURE SUBMISSION]');
+        console.log('Order ID:', assignment.order_id);
+        console.log('Raw signature_required:', assignment.signature_required);
+        console.log('Requires signature:', Number(assignment.signature_required) === 1);
+        console.log('Pre-signature available:', Boolean(localStorage.getItem('pre-signature')));
+        console.log('Post-signature available:', Boolean(localStorage.getItem('post-signature')));
+        console.groupEnd();
 
         // Submit form
         form.requestSubmit(buttonEl);
