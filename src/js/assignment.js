@@ -1020,11 +1020,13 @@ function submitAssignment(options) {
         // Payroll snapshot
         const completedAssignmentData = getCompletePayrollData(assignment);
         localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
+        
+        form.querySelectorAll("input[name='pre_signature_base64'], " + "input[name='post_signature_base64']").forEach(input => input.remove());
 
         appendHiddenFields(form, {
             pre_signature_base64: localStorage.getItem('pre-signature') ?? '',
-            post_signature_base64: localStorage.getItem('post-signautre') ?? ''
-        })
+            post_signature_base64: localStorage.getItem('post-signature') ?? ''
+        });
 
         // Submit form
         form.requestSubmit(buttonEl);
