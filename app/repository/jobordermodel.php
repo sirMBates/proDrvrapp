@@ -5,6 +5,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 use core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
+use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 use Dotenv\Dotenv;
 require_once __DIR__ . "/../../vendor/autoload.php";
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
@@ -88,6 +89,8 @@ class JobOrderImporter {
                 $signatureRequired = strtolower(trim($rowData['signature_required'] ?? 'no')) === 'yes' ? 1 : 0;
                 $signatureStatus = $signatureRequired === 1 ? 'pending' : 'not-required';
 
+                $this->logger->info("[SIGNATURE IMPORT] Row {$index}: " . "raw=" . var_export($rowData['signature_required'] ?? null, true) . ", required={$signatureRequired}" . ", status={$signatureStatus}");
+
                 // Map Excel data to database fields
                 $rows[] = [
                     'order_ref'                   => $orderRef, // shared across all rows in this file
@@ -126,33 +129,46 @@ class JobOrderImporter {
             $assignment = new Assignment($this->logger);
 
             $notifiedDrivers = [];
+            $insertedCount = 0;
+            $duplicateCount = 0;
+            $failedCount = 0;
 
             foreach ($rows as $rowData) {
                 $result = $assignment->insertAssignment($rowData);
 
                 if ($result === true) {
+                    $insertedCount++;
                     $this->logger->info("Inserted vehicle: {$rowData['vehicle_id']} ({$rowData['order_ref']}) at {$rowData['start_date_time']}");
                     // Track drivers to notify
                     $notifiedDrivers[$rowData['driver_id']] = $rowData['operator_name'];
                 } elseif ($result === 'duplicate') {
+                    $duplicateCount++;
                     $this->logger->warning("Duplicate vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
                 } else {
-                    $this->logger->log("Failed to insert vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
+                    $failedCount++;
+                    $this->logger->error("Failed to insert vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
                 }
             }
 
-            foreach ($notifiedDrivers as $driverId => $driverName) {
-                $this->sendAssignmentEmail($driverId, $driverName, $orderRef);
+            if ($insertedCount > 0) {
+                foreach ($notifiedDrivers as $driverId => $driverName) {
+                    $this->sendAssignmentEmail($driverId, $driverName, $orderRef);
+                }
             }
 
-            $this->logger->info("JobOrderImporter completed successfully with reference {$orderRef}.");
-            return true;
+            $this->logger->info("[JOBORDER IMPORTER] finished. " . "Inserted: {$insertedCount}, " . "Duplicates: {$duplicateCount}, " . "Failed: {$failedCount}, " . "Reference: {$orderRef}");
+            
+            if ($failedCount > 0) {
+                $this->logger->error("[JOBORDER IMPORTER] completed with {$failedCount} failed insert(s).");
+                return false;
+            }
 
         } catch (\Exception $e) {
             $this->logger->error("Job import error: " . $e->getMessage());
             return false;
         }
-        $this->logger->info("JobOrderImporter completed successfully.");
+        $this->logger->info("[JOBORDER IMPORTER] completed successfully with reference {$orderRef}.");
+        return true;
     }
 
     /**
@@ -208,7 +224,7 @@ class JobOrderImporter {
                 }
                 try {
                     $decrypted = Crypto::decrypt($value, $key);
-                    $this->logger->info("[Decrypt] Succesfully decrypted {$field}");
+                    $this->logger->info("[Decrypt] Successfully decrypted {$field}");
                     return $decrypted;
                 } catch (WrongKeyOrModifiedCiphertextException $e) {
                     $this->logger->warning("[Decrypt] {$field} not encrypted - using plaintext");
