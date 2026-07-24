@@ -12,7 +12,7 @@ const operatorNotes = document.querySelector('#shared-job-note');
 const clickCells = document.querySelectorAll('.editable-data');
 const confirmBtn = document.querySelector('#confirm-job');
 const cancelBtn = document.querySelector('#cancel-job');
-const editBtn = document.querySelector('#edit-assignment');
+const saveBtn = document.querySelector('#save-assignment');
 const completeBtn = document.querySelector('#submit-assignment');
 const drvrToken = document.querySelector('#drvrToken').value;
 const getDriver = fetchDrvr;
@@ -39,18 +39,18 @@ function updateButtonStates(assignment) {
     if (isConfirmed) {
         $(confirmBtn).prop('disabled', true);
         $(cancelBtn).prop('disabled', true);
-        $(editBtn).prop('disabled', false);
+        $(saveBtn).prop('disabled', false);
         $(completeBtn).prop('disabled', false);
     } else if (isCanceled) {
         $(confirmBtn).prop('disabled', false);
         $(cancelBtn).prop('disabled', false);
-        $(editBtn).prop('disabled', true);
+        $(saveBtn).prop('disabled', true);
         $(completeBtn).prop('disabled', true);
     } else {
         // fallback — unknown state
         $(confirmBtn).prop('disabled', false);
         $(cancelBtn).prop('disabled', false);
-        $(editBtn).prop('disabled', true);
+        $(saveBtn).prop('disabled', true);
         $(completeBtn).prop('disabled', true);
     }
 };
@@ -149,7 +149,7 @@ function showNoAssignments(driver = null) {
     // Optionally disable buttons (depending on your UX flow)
     $(confirmBtn).prop('disabled', true);
     $(cancelBtn).prop('disabled', true);
-    $(editBtn).prop('disabled', true);
+    $(saveBtn).prop('disabled', true);
     $(completeBtn).prop('disabled', true);
 };
 
@@ -184,10 +184,6 @@ async function loadNextAssignment(afterIndex) {
     }
 };
 
-function filterActiveAssignments(assignments) {
-    return assignments.filter(a => !a.completed_at || a.completed_at === null);
-}
-
 async function clearAssignmentUI() {
     const assignmentCard = document.querySelector('.assignment-card');
     if (!assignmentCard) return;
@@ -207,7 +203,7 @@ async function clearAssignmentUI() {
     // Optionally disable action buttons to prevent interactions mid-transition
     $(confirmBtn).prop('disabled', false);
     $(cancelBtn).prop('disabled', false);
-    $(editBtn).prop('disabled', true);
+    $(saveBtn).prop('disabled', true);
     $(completeBtn).prop('disabled', true);
 
     await fadeIn(assignmentCard); // smooth fade back in
@@ -217,33 +213,79 @@ function getCurrentOrderId() {
     return document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim() || '';
 };
 
-function getAssignmentDraftKey(orderId) {
-    return `assignment_draft_${orderId}`;
+function getAssignmentStorageId(assignment) {
+    if (!assignment) return '';
+
+    const orderId = String(assignment.order_id ?? '').trim();
+    const orderRef = String(assignment.order_ref ?? '').trim();
+
+    if (!orderId || !orderRef) return '';
+
+    return `${orderId}_${orderRef}`;
 };
 
-function saveAssignmentDraft(orderId, field, value) {
-    if ( !orderId || !field ) return;
+function getAssignmentDraftKey(assignment) {
+    const storageId = getAssignmentStorageId(assignment);
+    return storageId ? `assignment_draft_${storageId}` : '';
+};
+
+function normalizeDraftComparisonValue(value) {
+    return String(value ?? '').trim();
+};
+
+function updateAssignmentDraftField(assignment, field, value) {
+    if (!assignment || !field) return;
+
+    const key = getAssignmentDraftKey(assignment);
+    if (!key) return;
 
     try {
-        const key = getAssignmentDraftKey(orderId);
-        const existing = JSON.parse(localStorage.getItem(key) || '{}');
-        existing[field] = value;
-        localStorage.setItem(key, JSON.stringify(existing));
+        const draft = JSON.parse(localStorage.getItem(key) || '{}');
+
+        const originalValues = {
+            vehicle_id: assignment.vehicle_id ?? '',
+            actual_drop_time: assignment.actual_drop_time ?? '',
+            actual_end_time: assignment.actual_end_time
+                ? assignment.actual_end_time.replace(' ', 'T').slice(0, 16)
+                : '',
+            total_hrs: assignment.total_job_time ?? '',
+            driving_time: assignment.driving_time ?? '',
+            pickup_details: assignment.pickup_details ?? '',
+            destination_details: assignment.destination_details ?? '',
+            shared_job_note: assignment.current_driver_shared_note ?? ''
+        };
+
+        const normalizedValue = normalizeDraftComparisonValue(value);
+        const normalizedOriginal = normalizeDraftComparisonValue(
+            originalValues[field]
+        );
+
+        if (normalizedValue === normalizedOriginal) {
+            delete draft[field];
+        } else {
+            draft[field] = value;
+        }
+
+        if (Object.keys(draft).length === 0) {
+            localStorage.removeItem(key);
+        } else {
+            localStorage.setItem(key, JSON.stringify(draft));
+        }
     } catch (err) {
-        console.warn('Failed to save assignment draft: ', err);
+        console.warn('Failed to update assignment draft:', err);
     }
 };
 
 function saveCurrentVisibleAssignmentDraft() {
-    const orderId = getCurrentOrderId();
-    if (!orderId) return;
+    const assignment = getCurrentAssignment();
+    if (!assignment) return;
 
     document.querySelectorAll('.editable-data').forEach(cell => {
         const field = cell.dataset.field;
         if (!field) return;
 
         const input = cell.querySelector('input');
-        let value;
+        let value = '';
         if (input) {
             value = input.value.trim();
 
@@ -255,47 +297,131 @@ function saveCurrentVisibleAssignmentDraft() {
         } else {
             value = cell.textContent.trim();
         }
-        saveAssignmentDraft(orderId, field, value);
+        updateAssignmentDraftField(assignment, field, value);
     });
 
-    ['pickup_details', 'destination_details', 'shared_job_note'].forEach(id => {
+    const textareaDraftFields = [
+        {
+            id: 'pickup-details',
+            field: 'pickup_details'
+        },
+        {
+            id: 'destination-details',
+            field: 'destination_details'
+        },
+        {
+            id: 'shared-job-note',
+            field: 'shared_job_note'
+        }
+    ];
+
+    textareaDraftFields.forEach(({ id, field }) => {
         const el = document.getElementById(id);
         if (!el) return;
 
-        saveAssignmentDraft(orderId, el.name, el.value.trim());
+        updateAssignmentDraftField(assignment, field, el.value.trim());
     });
 };
 
-function getAssignmentDraft(orderId) {
-    if (!orderId) return {};
+function getAssignmentDraft(assignment) {
+    if (!assignment) return {};
+
+    const key = getAssignmentDraftKey(assignment);
+    if (!key) return {};
 
     try {
-        return JSON.parse(localStorage.getItem(getAssignmentDraftKey(orderId)) || '{}');
+        return JSON.parse(localStorage.getItem(key) || '{}');
     } catch(err) {
         console.warn('Failed to read assignment draft: ', err);
         return {};
     }
 };
 
-function clearAssignmentDraft(orderId) {
-    if (!orderId) return;
+function clearAssignmentDraftByIdentity(orderId, orderRef) {
+    const normalizedOrderId = String(orderId ?? '').trim();
+    const normalizedOrderRef = String(orderRef ?? '').trim();
+
+    if (!normalizedOrderId || !normalizedOrderRef) return false;
+
+    const key =
+        `assignment_draft_${normalizedOrderId}_${normalizedOrderRef}`;
 
     try {
-        localStorage.removeItem(getAssignmentDraftKey(orderId));
+        const existed = localStorage.getItem(key) !== null;
+        localStorage.removeItem(key);
+        return existed;
     } catch (err) {
-        console.warn('Failed to clear assignment draft: ', err);
+        console.warn(
+            'Failed to clear assignment draft:',
+            err
+        );
+
+        return false;
     }
 };
 
-function hasCurrentAssignmentDraft () {
-    const orderId = getCurrentOrderId();
-    if (!orderId) return false;
+function clearSubmittedAssignmentDraftFromUrl() {
+    const params = new URLSearchParams(
+        window.location.search
+    );
 
-    const draft = getAssignmentDraft(orderId);
+    const status = params.get('status');
+    const orderId = params.get('order_id');
+    const orderRef = params.get('order_ref');
+
+    const successfulStatuses = [
+        'saved',
+        'completed'
+    ];
+
+    if (
+        !successfulStatuses.includes(status) ||
+        !orderId ||
+        !orderRef
+    ) {
+        return;
+    }
+
+    const cleared = clearAssignmentDraftByIdentity(
+        orderId,
+        orderRef
+    );
+
+    if (cleared) {
+        console.log(
+            `[DRAFT] Cleared ${status} assignment draft:`,
+            { orderId, orderRef }
+        );
+    }
+
+    params.delete('status');
+    params.delete('order_id');
+    params.delete('order_ref');
+
+    const remainingQuery = params.toString();
+
+    const cleanUrl =
+        window.location.pathname +
+        (remainingQuery ? `?${remainingQuery}` : '') +
+        window.location.hash;
+
+    window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl
+    );
+};
+
+function hasCurrentAssignmentDraft () {
+    const assignment = getCurrentAssignment();
+    if (!assignment) return false;
+
+    const draft = getAssignmentDraft(assignment);
     return Object.keys(draft).length > 0;
 };
 
 window.addEventListener('DOMContentLoaded', () => {
+    clearSubmittedAssignmentDraftFromUrl();
     // Create pagination controls (Bootstrap)
     function createPaginationControls() {
         const existing = document.querySelector('#assignment-pager');
@@ -402,7 +528,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Renders the assignment details to your existing UI tables
     showAssignment = function(index) {
         // Filter out completed assignments
-        assignments = assignments.filter(a => !a.completed_at);
+        assignments = assignments.filter(a => !a.completed_at && !a.canceled_at);
 
         if (assignments.length === 0) {
             showNoAssignments();
@@ -471,7 +597,7 @@ window.addEventListener('DOMContentLoaded', () => {
         renderSharedNotes(assignment);
 
         // Apply local draft values on top of server values
-        const draft = getAssignmentDraft(assignment['order_id']);
+        const draft = getAssignmentDraft(assignment);
 
         if (draft.vehicle_id !== undefined) {
             primaryCoachId.textContent = draft.vehicle_id;
@@ -687,8 +813,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 input.addEventListener('input', () => {
                     validateEditableElement(input, type, field);
 
-                    const orderId = getCurrentOrderId();
-                    saveAssignmentDraft(orderId, field, input.value.trim());
+                    const assignment = getCurrentAssignment();
+                    updateAssignmentDraftField(assignment, field, input.value.trim());
                 });
                 
                 input.addEventListener('blur', () => {
@@ -703,8 +829,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     const normalizedValue = normalizeDecimalValue(newValue || currentValue);
                     cell.textContent = normalizedValue;
 
-                    const orderId = getCurrentOrderId();
-                    saveAssignmentDraft(orderId, field, normalizedValue);
+                    const assignment = getCurrentAssignment();
+                    updateAssignmentDraftField(assignment, field, normalizedValue);
                     // Persist to LocalStorage for this assignment
                 });
             
@@ -760,8 +886,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
                     cell.textContent = totalValue;
 
-                    const orderId = getCurrentOrderId();
-                    saveAssignmentDraft(orderId, field, totalValue);
+                    //const assignment = getCurrentAssignment();
+                    updateAssignmentDraftField(assignment, field, totalValue);
                     showFlashAlert('info', `Total hours updated: ${total.formatted} (${totalValue} hrs)`);
                 } catch (err) {
                     console.error("[CALC ERROR]", err);
@@ -807,13 +933,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 input.addEventListener('input', () => {
                     validateEditableElement(input, type, field);
 
-                    const orderId = getCurrentOrderId();
+                    const assignment = getCurrentAssignment();
                     let liveValue = input.value.trim();
 
                     if ( (type === 'datetime' || type === 'datetime-local') && liveValue) {
-                        saveAssignmentDraft(orderId, field, liveValue.slice(0, 16));
+                        liveValue = liveValue.slice(0, 16);
                     }
-                    saveAssignmentDraft(orderId, field, liveValue);
+                    updateAssignmentDraftField(assignment, field, liveValue);
                 });
                 //
                 input.addEventListener('blur', () => {
@@ -827,8 +953,8 @@ window.addEventListener('DOMContentLoaded', () => {
                         cell.dataset.raw = normalized;
                         displayValue = toDisplayDateTime(normalized, dtHelper);
 
-                        const orderId = getCurrentOrderId();
-                        saveAssignmentDraft(orderId, field, normalized);
+                        const assignment = getCurrentAssignment();
+                        updateAssignmentDraftField(assignment, field, normalized);
 
                         cell.textContent = displayValue;
                         return;
@@ -838,8 +964,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
                     if (!isValid) return;
                     
-                    const orderId = getCurrentOrderId();
-                    saveAssignmentDraft(orderId, field, displayValue);
+                    const assignment = getCurrentAssignment();
+                    updateAssignmentDraftField(assignment, field, displayValue);
                 });
 
                 input.addEventListener('keydown', e => {
@@ -869,8 +995,8 @@ window.addEventListener('DOMContentLoaded', () => {
             value = value.replace('T', ' ');
         }
 
-        const orderId = getCurrentOrderId();
-        saveAssignmentDraft(orderId, field, value);
+        const assignment = getCurrentAssignment();
+        updateAssignmentDraftField(assignment, field, value);
     }
 
     window.addEventListener('pageshow', (event) => {
@@ -884,21 +1010,33 @@ window.addEventListener('DOMContentLoaded', () => {
         saveCurrentVisibleAssignmentDraft();
     });
 
-    ['pickup-details', 'destination-details', 'shared-job-note'].forEach(id => {
+    const textareaDraftFields = [
+        {
+            id: 'pickup-details',
+            field: 'pickup_details'
+        },
+        {
+            id: 'destination-details',
+            field: 'destination_details'
+        },
+        {
+            id: 'shared-job-note',
+            field: 'shared_job_note'
+        }
+    ];
+
+    textareaDraftFields.forEach(({ id, field }) => {
         const el = document.getElementById(id);
         if (!el) return;
 
-        el.addEventListener('input', () => {
+        const saveTextareaDraft = () => {
             validateAssignmentTextarea(el);
-            const orderId = getCurrentOrderId();
-            saveAssignmentDraft(orderId, el.name, el.value.trim());
-        });
+            const assignment = getCurrentAssignment();
+            updateAssignmentDraftField(assignment, field, el.value.trim());
+        };
 
-        el.addEventListener('blur', () => {
-            validateAssignmentTextarea(el);
-            const orderId = getCurrentOrderId();
-            saveAssignmentDraft(orderId, el.name, el.value.trim());
-        });
+        el.addEventListener('input', saveTextareaDraft);
+        el.addEventListener('blur', saveTextareaDraft);
     });
 });
 
@@ -944,7 +1082,7 @@ function restoreButtonStateFromStorage() {
         console.log('🔘 Button states applied:');
         console.log('Confirm button:', $(confirmBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.log('Cancel button:', $(cancelBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
-        console.log('Edit button:', $(editBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
+        console.log('Save button:', $(saveBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.log('Complete button:', $(completeBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.groupEnd();
 
@@ -1007,7 +1145,8 @@ function submitAssignment(options) {
         // Add action-specific flag and identifiers
         if (flagName && flagValue) appendHiddenFields(form, { [flagName]: flagValue });
         const identifiers = { 
-            order_id: assignment.order_id, 
+            order_id: assignment.order_id,
+            order_ref: assignment.order_ref, 
             driver_id: assignment.driver_id,
             signature_required: Number(assignment.signature_required) === 1 ? '1' : '0', 
             __method: 'PATCH' 
@@ -1183,10 +1322,10 @@ cancelBtn.addEventListener('click', async (e) => {
 });
 
 // Update/Modify assignment button
-editBtn.addEventListener('click', (e) => {
+saveBtn.addEventListener('click', (e) => {
     e.preventDefault();
     submitAssignment({
-        buttonEl: editBtn,
+        buttonEl: saveBtn,
         flagName: 'modify',
         flagValue: '1'
     });

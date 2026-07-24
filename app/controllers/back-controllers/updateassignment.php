@@ -43,8 +43,14 @@ if ($method === 'PATCH') {
         $result = $modification->modify();
 
         $alert::setMsg('success', 'Assignment updated successfully.');
-        $orderId = urlencode( (string)($result['order_id'] ?? ($data['order_id'] ?? '')) );
-        header("Location: /assignments?updated=1&order_id={$orderId}");
+        $orderId = (string) ($result['order_id'] ?? $data['order_id'] ?? '');
+        $orderRef = (string) ($result['order_ref'] ?? '');
+        $query = http_build_query([
+            'status' => 'saved',
+            'order_id' => $orderId,
+            'order_ref' => $orderRef
+        ]);
+        header("Location: /assignments?{$query}");
         exit();
 
         /*$alert::setMsg('error', $result['message'] ?? 'Assignment update failed.');
@@ -77,9 +83,16 @@ if ($method === 'PATCH') {
 
         $devLogger->info('[ASSIGNMENT COMPLETE] Operation executed.');
         $alert::setMsg('success', 'Assignment submitted and marked as completed.');
-        header("Location: /assignments?success=assignment_completed&completed=1&order_id=" . urlencode((string) $data['order_id']));
+        $orderId = (string) ($updatedAssignment['order_id'] ?? $originalAssignment['order_id'] ?? $data['order_id'] ?? '');
+        $orderRef = (string) ($updatedAssignment['order_ref'] ?? $originalAssignment['order_ref'] ?? '');
+        $query = http_build_query([
+            'status' => 'completed',
+            'order_id' => $orderId,
+            'order_ref' => $orderRef
+        ]);
+        header("Location: /assignments?{$query}");
         exit();
     }
-}
+};
 
 ?>

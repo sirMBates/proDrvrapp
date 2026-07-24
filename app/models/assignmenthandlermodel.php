@@ -256,9 +256,28 @@ class UpdateAssignment {
         }
 
         $this->saveSharedJobNote($pdo, $data);
+        $identitySql = "SELECT order_id, order_ref
+                        FROM work_orders
+                        WHERE order_id = :order_id AND driver_id = :driver_id
+                        LIMIT 1";
+        $identityStmt = $pdo->prepare($identitySql);
+        $identityStmt->execute([
+            ':order_id' => $data['order_id'],
+            ':driver_id' => $data['driver_id']
+        ]);
+
+        $updatedIdentity = $identityStmt->fetch();
+        if (!$updatedIdentity) {
+            $alert::setMsg('warning', 'Assignment updated, but its identity could not be retrieved.');
+            return [
+                'order_id' => $data['order_id'],
+                'order_ref' => ''
+            ];
+        }
         
         return [
-            'order_id' => $data['order_id']
+            'order_id' => $updatedIdentity['order_id'],
+            'order_ref' => $updatedIdentity['order_ref']
         ];
     }
 
@@ -348,8 +367,8 @@ class UpdateAssignment {
                 ':driver_id' => $data['driver_id']
             ]);
 
-            $savedCompletedAt = $verifyStmt->fetchColumn();
-            if (empty($savedCompletedAt)) {
+            $saveCompletedAt = $verifyStmt->fetchColumn();
+            if (empty($saveCompletedAt)) {
                 $devLogger->error('[COMPLETE ASSIGNMENT VERIFY ERROR] ' . 'completed_at remained empty. ' . 'order_id=' . $data['order_id'] . ', driver_id=' . $data['driver_id']);
                 $alert::setMsg('error', 'The assignment could not be confirmed as completed.');
                 header("Location: /assignments?error=completion+not+saved&order_id=" . urlencode((string) $data['order_id']));
@@ -363,7 +382,7 @@ class UpdateAssignment {
         }
 
         $current['completed_at'] = $saveCompletedAt;
-        $devLogger->info('[COMPLETE ASSIGNMENT SUCCESS] ' . 'order_id=' . $current['order_id'] . ', driver_id=' . $current['driver_id'] . ', completed_at=' . $savedCompletedAt);
+        $devLogger->info('[COMPLETE ASSIGNMENT SUCCESS] ' . 'order_id=' . $current['order_id'] . ', driver_id=' . $current['driver_id'] . ', completed_at=' . $saveCompletedAt);
         return $current;
     }
 
