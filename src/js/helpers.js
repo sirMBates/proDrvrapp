@@ -92,60 +92,70 @@ function normalizeProDrvrUrl(url) {
 };
 
 export function viewableDateTimeHelper(input, format = 'datetime') {
-    if (!input) return 'N/A';
+    if (input === null || input === undefined || input === '') {
+        return 'N/A';
+    };
 
     let date;
-
     // Handle both string and Date object inputs
     if (input instanceof Date) {
         // Normalize MySQL-style "YYYY-MM-DD HH:mm:ss" string
-        date = input;
+        date = new Date(input.getTime());
+    } else if (typeof input === 'number') {
+        date = new Date(input);
     } else if (typeof input === 'string') {
         const trimmed = input.trim();
+        const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/);
         // Only replace space with T for MySql-style dates
-        if(/^\d{4}-\d{2}-\d{2}\s/.test(trimmed)) {
-            date = new Date(trimmed.replace(' ', 'T'));
+        if (match) {
+            const [
+                ,
+                year,
+                month,
+                day,
+                hour = '00',
+                minute = '00',
+                second = '00'
+            ] = match;
+            date = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
         } else {
             date = new Date(trimmed);
         }
-    } else if (typeof input === 'number') {
-        date = new Date(input);
     } else {
         return 'Invalid input';
     };
 
     if (Number.isNaN(date.getTime())) {
+        console.warn('[DATE HELPER] Invalid date value:' , input);
         return 'Invalid date';
     }
 
     // Choose formatting options based on desired output
-    let options;
     switch (format) {
         case 'date':
-            options = {
+            return date.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'
-            };
-            return date.toLocaleDateString('en-US', options);
+            });
+
         case 'time':
-            options = {
+            return date.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
-            };
-            return date.toLocaleTimeString('en-US', options);
+            });
+
         case 'datetime':
         default:
-            options = {
+            return date.toLocaleString('en-US', {
                 year: 'numeric', 
                 month: '2-digit', 
                 day: '2-digit', 
                 hour: '2-digit', 
                 minute: '2-digit', 
                 hour12: true
-            };
-            return date.toLocaleString('en-US', options);
+            });
     }
 };
 
@@ -286,6 +296,7 @@ export function highlightErrorElement(el) {
 
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
+
 export class ServiceTimeCalculator {
     /**
     * Returns the millisecond difference between two timestamps.

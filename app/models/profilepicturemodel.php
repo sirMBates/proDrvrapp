@@ -28,7 +28,7 @@ class ProfileImageUpload extends GetDriver {
         //move_uploaded_file($file['tmp_name'], $filePath);
 
         // Store **relative URL** in database for frontend
-        $publicPath = '/prodrvr_uploads/public/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/' . $filename;
+        $publicPath = '/prodrvr/public/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/' . $filename;
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {

@@ -1126,6 +1126,20 @@ function submitAssignment(options) {
         // Build payload from editable cells
         appendEditableFields(form);
 
+        const actualEndCell = document.querySelector('[data-field="actual_end_time"]');
+
+        const actualEndInput = actualEndCell?.querySelector('input');
+        let actualEndValue = (actualEndInput?.value ?? actualEndCell?.dataset.raw ?? '').trim();
+
+        if (actualEndValue) {
+            actualEndValue = actualEndValue.replace(' ', 'T').slice(0, 16);
+        }
+
+        form.querySelectorAll('input[name="actual_end_time"]').forEach(input => input.remove());
+        appendHiddenFields(form, {
+            actual_end_time: actualEndValue
+        });
+
         // Append textareas
         ['pickup-details', 'destination-details', 'shared-job-note'].forEach(id => {
             const el = document.getElementById(id);
@@ -1178,13 +1192,7 @@ function submitAssignment(options) {
 
         appendHiddenFields(form, signaturePayload);
 
-        console.group('[SIGNATURE SUBMISSION]');
-        console.log('Order ID:', assignment.order_id);
-        console.log('Raw signature_required:', assignment.signature_required);
-        console.log('Requires signature:', Number(assignment.signature_required) === 1);
-        console.log('Pre-signature available:', Boolean(localStorage.getItem('pre-signature')));
-        console.log('Post-signature available:', Boolean(localStorage.getItem('post-signature')));
-        console.groupEnd();
+        console.log('[ACTUAL END SUBMISSION]', form.querySelector('input[name="actual_end_time"]')?.value);
 
         // Submit form
         form.requestSubmit(buttonEl);
