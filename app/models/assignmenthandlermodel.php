@@ -175,7 +175,14 @@ class UpdateAssignment {
         $alert = new Flash();
 
         //Convert datetime-local to MYSQL DATETIME
-        $actualEndTime = str_replace('T', ' ', $data['actual_end_time']) . ':00';
+        $actualEndTimeRaw = trim((string) ($data['actual_end_time'] ?? ''));
+        $actualEndTime = null;
+
+        if ($actualEndTimeRaw !== '') {
+            $normalized = str_replace('T', ' ', $actualEndTimeRaw);
+
+            $actualEndTime = strlen($normalized) === 16 ? $normalized . ':00' : $normalized;
+        }
 
         $setClauses = [
             'vehicle_id = :vehicle_id',
