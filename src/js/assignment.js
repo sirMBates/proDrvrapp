@@ -867,14 +867,18 @@ window.addEventListener('DOMContentLoaded', () => {
                     const actualEnd = actualEndValue.replace(' ', 'T').slice(0, 16);
 
                     const startObj = new Date(spotStart);
-                    let endObj = new Date(actualEnd);
+                    const endObj = new Date(actualEnd);
 
                     if (Number.isNaN(startObj.getTime()) || Number.isNaN(endObj.getTime())) {
                         showFlashAlert('warning', 'Invalid spot time or actual end time.');
                         return;
                     }
 
-                    endObj = ServiceTimeCalculator.adjustForOvernight(startObj, endObj);
+                    if (endObj <= startObj) {
+                        showFlashAlert('warning', 'Actual end date and time must be after the spot date and time.');
+                        return;
+                    }
+
                     const total = ServiceTimeCalculator.getTotalHours(startObj, endObj);
 
                     if (Number.isNaN(total.decimal)) {
