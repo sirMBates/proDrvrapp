@@ -13,104 +13,72 @@ class AssignmentExporter {
         $this->logger = $logger;
     }
 
-    public function assignmentSubmitted(array $data, array $dbValues, array $matchValues): bool {
-        $alert = new core\Flash();
+    public function assignmentSubmitted(array $data, array $dbValues): bool {
         try {
             $spreadsheet = IOFactory::load($this->filePath);
             $sheet = $spreadsheet->getActiveSheet();
+            $assignmentControl = trim((string) ($dbValues['assignment_control'] ?? ''));
 
-            $operatorName = trim((string) ($dbValues['operator_name'] ?? ''));
-            $vehicleNumber = trim((string) ($matchValues['vehicle_id'] ?? ''));
-
-            if ($operatorName === '') {
-                $this->logger->error('[ASSIGNMENT EXPORTER] Updated assignment has no operator_name.');
-                $alert::setMsg('error', 'The driver name could not be processed. Please contact dispatch.');
-                header("Location: /assignments?error=missing+operator");
-                exit();
-            }
-
-            // Convert DB start_date_time to DateTime
-            $dbStartDT = \DateTime::createFromFormat('Y-m-d H:i:s', $matchValues['start_date_time']);
-            if (!$dbStartDT) {
-                $this->logger->error("[ASSIGNMENT EXPORTER] Invalid DB start_date_time: {$dbValues['start_date_time']}");
-                $alert::setMsg('error', 'The assignment start time could not be processed. Please contact dispatch.');
-                header("Location: /assignments?error=invalid+start+time");
-                exit();
+            if ($assignmentControl === '') {
+                throw new \RuntimeException('Missing assignment_control for excel export.');
             }
 
             $highestRow = $sheet->getHighestDataRow();
             $matchRow = null;
 
             for ($row = 2; $row <= $highestRow; $row++) {
-                $excelOperator = trim((string)$sheet->getCell("C$row")->getValue());
-                $excelVehicle = (string)trim($sheet->getCell("A$row")->getValue());
-                $excelStartValue = trim((string)$sheet->getCell("E$row")->getValue());
+                $excelAssignmentControl = trim((string) $sheet->getCell("A{$row}")->getValue());
 
-                // Convert Excel date/time
-                if (is_numeric($excelStartValue)) {
-                    $excelStartDT = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($excelStartValue);
-                } else {
-                    // Handle m/d/Y h:ia format without leading zeros
-                    $excelStartDT = \DateTime::createFromFormat('n/j/Y g:ia', $excelStartValue);
-                }
-
-                if (!$excelStartDT) continue;
-
-                // Compare DB vs Excel only up to minutes
-                $excelStr = $excelStartDT->format('Y-m-d H:i');
-                $dbStr = $dbStartDT->format('Y-m-d H:i');
-
-                if ($excelOperator === $operatorName && $excelVehicle === $vehicleNumber && $excelStr === $dbStr) {
+                if (hash_equals($assignmentControl, $excelAssignmentControl)) {
                     $matchRow = $row;
                     break;
                 }
             }
 
-            if (!$matchRow) {
-                $this->logger->error("[ASSIGNMENT EXPORTER] No matching row found for operator {$operatorName}, vehicle {$vehicleNumber}, start {$matchValues['start_date_time']}");
-                $alert::setMsg('error', "Assignment not found for operator. Please contact dispatch.");
-                header("Location: /assignments?error=missing_assignment");
-                exit();
+            if ($matchRow === null) {
+                throw new \RuntimeException('No Excel row found for assignment_control ' . $assignmentControl);
             }
+
+            $this->logger->info('[ASSIGNMENT EXPORTER] Matched ' . "{$assignmentControl} to Excel row {$matchRow}.");
 
             $signatureRequired = (int) ($dbValues['signature_required'] ?? 0) === 1;
 
             // Map database fields to Excel columns
             $columns = [
                 'vehicle_id' => [
-                    'column' => 'A',
+                    'column' => 'B',
                     'submitted_key' => 'vehicle_id'
                 ],
                 'actual_drop_time' => [
-                    'column' => 'I',
+                    'column' => 'J',
                     'submitted_key' => 'actual_drop_time'
                 ],
                 'actual_end_time' => [
-                    'column' => 'K',
+                    'column' => 'L',
                     'submitted_key' => 'actual_end_time'
                 ],
                 'total_job_time' => [
-                    'column' => 'L',
+                    'column' => 'M',
                     'submitted_key' => 'total_hrs'
                 ],
                 'driving_time' => [
-                    'column' => 'M',
+                    'column' => 'N',
                     'submitted_key' => 'driving_time'
                 ],
                 'pickup_details' => [
-                    'column' => 'W',
+                    'column' => 'X',
                     'submitted_key' => 'pickup_details'
                 ],
                 'destination_details' => [
-                    'column' => 'X',
+                    'column' => 'Y',
                     'submitted_key' => 'destination_details'
                 ],
                 'pre_signature_path' => [
-                    'column' => 'Z',
+                    'column' => 'AA',
                     'submitted_key' => null
                 ],
                 'post_signature_path' => [
-                    'column' => 'AA',
+                    'column' => 'AB',
                     'submitted_key' => null
                 ]
             ];
@@ -161,9 +129,7 @@ class AssignmentExporter {
 
         } catch (\Throwable $e) {
             $this->logger->error("[ASSIGNMENT EXPORTER] Error updating Excel: " . $e->getMessage());
-            $alert::setMsg('error', 'Assignment not submitted. Please try again!');
-            header("Location: /assignments?error=submission+failed");
-            exit();
+            throw $e;
         }
     }
 };

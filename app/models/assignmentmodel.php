@@ -53,51 +53,57 @@ class Assignment {
                 return 'driver_not_found';
             }
 
-            $sql = "INSERT INTO work_orders (order_ref, vehicle_id, driver_id, num_of_coaches, start_date_time, spot_time, 
-                    leave_date_time, return_date_drop_time, actual_drop_time, end_date_time, actual_end_time, total_job_time, driving_time, origin, destination, group_name, group_leader, group_leader_mobile, customer_name, customer_phone, contact_name, contact_mobile, pickup_details, destination_details, signature_required, signature_status, pre_signature_path, post_signature_path)
+            $sql = "INSERT INTO work_orders (assignment_control, order_ref, vehicle_id, driver_id, num_of_coaches, start_date_time, spot_time, leave_date_time, return_date_drop_time, actual_drop_time, end_date_time, actual_end_time, total_job_time, driving_time, origin, destination, group_name, group_leader, group_leader_mobile, customer_name, customer_phone, contact_name, contact_mobile, pickup_details, destination_details, signature_required, signature_status, pre_signature_path, post_signature_path)
 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                            ?, ?, ?, ?, ?, ?, ?, ?)";
+                            ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $pdo->prepare($sql);
             // Loop over each and set each property and value.
             /*for ($i=1; $i<=27; $i++) {
                 $stmt->bindValue($i, $data[array_keys($data)[$i-1]] ?? null);
             }*/
-            $stmt->bindValue(1, $data['order_ref']);
-            $stmt->bindValue(2, $data['vehicle_id'] ?? null);
-            $stmt->bindValue(3, $driverFound['driver_id'], \PDO::PARAM_INT); // driver_id inserted
-            $stmt->bindValue(4, $data['num_of_coaches'] ?? null);
-            $stmt->bindValue(5, $data['start_date_time'] ?? null);
-            $stmt->bindValue(6, $data['spot_time'] ?? null);
-            $stmt->bindValue(7, $data['leave_date_time'] ?? null);
-            $stmt->bindValue(8, $data['return_date_drop_time'] ?? null);
-            $stmt->bindValue(9, $data['actual_drop_time'] ?? null);
-            $stmt->bindValue(10, $data['end_date_time'] ?? null);
-            $stmt->bindValue(11, $data['actual_end_time'] ?? null);
-            $stmt->bindValue(12, $data['total_job_time'] ?? null);
-            $stmt->bindValue(13, $data['driving_time'] ?? null);
-            $stmt->bindValue(14, $data['origin'] ?? null);
-            $stmt->bindValue(15, $data['destination'] ?? null);
-            $stmt->bindValue(16, $data['group_name'] ?? null);
-            $stmt->bindValue(17, $data['group_leader'] ?? null);
-            $stmt->bindValue(18, $data['group_leader_mobile'] ?? null);
-            $stmt->bindValue(19, $data['customer_name'] ?? null);
-            $stmt->bindValue(20, $data['customer_phone'] ?? null);
-            $stmt->bindValue(21, $data['contact_name'] ?? null);
-            $stmt->bindValue(22, $data['contact_mobile'] ?? null);
-            $stmt->bindValue(23, $data['pickup_details'] ?? null);
-            $stmt->bindValue(24, $data['destination_details'] ?? null);
-            $stmt->bindValue(25, $data['signature_required'] ?? 0);
-            $stmt->bindValue(26, $data['signature_status'] ?? ((int) ($data['signature_required'] ?? 0) === 1 ? 'pending' : 'not-required'));
-            $stmt->bindValue(27, $data['pre_signature_path'] ?? null);
-            $stmt->bindValue(28, $data['post_signature_path'] ?? null);
+            $assignmentControl = trim((string) ($data['assignment_control'] ?? ''));
+            if ($assignmentControl === '') {
+                $this->logger->error('[ASSIGNMENT INSERT] Missing assignment_control.');
+                return false;
+            }
+            
+            $stmt->bindValue(1, $assignmentControl);
+            $stmt->bindValue(2, $data['order_ref']);
+            $stmt->bindValue(3, $data['vehicle_id'] ?? null);
+            $stmt->bindValue(4, $driverFound['driver_id'], \PDO::PARAM_INT); // driver_id inserted
+            $stmt->bindValue(5, $data['num_of_coaches'] ?? null);
+            $stmt->bindValue(6, $data['start_date_time'] ?? null);
+            $stmt->bindValue(7, $data['spot_time'] ?? null);
+            $stmt->bindValue(8, $data['leave_date_time'] ?? null);
+            $stmt->bindValue(9, $data['return_date_drop_time'] ?? null);
+            $stmt->bindValue(10, $data['actual_drop_time'] ?? null);
+            $stmt->bindValue(11, $data['end_date_time'] ?? null);
+            $stmt->bindValue(12, $data['actual_end_time'] ?? null);
+            $stmt->bindValue(13, $data['total_job_time'] ?? null);
+            $stmt->bindValue(14, $data['driving_time'] ?? null);
+            $stmt->bindValue(15, $data['origin'] ?? null);
+            $stmt->bindValue(16, $data['destination'] ?? null);
+            $stmt->bindValue(17, $data['group_name'] ?? null);
+            $stmt->bindValue(18, $data['group_leader'] ?? null);
+            $stmt->bindValue(19, $data['group_leader_mobile'] ?? null);
+            $stmt->bindValue(20, $data['customer_name'] ?? null);
+            $stmt->bindValue(21, $data['customer_phone'] ?? null);
+            $stmt->bindValue(22, $data['contact_name'] ?? null);
+            $stmt->bindValue(23, $data['contact_mobile'] ?? null);
+            $stmt->bindValue(24, $data['pickup_details'] ?? null);
+            $stmt->bindValue(25, $data['destination_details'] ?? null);
+            $stmt->bindValue(26, $data['signature_required'] ?? 0);
+            $stmt->bindValue(27, $data['signature_status'] ?? ((int) ($data['signature_required'] ?? 0) === 1 ? 'pending' : 'not-required'));
+            $stmt->bindValue(28, $data['pre_signature_path'] ?? null);
+            $stmt->bindValue(29, $data['post_signature_path'] ?? null);
             /*$stmt->bindValue(28, $data['driver_notes'] ?? null);*/
             $dataInserted = $stmt->execute();
 
             if ($dataInserted) {
-                $this->logger->info("✅ SUCCESS: Inserted assignment for operator ID {$data['operator_id']} assigned to vehicle {$data['vehicle_id']} at {$data['start_date_time']} with order ref {$data['order_ref']}");
+                $this->logger->info("✅ SUCCESS: Inserted assignment: {$assignmentControl} for operator ID {$data['operator_id']} assigned to vehicle {$data['vehicle_id']} at {$data['start_date_time']} with order ref {$data['order_ref']}");
                 return true;
             } else {
                 $this->logger->error("❌ Assignment Insert FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Execute returned false");

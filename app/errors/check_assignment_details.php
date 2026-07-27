@@ -15,6 +15,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $pickupDetails;
     private $destinationDetails;
     private $sharedJobNote;
+    private bool $signatureRequired;
     private $preSignature;
     private $postSignature;
     private $signatureStatus;
@@ -31,6 +32,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $this->pickupDetails = $this->validateTextarea($data['pickup_details'] ?? '');
         $this->destinationDetails = $this->validateTextarea($data['destination_details'] ?? '');
         $this->sharedJobNote = $this->validateTextarea($data['shared_job_note'] ?? '');
+        $this->signatureRequired = (string) ($data['signature_required'] ?? '0') === '1';
         $this->preSignature = $data['pre_signature_base64'] ?? null;
         $this->postSignature = $data['post_signature_base64'] ?? null;
         $this->signatureStatus = $data['signature_status'] ?? null;
@@ -41,7 +43,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $alert = new Flash();
         $devLogger = new Logger('D:/webapps/logs/error.log');
 
-        $signatureRequired = (isset($_POST['signature_required']) && $_POST['signature_required'] === "1");
+        $signatureRequired = $this->signatureRequired;
 
         if ($this->isMissingInfo()) {
             $alert::setMsg('error', 'Please complete all fields before updating.');
@@ -79,7 +81,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             exit();
         }
 
-        if (!$this->validateSignatureStatus()) {
+        if (!$this->validateSignatureStatus($signatureRequired)) {
             $alert::setMsg('error', 'Invalid signature status.');
             header("Location: /assignments?error=invalid+signature+state");
             exit();
@@ -122,7 +124,6 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
 
     public function complete(array $data, bool $verifyStoredSignatures = true): array {
         $alert = new Flash();
-        $devLogger = new Logger('D:/webapps/logs/error.log');
 
         // Basic required fields
         $requiredFields = [
@@ -173,11 +174,6 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             $alert::setMsg('error', 'Invalid vehicle number.');
             header("Location: /assignments?error=invalid+vehicle");
             exit();
-        }
-
-        // Sanitize shared job note
-        if (!empty($data['shared_job_note'])) {
-            $data['shared_job_note'] = $this->validateTextarea($data['shared_job_note']);
         }
 
         $currentAssignment = $this->completeAssignment($data, false);
@@ -290,10 +286,21 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         return true;
     }
 
-    private function validateSignatureStatus(): bool {
-        if ($this->signatureStatus === null) return true;
-        $valid = ['pending', 'pre-trip-complete', 'complete'];
-        return in_array($this->signatureStatus, $valid, true);
+    private function validateSignatureStatus(bool $signatureRequired): bool {
+        if ($this->signatureStatus === null) {
+            return true;
+        }
+
+        $validStatuses = $signatureRequired ? [
+            'pending',
+            'pre-trip-complete',
+            'complete'
+        ]
+        : [
+            'not-required'
+        ];
+
+        return in_array($this->signatureStatus, $validStatuses, true);
     }
 
     private function validateTextarea(string $value): string {

@@ -44,7 +44,14 @@ class JobOrderImporter {
             $orderRef = 'JOB-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
             $this->logger->info("Generated order reference: {$orderRef}");
 
-            $rows = [];
+            $controlBatch = 'PD-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(2)));
+            $controlSequence = 0;
+            $assignment = new Assignment($this->logger);
+            $notifiedDrivers = [];
+            $insertedCount = 0;
+            $duplicateCount = 0;
+            $failedCount = 0;
+
             // Process each row (skip header)
             foreach ($data as $index => $row) {
                 if ($index === 1) continue; // Skip header row
@@ -55,7 +62,9 @@ class JobOrderImporter {
                     $key = $headers[$col] ?? $col;
                     $trimmed = is_string($value) ? trim($value) : $value;
                     $rowData[$key] = $trimmed;
-                    if (!empty($trimmed)) $emptyRow = false;
+                    if ($trimmed !== null && $trimmed !== '') {
+                        $emptyRow = false;
+                    }
                 }
 
                 if ($emptyRow) {
@@ -64,7 +73,15 @@ class JobOrderImporter {
                     continue;
                 }
 
-                if (empty($rowData['operator_id'])) {
+                $existingControl = trim((string) ($rowData['assignment_control'] ?? ''));
+                if ($existingControl !== '') {
+                    $this->logger->info("Skipping already imported row {$index}: " . $existingControl);
+                    continue;
+                }
+
+                $operatorId = trim((string) ($rowData['operator_id'] ?? ''));
+                if ($operatorId === '') {
+                    $failedCount++;
                     $this->logger->warning("Skipping row {$index} with empty operator_id");
                     continue;
                 }
@@ -82,62 +99,60 @@ class JobOrderImporter {
                 $driver = $stmt->fetch();
         
                 if (!$driver) {
-                    $this->logger->error("No driver found for operator_id: {$rowData['operator_id']} (row {$index})");
+                    $failedCount++;
+                    $this->logger->error("No driver found for operator_id: " . "{$operatorId} (row {$index})");
                     continue; // skip this row
                 }
 
-                $signatureRequired = strtolower(trim($rowData['signature_required'] ?? 'no')) === 'yes' ? 1 : 0;
+                $controlSequence++;
+                $assignmentControl = $controlBatch . '-' . str_pad($controlSequence, 4, '0', STR_PAD_LEFT);
+
+                $signatureRequired = strtolower(trim((String) ($rowData['signature_required'] ?? 'no'))) === 'yes' ? 1 : 0;
                 $signatureStatus = $signatureRequired === 1 ? 'pending' : 'not-required';
 
                 $this->logger->info("[SIGNATURE IMPORT] Row {$index}: " . "raw=" . var_export($rowData['signature_required'] ?? null, true) . ", required={$signatureRequired}" . ", status={$signatureStatus}");
 
                 // Map Excel data to database fields
-                $rows[] = [
-                    'order_ref'                   => $orderRef, // shared across all rows in this file
-                    'vehicle_id'                  => trim($rowData['vehicle_id'] ?? ''),
-                    'driver_id'                   => $driver['driver_id'], // insert only driver_id
-                    'operator_id'                 => trim($rowData['operator_id'] ?? ''), // for display/log only
-                    'operator_name'               => $driver['first_name'] . ' ' . $driver['last_name'], // display/log only
-                    'num_of_coaches'              => trim($rowData['num_of_coaches'] ?? null),
-                    'start_date_time'             => $this->normalizeDateTime($rowData['start_date_time'] ?? ''),
-                    'spot_time'                   => $this->normalizeDateTime($rowData['spot_time'] ?? '', true),
-                    'leave_date_time'             => $this->normalizeDateTime($rowData['leave_date_time'] ?? ''),
-                    'return_date_drop_time'       => $this->normalizeDateTime($rowData['return_date_drop_time'] ?? ''),
-                    'actual_drop_time'            => $this->normalizeDateTime($rowData['actual_drop_time'] ?? '', true),
-                    'end_date_time'               => $this->normalizeDateTime($rowData['end_date_time'] ?? ''),
-                    'actual_end_time'             => $this->normalizeDateTime($rowData['actual_end_time'] ?? '', true),
-                    'total_job_time'              => $rowData['total_job_hrs'] !== '' ? $rowData['total_job_hrs'] : null,
-                    'driving_time'                => $rowData['driving_time'] !== '' ? $rowData['driving_time'] : null,
-                    'origin'                      => trim($rowData['origin'] ?? ''),
-                    'destination'                 => trim($rowData['destination'] ?? ''),
-                    'group_name'                  => trim($rowData['group_name'] ?? ''),
-                    'group_leader'                => trim($rowData['group_leader'] ?? ''),
-                    'group_leader_mobile'         => trim($rowData['group_leader_mobile'] ?? ''),
-                    'customer_name'               => trim($rowData['customer_name'] ?? ''),
-                    'customer_phone'              => trim($rowData['customer_phone'] ?? ''),
-                    'contact_name'                => trim($rowData['contact_name'] ?? ''),
-                    'contact_mobile'              => trim($rowData['contact_mobile'] ?? ''),
-                    'pickup_details'              => trim($rowData['pickup_location_details'] ?? ''),
-                    'destination_details'         => trim($rowData['destination_location_details'] ?? ''),
-                    'signature_required'          => $signatureRequired,
-                    'signature_status'            => $signatureStatus
-                    /*'driver_notes'                => trim($rowData['driver_notes'] ?? ''),*/
-                ];
-            }
-            $this->logger->info("Total valid rows prepared for insert: " . count($rows));
-            // Insert each row using Assignment class
-            $assignment = new Assignment($this->logger);
+                $rowData['assignment_control']          = $assignmentControl;
+                $rowData['order_ref']                   = $orderRef; // shared across all rows in this file
+                $rowData['vehicle_id']                  = trim((string) ($rowData['vehicle_id'] ?? ''));
+                $rowData['driver_id']                   = $driver['driver_id']; // insert only driver_id
+                $rowData['operator_id']                 = $operatorId; // for display/log only
+                $rowData['operator_name']               = $driver['first_name'] . ' ' . $driver['last_name']; // display/log only
+                $rowData['num_of_coaches']              = trim((string) ($rowData['num_of_coaches'] ?? ''));
+                $rowData['start_date_time']             = $this->normalizeDateTime($rowData['start_date_time'] ?? '');
+                $rowData['spot_time']                   = $this->normalizeDateTime($rowData['spot_time'] ?? '', true);
+                $rowData['leave_date_time']             = $this->normalizeDateTime($rowData['leave_date_time'] ?? '');
+                $rowData['return_date_drop_time']       = $this->normalizeDateTime($rowData['return_date_drop_time'] ?? '');
+                $rowData['actual_drop_time']            = $this->normalizeDateTime($rowData['actual_drop_time'] ?? '', true);
+                $rowData['end_date_time']               = $this->normalizeDateTime($rowData['end_date_time'] ?? '');
+                $rowData['actual_end_time']             = $this->normalizeDateTime($rowData['actual_end_time'] ?? '');
+                $totalJobHours                          = $rowData['total_job_hrs'] ?? '';
+                $rowData['total_job_time']              = $totalJobHours !== '' ? $totalJobHours : null;
+                $drivingTime                            = $rowData['driving_time'] ?? '';
+                $rowData['driving_time']                = $drivingTime !== '' ? $drivingTime : null;
+                $rowData['origin']                      = trim((string) ($rowData['origin'] ?? ''));
+                $rowData['destination']                 = trim((string) ($rowData['destination'] ?? ''));
+                $rowData['group_name']                  = trim((string) ($rowData['group_name'] ?? ''));
+                $rowData['group_leader']               = trim((string) ($rowData['group_leader'] ?? ''));
+                $rowData['group_leader_mobile']         = trim((string) ($rowData['group_leader_mobile'] ?? ''));
+                $rowData['customer_name']               = trim((string) ($rowData['customer_name'] ?? ''));
+                $rowData['customer_phone']              = trim((string) ($rowData['customer_phone'] ?? ''));
+                $rowData['contact_name']                = trim((string) ($rowData['contact_name'] ?? ''));
+                $rowData['contact_mobile']              = trim((string) ($rowData['contact_mobile'] ?? ''));
+                $rowData['pickup_details']              = trim((string) ($rowData['pickup_location_details'] ?? ''));
+                $rowData['destination_details']         = trim((string) ($rowData['destination_location_details'] ?? ''));
+                $rowData['signature_required']          = $signatureRequired;
+                $rowData['signature_status']            = $signatureStatus;
+                /*'driver_notes'                => trim($rowData['driver_notes'] ?? ''),*/
 
-            $notifiedDrivers = [];
-            $insertedCount = 0;
-            $duplicateCount = 0;
-            $failedCount = 0;
-
-            foreach ($rows as $rowData) {
-                $result = $assignment->insertAssignment($rowData);
+                // Insert each row using Assignment class
+                $result = $assignment->insertAssignment($rowData);            
 
                 if ($result === true) {
                     $insertedCount++;
+                    $sheet->setCellValue("A{$index}", $assignmentControl);
+                    $this->logger->info('[JOB IMPORTER] Inserted assignment ' . $assignmentControl . ' from Excel row ' . $index);
                     $this->logger->info("Inserted vehicle: {$rowData['vehicle_id']} ({$rowData['order_ref']}) at {$rowData['start_date_time']}");
                     // Track drivers to notify
                     $notifiedDrivers[$rowData['driver_id']] = $rowData['operator_name'];
@@ -151,6 +166,9 @@ class JobOrderImporter {
             }
 
             if ($insertedCount > 0) {
+                $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+                $writer->save($this->excelFile);
+                $this->logger->info('[JOB IMPORTER] Saved assignment control numbers to the Excel workbook.');
                 foreach ($notifiedDrivers as $driverId => $driverName) {
                     $this->sendAssignmentEmail($driverId, $driverName, $orderRef);
                 }
@@ -259,7 +277,7 @@ class JobOrderImporter {
             $mail->send();
             $this->logger->info("Notification email sent to {$fullName} ({$to}) for order {$orderRef}");
         } catch (Exception $e){
-            $this->logger->error("Email send failed for driver {$driverName} (ID {$driverId}): " . $e->getMessage());
+            $this->logger->error("Email send failed for driver {$fullName} (ID {$driverId}): " . $e->getMessage());
         }
     }
 };
