@@ -105,19 +105,18 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
         date = new Date(input);
     } else if (typeof input === 'string') {
         const trimmed = input.trim();
-        const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+        const timeOnlyMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
         // Only replace space with T for MySql-style dates
-        if (match) {
+        if (timeOnlyMatch) {
             const [
                 ,
-                year,
-                month,
-                day,
                 hour = '00',
                 minute = '00',
                 second = '00'
-            ] = match;
-            date = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+            ] = timeOnlyMatch;
+            date = new Date(1970, 0, 1, Number(hour), Number(minute), Number(second));
+        } else if (/^\d{4}-\d{2}-\d{2}\s/.test(trimmed)){
+            date = new Date(trimmed.replace(' ', 'T'));
         } else {
             date = new Date(trimmed);
         }

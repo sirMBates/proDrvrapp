@@ -15,14 +15,16 @@ class UpdateAssignment {
         $db = new Database();
         $pdo = $db->connect();
         $sql = "UPDATE work_orders
-                SET confirmed_assignment = :confirmed_assignment
+                SET confirmed_assignment = :confirmed_assignment, confirmed_at = :confirmed_at
                 WHERE driver_id = :driver_id AND order_id = :order_id AND vehicle_id = :vehicle_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
+        $confirmedAt = date('Y-m-d H:i:s');
         $stmt->bindParam(':driver_id', $driverId);
         $stmt->bindParam(':order_id', $orderId);
         $stmt->bindParam(':vehicle_id', $vehicleId);
         $stmt->bindParam(':confirmed_assignment', $assignmentStatus);
+        $stmt->bindParam(':confirmed_at', $confirmedAt);
         $stmt->execute();
 
         if (!$stmt || $stmt->rowCount() === 0) {
@@ -314,13 +316,15 @@ class UpdateAssignment {
         }
 
         $current = $stmt->fetch();
-        $devLogger->info('[COMPLETE ASSIGNMENT FETCHED] ' . 'order_id=' . ($current['order_id'] ?? 'missing') .
-        ', driver_id=' . ($current['driver_id'] ?? 'missing') . ', signature_required=' . ($current['signature_required'] ?? 'missing') . ', signature_status=' . ($current['signature_status'] ?? 'missing') . ', completed_at=' . ($current['completed_at'] ?? 'NULL') . ', mark_completed=' . ($markCompleted ? 'true' : 'false'));
+
         if (!$current) {
+            $devLogger->error('[COMPLETE ASSIGNMENT] Assignment not found. ' . 'order_id=' . ($data['order_id'] ?? 'missing') . ', driver_id=' . ($data['driver_id'] ?? 'missing'));
             $alert::setMsg('error', 'Assignment not found. Contact dispatch for more details.');
             header("Location: /assignments?error=no+assignment+found");
             exit();
         }
+
+        $devLogger->info('[COMPLETE ASSIGNMENT FETCHED] ' . 'order_id=' . ($current['order_id'] ?? 'missing') . ', driver_id=' . ($current['driver_id'] ?? 'missing') . ', signature_required=' . ($current['signature_required'] ?? 'missing') . ', signature_status=' . ($current['signature_status'] ?? 'missing') . ', completed_at=' . ($current['completed_at'] ?? 'NULL') . ', mark_completed=' . ($markCompleted ? 'true' : 'false'));
 
         // Mark as completed only if requested
         if (!$markCompleted) {

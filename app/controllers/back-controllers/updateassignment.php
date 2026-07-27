@@ -37,7 +37,7 @@ if ($method === 'PATCH') {
     if (isset($_POST['modify'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");
         include_once base_path("app/errors/check_assignment_details.php");
-        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS) ?? [];
         $storage = new Storage();  // Could also use the directory location i.e. 'D:/prodrvr/public/signatures/'
         $modification = new UpdateAssignmentDetailsContr($data, $storage);
         $result = $modification->modify();
@@ -52,10 +52,6 @@ if ($method === 'PATCH') {
         ]);
         header("Location: /assignments?{$query}");
         exit();
-
-        /*$alert::setMsg('error', $result['message'] ?? 'Assignment update failed.');
-        header("Location: /assignments?error=update+failed");
-        exit();*/
     }
     elseif (isset($_POST['assignment-complete'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");
@@ -63,12 +59,12 @@ if ($method === 'PATCH') {
         include_once base_path("app/repository/jobexportmodel.php");
 
         // Sanitize incoming POST data
-        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS) ?? [];
         $storage = new Storage();
 
         // Validate & check assignment details using existing error checker
         $jobValidator = new UpdateAssignmentDetailsContr($data, $storage);
-        $originalAssignment = $jobValidator->complete($data, false);
+        $jobValidator->complete($data, false);
         $jobValidator->modify();
 
         $model = new UpdateAssignment();
@@ -78,13 +74,13 @@ if ($method === 'PATCH') {
         // Pass updated data to excel exporter
         $filePath = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
         $exporter = new AssignmentExporter($filePath, $devLogger);
-        $exportSuccess = $exporter->assignmentSubmitted($data, $updatedAssignment, $originalAssignment);
-        $dbResult = $model->completeAssignmentPublic($data, true);
+        $exporter->assignmentSubmitted($data, $updatedAssignment);
+        $completedAssignment = $model->completeAssignmentPublic($data, true);
 
         $devLogger->info('[ASSIGNMENT COMPLETE] Operation executed.');
-        $alert::setMsg('success', 'Assignment submitted and marked as completed.');
-        $orderId = (string) ($updatedAssignment['order_id'] ?? $originalAssignment['order_id'] ?? $data['order_id'] ?? '');
-        $orderRef = (string) ($updatedAssignment['order_ref'] ?? $originalAssignment['order_ref'] ?? '');
+        $alert::setMsg('success', 'Assignment completed and submitted.');
+        $orderId = (string) ($completedAssignment['order_id'] ?? $updatedAssignment['order_id'] ?? $data['order_id'] ?? '');
+        $orderRef = (string) ($completedAssignment['order_ref'] ?? $updatedAssignment['order_ref'] ?? '');
         $query = http_build_query([
             'status' => 'completed',
             'order_id' => $orderId,
