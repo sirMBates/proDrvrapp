@@ -33,11 +33,13 @@ return new class {
         $job = $args['job'] ?? null;
 
         if ($job === 'import') {
-            require BASE_PATH . 'app/repository/jobordermodel.php';
+            require_once BASE_PATH . 'app/repository/jobordermodel.php';
+            require_once BASE_PATH . 'app/errors/importer_validator.php';
 
             $excelFile = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
             file_put_contents('D:/webapps/logs/debug_task.log', "[" . date('Y-m-d H:i:s') . "] CLI job detected: {$job}\n", FILE_APPEND);
-            $importer = new JobOrderImporter($excelFile, $this->logger);
+            $validator = new ImporterAssignmentValidator($this->logger);
+            $importer = new JobOrderImporter($excelFile, $this->logger, $validator);
             $importer->run();
 
         } elseif ($job === 'assignments') {

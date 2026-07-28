@@ -15,11 +15,14 @@ require_once __DIR__ . "/../../app/models/assignmentmodel.php";
 
 class JobOrderImporter {
     protected string $excelFile;
-    protected $logger;
     // Initialize Logger
-    public function __construct(string $excelFile, $logger) {
+    protected $logger;
+    protected ImporterAssignmentValidator $validator;
+
+    public function __construct(string $excelFile, $logger, ImporterAssignmentValidator $validator) {
         $this->excelFile = $excelFile;
         $this->logger = $logger;
+        $this->validator = $validator;
     }
 
     public function run(): bool {        
@@ -146,6 +149,11 @@ class JobOrderImporter {
                 $rowData['signature_status']            = $signatureStatus;
                 /*'driver_notes'                => trim($rowData['driver_notes'] ?? ''),*/
 
+                if (!$this->validator->validate($rowData, $index)) {
+                    $failedCount++;
+                    continue;
+                }
+                
                 // Insert each row using Assignment class
                 $result = $assignment->insertAssignment($rowData);            
 
