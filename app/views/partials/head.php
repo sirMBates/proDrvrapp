@@ -14,11 +14,11 @@ $dotenv->load();
         <meta name="robots" content="noindex">
         <meta name="theme-color" content="#1D5283">
         <link rel="manifest" href="/manifest.json">
-        <link rel="stylesheet" href="../../dist/styles/components.css">
+        <link rel="stylesheet" href="../../public/dist/styles/components.css">
         <?php
                 require base_path("app/includes/getstyle.php");
         ?>
-        <link rel="stylesheet" href="../../dist/styles/scss/main.css">
+        <link rel="stylesheet" href="../../public/dist/styles/scss/main.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">

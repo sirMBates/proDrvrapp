@@ -1,7 +1,7 @@
 <?php
 use Dotenv\Dotenv;
 require_once base_path("vendor/autoload.php");
-require_once "../vendor/autoload.php";
+//require_once "../vendor/autoload.php";
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../../../', '.local.env');
 $dotenv->load();
 ?>
@@ -12,10 +12,10 @@ $dotenv->load();
                 <p class="text-light"><a class="text-light" target="_blank" href="https://icons8.com/icon/8177/ball-point-pen" rel="noopener">Pen</a> icon by <a class="text-light" target="_blank" href="https://icons8.com">Icons8</a></p><p class="text-center"><a class="text-light" target="_blank" href="https://www.freeiconspng.com/img/14404">Bus Driver Icon</a></p>
         </div>
 </footer>
-<script src='../../dist/js/app.js'></script>
+<script src='../../public/dist/js/app.js'></script>
 <!-- Load JQuery Color CDN(Content Delivery Network) -->
 <script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity='<?= $_ENV['JQUERY_COLOR_INTEGRITY']?>' crossorigin='anonymous'></script>
-<script src="../../dist/js/pwa.js"></script>
+<script src="../../public/dist/js/pwa.js"></script>
 <?php
         require base_path("app/includes/getscripts.php");
 ?>
