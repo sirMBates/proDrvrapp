@@ -22,7 +22,7 @@ function home_path($path) {
 
 function view($path, $attributes = []) {
     extract($attributes);
-    require base_path('public/views/' . $path);
+    require base_path('app/views/' . $path);
 }
 
 function requireLoginAjax() {
