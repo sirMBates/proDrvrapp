@@ -5,7 +5,6 @@ declare(strict_types=1);
 define('BASE_PATH', realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR);
 define('HOME_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
-//require "../config.php";
 require BASE_PATH . 'config.php';
 require BASE_PATH . 'core/Helperfunc.php';
 require base_path('vendor/autoload.php');
