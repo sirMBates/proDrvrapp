@@ -21,6 +21,7 @@ const confirmAssignment = fetchDrvr;
 const cancelAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
 const drvrAlert = showFlashAlert;
+const COMPLETED_ASSIGNMENTS_KEY = 'completedAssignmentData';
 let showAssignment;
 let assignments = [];
 let currentIndex = 0;
@@ -1054,8 +1055,90 @@ function getCompletePayrollData(assignment) {
         assignment_date: assignment.start_date_time?.split(' ')[0] ?? '',
         spot_time: assignment.spot_time ?? '',
         actual_drop_time: document.querySelector('[data-field="actual_drop_time"]')?.textContent.trim() ?? '',
-        total_hrs: document.querySelector('[data-field="total_hrs"]')?.textContent.trim() ?? ''
+        total_job_time: document.querySelector('[data-field="total_hrs"]')?.textContent.trim() ?? ''
     };
+};
+
+function getStoredCompletedAssignments() {
+    try {
+        const storedData = localStorage.getItem(COMPLETED_ASSIGNMENTS_KEY);
+
+        if (!storedData) {
+            return {};
+        }
+
+        const parsedData = JSON.parse(storedData);
+
+        if (parsedData === null || typeof parsedData !== 'object' || Array.isArray(parsedData)) {
+            console.warn('[PAYROLL SNAPSHOT] Invalid stored structure. Using an empty collection.');
+
+            return {};
+        }
+
+        return parsedData;
+    } catch (error) {
+        console.error('[PAYROLL SNAPSHOT] Failed to read completed assignments:', error);
+
+        return {};
+    }
+};
+
+function saveCompletedAssignmentData(assignment) {
+    const payrollData = getCompletePayrollData(assignment);
+    const orderId = String(payrollData.order_id ?? '').trim();
+
+    if (!orderId) {
+        console.error('[PAYROLL SNAPSHOT] Cannot save an assignment without an order_id.');
+
+        return false;
+    }
+
+    const storedAssignments = getStoredCompletedAssignments();
+
+    // Add a new order or replace only the matching order.
+    storedAssignments[orderId] = payrollData;
+
+    try {
+        localStorage.setItem(COMPLETED_ASSIGNMENTS_KEY, JSON.stringify(storedAssignments));
+        console.log(`[PAYROLL SNAPSHOT] Saved completed order ${orderId}.`, payrollData);
+
+        return true;
+    } catch (error) {
+        console.error(`[PAYROLL SNAPSHOT] Failed to save completed order ${orderId}:`, error);
+
+        return false;
+    }
+};
+
+function updateStoredPayrollDataIfPresent(assignment) {
+    const orderId = String(assignment?.order_id ?? '').trim();
+
+    if (!orderId) {
+        console.error('[PAYROLL SNAPSHOT] Cannot update an assignment without an order_id.');
+
+        return false;
+    }
+
+    const storedAssignments = getStoredCompletedAssignments();
+
+    if (!Object.hasOwn(storedAssignments, orderId)) {
+        console.log(`[PAYROLL SNAPSHOT] Order ${orderId} is not stored. No payroll update needed.`);
+
+        return false;
+    }
+
+    storedAssignments[orderId] = getCompletePayrollData(assignment);
+
+    try {
+        localStorage.setItem(COMPLETED_ASSIGNMENTS_KEY, JSON.stringify(storedAssignments));
+        console.log(`[PAYROLL SNAPSHOT] Updated stored order ${orderId}.`, storedAssignments[orderId]);
+
+        return true;
+    } catch (error) {
+        console.error(`[PAYROLL SNAPSHOT] Failed to update stored order ${orderId}:`, error);
+
+        return false;
+    }
 };
 
 // Reusable Restoration Function with Visual Debug ===
@@ -1181,8 +1264,11 @@ function submitAssignment(options) {
         }
 
         // Payroll snapshot
-        const completedAssignmentData = getCompletePayrollData(assignment);
-        localStorage.setItem('completedAssignmentData', JSON.stringify(completedAssignmentData));
+        if (flagName === 'assignment-complete') {
+            saveCompletedAssignmentData(assignment);
+        } else if (flagName === 'modify') {
+            updateStoredPayrollDataIfPresent(assignment);
+        }
         
         form.querySelectorAll("input[name='pre_signature_base64'], " + "input[name='post_signature_base64']").forEach(input => input.remove());
 
