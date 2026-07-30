@@ -3,23 +3,23 @@ $url = parse_url($_SERVER['REQUEST_URI'])['path'];
 function pageStyle($value) {
         switch($value) {
                 case "/signup":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/style.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/style.css'>\n";
                         break;
                 
                 case "/register":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/register.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/register.css'>\n";
                         break;
 
                 case "/signin":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/style.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/style.css'>\n";
                         break;
 
                 case "/forget":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/style.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/style.css'>\n";
                         break;
 
                 case "/completereset":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/style.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/style.css'>\n";
                         break;
 
                 case "/":
@@ -39,15 +39,15 @@ function pageStyle($value) {
                         break;
 
                 case "/assignments":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/jobsview.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/jobsview.css'>\n";
                         break;
 
                 case "/int_messages":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/messages.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/messages.css'>\n";
                         break;
 
                 case "/timesheet":
-                        echo "<link rel='stylesheet' href='../public/dist/styles/tsheet.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/tsheet.css'>\n";
                         break;
 
                 case "/profile":
