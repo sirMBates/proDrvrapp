@@ -83,6 +83,7 @@ if ($method === 'PATCH') {
         $orderRef = (string) ($completedAssignment['order_ref'] ?? $updatedAssignment['order_ref'] ?? '');
         $query = http_build_query([
             'status' => 'completed',
+            'completed' => $orderId,
             'order_id' => $orderId,
             'order_ref' => $orderRef
         ]);
