@@ -90,37 +90,85 @@ function refreshCurrentAssignment() {
     }
 };
 
-async function refreshAssignmentsFromServer() {
-  try {
-    const response = await getAssignment("https://prodriver.local/getassignments", {
-        method: "GET",
-        mode: "cors",
-        credentials: "include",
-        cache: 'no-store',
-        headers: {
-            'X-CSRF-Token': drvrToken
+async function refreshAssignmentsFromServer(preferredOrderId = null) {
+    try {
+        const response = await getAssignment(
+            'https://prodriver.local/getassignments',
+            {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                cache: 'no-store',
+                headers: {
+                    'X-CSRF-Token': drvrToken
+                }
+            }
+        );
+
+        if (!response || !Array.isArray(response.data)) {
+            console.warn('[PWA] No valid assignment list in response payload.');
+
+            return false;
         }
-    });
 
-    if (response && Array.isArray(response.data)) {
-      // Update your local assignment array
-      assignments = response.data;
-      // Optionally persist to localStorage for offline access
-      localStorage.setItem("assignments", JSON.stringify(response.data));
-      // If you have a UI renderer, refresh it
-      if (typeof window._refreshAssignmentFromOutside === "function") {
-        window._refreshAssignmentFromOutside();
-      }
+        /*
+         * Never allow completed or canceled assignments
+         * back into active assignment state.
+         */
+        assignments = response.data.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
+        localStorage.setItem('assignments', JSON.stringify(assignments));
 
-      const current = getCurrentAssignment();
-      if ( current ) updateButtonStates(current);
-      //console.log(`[PWA] Assignments refreshed: ${response.data.length} loaded`);
-    } else {
-      console.warn("[PWA] No assignment list in response payload");
+        if (assignments.length === 0) {
+            currentIndex = 0;
+
+            sessionStorage.setItem('lastAssignmentIndex', '0');
+            document.querySelector('#assignment-pager')?.remove();
+            pagination = null;
+            showNoAssignments();
+
+            return true;
+        }
+
+        /*
+         * Keep the assignment that triggered the refresh
+         * selected whenever it still exists.
+         */
+        const preferredIndex = preferredOrderId !== null ? assignments.findIndex(assignment => String(assignment.order_id) === String(preferredOrderId)) : -1;
+
+        if (preferredIndex >= 0) {
+            currentIndex = preferredIndex;
+        } else {
+            currentIndex = Math.min(currentIndex, assignments.length - 1);
+        }
+
+        sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
+
+        if (typeof window._rebuildAssignmentPagination === 'function') {
+            window._rebuildAssignmentPagination();
+        }
+        showAssignment(currentIndex);
+
+        const current = getCurrentAssignment();
+
+        if (current) {
+            updateButtonStates(current);
+        }
+
+        console.log('[PWA] Active assignments refreshed.',
+            {
+                count: assignments.length,
+                currentIndex,
+                orderId:
+                    assignments[currentIndex]?.order_id
+            }
+        );
+
+        return true;
+    } catch (error) {
+        console.error('[PWA] Failed to refresh assignments from server:', error);
+
+        return false;
     }
-  } catch (error) {
-    console.error("[PWA] Failed to refresh assignments from server:", error);
-  }
 };
 
 function showNoAssignments(driver = null) {
@@ -406,11 +454,7 @@ function clearSubmittedAssignmentDraftFromUrl() {
         (remainingQuery ? `?${remainingQuery}` : '') +
         window.location.hash;
 
-    window.history.replaceState(
-        {},
-        document.title,
-        cleanUrl
-    );
+    window.history.replaceState({}, document.title, cleanUrl);
 };
 
 function hasCurrentAssignmentDraft () {
@@ -421,7 +465,69 @@ function hasCurrentAssignmentDraft () {
     return Object.keys(draft).length > 0;
 };
 
+function reconcileCompletedAssignmentFromRedirect() {
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get('status');
+    const completedOrderId = url.searchParams.get('completed') ?? (status === 'completed' ? url.searchParams.get('order_id') : null);
+
+    if (!completedOrderId) {
+        return null;
+    }
+
+    let storedAssignments = [];
+
+    try {
+        const storedData = localStorage.getItem('assignments');
+        const parsedData = storedData ? JSON.parse(storedData) : [];
+
+        if (Array.isArray(parsedData)) {
+            storedAssignments = parsedData;
+        }
+    } catch (error) {
+        console.error('[ASSIGNMENT STATE] Could not read cached assignments:', error);
+    }
+
+    const remainingAssignments = storedAssignments.filter((assignment) => {
+            return String(assignment.order_id) !== String(completedOrderId);
+        });
+    try {
+        localStorage.setItem('assignments', JSON.stringify(remainingAssignments));
+    } catch {
+        console.error('[ASSIGNMENT STATE] Could not update cached assignments:', error);
+    }
+
+    const storedIndex = Number.parseInt(sessionStorage.getItem('lastAssignmentIndex') ?? '0', 10);
+    const safeStoredIndex = Number.isInteger(storedIndex) && storedIndex >= 0 ? storedIndex : 0;
+    const correctedIndex = remainingAssignments.length === 0 ? 0 : Math.min(safeStoredIndex, remainingAssignments.length - 1);
+    sessionStorage.setItem('lastAssignmentIndex', String(correctedIndex));
+
+    /*
+     * Remove the completed parameter so refreshing
+     * does not attempt to process it again.
+     */
+    url.searchParams.delete('completed');
+    if (status === 'completed') {
+        url.searchParams.delete('status');
+        url.searchParams.delete('order_id');
+        url.searchParams.delete('order_ref');
+    }
+
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    console.log(`[ASSIGNMENT STATE] Removed completed order ${completedOrderId}.`, {
+            before: storedAssignments.length,
+            remaining: remainingAssignments.length,
+            currentIndex: correctedIndex
+        }
+    );
+
+    return {
+        assignments: remainingAssignments,
+        currentIndex: correctedIndex
+    };
+};
+
 window.addEventListener('DOMContentLoaded', () => {
+    const reconciledState = reconcileCompletedAssignmentFromRedirect();
     clearSubmittedAssignmentDraftFromUrl();
     // Create pagination controls (Bootstrap)
     function createPaginationControls() {
@@ -498,6 +604,11 @@ window.addEventListener('DOMContentLoaded', () => {
         return { renderPills, updateButtons };
     };
 
+    window._rebuildAssignmentPagination = function() {
+        pagination = createPaginationControls();
+        return pagination;
+    }
+
     function renderSharedNotes(assignment) {
         const container = document.querySelector('#existing-shared-notes');
         const list = document.querySelector('#shared-notes-list');
@@ -528,9 +639,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Renders the assignment details to your existing UI tables
     showAssignment = function(index) {
-        // Filter out completed assignments
-        assignments = assignments.filter(a => !a.completed_at && !a.canceled_at);
-
         if (assignments.length === 0) {
             showNoAssignments();
             return;
@@ -675,18 +783,43 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     const storedAssignments = localStorage.getItem("assignments");
-    if ( storedAssignments) {
-        assignments = JSON.parse( storedAssignments );
-        createPaginationControls();
-        const savedIndex = parseInt(sessionStorage.getItem('lastAssignmentIndex') || '0', 10);
-        const validIndex = isNaN(savedIndex) || savedIndex < 0 || savedIndex >= assignments.length ? 0 : savedIndex;
+    if (reconciledState) {
+        assignments = reconciledState.assignments;
+        currentIndex = reconciledState.currentIndex;
+    } else if (storedAssignments) {
+        try {
+            const parsedAssignments = JSON.parse(storedAssignments);
+            assignments = Array.isArray(parsedAssignments) ? parsedAssignments : [];
+        } catch (error) {
+            console.error('[INIT] Failed to restore assignments:', error);
+            assignments = [];
+        }
+
+        const savedIndex = Number.parseInt(sessionStorage.getItem('lastAssignmentIndex') ?? '0', 10);
+        currentIndex = Number.isInteger(savedIndex) ? savedIndex : 0;
+    }
+
+    /* Filter before creating pagination.
+    * Otherwise, the pills are created from the old
+    * assignment count.
+    */
+    assignments = assignments.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
+    currentIndex = assignments.length === 0 ? 0 : Math.min(currentIndex, assignments.length - 1);
+    sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
+    if (assignments.length > 0) {
+        pagination = createPaginationControls();
+
         setTimeout(() => {
-            showAssignment(validIndex);
+            showAssignment(currentIndex);
             const current = getCurrentAssignment();
-            if ( current ) updateButtonStates(current);
-            console.log(`[INIT] Restored assignment index ${validIndex} after reload.`);
-        }, 100);
-    };
+
+            if (current) {
+                updateButtonStates(current);
+            }
+
+            console.log(`[INIT] Restored assignment index ${currentIndex}.`);
+        }, 100)
+    }
 
     getAssignment("https://prodriver.local/getassignments", {
         method: 'GET', 
@@ -702,11 +835,25 @@ window.addEventListener('DOMContentLoaded', () => {
         const confirmBtnStatus = $(confirmBtn).prop("disabled");
         const cancelBtnStatus = $(cancelBtn).prop("disabled");
         if (operator.status === 'success' && operator.data.length > 0) {
-            assignments = operator.data;
-            createPaginationControls();
-            showAssignment(0);
-            if (confirmBtnStatus) $(confirmBtn).prop("disabled", false);
-            if (cancelBtnStatus) $(cancelBtn).prop("disabled", false);
+            assignments = operator.data.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
+            localStorage.setItem('assignments', JSON.stringify(assignments));
+            currentIndex = assignments.length === 0 ? 0 : Math.min(currentIndex, assignments.length - 1);
+            sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
+
+            if (assignments.length > 0) {
+                pagination = createPaginationControls();
+                showAssignment(currentIndex);
+
+                if (confirmBtnStatus) {
+                    $(confirmBtn).prop('disabled', false);
+                }
+
+                if (cancelBtnStatus) {
+                    $(cancelBtn).prop('disabled', false);
+                }
+            } else {
+                showNoAssignments();
+            }
         } else {
             //console.log("No assignments found, loading profile instead...");
             return getDriver("https://prodriver.local/getprofile", {
@@ -1346,26 +1493,18 @@ confirmBtn.addEventListener('click', async (e) => {
         drvrAlert(result.status, result.message); // toast
         // Only update Local model on confirmed success and refresh the currently displayed assignment in UI
         if (result.status === 'success') {
-            assignment['confirmed_assignment'] = 'confirmed'.toLowerCase();
-            const fresh = await getAssignment("https://prodriver.local/getassignments", {
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                cache: 'no-store',
-                headers: {
-                    'X-CSRF-Token': drvrToken
-                }
-            });
-            if ( fresh && fresh.status === 'success' && Array.isArray(fresh.data)) {
-                assignments = fresh.data;
-                localStorage.setItem('assignments', JSON.stringify(fresh.data));
-            } else {
-                console.warn('[SYNC] Skipped saving invalid assignment data to localStorage.');
-            }
+            const confirmedOrderId =
+            assignment.order_id;
+
+            assignment.confirmed_assignment = 'confirmed';
+            await refreshAssignmentsFromServer(confirmedOrderId);
             broadcastAssignmentsUpdate(assignments);
-            await refreshAssignmentsFromServer();
+
             const current = getCurrentAssignment();
-            if ( current ) updateButtonStates(current);
+
+            if (current) {
+                updateButtonStates(current);
+            }
         }
     } catch (error) {
         console.error('Error confirmation assignment:', error);
