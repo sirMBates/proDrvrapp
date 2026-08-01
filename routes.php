@@ -31,5 +31,3 @@ $router->patch('/profile', 'app/controllers/back-controllers/updateprofileacct.p
 $router->patch('/setprofilepicture', 'app/api/setprofilepicture.php');
 $router->patch('/assignmenthandler', 'app/api/assignmenthandler.php');
 $router->patch('/assignments', 'app/controllers/back-controllers/updateassignment.php');
-
-$router->delete('/assignmenthandler', 'app/api/assignmenthandler.php');

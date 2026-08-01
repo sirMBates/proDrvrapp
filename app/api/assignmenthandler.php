@@ -72,9 +72,7 @@ if ($method === 'PATCH') {
             echo json_encode($result);
             exit();
         }
-    }
-} elseif ($method === 'DELETE') {
-    if (isset($_POST['cancel'])) {
+    } elseif (isset($_POST['cancel'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");
         include_once base_path("app/errors/check_assignment.php");
         $driverId = htmlspecialchars(trim($_POST['driver_id']));

@@ -171,38 +171,60 @@ async function refreshAssignmentsFromServer(preferredOrderId = null) {
     }
 };
 
-function showNoAssignments(driver = null) {
-    // Select elements safely
-    const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
-    const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
-    const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
+function showNoAssignments() {
+    assignments = [];
+    currentIndex = 0;
 
-    // Display default message for no assignments
-    primaryCoachId.textContent = 'No assignment available...';
+    localStorage.setItem('assignments', JSON.stringify([]));
+    sessionStorage.setItem('lastAssignmentIndex', '0');
 
-    // Show driver info if provided, else clear
-    if (driver) {
-        primaryDrvrId.textContent = driver['operatorid'] || 'N/A';
-        primaryDrvrName.textContent = `${driver['lastName'] || ''}, ${driver['firstName'] || ''}`.trim();
-    } else {
-        primaryDrvrId.textContent = '';
-        primaryDrvrName.textContent = '';
+    const assignmentCard = document.querySelector('.assignment-card');
+    assignmentCard?.classList.add('hidden');
+    document.querySelector('#assignment-pager')?.remove();
+
+    pagination = null;
+    let emptyState = document.querySelector('#no-assignments');
+
+    if (!emptyState) {
+        emptyState = document.createElement('section');
+        emptyState.id = 'no-assignments';
+        emptyState.className = 'card text-center p-4 py-5';
+
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-circle-check ' + 'fs-1 text-success mb-3';
+        icon.setAttribute('aria-hidden', 'true');
+
+        const heading = document.createElement('h2');
+        heading.className = 'h4 mb-2';
+        heading.textContent = 'No Active Assignment(s)';
+
+        const message = document.createElement('p');
+        message.className = 'text-muted mb-0';
+        message.textContent = 'You’re all caught up! New assignments ' + 'assigned by dispatch will appear here automatically.';
+        emptyState.append(icon, heading, message);
+
+        /*
+         * Insert the empty state next to the assignment card.
+         * Adjust the parent if your layout requires a different
+         * placement.
+         */
+        assignmentCard?.parentElement?.appendChild(emptyState);
     }
 
-    // Optional: visually reset the rest of the UI
-    const assignmentContainer = document.querySelector('#assignmentContainer');
-    if (assignmentContainer) {
-        assignmentContainer.textContent = 'No active assignments found.';
-    }
+    emptyState.classList.remove('hidden');
 
-    // Optionally disable buttons (depending on your UX flow)
     $(confirmBtn).prop('disabled', true);
     $(cancelBtn).prop('disabled', true);
     $(saveBtn).prop('disabled', true);
     $(completeBtn).prop('disabled', true);
 };
 
-async function loadNextAssignment(afterIndex) {
+function showAssignmentInterface() {
+    document.querySelector('.assignment-card')?.classList.remove('hidden');
+    document.querySelector('#no-assignments')?.classList.add('hidden');
+};
+
+function loadNextAssignment(afterIndex) {
     // Case 1: There are still other assignments left
     if (assignments.length > 0) {
         const nextIndex = afterIndex >= assignments.length ? assignments.length - 1 : afterIndex;
@@ -212,25 +234,7 @@ async function loadNextAssignment(afterIndex) {
         }
     }
 
-    // Case 2: None left → Fetch profile fallback
-    console.log("Fetching profile fallback...");
-    try {
-        const data = await getDriver("https://prodriver.local/getprofile", {
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'include',
-            headers: {
-                'X-CSRF-Token': drvrToken
-            }
-        });
-
-        // Pass the driver info to showNoAssignments()
-        showNoAssignments(data);
-    } catch (err) {
-        console.error("Error fetching driver profile fallback:", err);
-        // Fallback to empty state if driver fetch fails
-        showNoAssignments();
-    }
+    showNoAssignments();
 };
 
 async function clearAssignmentUI() {
@@ -492,7 +496,7 @@ function reconcileCompletedAssignmentFromRedirect() {
         });
     try {
         localStorage.setItem('assignments', JSON.stringify(remainingAssignments));
-    } catch {
+    } catch (error) {
         console.error('[ASSIGNMENT STATE] Could not update cached assignments:', error);
     }
 
@@ -646,6 +650,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         if (index < 0 || index >= assignments.length) return; // guard
 
+        showAssignmentInterface();
         currentIndex = index;
         sessionStorage.setItem('lastAssignmentIndex', index);
         const assignment = assignments[index];
@@ -819,6 +824,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
             console.log(`[INIT] Restored assignment index ${currentIndex}.`);
         }, 100)
+    } else {
+        showNoAssignments();
     }
 
     getAssignment("https://prodriver.local/getassignments", {
@@ -832,9 +839,8 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     .then(data => {
         const operator = data;
-        const confirmBtnStatus = $(confirmBtn).prop("disabled");
-        const cancelBtnStatus = $(cancelBtn).prop("disabled");
-        if (operator.status === 'success' && operator.data.length > 0) {
+        
+        if (operator.status === 'success' && Array.isArray(operator.data) && operator.data.length > 0) {
             assignments = operator.data.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
             localStorage.setItem('assignments', JSON.stringify(assignments));
             currentIndex = assignments.length === 0 ? 0 : Math.min(currentIndex, assignments.length - 1);
@@ -843,69 +849,16 @@ window.addEventListener('DOMContentLoaded', () => {
             if (assignments.length > 0) {
                 pagination = createPaginationControls();
                 showAssignment(currentIndex);
-
-                if (confirmBtnStatus) {
-                    $(confirmBtn).prop('disabled', false);
-                }
-
-                if (cancelBtnStatus) {
-                    $(cancelBtn).prop('disabled', false);
-                }
-            } else {
-                showNoAssignments();
+                return;
             }
-        } else {
-            //console.log("No assignments found, loading profile instead...");
-            return getDriver("https://prodriver.local/getprofile", {
-                method: 'GET', 
-                mode: 'cors',
-                credentials: 'include',
-                headers: {
-                    'X-CSRF-Token': drvrToken
-                }
-            });
         }
+
+        showNoAssignments();
     })
-    .then(data => {
-        if (data) {
-            const driver = data;
-            const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
-            const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
-            const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
-            const primaryOrderNumber = primaryA.childNodes[3].childNodes[1].childNodes[7];
-            const primaryNumOfCoaches = primaryA.childNodes[3].childNodes[1].childNodes[9];
-            const secondaryStartTime = groupB.childNodes[3].childNodes[1].childNodes[1];
-            const secondarySpotTime = groupB.childNodes[3].childNodes[1].childNodes[3];
-            const secondaryLeaveTime = groupB.childNodes[3].childNodes[1].childNodes[5];
-            const secondaryReturnTime = groupB.childNodes[3].childNodes[1].childNodes[7];
-            const secondaryDropTime = groupB.childNodes[3].childNodes[1].childNodes[9];
-            const tertiaryEndTime = groupC.childNodes[3].childNodes[1].childNodes[1];
-            const tertiaryActEndTime = groupC.childNodes[3].childNodes[1].childNodes[3];
-            const tertiaryShiftTime = groupC.childNodes[3].childNodes[1].childNodes[5];
-            const tertiaryDriveTime = groupC.childNodes[3].childNodes[1].childNodes[7];
-            const tertiaryOrigin = groupC.childNodes[3].childNodes[1].childNodes[9];
-            const quaternaryDestination = groupD.childNodes[3].childNodes[1].childNodes[1];
-            const quaternaryGroupNameandLeader = groupD.childNodes[3].childNodes[1].childNodes[3];
-            const quaternaryGroupLeaderMobile = groupD.childNodes[3].childNodes[1].childNodes[5];
-            const quaternaryCustomerNameandPhone = groupD.childNodes[3].childNodes[1].childNodes[7];
-            const quaternaryContactNameandMobile = groupD.childNodes[3].childNodes[1].childNodes[9];
-            
-            //primaryCoachId.textContent = 'No assignment available...';
-            primaryDrvrId.textContent = driver['operatorid'];
-            primaryDrvrName.textContent = `${driver['firstName']} ${driver['lastName']}`;
-            const placeholders = [primaryCoachId, primaryOrderNumber, primaryNumOfCoaches, secondaryStartTime, secondarySpotTime, secondaryLeaveTime, secondaryReturnTime, secondaryDropTime, tertiaryEndTime, tertiaryActEndTime, tertiaryShiftTime, tertiaryDriveTime, tertiaryOrigin, quaternaryDestination, quaternaryGroupNameandLeader, quaternaryGroupLeaderMobile, quaternaryCustomerNameandPhone, quaternaryContactNameandMobile];
-            placeholders.forEach(ph => {
-                const el = eval(ph);
-                if (el) el.textContent = 'No assignment available...';
-            });
-            locationPickup.value = 'No assignment available...';
-            locationDestination.value = 'No assignment available...';
-            operatorNotes.value = '';
-            document.querySelector('#existing-shared-notes')?.classList.add('hidden');
-            document.getElementById('shared-notes-list')?.replaceChildren();
-        }
-    })
-    .catch(error => console.error('There was a problem with the fetch operation:', error));
+    .catch(error => { 
+        console.error('There was a problem with the fetch operation:', error);
+        showNoAssignments();
+    });
 
     // 🔎 MutationObserver: watch for changes to the assignment order cell
     const targetNode = document.querySelector('#tableA');
@@ -1108,6 +1061,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
                         const assignment = getCurrentAssignment();
                         updateAssignmentDraftField(assignment, field, normalized);
+
+                        cell.textContent = displayValue;
+                        return;
+                    }
+
+                    if (type === 'time' && newValue) {
+                        const normalizedTime = newValue.slice(0, 5);
+
+                        cell.dataset.raw = normalizedTime;
+                        displayValue = dtHelper(normalizedTime, 'time');
+
+                        const assignment = getCurrentAssignment();
+                        updateAssignmentDraftField(assignment, field, normalizedTime);
 
                         cell.textContent = displayValue;
                         return;
@@ -1528,7 +1494,7 @@ cancelBtn.addEventListener('click', async (e) => {
         formData.append('order_id', assignment['order_id']);
         formData.append('vehicle_id', assignment['vehicle_id']);
         formData.append('driver_id', assignment['driver_id']);
-        formData.append('__method', 'DELETE');
+        formData.append('__method', 'PATCH');
         const options = {
         //const result = await cancelAssignment("https://prodriver.local/assignmenthandler.php", {
             method: 'POST',
@@ -1549,7 +1515,7 @@ cancelBtn.addEventListener('click', async (e) => {
             // Immediately clear UI for visual feedback
             clearAssignmentUI();
             // Load next assignment ( or fallback )
-            await loadNextAssignment(currentIndex);
+            loadNextAssignment(currentIndex);
         } else {
             drvrAlert(result.status, result.message); // toast
         }
@@ -1610,49 +1576,36 @@ document.addEventListener('visibilitychange', async () => {
             }
         });
 
-        if (fresh?.status === 'success' && Array.isArray(fresh.data) && fresh.data.length > 0) {
-            assignments = fresh.data;
-            localStorage.setItem('assignments', JSON.stringify(fresh.data));
+        if (fresh?.status === 'success' && Array.isArray(fresh.data)) {
+            assignments = fresh.data.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
+            localStorage.setItem('assignments', JSON.stringify(assignments));
+            if (assignments.length === 0) {
+                showNoAssignments();
+                showFlashAlert('info', 'No active assignment(s) available.');
+                return;
+            }
 
             const savedIndex = parseInt(sessionStorage.getItem('lastAssignmentIndex') || '0', 10);
-            const validIndex = isNaN(savedIndex) || savedIndex < 0 || savedIndex >= assignments.length ? 0 : savedIndex;
+            const validIndex = Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < assignments.length ? savedIndex : 0;
+
+            currentIndex = validIndex;
+            sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
+
+            if (typeof window._rebuildAssignmentPagination === 'function') {
+                window._rebuildAssignmentPagination();
+            }
 
             // Re-render and restore state
-            showAssignment(validIndex);
-            updateButtonStates(assignments[validIndex]);
-
-            // Re-render pagination pills (if pagination exists)
-            if (typeof pagination?.renderPills === 'function') pagination.renderPills();
-            if (typeof pagination?.updateButtons === 'function') pagination.updateButtons();
-
+            showAssignment(currentIndex);
             showFlashAlert('info', 'Assignments refreshed.');
-            //console.log('[SYNC] Assignment page refreshed on tab focus.');
-        } else {
-            // No assignments — load profile fallback
-            const profile = await getDriver("https://prodriver.local/getprofile", {
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                headers: { 
-                    'X-CSRF-Token': drvrToken 
-                }
-            });
 
-            if (profile) {
-                showNoAssignments(profile);
-
-                // Disable pagination if it exists (no assignments to navigate)
-                if (document.querySelector('#assignment-pager')) {
-                    document.querySelector('#assignment-pager').remove();
-                    pagination = null;
-                }
-
-                showFlashAlert('info', 'Profile refreshed.');
-                //console.log('[SYNC] No active assignments — profile fallback loaded.');
-            }
+            return;
         }
-    } catch (err) {
-        //console.error('[SYNC] Assignment page refresh failed:', err);
+
+        showNoAssignments();
+        showFlashAlert('error', 'Unable to retrieve assignments.');
+    } catch (error) {
+        console.error('[SYNC] Assignment page refresh failed:', error);
         showFlashAlert('error', 'Failed to refresh assignments.');
     }
 });

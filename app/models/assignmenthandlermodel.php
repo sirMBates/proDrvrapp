@@ -46,35 +46,116 @@ class UpdateAssignment {
         ];
     }
 
-    protected function removeAssignment($driverId, $orderId, $vehicleId) {
+    protected function cancelAssignment(int $driverId, int $orderId, string $vehicleId, ?string $reason = null): array {
         $db = new Database();
         $pdo = $db->connect();
-        $sql = "DELETE FROM work_orders
-                WHERE driver_id = ? AND order_id = ? AND vehicle_id = ?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(1, $driverId);
-        $stmt->bindParam(2, $orderId);
-        $stmt->bindParam(3, $vehicleId);
-        $success = $stmt->execute();
 
-        if (!$success) {
+        try {
+            $pdo->beginTransaction();
+
+            $fetchSql = "SELECT order_id, assignment_control, order_ref, driver_id, vehicle_id, 
+                        assignment_status, completed_at, canceled_at
+                        FROM work_orders
+                        WHERE driver_id = :driver_id AND order_id = :order_id AND vehicle_id = :vehicle_id
+                        LIMIT 1 FOR UPDATE";
+
+            $fetchStmt = $pdo->prepare($fetchSql);
+
+            $fetchStmt->execute([
+                ':driver_id' => $driverId,
+                ':order_id' => $orderId,
+                ':vehicle_id' => $vehicleId
+            ]);
+
+            $assignment = $fetchStmt->fetch();
+
+            if (!$assignment) {
+                $pdo->rollBack();
+
+                return [
+                    'status' => 'error',
+                    'message' => 'The assignment could not be found.'
+                ];
+            }
+
+            if (!empty($assignment['completed_at'])) {
+                $pdo->rollBack();
+
+                return [
+                    'status' => 'error',
+                    'message' => 'A completed assignment cannot be canceled.'
+                ];
+            }
+
+            if (!empty($assignment['canceled_at'])) {
+                $pdo->rollBack();
+
+                return [
+                    'status' => 'error',
+                    'message' => 'This assignment has already been canceled.'
+                ];
+            }
+
+            $previousStatus = $assignment['assignment_status'] ?? 'pending';
+
+            $updateSql = "UPDATE work_orders
+                        SET assignment_status = 'canceled', canceled_at = NOW(), canceled_by = :canceled_by,
+                        canceled_by_role = 'driver', cancel_reason = :cancel_reason
+                        WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id AND completed_at IS NULL AND canceled_at IS NULL";
+
+            $updateStmt = $pdo->prepare($updateSql);
+
+            $updateStmt->execute([
+                ':canceled_by' => $driverId,
+                ':cancel_reason' => $reason,
+                ':order_id' => $orderId,
+                ':driver_id' => $driverId,
+                ':vehicle_id' => $vehicleId
+            ]);
+
+            if ($updateStmt->rowCount() !== 1) {
+                throw new \RuntimeException(
+                    'Expected one assignment to be canceled.'
+                );
+            }
+
+            $historySql = "INSERT INTO assignment_history (
+                        order_id, assignment_control, order_ref, driver_id, vehicle_id, action_type, previous_status, new_status, performed_by, performed_by_role, reason)
+                        VALUES (:order_id, :assignment_control, :order_ref, :driver_id, :vehicle_id, 'canceled', :previous_status, 'canceled', :performed_by, 'driver', :reason)";
+
+            $historyStmt = $pdo->prepare($historySql);
+
+            $historyStmt->execute([
+                ':order_id' => $assignment['order_id'],
+                ':assignment_control' => $assignment['assignment_control'],
+                ':order_ref' => $assignment['order_ref'],
+                ':driver_id' => $assignment['driver_id'],
+                ':vehicle_id' => $assignment['vehicle_id'],
+                ':previous_status' => $previousStatus,
+                ':performed_by' => $driverId,
+                ':reason' => $reason
+            ]);
+
+            $pdo->commit();
+
+            return [
+                'status' => 'success',
+                'message' => 'Assignment successfully canceled.',
+                'data' => [
+                    'order_id' => $orderId,
+                    'assignment_status' => 'canceled'
+                ]
+            ];
+        } catch (\Throwable $exception) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
             return [
                 'status' => 'error',
-                'message' => 'I\'m sorry but there seems to be a problem. Please try again.'
+                'message' => 'The assignment could not be canceled. Please try again.'
             ];
         }
-
-        if ($stmt->rowCount() === 0) {
-            return [
-                'status' => 'error',
-                'message' => 'I couldn\'t get rid of the assignment for some reason. Are you sure it\'s correct?'
-            ];
-        }
-
-        return [
-            'status' => 'success',
-            'message' => 'Assignment successfully canceled!'
-        ];
     }
 
     private function saveSharedJobNote($pdo, array $data): void {

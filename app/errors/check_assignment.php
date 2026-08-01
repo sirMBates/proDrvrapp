@@ -76,7 +76,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
             ];
         }
 
-        return $this->removeAssignment($this->driverId, $this->orderId, $this->vehicleId);
+        return $this->cancelAssignment($this->driverId, $this->orderId, $this->vehicleId);
     }
 
     //public function completeAssignment() {}
