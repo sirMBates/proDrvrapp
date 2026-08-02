@@ -3,10 +3,7 @@
 use core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
-use Dotenv\Dotenv;
-require_once "../vendor/autoload.php";
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
-$dotenv->load();
+
 
 class GetDriver {
     protected function retrieveDriver($drvrid) {
