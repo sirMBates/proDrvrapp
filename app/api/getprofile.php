@@ -1,9 +1,6 @@
 <?php
 
-/*header('Content-Type: application/json');
-echo json_encode(getallheaders(), JSON_PRETTY_PRINT);
-exit();*/
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
@@ -14,15 +11,12 @@ exit();*/
 requireLoginAjax();
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;
-/*$headers = getallheaders();
-$headerToken = $headers['X-CSRF-Token'];
-$sessionToken = $_SESSION['drvr_token'];*/
 
 if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)) {
     http_response_code(403);
     echo json_encode([
         'status' => 'error',
-        'message' => 'Access denied' // Invalid CRSF Token
+        'message' => 'Access denied' // Invalid CRSF token
     ]);
     exit();
 }

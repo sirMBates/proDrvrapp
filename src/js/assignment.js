@@ -32,28 +32,29 @@ let lastAssignmentsUpdate = 0;
 function updateButtonStates(assignment) {
     if (!assignment) return;
 
-    const isConfirmed = assignment.confirmed_assignment?.toLowerCase() === 'confirmed';
-    const isCanceled =
-        assignment.confirmed_assignment?.toLowerCase() === 'canceled' ||
-        assignment.confirmed_assignment?.toLowerCase() === 'unconfirmed';
+    const status = String(assignment.assignment_status ?? 'pending').toLowerCase();
 
-    if (isConfirmed) {
+    if (status === 'confirmed') {
         $(confirmBtn).prop('disabled', true);
         $(cancelBtn).prop('disabled', true);
         $(saveBtn).prop('disabled', false);
         $(completeBtn).prop('disabled', false);
-    } else if (isCanceled) {
+        return;
+    } 
+    
+    if (status === 'pending') {
         $(confirmBtn).prop('disabled', false);
         $(cancelBtn).prop('disabled', false);
         $(saveBtn).prop('disabled', true);
         $(completeBtn).prop('disabled', true);
-    } else {
-        // fallback — unknown state
-        $(confirmBtn).prop('disabled', false);
-        $(cancelBtn).prop('disabled', false);
-        $(saveBtn).prop('disabled', true);
-        $(completeBtn).prop('disabled', true);
+        return;
     }
+
+    // fallback — unknown state
+    $(confirmBtn).prop('disabled', true);
+    $(cancelBtn).prop('disabled', true);
+    $(saveBtn).prop('disabled', true);
+    $(completeBtn).prop('disabled', true);
 };
 
 // --- Broadcast Helper (BC + Storage Fallback) ---
@@ -1258,7 +1259,7 @@ function updateStoredPayrollDataIfPresent(assignment) {
 function restoreButtonStateFromStorage() {
     try {
         const storedAssignments = JSON.parse(localStorage.getItem('assignments') || '[]');
-        const savedIndex = parseInt(sessionStorage.getItem('lastAssignmentIndex') || '0', 10);
+        const savedIndex = Number.parseInt(sessionStorage.getItem('lastAssignmentIndex') || '0', 10);
         const current = storedAssignments[savedIndex] || storedAssignments[0];
 
         if (!current) {
@@ -1270,25 +1271,27 @@ function restoreButtonStateFromStorage() {
         updateButtonStates(current);
 
         // Debug log: detailed visual breakdown
-        const isConfirmed = current.confirmed_assignment?.toLowerCase() === 'confirmed';
-        const isCanceled = ['unconfirmed', 'canceled'].includes(current.confirmed_assignment?.toLowerCase());
+        const status = String(current.assignment_status ?? 'pending').toLowerCase();
+        const isPending = status === 'pending';
+        const isConfirmed = status === 'confirmed';
+        const isCanceled = status === 'canceled';
+        const isCompleted = status === 'completed';
 
         console.groupCollapsed('%c[STATE RESTORE]', 'color: #0aa; font-weight: bold;');
+        console.log('Assignment control:', current.assignment_control || '(none)');
         console.log('Current assignment ID:', current.order_id || '(none)');
-        console.log('Confirmed Assignment Value:', current.confirmed_assignment);
+        console.log('Assignment status:', status);
         console.log('Driver ID:', current.driver_id);
         console.log('Vehicle ID:', current.vehicle_id);
-        console.log('Status flags:', { isConfirmed, isCanceled });
-
+        console.log('Status flags:', { isPending, isConfirmed, isCanceled, isCompleted });
         console.log('🔘 Button states applied:');
         console.log('Confirm button:', $(confirmBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.log('Cancel button:', $(cancelBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.log('Save button:', $(saveBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.log('Complete button:', $(completeBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.groupEnd();
-
-    } catch (err) {
-        console.error('[STATE] Failed to restore button logic:', err);
+    } catch (error) {
+        console.error('[STATE] Failed to restore button logic:', error);
     }
 };
 
@@ -1359,7 +1362,8 @@ function submitAssignment(options) {
 
         // Add action-specific flag and identifiers
         if (flagName && flagValue) appendHiddenFields(form, { [flagName]: flagValue });
-        const identifiers = { 
+        const identifiers = {
+            assignment_control: assignment.assignment_control, 
             order_id: assignment.order_id,
             order_ref: assignment.order_ref, 
             driver_id: assignment.driver_id,
@@ -1436,16 +1440,13 @@ function submitAssignment(options) {
 confirmBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const assignment = getCurrentAssignment();
-    const btnName = confirmBtn.name;
     if (!assignment) return;
 
     try {
         const formData = new FormData();
-        formData.append(btnName, true);
-        formData.append('confirmed_assignment', 'confirmed');
+        formData.append('assignment_control', assignment['assignment_control']);
         formData.append('order_id', assignment['order_id']);
-        formData.append('vehicle_id', assignment['vehicle_id']);
-        formData.append('driver_id', assignment['driver_id']);
+        formData.append('confirm', '1');
         formData.append('__method', 'PATCH');
         const result = await handleAssignmentFetch({
             method: 'POST',
@@ -1462,7 +1463,6 @@ confirmBtn.addEventListener('click', async (e) => {
             const confirmedOrderId =
             assignment.order_id;
 
-            assignment.confirmed_assignment = 'confirmed';
             await refreshAssignmentsFromServer(confirmedOrderId);
             broadcastAssignmentsUpdate(assignments);
 
@@ -1482,7 +1482,6 @@ confirmBtn.addEventListener('click', async (e) => {
 cancelBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const assignment = getCurrentAssignment();
-    const btnName = cancelBtn.name;
     if (!assignment) {
         console.warn('No assignment selected yet.');
         return;
@@ -1490,10 +1489,9 @@ cancelBtn.addEventListener('click', async (e) => {
 
     try {
         const formData = new FormData();
-        formData.append(btnName, true);
+        formData.append('assignment_control', assignment['assignment_control']);
         formData.append('order_id', assignment['order_id']);
-        formData.append('vehicle_id', assignment['vehicle_id']);
-        formData.append('driver_id', assignment['driver_id']);
+        formData.append('cancel', '1');
         formData.append('__method', 'PATCH');
         const options = {
         //const result = await cancelAssignment("https://prodriver.local/assignmenthandler.php", {
