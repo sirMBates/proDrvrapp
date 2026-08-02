@@ -1,25 +1,31 @@
 <?php
 
-header("Content-Type: application/json");
-//header("Access-Control-Allow-Origin: *");
+declare(strict_types=1);
 
 class GetWorkContr extends WorkAssignments {
-    public function workInformation() {
+    public function workInformation(): void {
         try {
-            $jobAssignment = new WorkAssignments();
-            $operator = (int) $_SESSION['driver_id'];
-            $assignments = $jobAssignment->driverWorkAssignments($operator);
+            $driverId = (int) ($_SESSION['driver_id'] ?? 0);
+            if ($driverId < 1) {
+                http_response_code(401);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Driver session is unavailable.'
+                ]);
+                exit();
+            }
+            $assignments = $this->driverWorkAssignments($driverId);
             //dd($assignments);
             echo json_encode([
                 'status' => 'success',
                 'data' => $assignments
             ]);
             exit();
-        } catch (Exception $e) {
-            http_response_code(404);
+        } catch (\Throwable $exception) {
+            http_response_code(500);
             echo json_encode([
                 'status' => 'error',
-                'message' => 'There was a problem: ' . $e->getMessage() 
+                'message' => 'Assignments could not be retrieved.' 
             ]);
             exit();
         }

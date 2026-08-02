@@ -56,15 +56,14 @@ class UpdateAssignment {
             $fetchSql = "SELECT order_id, assignment_control, order_ref, driver_id, vehicle_id, 
                         assignment_status, completed_at, canceled_at
                         FROM work_orders
-                        WHERE driver_id = :driver_id AND order_id = :order_id AND vehicle_id = :vehicle_id
+                        WHERE driver_id = :driver_id AND order_id = :order_id
                         LIMIT 1 FOR UPDATE";
 
             $fetchStmt = $pdo->prepare($fetchSql);
 
             $fetchStmt->execute([
                 ':driver_id' => $driverId,
-                ':order_id' => $orderId,
-                ':vehicle_id' => $vehicleId
+                ':order_id' => $orderId
             ]);
 
             $assignment = $fetchStmt->fetch();
@@ -101,7 +100,7 @@ class UpdateAssignment {
             $updateSql = "UPDATE work_orders
                         SET assignment_status = 'canceled', canceled_at = NOW(), canceled_by = :canceled_by,
                         canceled_by_role = 'driver', cancel_reason = :cancel_reason
-                        WHERE order_id = :order_id AND driver_id = :driver_id AND vehicle_id = :vehicle_id AND completed_at IS NULL AND canceled_at IS NULL";
+                        WHERE order_id = :order_id AND driver_id = :driver_id AND completed_at IS NULL AND canceled_at IS NULL";
 
             $updateStmt = $pdo->prepare($updateSql);
 
@@ -109,8 +108,7 @@ class UpdateAssignment {
                 ':canceled_by' => $driverId,
                 ':cancel_reason' => $reason,
                 ':order_id' => $orderId,
-                ':driver_id' => $driverId,
-                ':vehicle_id' => $vehicleId
+                ':driver_id' => $driverId
             ]);
 
             if ($updateStmt->rowCount() !== 1) {
@@ -125,7 +123,7 @@ class UpdateAssignment {
 
             $historyStmt = $pdo->prepare($historySql);
 
-            $historyStmt->execute([
+            $historySaved = $historyStmt->execute([
                 ':order_id' => $assignment['order_id'],
                 ':assignment_control' => $assignment['assignment_control'],
                 ':order_ref' => $assignment['order_ref'],
@@ -135,6 +133,10 @@ class UpdateAssignment {
                 ':performed_by' => $driverId,
                 ':reason' => $reason
             ]);
+
+            if (!$historySaved || $historyStmt->rowCount() !== 1) {
+                throw new \RuntimeException('The assignment cancellation history was not saved.');
+            }
 
             $pdo->commit();
 
@@ -150,6 +152,9 @@ class UpdateAssignment {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
+
+            $logger = new core\Logger('D:/webapps/logs/error.log');
+            $logger->error('[ASSIGNMENT CANCEL ERROR] order_id=' . $orderId . ', driver_id=' . $driverId . ', exception=' . get_class($exception) . ', message=' . $exception->getMessage());
 
             return [
                 'status' => 'error',
