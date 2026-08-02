@@ -3,67 +3,74 @@
 use core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
-use Dotenv\Dotenv;
 use core\Flash;
 use core\Logger;
-require_once __DIR__ . "/../../vendor/autoload.php";
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
-$dotenv->load();
 
 class UpdateAssignment {
-    protected function confirmAssignment ($driverId, $orderId, $vehicleId, $assignmentStatus) {
+    protected function confirmAssignment (string $assignContl, int $orderId, int $driverId): array {
         $db = new Database();
         $pdo = $db->connect();
+        $confirmedAt = date('Y-m-d H:i:s');
+
         $sql = "UPDATE work_orders
-                SET confirmed_assignment = :confirmed_assignment, confirmed_at = :confirmed_at
-                WHERE driver_id = :driver_id AND order_id = :order_id AND vehicle_id = :vehicle_id
+                SET assignment_status = 'confirmed', confirmed_at = :confirmed_at 
+                WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id AND assignment_status = 'pending' AND completed_at IS NULL AND canceled_at IS NULL
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $confirmedAt = date('Y-m-d H:i:s');
-        $stmt->bindParam(':driver_id', $driverId);
-        $stmt->bindParam(':order_id', $orderId);
-        $stmt->bindParam(':vehicle_id', $vehicleId);
-        $stmt->bindParam(':confirmed_assignment', $assignmentStatus);
-        $stmt->bindParam(':confirmed_at', $confirmedAt);
-        $stmt->execute();
+        
+        $success = $stmt->execute([
+            ':confirmed_at' => $confirmedAt,
+            ':assignment_control' => $assignContl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ]);
 
-        if (!$stmt || $stmt->rowCount() === 0) {
+        if (!$success) {
             return [
                 'status' => 'error',
-                'message' => 'There was a glitch in the matrix! Please try your request again.'
+                'message' => 'The assignment could not be confirmed. Please try again.'
+            ];
+        }
+
+        if ($stmt->rowCount() !== 1) {
+            return [
+                'status' => 'error',
+                'message' => 'The assignment is unavailable or has already been processed.'
             ];
         }
 
         return [
             'status' => 'success',
-            'message' => 'Assignment confirmation updated.',
+            'message' => 'Assignment successfully confirmed.',
             'data' => [
-                'driver_id' => $driverId,
+                'assignment_control' => $assignContl,
                 'order_id' => $orderId,
-                'vehicle_id' => $vehicleId,
-                'confirmed_assignment' => $assignmentStatus
+                'driver_id' => $driverId,
+                'assignment_status' => 'confirmed',
+                'confirmed_at' => $confirmedAt
             ]
         ];
     }
 
-    protected function cancelAssignment(int $driverId, int $orderId, string $vehicleId, ?string $reason = null): array {
+    protected function cancelAssignment(string $assignContl, int $orderId, int $driverId, ?string $reason = null): array {
         $db = new Database();
         $pdo = $db->connect();
 
         try {
             $pdo->beginTransaction();
 
-            $fetchSql = "SELECT order_id, assignment_control, order_ref, driver_id, vehicle_id, 
+            $fetchSql = "SELECT order_id, assignment_control, order_ref, driver_id, vehicle_id,
                         assignment_status, completed_at, canceled_at
                         FROM work_orders
-                        WHERE driver_id = :driver_id AND order_id = :order_id
+                        WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id
                         LIMIT 1 FOR UPDATE";
 
             $fetchStmt = $pdo->prepare($fetchSql);
 
             $fetchStmt->execute([
-                ':driver_id' => $driverId,
-                ':order_id' => $orderId
+                ':assignment_control' => $assignContl,
+                ':order_id' => $orderId,
+                ':driver_id' => $driverId
             ]);
 
             $assignment = $fetchStmt->fetch();
@@ -95,23 +102,32 @@ class UpdateAssignment {
                 ];
             }
 
-            $previousStatus = $assignment['assignment_status'] ?? 'pending';
+            if ($assignment['assignment_status'] !== 'pending') {
+                $pdo->rollBack();
+                return [
+                    'status' => 'error',
+                    'message' => 'Only a pending assignment can be canceled.'
+                ];
+            }
+
+            $previousStatus = $assignment['assignment_status'];
 
             $updateSql = "UPDATE work_orders
                         SET assignment_status = 'canceled', canceled_at = NOW(), canceled_by = :canceled_by,
                         canceled_by_role = 'driver', cancel_reason = :cancel_reason
-                        WHERE order_id = :order_id AND driver_id = :driver_id AND completed_at IS NULL AND canceled_at IS NULL";
+                        WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id AND assignment_status = 'pending' AND completed_at IS NULL AND canceled_at IS NULL";
 
             $updateStmt = $pdo->prepare($updateSql);
 
-            $updateStmt->execute([
+            $updateSaved = $updateStmt->execute([
                 ':canceled_by' => $driverId,
                 ':cancel_reason' => $reason,
+                ':assignment_control' => $assignContl,
                 ':order_id' => $orderId,
                 ':driver_id' => $driverId
             ]);
 
-            if ($updateStmt->rowCount() !== 1) {
+            if (!$updateSaved || $updateStmt->rowCount() !== 1) {
                 throw new \RuntimeException(
                     'Expected one assignment to be canceled.'
                 );
@@ -144,7 +160,9 @@ class UpdateAssignment {
                 'status' => 'success',
                 'message' => 'Assignment successfully canceled.',
                 'data' => [
+                    'assignment_control' => $assignContl,
                     'order_id' => $orderId,
+                    'driver_id' => $driverId,
                     'assignment_status' => 'canceled'
                 ]
             ];
@@ -154,7 +172,7 @@ class UpdateAssignment {
             }
 
             $logger = new core\Logger('D:/webapps/logs/error.log');
-            $logger->error('[ASSIGNMENT CANCEL ERROR] order_id=' . $orderId . ', driver_id=' . $driverId . ', exception=' . get_class($exception) . ', message=' . $exception->getMessage());
+            $logger->error('[ASSIGNMENT CANCEL ERROR] assignment_control=' . $assignContl . ', order_id=' . $orderId . ', driver_id=' . $driverId . ', exception=' . get_class($exception) . ', message=' . $exception->getMessage());
 
             return [
                 'status' => 'error',
@@ -171,10 +189,12 @@ class UpdateAssignment {
         // Get customer/origin from the assignment itself
         $sql = "SELECT customer_name, origin
                 FROM work_orders
-                WHERE order_id = :order_id AND driver_id = :driver_id LIMIT 1";
+                WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id 
+                LIMIT 1";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
+            ':assignment_control' => $data['assignment_control'],
             ':order_id' => $data['order_id'],
             ':driver_id' => $data['driver_id']
         ]);
@@ -290,6 +310,7 @@ class UpdateAssignment {
             ':driving_time' => $data['driving_time'],
             ':pickup_details' => $data['pickup_details'],
             ':destination_details' => $data['destination_details'],
+            ':assignment_control' => $data['assignment_control'],
             ':order_id' => $data['order_id'],
             ':driver_id' => $data['driver_id']
         ];
@@ -314,9 +335,14 @@ class UpdateAssignment {
         }
 
         $sql = sprintf(
-            'UPDATE work_orders
+            "UPDATE work_orders
             SET %s
-            WHERE order_id = :order_id AND driver_id = :driver_id',
+            WHERE assignment_control = :assignment_control
+            AND order_id = :order_id 
+            AND driver_id = :driver_id
+            AND assignment_status = 'confirmed'
+            AND completed_at IS NULL
+            AND canceled_at IS NULL",
             implode(', ', $setClauses)
         );
 
@@ -337,26 +363,27 @@ class UpdateAssignment {
         $stmt->bindValue(':pickup_details', $data['pickup_details']);
         $stmt->bindValue(':destination_details', $data['destination_details']);
         $stmt->bindValue(':signature_status', $data['signature_status'] ?? null);
+        $stmt->bindValue(':assignment_control', $data['assignment_control'] ?? null);
         $stmt->bindValue(':order_id', $data['order_id']);
         $stmt->bindValue(':driver_id', $data['driver_id']);*/
 
         //$success = $stmt->execute();
         $success = $stmt->execute($parameters);
 
-        if (!$success) {
-            $alert::setMsg('error', 'Assignment update failed! Please try again.');
-            //header("Location: /assignments?error=update_failed&order_id=" . urlencode($data['order_id']));
+        if (!$success || $stmt->rowCount() !== 1) {
+            $alert::setMsg('error', 'The assignment could not be updated. It may no longer be available.');
             header("Location: /assignments?error=update_failed&order_id=" . urlencode((string) $data['order_id']));
             exit();
         }
 
         $this->saveSharedJobNote($pdo, $data);
-        $identitySql = "SELECT order_id, order_ref
+        $identitySql = "SELECT assignment_control, order_id, order_ref
                         FROM work_orders
-                        WHERE order_id = :order_id AND driver_id = :driver_id
+                        WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id
                         LIMIT 1";
         $identityStmt = $pdo->prepare($identitySql);
         $identityStmt->execute([
+            ':assignment_control' => $data['assignment_control'],
             ':order_id' => $data['order_id'],
             ':driver_id' => $data['driver_id']
         ]);
@@ -365,12 +392,14 @@ class UpdateAssignment {
         if (!$updatedIdentity) {
             $alert::setMsg('warning', 'Assignment updated, but its identity could not be retrieved.');
             return [
+                'assignment_control' => $data['assignment_control'],
                 'order_id' => $data['order_id'],
                 'order_ref' => ''
             ];
         }
         
         return [
+            'assignment_control' => $updatedIdentity['assignment_control'],
             'order_id' => $updatedIdentity['order_id'],
             'order_ref' => $updatedIdentity['order_ref']
         ];
@@ -386,11 +415,12 @@ class UpdateAssignment {
         $sql = "SELECT wo.*, d.first_name, d.last_name 
                 FROM work_orders wo
                 INNER JOIN drivers d ON d.driver_id = wo.driver_id
-                WHERE wo.order_id = :order_id AND wo.driver_id = :driver_id
+                WHERE wo.assignment_control = :assignment_control AND wo.order_id = :order_id AND wo.driver_id = :driver_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
         try {
             $stmt->execute([
+                ':assignment_control' => $data['assignment_control'],
                 ':order_id' => $data['order_id'],
                 ':driver_id' => $data['driver_id']
             ]);
@@ -412,6 +442,23 @@ class UpdateAssignment {
 
         $devLogger->info('[COMPLETE ASSIGNMENT FETCHED] ' . 'order_id=' . ($current['order_id'] ?? 'missing') . ', driver_id=' . ($current['driver_id'] ?? 'missing') . ', signature_required=' . ($current['signature_required'] ?? 'missing') . ', signature_status=' . ($current['signature_status'] ?? 'missing') . ', completed_at=' . ($current['completed_at'] ?? 'NULL') . ', mark_completed=' . ($markCompleted ? 'true' : 'false'));
 
+        if (!empty($current['completed_at']) || ($current['assignment_status'] ?? '') === 'completed') {
+            $devLogger->info('[COMPLETE ASSIGNMENT] Assignment was already completed. ' . 'order_id=' . $current['order_id'] . ', completed_at=' . ($current['completed_at'] ?? 'missing'));
+            return $current;
+        }
+
+        if (!empty($current['canceled_at']) || ($current['assignment_status'] ?? '') === 'canceled') {
+            $alert::setMsg('error', 'A canceled assignment cannot be completed.');
+            header('Location: /assignments?error=assignment+canceled&order_id=' . urlencode((string) $data['order_id']));
+            exit();
+        }
+
+        if (($current['assignment_status'] ?? '') !== 'confirmed') {
+            $alert::setMsg('error', 'The assignment must be confirmed before it can be completed.');
+            header('Location: /assignments?error=assignment+not+confirmed&order_id=' . urlencode((string) $data['order_id']));
+            exit();
+        }
+
         // Mark as completed only if requested
         if (!$markCompleted) {
             return $current;
@@ -424,21 +471,18 @@ class UpdateAssignment {
             exit();
         }
 
-        if (!empty($current['completed_at'])) {
-            $devLogger->info('[COMPLETE ASSIGNMENT] Assignment was already completed. ' . 'order_id=' . $current['order_id'] . ', completed_at=' . $current['completed_at']);
-            return $current;
-        }
-
         $completedAt = date('Y-m-d H:i:s');
 
         $sqlUpdate = "UPDATE work_orders 
-                    SET completed_at = :completed_at
-                    WHERE order_id = :order_id AND driver_id = :driver_id";
+                    SET assignment_status = 'completed', completed_at = :completed_at
+                    WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id
+                    AND assignment_status = 'confirmed' AND canceled_at IS NULL AND completed_at IS NULL";
         $stmtUpdate = $pdo->prepare($sqlUpdate);
 
         try {
             $updateExecuted = $stmtUpdate->execute([
                 ':completed_at' => $completedAt,
+                ':assignment_control' => $data['assignment_control'],
                 ':order_id' => $data['order_id'],
                 ':driver_id' => $data['driver_id']
             ]);
@@ -454,23 +498,26 @@ class UpdateAssignment {
                 exit();
             }
 
-            $verifySql = "SELECT completed_at FROM work_orders
-                        WHERE order_id = :order_id AND driver_id = :driver_id
+            $verifySql = "SELECT assignment_status, completed_at FROM work_orders
+                        WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id
                         Limit 1";
 
             $verifyStmt = $pdo->prepare($verifySql);
             $verifyStmt->execute([
+                ':assignment_control' => $data['assignment_control'],
                 ':order_id' => $data['order_id'],
                 ':driver_id' => $data['driver_id']
             ]);
 
-            $saveCompletedAt = $verifyStmt->fetchColumn();
-            if (empty($saveCompletedAt)) {
-                $devLogger->error('[COMPLETE ASSIGNMENT VERIFY ERROR] ' . 'completed_at remained empty. ' . 'order_id=' . $data['order_id'] . ', driver_id=' . $data['driver_id']);
+            $verifiedAssignment = $verifyStmt->fetch();
+            if (!$verifiedAssignment || $verifiedAssignment['assignment_status'] !== 'completed' || empty($verifiedAssignment['completed_at'])) {
+                $devLogger->error('[COMPLETE ASSIGNMENT VERIFY ERROR] Completion state was not saved correctly. ' . 'order_id=' . $data['order_id'] . ', driver_id=' . $data['driver_id']);
                 $alert::setMsg('error', 'The assignment could not be confirmed as completed.');
                 header("Location: /assignments?error=completion+not+saved&order_id=" . urlencode((string) $data['order_id']));
                 exit();
             }
+
+            $saveCompletedAt = $verifiedAssignment['completed_at'];
         } catch (\PDOException $exception) {
             $devLogger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] ' . $exception->getMessage());
             $alert::setMsg('error', 'Could not complete the assignment. Please try again.');
@@ -478,6 +525,7 @@ class UpdateAssignment {
             exit();
         }
 
+        $current['assignment_status'] = 'completed';
         $current['completed_at'] = $saveCompletedAt;
         $devLogger->info('[COMPLETE ASSIGNMENT SUCCESS] ' . 'order_id=' . $current['order_id'] . ', driver_id=' . $current['driver_id'] . ', completed_at=' . $saveCompletedAt);
         return $current;
@@ -496,11 +544,13 @@ class UpdateAssignment {
         $sql = "SELECT wo.*, d.first_name, d.last_name 
                 FROM work_orders wo
                 INNER JOIN drivers d ON d.driver_id = wo.driver_id
-                WHERE wo.order_id = :order_id
+                WHERE wo.assignment_control = :assignment_control
+                AND wo.order_id = :order_id
                 AND wo.driver_id = :driver_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
+            ':assignment_control' => $data['assignment_control'],
             ':order_id' => $data['order_id'],
             ':driver_id' => $data['driver_id']
         ]);
