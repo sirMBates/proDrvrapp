@@ -4,11 +4,6 @@ use core\Database;
 use core\Flash;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
-use Dotenv\Dotenv;
-require_once base_path("vendor/autoload.php");
-require_once "../vendor/autoload.php";
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../../', '.local.env');
-$dotenv->load();
 
 class RegistrationInformation {
     protected function addDriverDetails($newCompanyId, $firstname, $lastname, $mobileNum, $birthdate, $username) {
