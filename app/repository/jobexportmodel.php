@@ -2,7 +2,6 @@
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use core\Logger;
-require_once __DIR__ . "/../../vendor/autoload.php";
 
 class AssignmentExporter {
     protected string $filePath;
