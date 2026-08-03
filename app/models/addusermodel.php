@@ -2,8 +2,6 @@
 
 use core\Database;
 use core\Flash;
-require_once base_path("vendor/autoload.php");
-// require_once "../vendor/autoload.php";
 
 class AddedDrvr {
     protected function setDriver($username, $email, $password) {
