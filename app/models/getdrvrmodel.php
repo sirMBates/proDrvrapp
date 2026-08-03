@@ -4,7 +4,6 @@ use core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 
-
 class GetDriver {
     protected function retrieveDriver($drvrid) {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
