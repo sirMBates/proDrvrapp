@@ -1,11 +1,11 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { fetchDrvr, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
-const drvrBirthDate = document.querySelector('#drvrbday').value;
+const drvrBirthDate = document.querySelector('#drvrbday')?.value ?? '';
 const mainContent = document.querySelector('main');
 const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
-const drvrToken = document.querySelector('#drvrToken').value;
+const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
 const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const dashboardStatusBtns = document.querySelector('#update-status-con');
@@ -23,34 +23,67 @@ function resetDailyFlags () {
 };
 resetDailyFlags();
 
+function showNoDashboardAssignments() {
+    const tableBody = document.querySelector('#dashboard-info tbody');
+    if (!tableBody) return;
+
+    tableBody.replaceChildren();
+    const emptyRow = document.createElement('tr');
+    const emptyCell = document.createElement('td');
+    emptyCell.colSpan = 6;
+    emptyCell.className = 'text-center text-muted py-4';
+
+    const heading = document.createElement('strong');
+    heading.className = 'd-block mb-1';
+    heading.textContent = 'No Active Assignment(s)';
+
+    const message = document.createElement('span');
+    message.textContent = 'You’re all caught up! New assignment(s) from dispatch will appear here automatically.';
+    emptyCell.append(heading, message);
+
+    emptyRow.appendChild(emptyCell);
+    tableBody.appendChild(emptyRow);
+
+    localStorage.setItem('assignments', JSON.stringify([]));
+};
+
 // --- Centralized Table Render Helper ---
 function renderHomeTable(assignments, fromSync = false) {
-  const tableBody = document.querySelector('#dashboard-info tbody');
-  tableBody.innerHTML = '';
+        const tableBody = document.querySelector('#dashboard-info tbody');
+        if (!tableBody) return;
 
-  // Filter out completed assignments
-  const activeAssignments = assignments.filter(a => !a.completed_at && !a.completed);
-  if (activeAssignments.length === 0) {
-        // Show a placeholder row when no assignments
-        const emptyRow = document.createElement('tr');
-        emptyRow.innerHTML = `<td colspan="6" class="text-center text-muted">No assignments available</td>`;
-        tableBody.appendChild(emptyRow);
-  } else {
-        activeAssignments.forEach(a => {
+        const activeAssignments = Array.isArray(assignments) ? assignments.filter(assignment => !assignment.completed_at && !assignment.canceled_at && assignment.assignment_status !== 'completed' && assignment.assignment_status !== 'canceled') : [];
+
+        if (activeAssignments.length === 0) {
+                showNoDashboardAssignments();
+
+                if (fromSync) {
+                        showFlashAlert('info', 'No active assignment(s) available.');
+                }
+
+                lastAssignmentsUpdate = Date.now();
+                return;
+        }
+
+        tableBody.replaceChildren();
+        activeAssignments.forEach(assignment => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                        <td>${a.first_name} ${a.last_name}</td>
-                        <td>${a.operator_id}</td>
-                        <td>${dtHelper(a.start_date_time, 'date')}</td>
-                        <td>${dtHelper(a.start_date_time, 'time')}</td>
-                        <td>${dtHelper('1970-01-01 ' + a.spot_time, 'time')}</td>
-                        <td class="text-capitalize">${a.confirmed_assignment}</td>`;
+                        <td>${assignment.first_name ?? ''} ${assignment.last_name ?? ''}</td>
+                        <td>${assignment.operator_id ?? ''}</td>
+                        <td>${dtHelper(assignment.start_date_time, 'date')}</td>
+                        <td>${dtHelper(assignment.start_date_time, 'time')}</td>
+                        <td>${dtHelper(assignment.spot_time, 'time')}</td>
+                        <td class="text-capitalize">${assignment.assignment_status ?? 'pending'}</td>
+                `;
                 tableBody.appendChild(row);
         });
-  }
 
-  if (fromSync) showFlashAlert('info', 'Assignments updated!');
-  lastAssignmentsUpdate = Date.now();
+        if (fromSync) {
+                showFlashAlert('info', 'Assignments updated!');
+        }
+
+        lastAssignmentsUpdate = Date.now();
 };
 
 // --- BroadcastChannel + Fallback Setup ---
@@ -71,8 +104,9 @@ try {
                                 }
                         });
                         if (fresh?.status === 'success') {
-                                localStorage.setItem('assignments', JSON.stringify(fresh.data));
-                                renderHomeTable(fresh.data, true);
+                                const activeAssignments = fresh.data.filter(a => !a.completed_at && !a.canceled_at);
+                                localStorage.setItem('assignments', JSON.stringify(activeAssignments));
+                                renderHomeTable(activeAssignments, true);
                         }
                 }
         };
@@ -93,7 +127,7 @@ if (!bcSupported) {
                         }
                 }
         });
-}
+};
 
 window.addEventListener('DOMContentLoaded', () => {
         const storedAssignments = localStorage.getItem("assignments");
@@ -123,51 +157,19 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
         })
         .then(data => {
-                if (data.status === 'success' && data.data.length > 0) {
-                        localStorage.setItem('assignments', JSON.stringify(data.data));
-                        renderHomeTable(data.data);
+                if (data?.status === 'success' && Array.isArray(data.data)) {
+                        const activeAssignments = data.data.filter(a => !a.completed_at && !a.canceled_at);
+                        localStorage.setItem('assignments', JSON.stringify(activeAssignments));
+                        renderHomeTable(activeAssignments);
                         handleBirthdayTheme();
-                        if (data.data[0]?.driver_id) {
-                                localStorage.setItem('driver_id', data.data[0].driver_id);
-                                console.log('[Auth] Driver ID cached from assignments:', data.data[0].driver_id)
-                        }
-                } else {
-                         // Fallback: load profile if no assignments
-                        return getDriver("https://prodriver.local/getprofile", {
-                                method: 'GET',
-                                mode: 'cors',
-                                credentials: 'include',
-                                cache: 'no-store',
-                                headers: {
-                                        'X-CSRF-Token': drvrToken
-                                }
-                        });
+                        return;
                 }
-        })
-        .then(profile => {
-                if (profile) {
-                        const drvrMainTable = document.querySelector('#dashboard-info');
-                        const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
-                        const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
-                        const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
-                        const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
-                        const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
-
-                        fullname.textContent = `${profile['firstName']} ${profile['lastName']}`;
-                        drvrId.textContent = profile['operatorid'];
-                        reportDate.textContent = 'No assignment available...';
-                        reportTime.textContent = 'No assignment available...';
-                        spotTime.textContent = 'No assignment available...';
-                        handleBirthdayTheme();
-                        if (profile.driverId) {
-                                const id = profile['driverId'];
-                                localStorage.setItem('driver_id', id);
-                                console.log('[Auth] Driver ID cached from profile fallback:', id);
-                        }
-                }
+                showNoDashboardAssignments();
+                handleBirthdayTheme();
         })
         .catch(error => {
                 console.error('Fetch operation failed:', error);
+                showFlashAlert('error', 'The dashboard could not be refreshed.');
         });
 });
 
@@ -187,41 +189,16 @@ document.addEventListener('visibilitychange', async () => {
             headers: { 'X-CSRF-Token': drvrToken }
         });
 
-        if (fresh?.status === 'success' && fresh.data.length > 0) {
-            localStorage.setItem('assignments', JSON.stringify(fresh.data));
-            renderHomeTable(fresh.data, true);
-            showFlashAlert('info', 'Assignments refreshed.');
-            //console.log('[SYNC] Dashboard refreshed with new assignments.');
-        } else {
-            // No assignments? Then refresh profile instead
-            const profile = await getDriver("https://prodriver.local/getprofile", {
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                cache: 'no-store',
-                headers: { 'X-CSRF-Token': drvrToken }
-            });
-
-            if (profile) {
-                const drvrMainTable = document.querySelector('#dashboard-info');
-                const fullname = drvrMainTable.childNodes[3].childNodes[1].childNodes[1];
-                const drvrId = drvrMainTable.childNodes[3].childNodes[1].childNodes[3];
-                const reportDate = drvrMainTable.childNodes[3].childNodes[1].childNodes[5];
-                const reportTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[7];
-                const spotTime = drvrMainTable.childNodes[3].childNodes[1].childNodes[9];
-
-                fullname.textContent = `${profile['firstName']} ${profile['lastName']}`;
-                drvrId.textContent = profile['operatorid'];
-                reportDate.textContent = 'No assignment available...';
-                reportTime.textContent = 'No assignment available...';
-                spotTime.textContent = 'No assignment available...';
-                handleBirthdayTheme();
-                showFlashAlert('info', 'Profile refreshed.');
-                //console.log('[SYNC] Dashboard refreshed with profile fallback.');
-            }
+        if (fresh?.status === 'success' && Array.isArray(fresh.data)) {
+                const activeAssignments = fresh.data.filter(a => !a.completed_at && !a.canceled_at);
+                localStorage.setItem('assignments', JSON.stringify(activeAssignments));
+                renderHomeTable(activeAssignments, true);
+                return;            
         }
-    } catch (err) {
-        //console.error('[SYNC] Failed to refresh on tab focus:', err);
+        showNoDashboardAssignments();
+        showFlashAlert('error', 'Unable to retrieve assignments.');
+    } catch (error) {
+        console.error('[SYNC] Failed to refresh dashboard:', error);
         showFlashAlert('error', 'Failed to refresh dashboard.');
     }
 });
@@ -249,7 +226,7 @@ function handleBirthdayTheme() {
         };
 };
 
-function birthdayCelebrationHandler() {
+function startBirthdayCelebration() {
         const drvrBDay = localStorage.getItem('birthdate');
         if (!drvrBDay) return; 
         const birthDate = new Date(drvrBDay);
@@ -277,7 +254,7 @@ function birthdayCelebrationHandler() {
         }
 };
 
-birthdayThemeBtn.addEventListener('click', birthdayCelebrationHandler, false);
+birthdayThemeBtn?.addEventListener('click', startBirthdayCelebration, false);
 
 function removeDrvrGov() {
         const currentDate = dtHelper(new Date(), 'date');
