@@ -34,7 +34,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
             http_response_code(400);
             return [
                 'status' => 'error',
-                'message' => 'Please check your assignment order id.'
+                'message' => 'Please check your assignment id.'
             ];
         }
 
@@ -70,7 +70,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
             http_response_code(400);
             return [
                 'status' => 'error',
-                'message' => 'Please check your assignment order id.'
+                'message' => 'Please check your assignment id.'
             ];
         }
 
@@ -88,8 +88,8 @@ class UpdateAssignmentContr extends UpdateAssignment {
     private function isInfoMissing(): bool {
         $checkInfo = [
             $this->assignmentControl,
-            $this->driverId, 
             $this->orderId, 
+            $this->driverId 
         ];
 
         foreach($checkInfo as $value) {
