@@ -5,8 +5,9 @@ use core\Storage;
 use core\Logger;
 
 class UpdateAssignmentDetailsContr extends UpdateAssignment {
-    private $driverId;
+    private $assignmentControl;
     private $orderId;
+    private $driverId;
     private $vehicleId;
     private $actualDropTime;
     private $actualEndTime;
@@ -22,8 +23,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private Storage $storage;
 
     public function __construct(array $data, Storage $storage) {
-        $this->driverId = $data['driver_id'] ?? null;
+        $this->assignmentControl = $data['assignment_control'] ?? null;
         $this->orderId = $data['order_id'] ?? null;
+        $this->driverId = $data['driver_id'] ?? null;
         $this->vehicleId = $data['vehicle_id'] ?? null;
         $this->actualDropTime = $data['actual_drop_time'] ?? null;
         $this->actualEndTime = $data['actual_end_time'] ?? null;
@@ -88,8 +90,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         }
 
         $updateData = [
-            'driver_id' => $this->driverId,
+            'assignment_control' => $this->assignmentControl,
             'order_id' => $this->orderId,
+            'driver_id' => $this->driverId,
             'vehicle_id' => $this->vehicleId,
             'actual_drop_time' => $this->actualDropTime,
             'actual_end_time' => $this->actualEndTime,
@@ -127,8 +130,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
 
         // Basic required fields
         $requiredFields = [
-            'driver_id',
+            'assignment_control',
             'order_id',
+            'driver_id',
             'vehicle_id',
             'actual_drop_time',
             'actual_end_time',
@@ -205,8 +209,9 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
 
     private function isMissingInfo(): bool {
         $requiredFields = [
-            $this->driverId,
+            $this->assignmentControl,
             $this->orderId,
+            $this->driverId,
             $this->vehicleId,
             $this->actualDropTime,
             $this->actualEndTime,

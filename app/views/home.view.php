@@ -16,6 +16,7 @@ include "partials/custom-modal.php";
                                         <tr>
                                                 <th scope="col">operator name</th>
                                                 <th scope="col">operator id</th>
+                                                <th scope="col">order id</th>
                                                 <th scope="col">garage report date</th>
                                                 <th scope="col">garage report time</th>
                                                 <th scope="col">loc. spot time</th>
@@ -25,6 +26,7 @@ include "partials/custom-modal.php";
                                 <tbody class="table-group-divider">
                                         <tr>
                                                 <td scope="row"></td>
+                                                <td></td>
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>

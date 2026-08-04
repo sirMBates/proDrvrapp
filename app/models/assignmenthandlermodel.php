@@ -281,6 +281,7 @@ class UpdateAssignment {
         $db = new Database();
         $pdo = $db->connect();
         $alert = new Flash();
+        $logger = new Logger('D:/webapps/logs/error.log');
 
         //Convert datetime-local to MYSQL DATETIME
         $actualEndTimeRaw = trim((string) ($data['actual_end_time'] ?? ''));
@@ -288,7 +289,6 @@ class UpdateAssignment {
 
         if ($actualEndTimeRaw !== '') {
             $normalized = str_replace('T', ' ', $actualEndTimeRaw);
-
             $actualEndTime = strlen($normalized) === 16 ? $normalized . ':00' : $normalized;
         }
 
@@ -369,11 +369,33 @@ class UpdateAssignment {
 
         //$success = $stmt->execute();
         $success = $stmt->execute($parameters);
+        $logger->info('[MODIFY RESULT] success=' . ($success ? 'true' : 'false') . ', affected_rows=' . $stmt->rowCount());
 
-        if (!$success || $stmt->rowCount() !== 1) {
-            $alert::setMsg('error', 'The assignment could not be updated. It may no longer be available.');
+        if (!$success) {
+            $alert::setMsg('error', 'The assignment update failed. Please try again.');
             header("Location: /assignments?error=update_failed&order_id=" . urlencode((string) $data['order_id']));
             exit();
+        }
+
+        if ($stmt->rowCount() === 0) {
+            $verifySql = "SELECT assignment_control
+                        FROM work_orders
+                        WHERE assignment_control = :assignment_control AND order_id = :order_id AND driver_id = :driver_id
+                        AND assignment_status = 'confirmed' AND completed_at IS NULL AND canceled_at IS NULL
+                        LIMIT 1";
+
+            $verifyStmt = $pdo->prepare($verifySql);
+            $verifyStmt->execute([
+                ':assignment_control' => $data['assignment_control'],
+                ':order_id' => $data['order_id'],
+                ':driver_id' => $data['driver_id'],
+            ]);
+
+            if(!$verifyStmt->fetchColumn()) {
+                $alert::setMsg('error', 'The assignment could not be updated. It may no longer be available.');
+                header("Loaction: /assignments?error=update_failed&order_id=" . urlencode((string) $data['order_id']));
+                exit();
+            }
         }
 
         $this->saveSharedJobNote($pdo, $data);
@@ -409,7 +431,7 @@ class UpdateAssignment {
         $db = new Database();
         $pdo = $db->connect();
         $alert = new core\Flash();
-        $devLogger = new core\Logger('D:/webapps/logs/error.log');
+        $logger = new Logger('D:/webapps/logs/error.log');
 
         // Fetch current assignment from DB
         $sql = "SELECT wo.*, d.first_name, d.last_name 
@@ -425,7 +447,7 @@ class UpdateAssignment {
                 ':driver_id' => $data['driver_id']
             ]);
         } catch (\PDOException $exception) {
-            $devLogger->error('[COMPLETE ASSIGNMENT FETCH ERROR] ' . $exception->getMessage());
+            $logger->error('[COMPLETE ASSIGNMENT FETCH ERROR] ' . $exception->getMessage());
             $alert::setMsg('error', 'The assignment could not be retrieved. Please try again.');
             header("Location: /assignments?error=assignment+fetch+failed");
             exit();
@@ -434,16 +456,16 @@ class UpdateAssignment {
         $current = $stmt->fetch();
 
         if (!$current) {
-            $devLogger->error('[COMPLETE ASSIGNMENT] Assignment not found. ' . 'order_id=' . ($data['order_id'] ?? 'missing') . ', driver_id=' . ($data['driver_id'] ?? 'missing'));
+            $logger->error('[COMPLETE ASSIGNMENT] Assignment not found. ' . 'order_id=' . ($data['order_id'] ?? 'missing') . ', driver_id=' . ($data['driver_id'] ?? 'missing'));
             $alert::setMsg('error', 'Assignment not found. Contact dispatch for more details.');
             header("Location: /assignments?error=no+assignment+found");
             exit();
         }
 
-        $devLogger->info('[COMPLETE ASSIGNMENT FETCHED] ' . 'order_id=' . ($current['order_id'] ?? 'missing') . ', driver_id=' . ($current['driver_id'] ?? 'missing') . ', signature_required=' . ($current['signature_required'] ?? 'missing') . ', signature_status=' . ($current['signature_status'] ?? 'missing') . ', completed_at=' . ($current['completed_at'] ?? 'NULL') . ', mark_completed=' . ($markCompleted ? 'true' : 'false'));
+        $logger->info('[COMPLETE ASSIGNMENT FETCHED] ' . 'order_id=' . ($current['order_id'] ?? 'missing') . ', driver_id=' . ($current['driver_id'] ?? 'missing') . ', signature_required=' . ($current['signature_required'] ?? 'missing') . ', signature_status=' . ($current['signature_status'] ?? 'missing') . ', completed_at=' . ($current['completed_at'] ?? 'NULL') . ', mark_completed=' . ($markCompleted ? 'true' : 'false'));
 
         if (!empty($current['completed_at']) || ($current['assignment_status'] ?? '') === 'completed') {
-            $devLogger->info('[COMPLETE ASSIGNMENT] Assignment was already completed. ' . 'order_id=' . $current['order_id'] . ', completed_at=' . ($current['completed_at'] ?? 'missing'));
+            $logger->info('[COMPLETE ASSIGNMENT] Assignment was already completed. ' . 'order_id=' . $current['order_id'] . ', completed_at=' . ($current['completed_at'] ?? 'missing'));
             return $current;
         }
 
@@ -489,10 +511,10 @@ class UpdateAssignment {
 
             $affectedRows = $stmtUpdate->rowCount();
 
-            $devLogger->info('[COMPLETE ASSIGNMENT UPDATE RESULT] ' . 'executed=' . ($updateExecuted ? 'true' : 'false') . ', affected_rows=' . $affectedRows . ', order_id=' . ($data['order_id'] ?? 'missing') . ', driver_id=' . ($data['driver_id'] ?? 'missing') . ', completed_at=' . $completedAt);
+            $logger->info('[COMPLETE ASSIGNMENT UPDATE RESULT] ' . 'executed=' . ($updateExecuted ? 'true' : 'false') . ', affected_rows=' . $affectedRows . ', order_id=' . ($data['order_id'] ?? 'missing') . ', driver_id=' . ($data['driver_id'] ?? 'missing') . ', completed_at=' . $completedAt);
 
             if (!$updateExecuted || $affectedRows !== 1) {
-                $devLogger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] Expected one updated row, received ' . $affectedRows . '.');
+                $logger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] Expected one updated row, received ' . $affectedRows . '.');
                 $alert::setMsg('error', 'Could not complete assignment. Please try again.');
                 header("Location: /assignments?error=not+complete&order_id=" . urlencode((string) $data['order_id']));
                 exit();
@@ -511,7 +533,7 @@ class UpdateAssignment {
 
             $verifiedAssignment = $verifyStmt->fetch();
             if (!$verifiedAssignment || $verifiedAssignment['assignment_status'] !== 'completed' || empty($verifiedAssignment['completed_at'])) {
-                $devLogger->error('[COMPLETE ASSIGNMENT VERIFY ERROR] Completion state was not saved correctly. ' . 'order_id=' . $data['order_id'] . ', driver_id=' . $data['driver_id']);
+                $logger->error('[COMPLETE ASSIGNMENT VERIFY ERROR] Completion state was not saved correctly. ' . 'order_id=' . $data['order_id'] . ', driver_id=' . $data['driver_id']);
                 $alert::setMsg('error', 'The assignment could not be confirmed as completed.');
                 header("Location: /assignments?error=completion+not+saved&order_id=" . urlencode((string) $data['order_id']));
                 exit();
@@ -519,7 +541,7 @@ class UpdateAssignment {
 
             $saveCompletedAt = $verifiedAssignment['completed_at'];
         } catch (\PDOException $exception) {
-            $devLogger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] ' . $exception->getMessage());
+            $logger->error('[COMPLETE ASSIGNMENT UPDATE ERROR] ' . $exception->getMessage());
             $alert::setMsg('error', 'Could not complete the assignment. Please try again.');
             header("Location: /assignments?error=not+complete&order_id=" . urlencode((string) $data['order_id']));
             exit();
@@ -527,7 +549,7 @@ class UpdateAssignment {
 
         $current['assignment_status'] = 'completed';
         $current['completed_at'] = $saveCompletedAt;
-        $devLogger->info('[COMPLETE ASSIGNMENT SUCCESS] ' . 'order_id=' . $current['order_id'] . ', driver_id=' . $current['driver_id'] . ', completed_at=' . $saveCompletedAt);
+        $logger->info('[COMPLETE ASSIGNMENT SUCCESS] ' . 'order_id=' . $current['order_id'] . ', driver_id=' . $current['driver_id'] . ', completed_at=' . $saveCompletedAt);
         return $current;
     }
 
