@@ -91,34 +91,83 @@ function refreshCurrentAssignment() {
     }
 };
 
+function clearStoredSignatures(assignmentControl) {
+    const control = String(assignmentControl ?? '');
+    if (!control) return;
+
+    localStorage.removeItem(`pre-signature:${control}`);
+    localStorage.removeItem(`post-signature:${control}`);
+
+    if (localStorage.getItem('warnModalShownFor') === control) {
+        localStorage.removeItem('warnModalShownFor');
+    }
+
+    console.log(`[SIGNATURE] Cleared stored signatures for ${control}.`);
+};
+
 async function refreshAssignmentsFromServer(preferredOrderId = null) {
     try {
-        const response = await getAssignment(
-            'https://prodriver.local/getassignments',
-            {
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                cache: 'no-store',
-                headers: {
-                    'X-CSRF-Token': drvrToken
-                }
+        const response = await getAssignment('https://prodriver.local/getassignments', {            
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: {
+                'X-CSRF-Token': drvrToken
             }
-        );
+        });
 
-        if (!response || !Array.isArray(response.data)) {
-            console.warn('[PWA] No valid assignment list in response payload.');
-
+        if (!response || response.status !== 'success' || !Array.isArray(response.data)) {
+            console.warn('[ASSIGNMENT REFRESH] Invalid assignment response.', response);
             return false;
         }
 
         /*
-         * Never allow completed or canceled assignments
-         * back into active assignment state.
+         * Preserve the previous list before replacing it.
+         * This lets us identify assignments that were completed
+         * or canceled and therefore disappeared from the server list.
          */
-        assignments = response.data.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
+        const previousAssignments = Array.isArray(assignments) ? [...assignments] : [];
+
+        /*
+         * The backend should already return active assignments only,
+         * but this remains as defensive frontend filtering.
+         */
+        const refreshedAssignments = response.data.filter(assignment => {
+            const status = String(assignment.assignment_status ?? '').toLowerCase();
+            return (!assignment.completed_at && !assignment.canceled_at && status !== 'completed' && status !== 'canceled');
+        });
+
+        /*
+         * Build a set containing every assignment control that
+         * still exists in the refreshed active list.
+         */
+        const refreshedAssignmentControls = new Set(refreshedAssignments.map(assignment => String(assignment.assignment_control ?? '')).filter(Boolean));
+
+        /*
+         * An assignment that existed previously but no longer exists
+         * in the server response was completed, canceled, or otherwise
+         * removed from the driver's active assignments.
+         */
+        const removedAssignments = previousAssignments.filter(assignment => {
+            const assignmentControl = String(assignment.assignment_control ?? '');
+            return (assignmentControl !== '' && !refreshedAssignmentControls.has(assignmentControl));
+        });
+
+        /*
+         * Remove locally stored signatures belonging only to
+         * assignments that are no longer active.
+         */
+        removedAssignments.forEach(assignment => {
+            clearStoredSignatures(assignment.assignment_control);
+        });
+
+        assignments = refreshedAssignments;
         localStorage.setItem('assignments', JSON.stringify(assignments));
 
+        /*
+         * No active assignments remain.
+         */
         if (assignments.length === 0) {
             currentIndex = 0;
 
@@ -127,47 +176,62 @@ async function refreshAssignmentsFromServer(preferredOrderId = null) {
             pagination = null;
             showNoAssignments();
 
+            console.log('[ASSIGNMENT REFRESH] No active assignments remain.', {
+                removed: removedAssignments.map(assignment => assignment.assignment_control)
+            });
+
             return true;
         }
 
         /*
-         * Keep the assignment that triggered the refresh
-         * selected whenever it still exists.
+         * Preserve the preferred assignment when it still exists.
+         * This is useful after confirmation or Save Changes.
          */
         const preferredIndex = preferredOrderId !== null ? assignments.findIndex(assignment => String(assignment.order_id) === String(preferredOrderId)) : -1;
 
         if (preferredIndex >= 0) {
             currentIndex = preferredIndex;
         } else {
-            currentIndex = Math.min(currentIndex, assignments.length - 1);
+            /*
+             * The preferred assignment may have been completed or
+             * canceled. Keep the index inside the new array bounds
+             * so the next available assignment is displayed.
+             */
+            const safeCurrentIndex = Number.isInteger(currentIndex) ? currentIndex : 0;
+            currentIndex = Math.min(Math.max(safeCurrentIndex, 0), assignments.length - 1);
         }
 
         sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
 
+        /*
+         * Recreate the pager so the number of pills agrees
+         * with the refreshed assignment list.
+         */
         if (typeof window._rebuildAssignmentPagination === 'function') {
             window._rebuildAssignmentPagination();
         }
+
         showAssignment(currentIndex);
+        const currentAssignment = getCurrentAssignment();
 
-        const current = getCurrentAssignment();
-
-        if (current) {
-            updateButtonStates(current);
+        if (currentAssignment) {
+            updateButtonStates(currentAssignment);
         }
 
-        console.log('[PWA] Active assignments refreshed.',
-            {
-                count: assignments.length,
-                currentIndex,
-                orderId:
-                    assignments[currentIndex]?.order_id
-            }
-        );
+        console.log('[ASSIGNMENT REFRESH] Active assignments refreshed.', {
+            count: assignments.length, 
+            currentIndex,
+            assignmentControl: currentAssignment?.assignment_control ?? null,
+            orderId: currentAssignment?.order_id ?? null,
+            removedAssignments: removedAssignments.map(assignment => ({
+                assignmentControl: assignment.assignment_control,
+                orderId: assignment.order_id
+            }))
+        });
 
         return true;
     } catch (error) {
-        console.error('[PWA] Failed to refresh assignments from server:', error);
-
+        console.error('[ASSIGNMENT REFRESH] Failed to refresh assignments from server:', error);
         return false;
     }
 };
@@ -492,6 +556,12 @@ function reconcileCompletedAssignmentFromRedirect() {
         console.error('[ASSIGNMENT STATE] Could not read cached assignments:', error);
     }
 
+    const completedAssignment = storedAssignments.find(assignment => String(assignment.order_id) === String(completedOrderId));
+
+    if (completedAssignment?.assignment_control) {
+        clearStoredSignatures(completedAssignment.assignment_control);
+    }
+
     const remainingAssignments = storedAssignments.filter((assignment) => {
             return String(assignment.order_id) !== String(completedOrderId);
         });
@@ -768,7 +838,6 @@ window.addEventListener('DOMContentLoaded', () => {
             pagination.renderPills();
             pagination.updateButtons();
         }
-
         updateButtonStates(assignment);
 
         const assignmentForm = document.querySelector('.assignment-card');
@@ -780,6 +849,21 @@ window.addEventListener('DOMContentLoaded', () => {
             } else {
                 delete assignmentForm.dataset.orderId;
             }
+        }
+
+        window.dispatchEvent(new CustomEvent('assignmentChanged', {
+            detail: {
+                assignmentControl: assignment.assignment_control,
+                requiresSignature: Number(assignment.signature_required) === 1
+            }
+        }));
+
+        if (typeof window.updateSignatureState === 'function') {
+            window.updateSignatureState({
+                assignmentControl: assignment.assignment_control,
+                requiresSignature: Number(assignment.signature_required) === 1,
+                signatureStatus: assignment.signature_status ?? ''
+            });
         }
 
         // Expose refresh hook for refreshCurrentAssignment() ( safe, single assignment re-render)
@@ -872,17 +956,9 @@ window.addEventListener('DOMContentLoaded', () => {
             const currentOrderId = orderCell.textContent.trim();
             
             if (currentOrderId && currentOrderId !== 'No assignment available...' && currentOrderId !== previousOrderId) {
-                const assignment = assignments?.find( a => a.order_id == currentOrderId);
+                const assignment = assignments?.find( item => String(item.order_id) == String(currentOrderId));
                 if (!assignment) return;
-                updateButtonStates(assignment);
-                const requiresSignature = Number(assignment?.signature_required) === 1;
-                // When order ID changes, notify other scripts
-                window.dispatchEvent(new CustomEvent('assignmentChanged', {
-                    detail: { 
-                        orderId: currentOrderId, 
-                        requiresSignature
-                    } 
-                }));
+                updateButtonStates(assignment);               
                 orderCell.dataset.previousOrderId = currentOrderId;
             }
         });
@@ -1390,9 +1466,10 @@ function submitAssignment(options) {
         form.querySelectorAll("input[name='pre_signature_base64'], " + "input[name='post_signature_base64']").forEach(input => input.remove());
 
         const requiresSignature = Number(assignment.signature_required) === 1;
+        const signatureControl = assignment.assignment_control;
         const signaturePayload = requiresSignature ? {
-            pre_signature_base64: localStorage.getItem('pre-signature') ?? '',
-            post_signature_base64: localStorage.getItem('post-signature') ?? ''
+            pre_signature_base64: localStorage.getItem(`pre-signature:${signatureControl}`) ?? '',
+            post_signature_base64: localStorage.getItem(`post-signature:${signatureControl}`) ?? ''
         } : {
             pre_signature_base64: '',
             post_signature_base64: ''

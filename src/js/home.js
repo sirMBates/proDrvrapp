@@ -71,6 +71,7 @@ function renderHomeTable(assignments, fromSync = false) {
                 row.innerHTML = `
                         <td>${assignment.first_name ?? ''} ${assignment.last_name ?? ''}</td>
                         <td>${assignment.operator_id ?? ''}</td>
+                        <td>${assignment.order_id ?? ''}</td>
                         <td>${dtHelper(assignment.start_date_time, 'date')}</td>
                         <td>${dtHelper(assignment.start_date_time, 'time')}</td>
                         <td>${dtHelper(assignment.spot_time, 'time')}</td>

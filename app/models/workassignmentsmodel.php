@@ -85,6 +85,17 @@ class WorkAssignments {
 
         $results = $stmt->fetchAll();
         unset($_SESSION['birth_date']);
+        unset($_SESSION['signature_required']);
+        $hasSignatureAssignment = false;
+        forEach ($results as $assignment) {
+            if ((int) ($assignment['signature_required'] ?? 0) === 1) {
+                $hasSignatureAssignment = true;
+                break;
+            }
+        }
+        if ($hasSignatureAssignment) {
+            $_SESSION['signature_required'] = 1;
+        }
 
         foreach ($results as &$row) { // The (&) symbol makes $row a reference to each array el in $results, so changes persist.
             try {
@@ -97,7 +108,7 @@ class WorkAssignments {
                 $row['birth_date'] = null;
             }
 
-            $row['confirmed_assignment'] = $row['confirmed_assignment'] ?: 'unconfirmed';
+            $row['assignment_status'] = $row['assignment_status'] ?? 'pending';
 
             try {
                 // Attach shared notes for same customer + pickup/origin

@@ -38,6 +38,7 @@ if ($method === 'PATCH') {
         include_once base_path("app/models/assignmenthandlermodel.php");
         include_once base_path("app/errors/check_assignment_details.php");
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS) ?? [];
+        $devLogger->info('[MODIFY ENDPOINT DATA] ' . json_encode($data));
         $storage = new Storage();  // Could also use the directory location i.e. 'D:/prodrvr/public/signatures/'
         $modification = new UpdateAssignmentDetailsContr($data, $storage);
         $result = $modification->modify();
