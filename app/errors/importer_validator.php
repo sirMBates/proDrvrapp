@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use core\Logger;
+use Core\Logger;
 
 class ImporterAssignmentValidator {
     private array $errors = [];

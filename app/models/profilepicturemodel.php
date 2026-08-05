@@ -1,6 +1,6 @@
 <?php
 
-use core\Database;
+use Core\Database;
 
 class ProfileImageUpload extends GetDriver {
     protected function uploadImage($drvrid, $file) {

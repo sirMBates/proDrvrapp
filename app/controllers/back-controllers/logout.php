@@ -1,5 +1,5 @@
 <?php
-$alert = new core\Flash();
+$alert = new Core\Flash();
 
 session_unset();
 session_destroy();

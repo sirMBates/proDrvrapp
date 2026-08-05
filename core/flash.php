@@ -1,6 +1,6 @@
 <?php
 
-namespace core;
+namespace Core;
 
 class Flash {
 	public static function setMsg($key, $msg, $options = []) {

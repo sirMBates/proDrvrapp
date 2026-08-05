@@ -1,6 +1,6 @@
 <?php
 
-use core\Flash;
+use Core\Flash;
 
 class ForgetPswdContr extends ForgetPswd {
     private $token;

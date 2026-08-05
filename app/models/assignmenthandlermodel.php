@@ -1,10 +1,10 @@
 <?php
 
-use core\Database;
+use Core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
-use core\Flash;
-use core\Logger;
+use Core\Flash;
+use Core\Logger;
 
 class UpdateAssignment {
     protected function confirmAssignment (string $assignContl, int $orderId, int $driverId): array {
@@ -171,7 +171,7 @@ class UpdateAssignment {
                 $pdo->rollBack();
             }
 
-            $logger = new core\Logger('D:/webapps/logs/error.log');
+            $logger = new Core\Logger('D:/webapps/logs/error.log');
             $logger->error('[ASSIGNMENT CANCEL ERROR] assignment_control=' . $assignContl . ', order_id=' . $orderId . ', driver_id=' . $driverId . ', exception=' . get_class($exception) . ', message=' . $exception->getMessage());
 
             return [
@@ -430,7 +430,7 @@ class UpdateAssignment {
     protected function completeAssignment(array $data, bool $markCompleted = false): array {
         $db = new Database();
         $pdo = $db->connect();
-        $alert = new core\Flash();
+        $alert = new Core\Flash();
         $logger = new Logger('D:/webapps/logs/error.log');
 
         // Fetch current assignment from DB
@@ -560,7 +560,7 @@ class UpdateAssignment {
     public function getAssignmentForExcel(array $data): array {
         $db = new Database();
         $pdo = $db->connect();
-        $alert = new core\flash();
+        $alert = new Core\flash();
 
         // Fetch assignment + driver name
         $sql = "SELECT wo.*, d.first_name, d.last_name 

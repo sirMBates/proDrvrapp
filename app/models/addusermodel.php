@@ -1,7 +1,7 @@
 <?php
 
-use core\Database;
-use core\Flash;
+use Core\Database;
+use Core\Flash;
 
 class AddedDrvr {
     protected function setDriver($username, $email, $password) {

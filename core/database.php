@@ -1,6 +1,6 @@
 <?php
 
-namespace core;
+namespace Core;
 use Dotenv\Dotenv;
 require_once base_path("vendor/autoload.php");
 $dotenv = Dotenv::createImmutable(__DIR__, '../.local.env');

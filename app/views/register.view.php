@@ -1,6 +1,6 @@
 <?php
 require "partials/outhead.php";
-$alert = new core\Flash();
+$alert = new Core\Flash();
 include "partials/flashmessage.php";
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->

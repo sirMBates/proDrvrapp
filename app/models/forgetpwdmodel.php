@@ -1,7 +1,7 @@
 <?php
 
-use core\Database;
-use core\Flash;
+use Core\Database;
+use Core\Flash;
 
 class ForgetPswd {
     protected function setForgetToken($token, $tokenExpTime, $email) {
