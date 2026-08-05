@@ -1,7 +1,7 @@
 <?php
 
-use core\Logger;
-use core\Database;
+use Core\Logger;
+use Core\Database;
 
 class Assignment {
     protected Logger $logger;

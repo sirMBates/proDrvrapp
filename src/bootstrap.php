@@ -9,7 +9,7 @@ require BASE_PATH . 'core/Helperfunc.php';
 require BASE_PATH . 'vendor/autoload.php';
 require BASE_PATH . 'config.php';
 
-use core\Logger;
+use Core\Logger;
 
 return new class {
     private Logger $logger;
@@ -66,7 +66,7 @@ return new class {
                 exit();
             }
 
-            $router = new \core\Router;
+            $router = new \Core\Router;
             $routes = require base_path("routes.php");
             $router->route($uri, $method);
             return;
@@ -81,7 +81,7 @@ return new class {
             return;
         }
 
-        $router = new \core\Router;
+        $router = new \Core\Router;
         $routes = require base_path("routes.php");
         $router->route($uri, $method);
     }
@@ -95,7 +95,7 @@ return new class {
 # To use old router file, use the path below this comment ⬇
 # require base_path('core/router.php');
 
-/*$router = new \core\Router;
+/*$router = new \Core\Router;
 
 $routes = require base_path("routes.php");
 

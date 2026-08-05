@@ -1,6 +1,6 @@
 <?php
     require "partials/outhead.php";
-    $alert = new core\Flash();
+    $alert = new Core\Flash();
     include "partials/flashmessage.php";
     if (isset($_GET['cleared'])) {
         $_SESSION['reset'] = $_GET['cleared'];

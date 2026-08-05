@@ -8,7 +8,8 @@
 
     "autoload": {
         "psr-4": {
-            "core\\": "core"
+            "Core\\": "core/",
+            "App\\Validation\\": "app/Validation/"
         }
     }
 }

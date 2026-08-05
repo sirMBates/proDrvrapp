@@ -1,6 +1,6 @@
 <?php
 
-use core\Database;
+use Core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 

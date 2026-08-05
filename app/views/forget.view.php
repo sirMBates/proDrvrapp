@@ -1,6 +1,6 @@
 <?php
     require "partials/outhead.php";
-    $alert = new core\Flash();
+    $alert = new Core\Flash();
     include "partials/flashmessage.php";
 ?>
     <main class="w-50 my-5 align-self-center">

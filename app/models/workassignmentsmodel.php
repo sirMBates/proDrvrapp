@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use core\Database;
+use Core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 

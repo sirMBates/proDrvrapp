@@ -1,8 +1,8 @@
 <?php
 
-use core\Flash;
-use core\Storage;
-use core\Logger;
+use Core\Flash;
+use Core\Storage;
+use Core\Logger;
 
 class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $assignmentControl;

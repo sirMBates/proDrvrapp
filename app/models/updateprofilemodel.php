@@ -1,7 +1,7 @@
 <?php
 
-use core\Database;
-use core\Flash;
+use Core\Database;
+use Core\Flash;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Dotenv\Dotenv;

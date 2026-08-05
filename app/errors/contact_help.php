@@ -1,6 +1,6 @@
 <?php
 
-use core\Flash;
+use Core\Flash;
 
 class ContactHelpContr extends GetDriver {
     private $driverid;

@@ -1,9 +1,9 @@
 <?php
 
 declare(strict_types=1);
-namespace core;
+namespace Core;
 use RuntimeException;
-use core\Flash;
+use Core\Flash;
 
 class Storage {
     private const SIGNATURE_PREFIX = 'data:image/png;base64,';

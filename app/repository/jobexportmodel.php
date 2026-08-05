@@ -1,7 +1,7 @@
 <?php
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use core\Logger;
+use Core\Logger;
 
 class AssignmentExporter {
     protected string $filePath;

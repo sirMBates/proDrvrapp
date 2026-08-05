@@ -1,6 +1,6 @@
 <?php
 
-use core\Database;
+use Core\Database;
 
 class UpdateDrvrStatus {
     private function modifyStatus($drvrid, $drvrStatus, $drvrTimeStamp) {

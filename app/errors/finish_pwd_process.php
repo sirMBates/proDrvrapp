@@ -1,6 +1,6 @@
 <?php
 
-$alert = new core\Flash();
+$alert = new Core\Flash();
 
 class CompleteResetContr extends CompleteReset {
     private $token;

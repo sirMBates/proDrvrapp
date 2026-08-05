@@ -1,6 +1,6 @@
 <?php
 
-use core\Flash;
+use Core\Flash;
 
 class UpdateDrvrContr extends UpdateDrvr {
     private $drvrid;
