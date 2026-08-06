@@ -1,5 +1,6 @@
 <?php
 
+use App\Validation\Validator;
 header("Content-Type: application/json");
 
 class UpdateAssignmentContr extends UpdateAssignment {
@@ -123,7 +124,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
     }
 
     private function validateDriverId(): bool {
-        return filter_var($this->driverId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) !== false;
+        return Validator::positiveInteger($this->driverId);
     }
 }
 
