@@ -7,33 +7,31 @@ namespace App\Validation;
 final class AssignmentValidator {
     private const SAVE_UNLOCK_MINUTES = 120;
 
+    private static function status(array $assignment): string {
+        return strtolower(trim((string) ($assignment['assignment_status'] ?? '')));
+    }
+
     public static function hasValidIdentity(array $assignment): bool {
         return (
-            Validator::assignmentControl($assignment['assignment_control'] ??) &&
+            Validator::assignmentControl($assignment['assignment_control'] ?? null) &&
             Validator::positiveInteger($assignment['order_id'] ?? null) &&
             Validator::positiveInteger($assignment['driver_id'] ?? null)
         );
     }
 
     public static function isActive(array $assignment): bool {
-        $status = strtolower(trim((string) ($assignment['assignment_status'] ?? '')));
         return (
             empty($assignment['completed_at']) &&
             empty($assignment['canceled_at']) &&
-            !in_array(
-                $status,
-                ['completed', 'canceled'],
-                true
-            )
-        );
+            !in_array(self::status($assignment), ['completed', 'canceled'], true));
     }
 
     public static function isPending(array $assignment): bool {
-        return strtolower(trim((string) ($assignment['assignment_status'] ?? ''))) === 'pending';
+        return self::status($assignment) === 'pending';
     }
 
     public static function isConfirmed(array $assignment): bool {
-        return strtolower(trim((string) ($assignment['assignment_status'] ?? ''))) === 'confirmed';
+        return self::status($assignment) === 'confirmed';
     }
 
     public static function isSaveWindowOpen(array $assignment, int $minutesBeforeStart = self::SAVE_UNLOCK_MINUTES): bool {
