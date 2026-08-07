@@ -69,7 +69,7 @@ final class Validator {
             return false;
         }
 
-        return preg_match('/^PD-\d{8}-\d{6}-[A-Z0-9]{4}-\d{4}$/', trim($value)) === 1;
+        return preg_match('/^PD-\d{8}-\d{6}-[A-F0-9]{4}-\d{4}$/', trim($value)) === 1;
     }
 
     public static function email(mixed $value): bool {

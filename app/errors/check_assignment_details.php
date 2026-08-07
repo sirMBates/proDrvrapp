@@ -3,6 +3,7 @@
 use Core\Flash;
 use Core\Storage;
 use Core\Logger;
+use App\Validation\AssignmentValidator;
 
 class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $assignmentControl;
