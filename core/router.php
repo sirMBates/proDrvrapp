@@ -52,7 +52,7 @@ class Router {
 
     protected function abort($code = 404){
         http_response_code($code);
-        header("Location: views/{$code}.php");
+        header("Location: app/views/{$code}.php");
         die();
     }
 };
