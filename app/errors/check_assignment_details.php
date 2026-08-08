@@ -3,7 +3,9 @@
 use Core\Flash;
 use Core\Storage;
 use Core\Logger;
+use App\Validation\Validator;
 use App\Validation\AssignmentValidator;
+use App\Sanitization\Sanitizer;
 
 class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $assignmentControl;
@@ -17,10 +19,8 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
     private $pickupDetails;
     private $destinationDetails;
     private $sharedJobNote;
-    private bool $signatureRequired;
     private $preSignature;
     private $postSignature;
-    private $signatureStatus;
     private Storage $storage;
 
     public function __construct(array $data, Storage $storage) {
@@ -32,13 +32,11 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $this->actualEndTime = $data['actual_end_time'] ?? null;
         $this->totalShiftTime = $data['total_hrs'] ?? null;
         $this->totalDriveTime = isset($data['driving_time']) && trim((string) $data['driving_time']) !== '' ? $data['driving_time'] : '0.00';
-        $this->pickupDetails = $this->validateTextarea($data['pickup_details'] ?? '');
-        $this->destinationDetails = $this->validateTextarea($data['destination_details'] ?? '');
-        $this->sharedJobNote = $this->validateTextarea($data['shared_job_note'] ?? '');
-        $this->signatureRequired = (string) ($data['signature_required'] ?? '0') === '1';
+        $this->pickupDetails = Sanitizer::plainText($data['pickup_details'] ?? '');
+        $this->destinationDetails = Sanitizer::plainText($data['destination_details'] ?? '');
+        $this->sharedJobNote = Sanitizer::plainText($data['shared_job_note'] ?? '');
         $this->preSignature = $data['pre_signature_base64'] ?? null;
         $this->postSignature = $data['post_signature_base64'] ?? null;
-        $this->signatureStatus = $data['signature_status'] ?? null;
         $this->storage = $storage;
     }
 
@@ -46,47 +44,102 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $alert = new Flash();
         $devLogger = new Logger('D:/webapps/logs/error.log');
 
-        $signatureRequired = $this->signatureRequired;
-
         if ($this->isMissingInfo()) {
-            $alert::setMsg('error', 'Please complete all fields before updating.');
+            $alert::setMsg('error', 'The assignment request is missing required information.');
             header("Location: /assignments?error=incomplete");
             exit();
         }
 
-        if (!$this->validateSignature($this->preSignature)) {
-            $alert::setMsg('error', 'Invalid pre-trip signature format.');
-            header("Location: /assignments?error=invalid+signature");
+        if (!$this->validateAssignmentControl()) {
+            $alert::setMsg('error', 'System error! Please contact dispatch.');
+            header("Location: /assignments?error=system_error");
             exit();
         }
 
-        if (!$this->validateSignature($this->postSignature)) {
-            $alert::setMsg('error', 'Invalid post-trip signature format.');
-            header("Location: /assignments?error=invalid+signature");
+        if (!$this->validateAssignment()) {
+            $alert::setMsg('error', 'Please check your assignment id.');
+            header("Location: /assignments?error=assignment+id+failed");
             exit();
         }
 
-        if (!$this->checkDatesAndTimes()) {
-            $alert::setMsg('warning', 'Please check your dates or times and try again.');
-            header("Location: /assignments?warning=incompatible+date+or+time");
+        if (!$this->validateDriverId()) {
+            $alert::setMsg('error', 'The driver information is invalid.');
+            header("Location: /assignments?error=invalid+driver");
             exit();
         }
 
-        if (!$this->checkHoursOfService()) {
-            $alert::setMsg('warning', 'Please check your total hours and try again.');
-            header("Location: /assignments?warning=tot+hrs+incorrect");
+        $assignment = $this->getAssignmentByIdentity($this->assignmentControl, $this->orderId, $this->driverId);
+        if (!$assignment) {
+            $alert::setMsg('error', 'The assignment could not be found.');
+            header("Location: /assignments?error=missing_assignment");
             exit();
         }
 
-        if (!$this->checkCoachId()) {
+        $signatureRequired = AssignmentValidator::requiresSignature($assignment);
+
+        if (!AssignmentValidator::canSave($assignment)) {
+            $alert::setMsg('error', 'Assignment changes are not available until two (2) hours before the scheduled start time.');
+            header("Location: /assignments?error=currently+not+permitted");
+            exit();
+        }
+
+        if (!Validator::optionalTime($this->actualDropTime)) {
+            $alert::setMsg('error', 'The actual drop time is invalid.');
+            header("Location: /assignments?error=invalid_drop_time&order_id=". urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::optionalDateTime($this->actualEndTime)) {
+            $alert::setMsg('error', 'The actual end time is invalid.');
+            header("Location: /assignments?error=invalid_end_time&order_id=". urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::optionalDecimalPlaces($this->totalShiftTime, 2)) {
+            $alert::setMsg('error', 'Total job time is invalid.');
+            header("Location: /assignments?error=invalid+total+hours&order_id=" . urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::optionalDecimalPlaces($this->totalDriveTime, 2)) {
+            $alert::setMsg('error', 'Driving time is invalid.');
+            header("Location: /assignments?error=invalid+total+hours&order_id=" . urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!$this->checkVehicleId()) {
             $alert::setMsg('warning', 'Please check your vehicle number and try again.');
-            header("Location: /assignments?warning=incorrect+coach+id");
+            header("Location: /assignments?warning=incorrect+vehicle+id&order_id=". urlencode((string) $this->orderId));
             exit();
         }
 
-        if (!$this->validateSignatureStatus($signatureRequired)) {
-            $alert::setMsg('error', 'Invalid signature status.');
-            header("Location: /assignments?error=invalid+signature+state");
+        if (!Validator::optionalTextLength($this->pickupDetails)) {
+            $alert::setMsg('warning', 'Pickup details exceed the allowed length.');
+            header("Location: /assignments?warning=text_too_long&order_id=". urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::optionalTextLength($this->destinationDetails)) {
+            $alert::setMsg('warning', 'Destination details exceed the allowed length.');
+            header("Location: /assignments?warning=text_too_long&order_id=". urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::optionalTextLength($this->sharedJobNote)) {
+            $alert::setMsg('warning', 'The shared job note exceeds the allowed length.');
+            header("Location: /assignments?warning=text_too_long&order_id=". urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::optionalPngDataUrl($this->preSignature)) {
+            $alert::setMsg('error', 'The pre-trip signature data is invalid.');
+            header("Location: /assignments?error=invalid+signature&order_id=" . urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::optionalPngDataUrl($this->postSignature)) {
+            $alert::setMsg('error', 'The post-trip signature data is invalid.');
+            header("Location: /assignments?error=invalid+signature&order_id=" . urlencode((string) $this->orderId));
             exit();
         }
 
@@ -105,24 +158,30 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         ];
 
         if ($signatureRequired) {
-            try {
-                $signatureData = $this->storage->saveSignatures([
-                    'order_id' => $this->orderId,
-                    'pre_signature_base64' => $this->preSignature,
-                    'post_signature_base64' => $this->postSignature
-                ]);
+            $hasPreSignature = Validator::required($this->preSignature);
+            $hasPostSignature = Validator::required($this->postSignature);
 
-                $signatureData = array_filter($signatureData, static fn (mixed $value): bool => $value !== null);
-                $updateData = array_merge($updateData, $signatureData);
-            } catch (\RuntimeException $exception) {
-                $devLogger->error('[SIGNATURE STORAGE ERROR] ' . $exception->getMessage());
-                $alert::setMsg('error', 'This signature could not be saved.');
-                header("Location: /assignments?error=signature+not+saved");
-                exit();
+            if ($hasPreSignature || $hasPostSignature) {
+                try {
+                    $signatureData = $this->storage->saveSignatures([
+                        'order_id' => $this->orderId,
+                        'pre_signature_base64' => $this->preSignature,
+                        'post_signature_base64' => $this->postSignature
+                    ]);
+
+                    $signatureData = array_filter($signatureData, static fn (mixed $value): bool => $value !== null);
+                    $updateData = array_merge($updateData, $signatureData);
+                } catch (\RuntimeException $exception) {
+                    $devLogger->error('[SIGNATURE STORAGE ERROR] ' . $exception->getMessage());
+                    $alert::setMsg('error', 'This signature could not be saved.');
+                    header("Location: /assignments?error=signature+not+saved");
+                    exit();
+                }
             }
         } else {
-            $updateData['signature_status'] = 'not-required';
+                $updateData['signature_status'] = 'not-required';
         }
+
         return $this->modifyAssignment($updateData);
     }
 
@@ -213,111 +272,31 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             $this->assignmentControl,
             $this->orderId,
             $this->driverId,
-            $this->vehicleId,
-            $this->actualDropTime,
-            $this->actualEndTime,
-            $this->totalShiftTime
+            $this->vehicleId
         ];
 
         foreach($requiredFields as $value) {
-            if ($value === null || (is_string($value) && trim($value) === '')) {
+            if (!Validator::required($value)) {
                 return true;
             }
         }
         return false;
     }
 
-    private function checkDatesAndTimes(): bool {
-        if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $this->actualDropTime)) {
-            return false;
-        }
-
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/', $this->actualEndTime)) {
-            return false;
-        }
-
-        $dt = DateTime::createFromFormat('Y-m-d\TH:i', $this->actualEndTime);
-        if (!$dt) return false;
-
-        return true;
+    private function validateAssignmentControl(): bool {
+        return Validator::assignmentControl($this->assignmentControl);
     }
 
-    private function checkHoursOfService(): bool {
-        if (!preg_match('/^\d+(\.\d{1,2})?$/', $this->totalShiftTime)) {
-            return false;
-        }
-
-        if (!preg_match('/^\d+(\.\d{1,2})?$/', $this->totalDriveTime)) {
-            return false;
-        }
-        return true;
+    private function validateAssignment(): bool {
+        return Validator::positiveInteger($this->orderId);
     }
 
-    private function checkCoachId(): bool {
-        if (!preg_match('/^\d{3,}$/', $this->vehicleId)) {
-            return false;
-        }
-        return true;
+    private function validateDriverId(): bool {
+        return Validator::positiveInteger($this->driverId);
     }
 
-    private function validateSignature(?string $sig): bool {
-        if (empty($sig)) {
-            return true;
-        }
-
-        $prefix = 'data:image/png;base64,';
-        // Must begin with the correct data URI
-        if (strpos($sig, $prefix) !== 0) {
-            return false;
-        }
-
-        // Strip header
-        $raw = substr($sig, strlen($prefix));
-
-        // Must be valid base64
-        $decoded = base64_decode($raw, true);
-        if ($decoded === false) {
-            return false;
-        }
-
-        // Check PNG header bytes
-        if (substr($decoded, 0, 8) !== "\x89PNG\r\n\x1A\n") {
-            return false;
-        }
-
-        // Max size (e.g., 1MB)
-        if (strlen($decoded) > 1024 * 1024) {
-            return false;
-        }
-        return true;
-    }
-
-    private function validateSignatureStatus(bool $signatureRequired): bool {
-        if ($this->signatureStatus === null) {
-            return true;
-        }
-
-        $validStatuses = $signatureRequired ? [
-            'pending',
-            'pre-trip-complete',
-            'complete'
-        ]
-        : [
-            'not-required'
-        ];
-
-        return in_array($this->signatureStatus, $validStatuses, true);
-    }
-
-    private function validateTextarea(string $value): string {
-        // 1. Remove HTML Tags
-        $clean = strip_tags($value);
-
-        // 2. Remove ASCII control characters (except newline & tab)
-        $clean = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $clean);
-
-        // 3. Trim whitespace
-        return trim($clean);
+    private function checkVehicleId(): bool {
+        return Validator::minimumDigits($this->vehicleId, 3);
     }
 }
 

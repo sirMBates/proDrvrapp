@@ -109,11 +109,11 @@ final class AssignmentValidator {
     }
 
     public static function hasPreTripSignature(array $data): bool {
-        return Validator::imageDataUrl($data['pre_signature_base64'] ?? null);
+        return Validator::pngDataUrl($data['pre_signature_base64'] ?? null);
     }
 
     public static function hasPostTripSignature(array $data): bool {
-        return Validator::imageDataUrl($data['post_signature_base64'] ?? null);
+        return Validator::pngDataUrl($data['post_signature_base64'] ?? null);
     }
 
     public static function hasRequiredSignatures(array $data, array $assignment): bool {
@@ -125,6 +125,15 @@ final class AssignmentValidator {
             self::hasPreTripSignature($data) &&
             self::hasPostTripSignature($data)
         );
+    }
+
+    public static function validSignatureStatus(mixed $status, bool $signatureRequired): bool {
+        if ($status === null || $status === '') {
+            return true;
+        }
+
+        $validStatuses = $signatureRequired ? ['pending', 'pre-trip-complete', 'complete'] : ['not-required'];
+        return Validator::oneOf($status, $validStatuses);
     }
 }
 
