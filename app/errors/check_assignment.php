@@ -15,8 +15,6 @@ class UpdateAssignmentContr extends UpdateAssignment {
         $this->driverId = $driverId;
     }
 
-    //
-
     public function confirm(): array {
         if ($this->isInfoMissing()) {
             http_response_code(400);
@@ -63,7 +61,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
             http_response_code(409);
             return [
                 'status' => 'error',
-                'message' => 'This assignment cannot be confirmed in it\'s current state.'
+                'message' => 'This assignment cannot be confirmed in its current state.'
             ]
         }
 
@@ -101,6 +99,23 @@ class UpdateAssignmentContr extends UpdateAssignment {
                 'status' => 'error',
                 'message' => 'The driver information is invalid.'
             ];
+        }
+
+        $assignment = $this->getAssignmentByIdentity($this->assignmentControl, $this->orderId, $this->driverId);
+        if (!$assignment) {
+            http_response_code(404);
+            return [
+                'status' => 'error',
+                'message' => 'The assignment could not be found.'
+            ];
+        }
+
+        if (!AssignmentValidator::canCancel($assignment)) {
+            http_response_code(409);
+            return [
+                'status' => 'error',
+                'message' => 'This assignment cannot be canceled in its current state.'
+            ]
         }
 
         return $this->cancelAssignment($this->assignmentControl, $this->orderId, $this->driverId);

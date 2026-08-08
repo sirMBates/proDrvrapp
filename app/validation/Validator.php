@@ -35,6 +35,14 @@ final class Validator {
         return filter_var($value, FILTER_VALIDATE_INT) !== false;
     }
 
+    public static function minimumDigits(mixed $value, int $minimumDigits): bool {
+        if (!is_scalar($value) || $minimumDigits < 1) {
+            return false;
+        }
+
+        return preg_match('/^\d{' . $minimumDigits . ',}$/', trim((string) $value)) === 1;
+    }
+
     public static function nonNegativeDecimal(mixed $value): bool {
         if ($value === null || $value === '' || !is_numeric($value)) {
             return false;
@@ -62,6 +70,14 @@ final class Validator {
         }
 
         return preg_match('/^\d+(?:\.\d{1,' . $maximumPlaces . '})?$/', $value) === 1;
+    }
+
+    public static function optionalDecimalPlaces(mixed $value, int $maximumPlaces = 2): bool {
+        if (!self::required($value)) {
+            return true;
+        }
+
+        return self::decimalPlaces($value, $maximumPlaces);
     }
 
     public static function assignmentControl(mixed $value): bool {
@@ -158,6 +174,39 @@ final class Validator {
         return in_array($value, $allowedValues, $strict);
     }
 
+    public static function pngDataUrl(mixed $value, int $maxBytes = 1048576): bool {
+        if (!is_string($value)) {
+            return false;
+        }
+
+        $prefix = 'data:image/png;base64,';
+
+        if (!str_starts_with($value, $prefix)) {
+            return false;
+        }
+
+        $raw = substr($value, strlen($prefix));
+        $decoded = base64_decode($raw, true);
+
+        if ($decoded === false) {
+            return false;
+        }
+
+        if (substr($decoded, 0, 8) !== "\x89PNG\r\n\x1A\n") {
+            return false;
+        }
+        
+        return strlen($decoded) <= $maxBytes;
+    }
+
+    public static function optionalPngDataUrl(mixed $value, int $maxBytes = 1048576): bool {
+        if (!self::required($value)) {
+            return true;
+        }
+
+        return self::pngDataUrl($value, $maxBytes);
+    }
+
     public static function imageDataUrl(mixed $value): bool {
         if (!is_string($value)) {
             return false;
@@ -199,4 +248,5 @@ final class Validator {
         return $date->format($format) === $value;
     }
 }
+
 ?>
