@@ -179,7 +179,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
                 }
             }
         } else {
-                $updateData['signature_status'] = 'not-required';
+            $updateData['signature_status'] = 'not-required';
         }
 
         return $this->modifyAssignment($updateData);

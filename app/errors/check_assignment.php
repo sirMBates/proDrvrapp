@@ -62,7 +62,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
             return [
                 'status' => 'error',
                 'message' => 'This assignment cannot be confirmed in its current state.'
-            ]
+            ];
         }
 
         return $this->confirmAssignment($this->assignmentControl, $this->orderId, $this->driverId);
@@ -115,7 +115,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
             return [
                 'status' => 'error',
                 'message' => 'This assignment cannot be canceled in its current state.'
-            ]
+            ];
         }
 
         return $this->cancelAssignment($this->assignmentControl, $this->orderId, $this->driverId);
