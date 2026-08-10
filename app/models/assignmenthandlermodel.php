@@ -187,6 +187,9 @@ class UpdateAssignment {
         $alert = new Flash();
         $logger = new Logger('D:/webapps/logs/error.log');
 
+        $actualDropTimeRaw = trim((string) ($data['actual_drop_time'] ?? ''));
+        $actualDropTime = $actualDropTimeRaw === '' ? null : $actualDropTimeRaw;
+
         //Convert datetime-local to MYSQL DATETIME
         $actualEndTimeRaw = trim((string) ($data['actual_end_time'] ?? ''));
         $actualEndTime = null;
@@ -195,6 +198,9 @@ class UpdateAssignment {
             $normalized = str_replace('T', ' ', $actualEndTimeRaw);
             $actualEndTime = strlen($normalized) === 16 ? $normalized . ':00' : $normalized;
         }
+
+        $totalJobTimeRaw = trim((string) ($data['total_hrs'] ?? ''));
+        $totalJobTime = $totalJobTimeRaw === '' ? null : $totalJobTimeRaw;
 
         $setClauses = [
             'vehicle_id = :vehicle_id',
@@ -208,9 +214,9 @@ class UpdateAssignment {
 
         $parameters = [
             ':vehicle_id' => $data['vehicle_id'],
-            ':actual_drop_time' => $data['actual_drop_time'],
+            ':actual_drop_time' => $actualDropTime,
             ':actual_end_time' => $actualEndTime,
-            ':total_job_time' => $data['total_hrs'],
+            ':total_job_time' => $totalJobTime,
             ':driving_time' => $data['driving_time'],
             ':pickup_details' => $data['pickup_details'],
             ':destination_details' => $data['destination_details'],

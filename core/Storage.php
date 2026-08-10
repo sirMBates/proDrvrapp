@@ -3,7 +3,6 @@
 declare(strict_types=1);
 namespace Core;
 use RuntimeException;
-use Core\Flash;
 
 class Storage {
     private const SIGNATURE_PREFIX = 'data:image/png;base64,';
@@ -73,7 +72,7 @@ class Storage {
      *     post_signature_exists?: bool
      * }
      */
-    public function verifySignatures(array $assignment, bool $signatureRequired): array {
+    public function verifySignatures(array $assignment): array {
         $alert = new flash();
         if (!$signatureRequired) {
             return [
@@ -87,36 +86,26 @@ class Storage {
         $postPath = trim((string) ($assignment['post_signature_path'] ?? ''));
 
         if ($prePath === '' || $postPath === '') {
-            $alert::setMsg('error', 'The required pre-trip and post-trip signatures have not both been saved.');
-            header("Location: /assignments?error=signatures+not+saved");
-            exit();
+            throw new RuntimeException('The required pre & post trip signatures have not been saved.');
         }
 
         $preAbsolutePath = $this->absolutePathFromStoredPath($prePath);
         $postAbsolutePath = $this->absolutePathFromStoredPath($postPath);
 
         if (!is_file($preAbsolutePath)) {
-            $alert::setMsg('error', 'The saved pre-trip signature file is missing.');
-            header("Location: /assignments?error=file_missing");
-            exit();
+            throw new RuntimeException('The saved pre-trip signature file is missing.');
         }
 
         if (!is_file($postAbsolutePath)) {
-            $alert::setMsg('error', 'The saved post-trip signature file is missing.');
-            header("Location: /assignments?error=file_missing");
-            exit();
+            throw new RuntimeException('The saved post-trip signature file is missing.');
         }
 
         if (!$this->verifyStoredHash($preAbsolutePath, $assignment['pre_signature_hash'] ?? null)) {
-            $alert::setMsg('error', 'The saved pre-trip signature failed its integrity check.');
-            header("Location: /assignments?error=failed_check");
-            exit();
+            throw new RuntimeException('The saved pre-trip signature failed its integrity check.');
         }
 
         if (!$this->verifyStoredHash($postAbsolutePath, $assignment['post_signature_hash'] ?? null)) {
-            $alert::setMsg('error', 'The saved post-trip signature failed its integrity check.');
-            header("Location: /assignments?error=failed_check");
-            exit();
+            throw new RuntimeException('The saved post-trip signature failed its integrity check.');
         }
 
         return [

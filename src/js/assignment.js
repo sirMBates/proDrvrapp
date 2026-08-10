@@ -1386,7 +1386,10 @@ function submitAssignment(options) {
     saveCurrentVisibleAssignmentDraft();
 
     // Validate fields
-    if (!validateCurrentAssignmentFields({ showFlashAlert, focusFirstInvalid })) return;
+    const validationMode = flagName === 'assignment-complete' ? 'complete' : 'save';
+    if (!validateCurrentAssignmentFields({ showFlashAlert, focusFirstInvalid, mode: validationMode })) {
+        return;
+    }
 
     // Actual submission logic
     const doSubmit = () => {

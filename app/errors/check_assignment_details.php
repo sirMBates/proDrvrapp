@@ -40,7 +40,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         $this->storage = $storage;
     }
 
-    public function modify() {
+    public function modify(): array {
         $alert = new Flash();
         $devLogger = new Logger('D:/webapps/logs/error.log');
 
@@ -68,7 +68,7 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
             exit();
         }
 
-        $assignment = $this->getAssignmentByIdentity($this->assignmentControl, $this->orderId, $this->driverId);
+        $assignment = $this->getAssignmentByIdentity((string) $this->assignmentControl, (int) $this->orderId, (int) $this->driverId);
         if (!$assignment) {
             $alert::setMsg('error', 'The assignment could not be found.');
             header("Location: /assignments?error=missing_assignment");
@@ -185,65 +185,110 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
         return $this->modifyAssignment($updateData);
     }
 
-    public function complete(array $data, bool $verifyStoredSignatures = true): array {
+    public function validateForCompletion(array $data, bool $verifyStoredSignatures = true): array {
         $alert = new Flash();
 
         // Basic required fields
         $requiredFields = [
-            'assignment_control',
-            'order_id',
-            'driver_id',
-            'vehicle_id',
-            'actual_drop_time',
-            'actual_end_time',
-            'total_hrs'
+            'assignment_control' => $this->assignmentControl,
+            'order_id' => $this->orderId,
+            'driver_id' => $this->driverId,
+            'vehicle_id' => $this->vehicleId,
+            'actual_drop_time' => $this->actualDropTime,
+            'actual_end_time' => $this->actualEndTime,
+            'total_hrs' => $this->totalShiftTime
         ];
 
-        foreach ($requiredFields as $field) {
-            if (empty($data[$field])) {
-                $alert::setMsg('error', "Missing required fields: $field");
+        foreach ($requiredFields as $field => $value) {
+            if (!Validator::required($value)) {
+                $alert::setMsg('error', "Missing required field: $field");
                 header("Location: /assignments?error=missing+" . urlencode($field));
                 exit();
             }
         }
 
-        // Validate datetime
-        if (!empty($data['actual_drop_time']) && !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $data['actual_drop_time'])) { 
-            $alert::setMsg('error', 'Invalid drop time format.');
-            header("Location: /assignments?error=invalid+drop+time");
+        if (!Validator::assignmentControl($this->assignmentControl)) {
+            $alert::setMsg('error', 'System error! Please contact dispatch.');
+            header("Location: /assignments?error=system_error");
             exit();
         }
 
-        if (!empty($data['actual_end_time']) && !preg_match('/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/', $data['actual_end_time'])) {
+        if (!Validator::positiveInteger($this->orderId)) {
+            $alert::setMsg('error', 'Please check your assignment id.');
+            header("Location: /assignments?error=assignment+id+failed");
+            exit();
+        }
+
+        if (!Validator::positiveInteger($this->driverId)) {
+            $alert::setMsg('error', 'The driver information is invalid.');
+            header("Location: /assignments?error=invalid+driver");
+            exit();
+        }
+
+        $assignment = $this->getAssignmentByIdentity((string) $this->assignmentControl, (int) $this->orderId, (int) $this->driverId);
+        if (!$assignment) {
+            $alert::setMsg('error', 'The assignment could not be found.');
+            header("Location: /assignments?error=missing_assignment");
+            exit();
+        }
+
+        if (!AssignmentValidator::canComplete($assignment)) {
+            $alert::setMsg('error', 'This assignment cannot be completed before its scheduled start time.');
+            header("Location: /assignments?error=completion+not+permitted");
+            exit();
+        }
+
+        // Validate datetime
+        if (!Validator::time($this->actualDropTime)) { 
+            $alert::setMsg('error', 'Invalid drop time format.');
+            header("Location: /assignments?error=invalid+drop+time&order_id=" . urlencode((string) $this->orderId));
+            exit();
+        }
+
+        if (!Validator::dateTime($this->actualEndTime)) {
             $alert::setMsg('error', 'Invalid end time format.');
-            header("Location: /assignments?error=invalid+end+time");
+            header("Location: /assignments?error=invalid+end+time&order_id=" . urlencode((string) $this->orderId));
             exit();
         }
 
         // Validate decimal fields
-        if (!empty($data['total_hrs']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['total_hrs'])) { 
+        if (!Validator::decimalPlaces($this->totalShiftTime, 2)) { 
             $alert::setMsg('error', 'Invalid total hours.');
-            header("Location: /assignments?error=invalid+total");
+            header("Location: /assignments?error=invalid+total&order_id=" . urlencode((string) $this->orderId));
             exit();
         }
 
-        if (!empty($data['driving_time']) && !preg_match('/^\d+(\.\d{1,2})?$/', $data['driving_time'])) { 
+        if (!Validator::decimalPlaces($this->totalDriveTime ?? '0.00', 2)) { 
             $alert::setMsg('error', 'Invalid driving time.');
-            header("Location: /assignments?error=invalid+drive+time");
+            header("Location: /assignments?error=invalid+drive+time&order_id=" . urlencode((string) $this->orderId));
             exit();
         }
 
         // Validate coach/vehicle number
-        if (!empty($data['vehicle_id']) && !preg_match('/^\d{3,}$/', $data['vehicle_id'])) { 
-            $alert::setMsg('error', 'Invalid vehicle number.');
-            header("Location: /assignments?error=invalid+vehicle");
+        if (!Validator::minimumDigits($this->vehicleId, 3)) { 
+            $alert::setMsg('warning', 'Please check your vehicle number and try again');
+            header("Location: /assignments?warning=incorrect+vehicle+id&order_id=" . urlencode((string) $this->orderId));
             exit();
         }
 
-        $currentAssignment = $this->completeAssignment($data, false);
-        if ($verifyStoredSignatures) {
-            $this->verifySignaturesForCompletion($currentAssignment);
+        if (!AssignmentValidator::drivingTimeWithinTotal($this->totalDriveTime, $this->totalShiftTime)) {
+            $alert::setMsg('warning', 'The driving time cannot be later than the total hours.');
+            header("Location: /assignments?warning=driving+time+exceeded&order_id=" . urlencode((string) $this->orderId));
+            exit();
         }
+
+        if (!AssignmentValidator::dropTimeBeforeEnd($this->actualDropTime, $this->actualEndTime)) {
+            $alert::setMsg('warning', 'The drop time cannot be later than the end time.');
+            header("Location: /assignments?warning=drop+time+exceeded&order_id=" . urlencode((string) $this->orderId));
+            exit();
+        }
+
+        $signatureRequired = AssignmentValidator::requiresSignature($assignment);
+        if ($signatureRequired && $verifyStoredSignatures) {
+            $this->verifySignaturesForCompletion($assignment);
+        }
+
+        $currentAssignment = $this->completeAssignment($data, false);
 
         return $currentAssignment;
     }
@@ -251,14 +296,14 @@ class UpdateAssignmentDetailsContr extends UpdateAssignment {
     public function verifySignaturesForCompletion(array $assignment): void {
         $alert = new Flash();
         $devLogger = new Logger('D:/webapps/logs/error.log');
-        $signatureRequired = (int) ($assignment['signature_required'] ?? 0) === 1;
+        $signatureRequired = AssignmentValidator::requiresSignature($assignment);
 
         if (!$signatureRequired) {
             return;
         }
 
         try {
-            $this->storage->verifySignatures($assignment, $signatureRequired);
+            $this->storage->verifySignatures($assignment);
         } catch (\RuntimeException $exception) {
             $devLogger->error('[ASSIGNMENT SIGNATURE CHECKER] ' . $exception->getMessage());
             $alert::setMsg('error', 'Both required signatures must be saved before completing this assignment.');

@@ -34,8 +34,9 @@ export function validateAssignmentTextarea(el) {
     return true;
 };
 
-export function validateCrossFieldRules() {
+export function validateCrossFieldRules({ mode = 'complete' } = {}) {
     const errors = [];
+    const isSaveMode = mode === 'save';
 
     const totalHrsCell = document.querySelector('[data-field="total_hrs"]');
     const drivingTimeCell = document.querySelector('[data-field="driving_time"]');
@@ -47,8 +48,10 @@ export function validateCrossFieldRules() {
     const endInput = endTimeCell?.querySelector('input');
     const dropInput = dropTimeCell?.querySelector('input');
 
-    const totalVal = parseFloat((totalInput?.value ?? totalHrsCell?.textContent ?? '').trim());
-    const driveVal = parseFloat((driveInput?.value ?? drivingTimeCell?.textContent ?? '').trim());
+    const totalRaw = (totalInput?.value ?? totalHrsCell?.textContent ?? '').trim();
+    const driveRaw = (driveInput?.value ?? drivingTimeCell?.textContent ?? '').trim();
+    const totalVal = totalRaw === '' ? NaN : parseFloat(totalRaw);
+    const driveVal = driveRaw === '' ? NaN : parseFloat(driveRaw);
 
     if (!Number.isNaN(totalVal) && !Number.isNaN(driveVal) && driveVal > totalVal) {
         setFieldError(driveInput || drivingTimeCell, 'Driving time cannot exceed total hours.');
@@ -82,10 +85,12 @@ export function validateCrossFieldRules() {
 export function validateCurrentAssignmentFields(options) {
     const {
         showFlashAlert,
-        focusFirstInvalid
+        focusFirstInvalid,
+        mode = 'complete'
     } = options;
     const errors = [];
     const editableCells = document.querySelectorAll('.editable-data');
+    const isSaveMode = mode === 'save';
 
     for (const cell of editableCells) {
         const field = cell.dataset.field || '';
@@ -107,6 +112,10 @@ export function validateCurrentAssignmentFields(options) {
             value = normalizeDecimalValue(value);
         }
 
+        if (isSaveMode && value === '') {
+            continue;
+        }
+
         if (!Validation.validate(value, type)) {
             setFieldError(target, `Invalid ${field.replaceAll('_', ' ')}.`);
             errors.push(target);
@@ -118,12 +127,17 @@ export function validateCurrentAssignmentFields(options) {
     for (const id of ['pickup-details', 'destination-details', 'shared-job-note']) {
         const el = document.getElementById(id);
         if (!el) continue;
+
+        if (isSaveMode && el.value.trim() === '') {
+            continue;
+        }
+
         if (!validateAssignmentTextarea(el)) {
             errors.push(el);
         }
     }
 
-    const crossFieldErrors = validateCrossFieldRules();
+    const crossFieldErrors = validateCrossFieldRules({ mode });
     errors.push(...crossFieldErrors);
 
     if (errors.length) {

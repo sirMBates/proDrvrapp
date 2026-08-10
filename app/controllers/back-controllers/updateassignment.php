@@ -65,7 +65,7 @@ if ($method === 'PATCH') {
 
         // Validate & check assignment details using existing error checker
         $jobValidator = new UpdateAssignmentDetailsContr($data, $storage);
-        $jobValidator->complete($data, false);
+        $jobValidator->validateForCompletion($data, false);
         $jobValidator->modify();
 
         $model = new UpdateAssignment();

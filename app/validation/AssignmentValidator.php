@@ -135,6 +135,24 @@ final class AssignmentValidator {
         $validStatuses = $signatureRequired ? ['pending', 'pre-trip-complete', 'complete'] : ['not-required'];
         return Validator::oneOf($status, $validStatuses);
     }
+
+    public static function drivingTimeWithinTotal(mixed $drivingTime, mixed $totalJobTime): bool {
+        if (!Validator::nonNegativeDecimal($drivingTime) || !Validator::nonNegativeDecimal($totalJobTime)) {
+            return false;
+        }
+        return (float) $drivingTime <= (float) $totalJobTime;
+    }
+
+    public static function dropTimeBeforeEnd(mixed $dropTime, mixed $actualEndTime): bool {
+        if (!Validator::time($dropTime) || !Vaildator::dateTime($actualEndTime)) {
+            return false;
+        }
+
+        $end = new \DateTimeImmutable(str_replace('T', ' ', (string) $actualEndTime));
+        $drop = new \DateTimeImmutable($end->format('Y-m-d') . ' ' . (string) $dropTime);
+
+        return $drop <= $end;
+    }
 }
 
 ?>
