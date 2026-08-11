@@ -144,7 +144,7 @@ final class AssignmentValidator {
     }
 
     public static function dropTimeBeforeEnd(mixed $dropTime, mixed $actualEndTime): bool {
-        if (!Validator::time($dropTime) || !Vaildator::dateTime($actualEndTime)) {
+        if (!Validator::time($dropTime) || !Validator::dateTime($actualEndTime)) {
             return false;
         }
 

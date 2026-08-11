@@ -105,7 +105,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (driver) {
                 drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
                 if (driver['profilePicture']) {
-                    profileImage.setAttribute('src', driver['profilePicture']);  // Assuming profilePicture contains the image URL
+                    profileImage.setAttribute('src', '/setprofilepicture');  // Assuming profilePicture contains the image URL
                 } else {
                     profileImage.setAttribute('src', defaultProfileImage); // Default image if no profile picture is found
                 }
@@ -164,6 +164,8 @@ profileInput.addEventListener('change', (e) => {
                                 drvrAlert(data.status, data.message);
                                 // Reset input after successful upload
                                 profileInput.value = '';
+                                // Reload the image that was actually saved by PHP
+                                profileImage.src = `/setprofilepicture?t=${Date.now()}`;
                         } else {
                                 drvrAlert(data.status, data.message);
                         }

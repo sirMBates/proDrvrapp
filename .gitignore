@@ -1,8 +1,15 @@
 .local.env
 config.php
-tmp
 node_modules/
 .parcel-cache/
 public/dist/
 vendor/
 /certs/
+/storage/sessions/*
+!/storage/sessions/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/uploads/profile-pictures/*
+!/storage/uploads/profile-pictures/.gitkeep
+/storage/uploads/signatures/*
+!/storage/uploads/signatures/.gitkeep

@@ -1,69 +1,103 @@
 <?php
 
-requireLoginAjax();
+$method = $_POST['__method'] ?? $_SERVER['REQUEST_METHOD'];
+$method = strtoupper($method);
 
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: https://prodriver.local");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
-
-if (!in_array($method, ['PATCH'])) {
+if (!in_array($method, ['GET', 'PATCH'], true)) {
     http_response_code(405);
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Method Not Allowed'
-    ]);
     exit();
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
+$driverId = $_SESSION['driver_id'] ?? null;
+if (!$driverId) {
+    http_response_code(401);
+    exit();
+}
 
-if ($method === 'POST' && isset($_POST['__method'])) {
-    $override = strtoupper($_POST['__method']);
-    $allowed  = ['PUT', 'PATCH', 'DELETE'];
+include_once base_path('app/models/getdrvrmodel.php');
+$driverModel = new GetDriver();
 
-    if (in_array($override, $allowed, true)) {
-        $method = $override;
+if ($method === 'GET') {
+    $driver = $driverModel->getDrvrInfo($driverId);
+    $storedPath = $driver['profilePicture'] ?? null;
+
+    if (!$storedPath) {
+        http_response_code(404);
+        exit();
     }
-}
 
+    $uploadRoot = realpath(BASE_PATH . 'storage/uploads');
+    $filePath = realpath(BASE_PATH . 'storage/uploads/' . $storedPath);
 
-$headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-$formToken = isset($_POST['drvrtoken']) ? htmlspecialchars(trim($_POST['drvrtoken'])) : null;
-$sessionToken = $_SESSION['drvr_token'] ?? null;
+    if ($uploadRoot === false || $filePath === false || !str_starts_with($filePath, $uploadRoot . DIRECTORY_SEPARATOR) || !is_file($filePath)) {
+        http_response_code(404);
+        exit();
+    }
 
-if ($sessionToken === null) {
-    http_response_code(403);
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'No session token found'
-    ]);
-    exit();
-}
+    $mimeType = mime_content_type($filePath);
+    $allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+    ];
 
-if ($formToken !== $sessionToken && $headerToken !== $sessionToken) {
-    http_response_code(403);
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Access denied'
-    ]);
+    if (!in_array($mimeType, $allowedTypes, true)) {
+        http_response_code(415);
+        exit();
+    }
+
+    header('Content-Type: ' . $mimeType);
+    header('Content-Length: ' . filesize($filePath));
+    header('Cache-Control: private, no-cache, no-store, must-revalidate');
+
+    readfile($filePath);
     exit();
 }
 
 if ($method === 'PATCH') {
-    if (isset($_FILES['profileImage'])) {
-        include_once base_path("app/models/getdrvrmodel.php");
-        include_once base_path("app/models/profilepicturemodel.php");
-        include_once base_path("app/errors/set_profile_pic.php");
-        $file = $_FILES['profileImage'];
-        $drvrPicture = new SetDrvrPictureContr($file);
-        $result = $drvrPicture->setProfilePicture();
-        $isFetch = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
-        if ($isFetch) {
-            echo json_encode($result);
-            exit();
-        }
+    requireLoginAjax();
+
+    header("Content-Type: application/json");
+    $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+    $formToken = isset($_POST['drvrtoken']) ? htmlspecialchars(trim($_POST['drvrtoken'])) : null;
+    $sessionToken = $_SESSION['drvr_token'] ?? null;
+
+    if ($sessionToken === null) {
+        http_response_code(403);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'No session token found.'
+        ]);
+        exit();
     }
+
+    if ($formToken !== $sessionToken && $headerToken !== $sessionToken) {
+        http_response_code(403);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Access denied!'
+        ]);
+        exit();
+    }
+
+    if (!isset($_FILES['profileImage'])) {
+        http_response_code(400);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'No profile image was provided.'
+        ]);
+        exit();
+    }
+
+    include_once base_path('app/models/profilepicturemodel.php');
+    include_once base_path('app/errors/set_profile_pic.php');
+
+    $file = $_FILES['profileImage'];
+    $drvrPicture = new SetDrvrPictureContr($file);
+    $result = $drvrPicture->setProfilePicture();
+
+    echo json_encode($result);
+    exit();
 }
 
 ?>

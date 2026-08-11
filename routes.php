@@ -11,6 +11,7 @@ $router->get('/assignments', 'app/controllers/front-controllers/assignments.php'
 $router->get('/int_messages', 'app/controllers/front-controllers/int_messages.php', true);
 $router->get('/timesheet', 'app/controllers/front-controllers/timesheet.php', true);
 $router->get('/profile', 'app/controllers/front-controllers/profile.php', true);
+$router->get('/setprofilepicture', 'app/api/setprofilepicture.php', true);
 $router->get('/contact', 'app/controllers/front-controllers/contact.php', true);
 $router->get('/faqs', 'app/controllers/front-controllers/faqs.php', true);
 $router->get('/counter', 'app/controllers/front-controllers/counter.php', true);
@@ -28,6 +29,6 @@ $router->post('/contact', 'app/controllers/back-controllers/contacthelp.php');
 
 $router->patch('/register', 'app/controllers/back-controllers/registration.php');
 $router->patch('/profile', 'app/controllers/back-controllers/updateprofileacct.php');
-$router->patch('/setprofilepicture', 'app/api/setprofilepicture.php');
+$router->patch('/setprofilepicture', 'app/api/setprofilepicture.php', true);
 $router->patch('/assignmenthandler', 'app/api/assignmenthandler.php');
 $router->patch('/assignments', 'app/controllers/back-controllers/updateassignment.php');

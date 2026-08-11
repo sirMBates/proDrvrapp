@@ -9,8 +9,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
 
     public function setProfilePicture() {
         if ($this->file['error'] !== UPLOAD_ERR_OK) {
-            $this->handleUploadError($this->file['error']);
-            return; // Stop execution
+            return $this->handleUploadError($this->file['error']);
         }
 
         if (!$this->checkPicType()) {
@@ -22,7 +21,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         }
 
         if ($this->checkPicSize()) {
-            http_response_code(415);
+            http_response_code(413);
             return [
                 'status' => 'error',
                 'message' => 'Image size exceeds the limit of 5MB.'
@@ -33,28 +32,18 @@ class SetDrvrPictureContr extends ProfileImageUpload {
     }
 
     private function checkPicType() {
-        $result;
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $this->file['tmp_name']);
         finfo_close($finfo);
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
         $extension = strtolower(pathinfo($this->file['name'], PATHINFO_EXTENSION));
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-        if (in_array($mimeType, $allowedTypes) && in_array($extension, $allowedExtensions)) {
-            $result = true;
-        } else {
-            $result = false;
-        }
-        return $result;
+        return in_array($mimeType, $allowedTypes, true) && in_array($extension, $allowedExtensions, true);
     }
 
     private function checkPicSize(): bool {
         $megabytes5 = 5 * 1024 * 1024; //5MB
-        $result;
-        if ($this->file['size'] > $megabytes5) {
-            return true;
-        }
-        return false;
+        return $this->file['size'] > $megabytes5;
     }
 
     private function handleUploadError($errorCode) {

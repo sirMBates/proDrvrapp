@@ -35,16 +35,15 @@ class Router {
         $this->add('PUT', $uri, $controller, $protected);
     }
 
-    public function route($uri, $method){
-        foreach($this->routes as $route){
-            if($route['uri'] === $uri && $route['method'] === strtoupper($method)){
+    public function route($uri, $method) {
+        foreach($this->routes as $route) {
+            if($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
                 // Check if route is protected
-                if ($route['protected'] && !isset($_SESSION['driver_id']) && !isset($_SESSION['logged_in'])) {
+                if ($route['protected'] && (!isset($_SESSION['driver_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
                     header("Location: /signin");
                     exit();
                 }
                 return require base_path($route['controller']);
-                //return $route['controller'];
             }
         }
         $this->abort();
@@ -52,8 +51,8 @@ class Router {
 
     protected function abort($code = 404){
         http_response_code($code);
-        header("Location: app/views/{$code}.php");
-        die();
+        require base_path("app/views/errors/{$code}.php");
+        exit();
     }
 };
 

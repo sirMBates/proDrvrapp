@@ -13,7 +13,7 @@ class ProfileImageUpload extends GetDriver {
         ];
         $firstInitial = $operatorBasicInfo[0][0];
 
-        $uploadBase = 'D:/prodrvr/public/profiles/';
+        $uploadBase = base_path('storage/uploads/profile-pictures/');
         // Create a directory for the user if it doesn't exist
         $uploadDir = $uploadBase . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/';
         if (!file_exists($uploadDir)) {
@@ -27,8 +27,8 @@ class ProfileImageUpload extends GetDriver {
 
         //move_uploaded_file($file['tmp_name'], $filePath);
 
-        // Store **relative URL** in database for frontend
-        $publicPath = '/prodrvr/public/profiles/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/' . $filename;
+        // Store **application-relative storage Key** in database for frontend
+        $storedPath = 'profile-pictures/' . $firstInitial . $operatorBasicInfo[1] . '-' . $operatorBasicInfo[2] . '/' . $filename;
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {
@@ -44,7 +44,7 @@ class ProfileImageUpload extends GetDriver {
                 SET profile_picture = :profile_picture
                 WHERE driver_id = :driver_id";
         $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':profile_picture', $publicPath);
+        $stmt->bindParam(':profile_picture', $storedPath);
         $stmt->bindParam(':driver_id', $drvrid);
         $stmt->execute();
 

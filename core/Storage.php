@@ -10,7 +10,8 @@ class Storage {
 
     private string $signatureRoot;
 
-    public function __construct(string $signatureRoot = 'D:/prodrvr/public/signatures/') {
+    public function __construct(string $signatureRoot = null) {
+        $signatureRoot ??= base_path('storage/uploads/signatures');
         $this->signatureRoot = rtrim(str_replace('\\', '/', $signatureRoot), '/');
         $this->ensureDirectoryExists($this->signatureRoot);
     }
@@ -73,7 +74,7 @@ class Storage {
      * }
      */
     public function verifySignatures(array $assignment): array {
-        $alert = new flash();
+        $signatureRequired = (int) ($assignment['signature_required'] ?? 0) === 1;
         if (!$signatureRequired) {
             return [
                 'status' => 'success',

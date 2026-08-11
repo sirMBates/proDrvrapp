@@ -16,7 +16,7 @@ return new class {
 
     public function __construct() {
         // Centralized Logger ( used for CLI jobs )
-        $this->logger = new Logger('D:/webapps/logs/job_import_master.log');
+        $this->logger = new Logger(BASE_PATH . 'storage/logs/job_import_master.log');
     }
 
     public function handleCli(array $argv): void {
@@ -36,7 +36,7 @@ return new class {
             require_once BASE_PATH . 'app/errors/importer_validator.php';
 
             $excelFile = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
-            file_put_contents('D:/webapps/logs/debug_task.log', "[" . date('Y-m-d H:i:s') . "] CLI job detected: {$job}\n", FILE_APPEND);
+            file_put_contents(BASE_PATH . 'storage/logs/debug_task.log', "[" . date('Y-m-d H:i:s') . "] CLI job detected: {$job}\n", FILE_APPEND);
             $validator = new ImporterAssignmentValidator($this->logger);
             $importer = new JobOrderImporter($excelFile, $this->logger, $validator);
             $importer->run();
@@ -72,13 +72,14 @@ return new class {
             return;
         }
 
-        if ($uri === "/") {
+        if ($uri === '/') {
             if (!isset($_COOKIE['driver_registered'])) {
                 header("Location: /signup");
-            } else {
-                header("Location: /signin");
+                exit();
             }
-            return;
+
+            header("Location: /signin");
+            exit();
         }
 
         $router = new \Core\Router;

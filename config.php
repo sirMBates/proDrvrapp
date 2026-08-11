@@ -24,7 +24,7 @@ function generateToken(): string {
 if (!$isCli) {
     ini_set('session.use_only_cookies', 1);
     ini_set('session.use_strict_mode', 1);
-    ini_set('session.save_path', __DIR__ . '/tmp');
+    ini_set('session.save_path', BASE_PATH . 'storage/sessions');
 
     session_set_cookie_params([
         //↓lifetime is set in seconds (1 hr).

@@ -6,8 +6,6 @@ const CACHE_NAME = `prodriver-${CACHE_VERSION}`;
 
 // Core files to cache
 const STATIC_ASSETS = [
-  '/',
-  '/signin',
   '/manifest.json',
   '/dist/js/app.js',
   '/dist/js/main.js',
@@ -135,12 +133,14 @@ self.addEventListener('fetch', (event) => {
 
   // Skip caching / intercepting sensitive/auth routes
   if (
+    url.pathname === '/' ||
     url.pathname.startsWith('/signin') ||
     url.pathname.startsWith('/signup') ||
     url.pathname.startsWith('/logout') ||
     url.pathname.startsWith('/register') ||
     url.pathname.startsWith('/forget') ||
-    url.pathname.startsWith('/completereset')
+    url.pathname.startsWith('/completereset') ||
+    url.pathname.startsWith('/getprofile')
   ) {
     //event.respondWith(fetch(request)); // always let network handle
     return;
@@ -150,8 +150,7 @@ self.addEventListener('fetch', (event) => {
   const isDynamicRequest =
     url.pathname.startsWith('/api/') ||
     url.pathname.includes('assignmenthandler') ||
-    url.pathname.startsWith('/getassignments') ||
-    url.pathname === '/';
+    url.pathname.startsWith('/getassignments');
 
   if (isDynamicRequest) {
     event.respondWith(networkFirst(request));
