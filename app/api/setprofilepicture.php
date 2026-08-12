@@ -90,7 +90,7 @@ if ($method === 'PATCH') {
     }
 
     include_once base_path('app/models/profilepicturemodel.php');
-    include_once base_path('app/errors/set_profile_pic.php');
+    include_once base_path("app/SubmissionHandlers/set_profile_pic.php');
 
     $file = $_FILES['profileImage'];
     $drvrPicture = new SetDrvrPictureContr($file);

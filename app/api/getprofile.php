@@ -22,7 +22,7 @@ if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)
 }
 
 include_once base_path("app/models/getdrvrmodel.php");
-include_once base_path("app/errors/get_drvr.php");
+include_once base_path("app/SubmissionHandlers/get_drvr.php");
 
 $getDriversProfile = new GetDrvrContr();
 $getDriversProfile->driverInfo();

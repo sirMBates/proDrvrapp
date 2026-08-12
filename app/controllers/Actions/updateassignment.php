@@ -36,7 +36,7 @@ if ($method === 'POST' && isset($_POST['__method'])) {
 if ($method === 'PATCH') {
     if (isset($_POST['modify'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");
-        include_once base_path("app/errors/check_assignment_details.php");
+        include_once base_path("app/SubmissionHandlers/check_assignment_details.php");
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS) ?? [];
         $devLogger->info('[MODIFY ENDPOINT DATA] ' . json_encode($data));
         $storage = new Storage();  // Could also use the directory location i.e. 'D:/prodrvr/public/signatures/'
@@ -56,7 +56,7 @@ if ($method === 'PATCH') {
     }
     elseif (isset($_POST['assignment-complete'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");
-        include_once base_path("app/errors/check_assignment_details.php");
+        include_once base_path("app/SubmissionHandlers/check_assignment_details.php");
         include_once base_path("app/repository/jobexportmodel.php");
 
         // Sanitize incoming POST data

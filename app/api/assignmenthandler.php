@@ -54,7 +54,7 @@ if ($method !== 'PATCH') {
 }
 
 include_once base_path("app/models/assignmenthandlermodel.php");
-include_once base_path("app/errors/check_assignment.php");
+include_once base_path("app/SubmissionHandlers/check_assignment.php");
 
 $assignmentControl = trim((string) ($_POST['assignment_control'] ?? ''));
 $orderId = filter_var($_POST['order_id'] ?? null, FILTER_VALIDATE_INT);

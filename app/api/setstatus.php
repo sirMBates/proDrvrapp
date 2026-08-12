@@ -19,7 +19,7 @@ try {
     if ($drvrHiddenToken) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {            
             include_once base_path("app/models/updatestatusmodel.php");
-            include_once base_path("app/errors/update_drvr_status.php");
+            include_once base_path("app/SubmissionHandlers/update_drvr_status.php");
 
             $rawBody = file_get_contents("php://input");
             $data = json_decode($rawBody, true);
