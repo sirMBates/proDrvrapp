@@ -1,34 +1,34 @@
 <?php
 
-$router->get('/signup', 'app/controllers/front-controllers/signup.php');
-$router->get('/register', 'app/controllers/front-controllers/register.php');
-$router->get('/signin', 'app/controllers/front-controllers/signin.php');
-$router->get('/forget', 'app/controllers/front-controllers/forget.php');
-$router->get('/completereset', 'app/controllers/front-controllers/completereset.php');
-$router->get('/reset', 'app/controllers/back-controllers/reset.php');
-$router->get('/', 'app/controllers/front-controllers/index.php', true);
-$router->get('/assignments', 'app/controllers/front-controllers/assignments.php', true);
-$router->get('/int_messages', 'app/controllers/front-controllers/int_messages.php', true);
-$router->get('/timesheet', 'app/controllers/front-controllers/timesheet.php', true);
-$router->get('/profile', 'app/controllers/front-controllers/profile.php', true);
+$router->get('/signup', 'app/controllers/Pages/signup.php');
+$router->get('/register', 'app/controllers/Pages/register.php');
+$router->get('/signin', 'app/controllers/Pages/signin.php');
+$router->get('/forget', 'app/controllers/Pages/forget.php');
+$router->get('/completereset', 'app/controllers/Pages/completereset.php');
+$router->get('/reset', 'app/controllers/Actions/reset.php');
+$router->get('/', 'app/controllers/Pages/index.php', true);
+$router->get('/assignments', 'app/controllers/Pages/assignments.php', true);
+$router->get('/int_messages', 'app/controllers/Pages/int_messages.php', true);
+$router->get('/timesheet', 'app/controllers/Pages/timesheet.php', true);
+$router->get('/profile', 'app/controllers/Pages/profile.php', true);
 $router->get('/setprofilepicture', 'app/api/setprofilepicture.php', true);
-$router->get('/contact', 'app/controllers/front-controllers/contact.php', true);
-$router->get('/faqs', 'app/controllers/front-controllers/faqs.php', true);
-$router->get('/counter', 'app/controllers/front-controllers/counter.php', true);
-$router->get('/logout', 'app/controllers/back-controllers/logout.php');
+$router->get('/contact', 'app/controllers/Pages/contact.php', true);
+$router->get('/faqs', 'app/controllers/Pages/faqs.php', true);
+$router->get('/counter', 'app/controllers/Pages/counter.php', true);
+$router->get('/logout', 'app/controllers/Actions/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
 $router->get('/getassignments', 'app/api/getassignments.php');
 
-$router->post('/signup', 'app/controllers/back-controllers/adduser.php');
-$router->post('/signin', 'app/controllers/back-controllers/login.php');
-$router->post('/forget', 'app/controllers/back-controllers/forgetpw.php');
-$router->post('/completereset', 'app/controllers/back-controllers/finishpwdprocess.php');
-$router->post('/reset', 'app/controllers/back-controllers/reset.php');
+$router->post('/signup', 'app/controllers/Actions/adduser.php');
+$router->post('/signin', 'app/controllers/Actions/login.php');
+$router->post('/forget', 'app/controllers/Actions/forgetpw.php');
+$router->post('/completereset', 'app/controllers/Actions/finishpwdprocess.php');
+$router->post('/reset', 'app/controllers/Actions/reset.php');
 $router->post('/setstatus', 'app/api/setstatus.php');
-$router->post('/contact', 'app/controllers/back-controllers/contacthelp.php');
+$router->post('/contact', 'app/controllers/Actions/contacthelp.php');
 
-$router->patch('/register', 'app/controllers/back-controllers/registration.php');
-$router->patch('/profile', 'app/controllers/back-controllers/updateprofileacct.php');
+$router->patch('/register', 'app/controllers/Actions/registration.php');
+$router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');
 $router->patch('/setprofilepicture', 'app/api/setprofilepicture.php', true);
 $router->patch('/assignmenthandler', 'app/api/assignmenthandler.php');
-$router->patch('/assignments', 'app/controllers/back-controllers/updateassignment.php');
+$router->patch('/assignments', 'app/controllers/Actions/updateassignment.php');
