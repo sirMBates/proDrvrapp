@@ -9,6 +9,7 @@ require BASE_PATH . 'core/Helperfunc.php';
 require BASE_PATH . 'vendor/autoload.php';
 require BASE_PATH . 'config.php';
 
+use App\ImportExport\JobOrderImporter;
 use Core\Logger;
 use App\Validation\ImporterAssignmentValidator;
 
@@ -33,8 +34,6 @@ return new class {
         $job = $args['job'] ?? null;
 
         if ($job === 'import') {
-            require_once BASE_PATH . 'app/repository/jobordermodel.php';
-
             $excelFile = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
             file_put_contents(BASE_PATH . 'storage/logs/debug_task.log', "[" . date('Y-m-d H:i:s') . "] CLI job detected: {$job}\n", FILE_APPEND);
             $validator = new ImporterAssignmentValidator($this->logger);

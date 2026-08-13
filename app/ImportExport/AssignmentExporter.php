@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\ImportExport;
+
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Core\Logger;
 

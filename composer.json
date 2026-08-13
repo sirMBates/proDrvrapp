@@ -10,7 +10,8 @@
         "psr-4": {
             "Core\\": "core/",
             "App\\Validation\\": "app/validation/",
-            "App\\Sanitization\\": "app/sanitization/"
+            "App\\Sanitization\\": "app/sanitization/",
+            "App\\ImportExport\\": "app/ImportExport/"
         }
     }
 }

@@ -1,12 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\ImportExport;
+
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
-require_once __DIR__ . "/../../app/models/assignmentmodel.php";
+use App\Validation\ImporterAssignmentValidator;
+require_once base_path("app/models/assignmentmodel.php");
 
 
 class JobOrderImporter {
@@ -45,7 +50,7 @@ class JobOrderImporter {
 
             $controlBatch = 'PD-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(2)));
             $controlSequence = 0;
-            $assignment = new Assignment($this->logger);
+            $assignment = new \Assignment($this->logger);
             $notifiedDrivers = [];
             $insertedCount = 0;
             $duplicateCount = 0;

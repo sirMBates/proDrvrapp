@@ -1,5 +1,6 @@
 <?php
 
+use App\ImportExport\AssignmentExporter;
 use Core\Flash;
 use Core\Storage;
 use Core\Logger;
@@ -57,7 +58,6 @@ if ($method === 'PATCH') {
     elseif (isset($_POST['assignment-complete'])) {
         include_once base_path("app/models/assignmenthandlermodel.php");
         include_once base_path("app/SubmissionHandlers/check_assignment_details.php");
-        include_once base_path("app/repository/jobexportmodel.php");
 
         // Sanitize incoming POST data
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS) ?? [];
