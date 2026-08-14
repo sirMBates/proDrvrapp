@@ -1,107 +1,85 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Validation\Validator;
+use App\Validation\UserValidator;
+use App\Repositories\DriverRepository;
 use Core\Flash;
 
-class AddDrvrContr extends AddedDrvr {
-    private $username;
-    private $email;
-    private $password;
+class AddDrvrContr {
+    private string $username;
+    private string $email;
+    private string $password;
+    private DriverRepository $driverRepository;
     
-    public function __construct($username, $email, $password) {
+    public function __construct(string $username, string $email, string $password) {
         $this->username = $username;
         $this->email = $email;
-        $this->password = $password;  
+        $this->password = $password;
+        $this->driverRepository = new DriverRepository();  
     }
 
     public function addDriver() {
         $alert = new Flash();
-        if ($this->isEmpty() === true) {
+        if ($this->isEmpty()) {
             $alert::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /signup?warning=empty"); //emptyinput
             exit();
         }
 
-        if ($this->invalidUserName() === false) {
+        if (!$this->isValidUsername()) {
             $alert::setMsg('warning', 'Please re-enter your username.');
             header("Location: /signup?warning=invalid"); //namenotvalid
             exit();
         }
 
-        if ($this->invalidEmail() === false) {
+        if (!$this->isValidEmail()) {
             $alert::setMsg('warning', 'Please re-enter your email.');
             header("Location: /signup?warning=invalid"); //emailnotvalid
             exit();
         }
 
-        if ($this->invalidPsword() === false) {
+        if (!$this->isValidPassword()) {
             $alert::setMsg('warning', 'Please re-enter your password.');
             header("Location: /signup?warning=invalid"); //passwordnotvalid
             exit();
         }
 
-        if ($this->nameOrEmailExist() === true) {
+        if ($this->usernameOrEmailExists()) {
             $alert::setMsg('warning', 'Please choose a different username or email.');
             header("Location: /signup?warning=exist+already"); //nameexistalready
             exit();
         }
-
-        $this->setDriver($this->username, $this->email, $this->password);
+        
+        try {
+            $driverId = $this->driverRepository->setDriver($this->username, $this->email, $this->password);
+            $_SESSION['driver_id'] = $driverId;
+        } catch (\Throwable $exception) {
+            $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
+            header("Location: /signup?error=try+again");
+            exit();
+        }
     }
 
-    private function isEmpty() {
-        $result;
-        if (empty($this->username) || empty($this->email) || empty($this->password)) {
-            $result = true;
-        }
-        else {
-            $result = false;
-        }
-        return $result;
+    private function isEmpty(): bool {
+        return !Validator::required($this->username) || !Validator::required($this->email) || !Validator::required($this->password);
     }
 
-    private function invalidUserName() {
-        $result;
-        $cleanUsername = filter_var($this->username, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/", $cleanUsername)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
+    private function isValidUsername(): bool {
+        return UserValidator::username($this->username);
     }
 
-    private function invalidEmail() {
-        $result;
-        $cleanEmail = filter_var($this->email, FILTER_SANITIZE_EMAIL);
-        if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
+    private function isValidEmail(): bool {
+        return Validator::email($this->email);
     }
 
-    private function invalidPsword() {
-        $result;
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
+    private function isValidPassword(): bool {
+        return UserValidator::password($this->password);
     }
 
-    private function nameOrEmailExist() {
-        $result;
-        if ($this->checkDriver($this->username, $this->email)) {
-            $result = true;
-        } else {
-            $result = false;
-        }
-        return $result;
+    private function usernameOrEmailExists(): bool {
+        return $this->driverRepository->checkDriver($this->username, $this->email);
     }
 }
 ?>
