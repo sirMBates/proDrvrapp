@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Repositories;
+
+use PDO;
 use Core\Logger;
 use Core\Database;
 
-class Assignment {
+class AssignmentRepository {
     protected Logger $logger;
 
     public function __construct(Logger $logger) {

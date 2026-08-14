@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\ImportExport;
 
+use PDO;
+use Exception;
+use App\Repositories\AssignmentRepository;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Core\Database;
@@ -11,8 +14,6 @@ use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 use App\Validation\ImporterAssignmentValidator;
-require_once base_path("app/models/assignmentmodel.php");
-
 
 class JobOrderImporter {
     protected string $excelFile;
@@ -50,7 +51,7 @@ class JobOrderImporter {
 
             $controlBatch = 'PD-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(2)));
             $controlSequence = 0;
-            $assignment = new \Assignment($this->logger);
+            $assignmentRepository = new AssignmentRepository($this->logger);
             $notifiedDrivers = [];
             $insertedCount = 0;
             $duplicateCount = 0;
@@ -109,7 +110,7 @@ class JobOrderImporter {
                 }
 
                 $controlSequence++;
-                $assignmentControl = $controlBatch . '-' . str_pad($controlSequence, 4, '0', STR_PAD_LEFT);
+                $assignmentControl = $controlBatch . '-' . str_pad((string) $controlSequence, 4, '0', STR_PAD_LEFT);
 
                 $signatureRequired = strtolower(trim((String) ($rowData['signature_required'] ?? 'no'))) === 'yes' ? 1 : 0;
                 $signatureStatus = $signatureRequired === 1 ? 'pending' : 'not-required';
@@ -156,7 +157,7 @@ class JobOrderImporter {
                 }
                 
                 // Insert each row using Assignment class
-                $result = $assignment->insertAssignment($rowData);            
+                $result = $assignmentRepository->insertAssignment($rowData);            
 
                 if ($result === true) {
                     $insertedCount++;
@@ -190,7 +191,7 @@ class JobOrderImporter {
                 return false;
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error("Job import error: " . $e->getMessage());
             return false;
         }
@@ -272,7 +273,7 @@ class JobOrderImporter {
             $mail->setFrom("noreply@prodriver.local", "Assignments");
             $mail->addAddress($to, $fullName ?: 'Driver');
             $mail->isHTML(true);
-            $mail->Charset = 'UTF-8';
+            $mail->CharSet = 'UTF-8';
             $mail->Encoding = 'base64';
             $mail->Subject = "New Job Assignment(s) Ready for Confirmation";
             $mail->Body = "

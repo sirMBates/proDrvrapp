@@ -41,7 +41,6 @@ return new class {
             $importer->run();
 
         } elseif ($job === 'assignments') {
-            require BASE_PATH . 'app/models/assignmentmodel.php';
             // Call Assignment-specific tasks if needed
             $this->logger->info("Assignments job placeholder executed");
 
