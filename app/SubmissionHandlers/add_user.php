@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Validation\Validator;
 use App\Validation\UserValidator;
 use App\Repositories\DriverRepository;
+use Core\Logger;
 use Core\Flash;
 
 class AddDrvrContr {
@@ -53,9 +54,11 @@ class AddDrvrContr {
         }
         
         try {
-            $driverId = $this->driverRepository->setDriver($this->username, $this->email, $this->password);
+            $driverId = $this->driverRepository->createDriver($this->username, $this->email, $this->password);
             $_SESSION['driver_id'] = $driverId;
         } catch (\Throwable $exception) {
+            $logger = new Logger(base_path('storage/logs/error.log'));
+            $logger->error('[SIGNUP ERROR] ' . $exception->getMessage() . ' in ' . $exception->getFile() . ':' . $exception->getLine());
             $alert::setMsg('error', 'An unexpected error occurred. Please try again.');
             header("Location: /signup?error=try+again");
             exit();

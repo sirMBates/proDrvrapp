@@ -4,9 +4,9 @@ const statusPattern = /^(?!.*-.*-)[a-zA-Z0-9 \-]+$/;
 const numberPattern = /^[0-9]{1,}$/;
 const phoneNumberPattern = /^\d{10}$/
 const datePattern = /^\d{4}[\-\/](0?[1-9]|1[012])[\-\/](0?[1-9]|[12][0-9]|3[01])$/;
-const usernamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{4,}$/;
+const usernamePattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).\S{5,}$/;
 const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$/;
-const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/;
+const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&$_]).\S{8,}$/;
 const decimalPattern = /^\d+(\.\d{1,2})?$/;
 const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
 const datetimePattern = /^\d{4}-\d{2}-\d{2}[T ]([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
