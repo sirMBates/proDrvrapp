@@ -19,10 +19,9 @@ if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)
     exit();
 }
 
-include_once base_path("app/models/workassignmentsmodel.php");
 include_once base_path("app/SubmissionHandlers/get_work.php");
 
-$getOperatorJob = new GetWorkContr();
-$getOperatorJob->workInformation();
+$getOperatorAssignment = new GetAssignmentContr();
+$getOperatorAssignment->assignmentInformation();
 
 ?>

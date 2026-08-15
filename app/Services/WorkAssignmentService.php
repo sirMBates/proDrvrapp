@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+namespace App\Services;
+
 use Core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 
-class WorkAssignments {
+class WorkAssignmentService {
     private function normalizeAddressKey(string $address): string {
         $address = strtolower(trim((string)$address));
         $address = preg_replace('/[^a-z0-9\s]/', '', $address) ?? '';
@@ -66,7 +68,7 @@ class WorkAssignments {
         ];
     }
 
-    protected function getWork(int $driverId): array {
+    private function getAssignments(int $driverId): array {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $db = new Database;
         $pdo = $db->connect();
@@ -136,8 +138,8 @@ class WorkAssignments {
         return $results;
     }
 
-    public function driverWorkAssignments (int $driverId): array {
-        return $this->getWork($driverId);
+    public function driverAssignments (int $driverId): array {
+        return $this->getAssignments($driverId);
     }
 }
 

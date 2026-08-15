@@ -2,8 +2,16 @@
 
 declare(strict_types=1);
 
-class GetWorkContr extends WorkAssignments {
-    public function workInformation(): void {
+use App\Services\WorkAssignmentService;
+
+class GetAssignmentContr {
+    private WorkAssignmentService $assignmentService;
+
+    public function __construct() {
+        $this->assignmentService = new WorkAssignmentService();
+    }
+    
+    public function assignmentInformation(): void {
         try {
             $driverId = (int) ($_SESSION['driver_id'] ?? 0);
             if ($driverId < 1) {
@@ -14,7 +22,7 @@ class GetWorkContr extends WorkAssignments {
                 ]);
                 exit();
             }
-            $assignments = $this->driverWorkAssignments($driverId);
+            $assignments = $this->assignmentService->driverAssignments($driverId);
             //dd($assignments);
             echo json_encode([
                 'status' => 'success',

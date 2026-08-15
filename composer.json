@@ -12,7 +12,8 @@
             "App\\Validation\\": "app/validation/",
             "App\\Sanitization\\": "app/sanitization/",
             "App\\ImportExport\\": "app/ImportExport/",
-            "App\\Repositories\\": "app/Repositories/"
+            "App\\Repositories\\": "app/Repositories/",
+            "App\\Services\\": "app/Services/"
         }
     }
 }
