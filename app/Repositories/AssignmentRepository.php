@@ -9,9 +9,9 @@ use Core\Logger;
 use Core\Database;
 
 class AssignmentRepository {
-    protected Logger $logger;
+    private ?Logger $logger;
 
-    public function __construct(Logger $logger) {
+    public function __construct(?Logger $logger = null) {
         $this->logger = $logger;
     }
 
@@ -38,12 +38,12 @@ class AssignmentRepository {
             ]);
             $exists = $dupStmt->fetchColumn();
             if ($exists > 0) {
-                $this->logger->warning("Skipped duplicate assignment - Vehicle {$data['vehicle_id']} at {$data['start_date_time']} for driver with operator id {$data['operator_id']} and order ref {$data['order_ref']}");
+                $this->logger?->warning("Skipped duplicate assignment - Vehicle {$data['vehicle_id']} at {$data['start_date_time']} for driver with operator id {$data['operator_id']} and order ref {$data['order_ref']}");
                 return 'duplicate';
             }
 
             //$this->logger->debug("Looking up driver with operator_id='{$operatorId}'");
-            $driverSql = "SELECT driver_id, first_name, last_name 
+            $driverSql = "SELECT driver_id 
                         FROM drivers
                         WHERE operator_id = :operator_id
                         LIMIT 1";
@@ -54,7 +54,7 @@ class AssignmentRepository {
             $driverFound = $driverStmt->fetch();
 
             if (!$driverFound) {
-                $this->logger->log("❌ FAILURE: No driver found for operator_id: {$data['operator_id']}");
+                $this->logger?->log("❌ FAILURE: No driver found for operator_id: {$data['operator_id']}");
                 return 'driver_not_found';
             }
 
@@ -65,20 +65,16 @@ class AssignmentRepository {
                             ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $pdo->prepare($sql);
-            // Loop over each and set each property and value.
-            /*for ($i=1; $i<=27; $i++) {
-                $stmt->bindValue($i, $data[array_keys($data)[$i-1]] ?? null);
-            }*/
             $assignmentControl = trim((string) ($data['assignment_control'] ?? ''));
             if ($assignmentControl === '') {
-                $this->logger->error('[ASSIGNMENT INSERT] Missing assignment_control.');
+                $this->logger?->error('[ASSIGNMENT INSERT] Missing assignment_control.');
                 return false;
             }
             
             $stmt->bindValue(1, $assignmentControl);
             $stmt->bindValue(2, $data['order_ref']);
             $stmt->bindValue(3, $data['vehicle_id'] ?? null);
-            $stmt->bindValue(4, $driverFound['driver_id'], \PDO::PARAM_INT); // driver_id inserted
+            $stmt->bindValue(4, $driverFound['driver_id'], PDO::PARAM_INT); // driver_id inserted
             $stmt->bindValue(5, $data['num_of_coaches'] ?? null);
             $stmt->bindValue(6, $data['start_date_time'] ?? null);
             $stmt->bindValue(7, $data['spot_time'] ?? null);
@@ -104,21 +100,39 @@ class AssignmentRepository {
             $stmt->bindValue(27, $data['signature_status'] ?? ((int) ($data['signature_required'] ?? 0) === 1 ? 'pending' : 'not-required'));
             $stmt->bindValue(28, $data['pre_signature_path'] ?? null);
             $stmt->bindValue(29, $data['post_signature_path'] ?? null);
-            /*$stmt->bindValue(28, $data['driver_notes'] ?? null);*/
             $dataInserted = $stmt->execute();
 
             if ($dataInserted) {
-                $this->logger->info("✅ SUCCESS: Inserted assignment: {$assignmentControl} for operator ID {$data['operator_id']} assigned to vehicle {$data['vehicle_id']} at {$data['start_date_time']} with order ref {$data['order_ref']}");
+                $this->logger?->info("✅ SUCCESS: Inserted assignment: {$assignmentControl} for operator ID {$data['operator_id']} assigned to vehicle {$data['vehicle_id']} at {$data['start_date_time']} with order ref {$data['order_ref']}");
                 return true;
             } else {
-                $this->logger->error("❌ Assignment Insert FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Execute returned false");
+                $this->logger?->error("❌ Assignment Insert FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Execute returned false");
                 return false;
             }
             
         } catch (\PDOException $e) {
-            $this->logger->error("❌ Assignment Insert FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Error: " . $e->getMessage());
+            $this->logger?->error("❌ Assignment Insert FAILURE: Vehicle {$data['vehicle_id']} at {$data['start_date_time']} - Error: " . $e->getMessage());
             return false;
         }
+    }
+
+    public function findActiveAssignmentsByDriver(int $driverId): array {
+        $db = new Database;
+        $pdo = $db->connect();
+        $sql = "SELECT wo.*, d.operator_id, d.first_name, d.last_name, d.birth_date
+                FROM work_orders wo INNER JOIN drivers d ON wo.driver_id = d.driver_id
+                WHERE wo.driver_id = :driver_id AND wo.completed_at IS NULL AND wo.canceled_at IS NULL AND wo.assignment_status <> 'canceled'
+                ORDER BY wo.start_date_time ASC, wo.order_id ASC";
+        $stmt = $pdo->prepare($sql);
+        $executed = $stmt->execute([
+            ':driver_id' => $driverId
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Assignment query failed.');
+        }
+
+        return $stmt->fetchAll();
     }
 }
 
