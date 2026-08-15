@@ -34,7 +34,7 @@ return new class {
         $job = $args['job'] ?? null;
 
         if ($job === 'import') {
-            $excelFile = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
+            $excelFile = 'D:/Documents/TestAssignments.xlsx';
             file_put_contents(BASE_PATH . 'storage/logs/debug_task.log', "[" . date('Y-m-d H:i:s') . "] CLI job detected: {$job}\n", FILE_APPEND);
             $validator = new ImporterAssignmentValidator($this->logger);
             $importer = new JobOrderImporter($excelFile, $this->logger, $validator);
@@ -84,20 +84,6 @@ return new class {
         $routes = require base_path("routes.php");
         $router->route($uri, $method);
     }
-};
-
-/*spl_autoload_register(function ($class) {
-    $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-    require base_path("{$class}.php");
-});*/
-
-# To use old router file, use the path below this comment ⬇
-# require base_path('core/router.php');
-
-/*$router = new \Core\Router;
-
-$routes = require base_path("routes.php");
-
-$router->route($uri, $method);*/
+}
 
 ?>

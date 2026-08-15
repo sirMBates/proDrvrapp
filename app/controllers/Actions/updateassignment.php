@@ -73,7 +73,7 @@ if ($method === 'PATCH') {
         $jobValidator->verifySignaturesForCompletion($updatedAssignment);
 
         // Pass updated data to excel exporter
-        $filePath = 'C:/Users/bates/OneDrive/Documents/testworkassignment.xlsx';
+        $filePath = 'D:/Documents/TestAssignments.xlsx';
         $exporter = new AssignmentExporter($filePath, $devLogger);
         $exporter->assignmentSubmitted($data, $updatedAssignment);
         $completedAssignment = $model->completeAssignmentPublic($data, true);
