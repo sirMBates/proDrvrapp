@@ -1,24 +1,25 @@
 <?php
 
-$method = $_POST['__method'] ?? $_SERVER['REQUEST_METHOD'];
-$method = strtoupper($method);
+declare(strict_types=1);
+
+use App\Services\DriverProfileService;
+
+$method = strtoupper($_POST['__method'] ?? $_SERVER['REQUEST_METHOD']);
 
 if (!in_array($method, ['GET', 'PATCH'], true)) {
     http_response_code(405);
     exit();
 }
 
-$driverId = $_SESSION['driver_id'] ?? null;
-if (!$driverId) {
+$driverId = (int) ($_SESSION['driver_id'] ?? 0);
+if ($driverId < 1) {
     http_response_code(401);
     exit();
 }
 
-include_once base_path('app/models/getdrvrmodel.php');
-$driverModel = new GetDriver();
-
 if ($method === 'GET') {
-    $driver = $driverModel->getDrvrInfo($driverId);
+    $profileService = new DriverProfileService();
+    $driver = $profileService->driverProfile($driverId);
     $storedPath = $driver['profilePicture'] ?? null;
 
     if (!$storedPath) {
@@ -56,10 +57,10 @@ if ($method === 'GET') {
 
 if ($method === 'PATCH') {
     requireLoginAjax();
+    header("Content-Type: application/json; charset=utf-8");
 
-    header("Content-Type: application/json");
     $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-    $formToken = isset($_POST['drvrtoken']) ? htmlspecialchars(trim($_POST['drvrtoken'])) : null;
+    $formToken = isset($_POST['drvrtoken']) ? trim((string) $_POST['drvrtoken']) : null;
     $sessionToken = $_SESSION['drvr_token'] ?? null;
 
     if ($sessionToken === null) {
@@ -71,7 +72,10 @@ if ($method === 'PATCH') {
         exit();
     }
 
-    if ($formToken !== $sessionToken && $headerToken !== $sessionToken) {
+    $validHeaderToken = $headerToken !== null && hash_equals($sessionToken, $headerToken);
+    $validFormToken = $formToken !== null && hash_equals($sessionToken, $formToken);
+
+    if (!$validHeaderToken && !$validFormToken) {
         http_response_code(403);
         echo json_encode([
             'status' => 'error',
@@ -89,8 +93,7 @@ if ($method === 'PATCH') {
         exit();
     }
 
-    include_once base_path('app/models/profilepicturemodel.php');
-    include_once base_path("app/SubmissionHandlers/set_profile_pic.php');
+    include_once base_path("app/SubmissionHandlers/set_profile_pic.php");
 
     $file = $_FILES['profileImage'];
     $drvrPicture = new SetDrvrPictureContr($file);

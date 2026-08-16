@@ -1,13 +1,19 @@
 <?php
 
-class SetDrvrPictureContr extends ProfileImageUpload {
-    private $file;
+declare(strict_types=1);
 
-    public function __construct($file) {
+use App\Services\ProfileImageService;
+
+class SetDrvrPictureContr {
+    private array $file;
+    private ProfileImageService $profileImageService;
+
+    public function __construct(array $file) {
         $this->file = $file;
+        $this->profileImageService = new ProfileImageService();
     }
 
-    public function setProfilePicture() {
+    public function setProfilePicture(): array {
         if ($this->file['error'] !== UPLOAD_ERR_OK) {
             return $this->handleUploadError($this->file['error']);
         }
@@ -28,10 +34,19 @@ class SetDrvrPictureContr extends ProfileImageUpload {
             ];
         }
 
-        return $this->uploadImage($_SESSION['driver_id'], $this->file);
+        $driverId = (int) ($_SESSION['driver_id'] ?? 0);
+        if ($driverId < 1) {
+            http_response_code(401);
+            return [
+                'status' => 'error',
+                'message' => 'Driver session is unavailable.'
+            ];
+        }
+
+        return $this->profileImageService->uploadImage($driverId, $this->file);
     }
 
-    private function checkPicType() {
+    private function checkPicType(): bool {
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $this->file['tmp_name']);
         finfo_close($finfo);
@@ -46,7 +61,7 @@ class SetDrvrPictureContr extends ProfileImageUpload {
         return $this->file['size'] > $megabytes5;
     }
 
-    private function handleUploadError($errorCode) {
+    private function handleUploadError(int $errorCode): array {
         $messages = [
             UPLOAD_ERR_INI_SIZE   => "The uploaded file exceeds the server's upload_max_filesize setting.",
             UPLOAD_ERR_FORM_SIZE  => "The uploaded file exceeds the MAX_FILE_SIZE directive in the form.",
@@ -57,12 +72,10 @@ class SetDrvrPictureContr extends ProfileImageUpload {
             UPLOAD_ERR_EXTENSION  => "A PHP extension stopped the upload."
         ];
 
-        $message = $messages[$errorCode] ?? "Unknown upload error.";
-
         http_response_code(400);
         return [
             'status' => 'error',
-            'message' => $message
+            'message' => $message[$errorCode] ?? 'Unknown upload error.'
         ];
     }
 }

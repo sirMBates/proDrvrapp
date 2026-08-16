@@ -1,8 +1,9 @@
 <?php
 
+use App\Services\DriverProfileService;
 use Core\Flash;
 
-class ContactHelpContr extends GetDriver {
+class ContactHelpContr {
     private $driverid;
     private $operatorid;
     private $driverName;
@@ -10,6 +11,7 @@ class ContactHelpContr extends GetDriver {
     private $helpDeskEmail;
     private $emailSubject;
     private $emailMessage;
+    private DriverProfileService $driverProfileService;
 
     public function __construct($driverid, $operatorid, $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage) {
         $this->driverid = $driverid;
@@ -19,6 +21,7 @@ class ContactHelpContr extends GetDriver {
         $this->helpDeskEmail = $helpDeskEmail;
         $this->emailSubject = $emailSubject;
         $this->emailMessage = $emailMessage;
+        $this->driverProfileService = new DriverProfileService();
     }
 
     public function contactHelpDesk() {
@@ -85,7 +88,7 @@ class ContactHelpContr extends GetDriver {
     }
 
     private function checkDriverExist(): bool {
-        $driverInformation = $this->getDrvrInfo($this->driverid);
+        $driverInformation = $this->driverProfileService->driverProfile((int) $this->driverid);
         $separateNames = explode(" ", trim($this->driverName));
         $testPattern = "/^[a-zA-Z]+$/";
         // Clean and validate each part of the name
@@ -106,7 +109,7 @@ class ContactHelpContr extends GetDriver {
     }
 
     private function checkEmailAddresses(): bool {
-        $driverInformation = $this->getDrvrInfo($this->driverid);
+        $driverInformation = $this->driverProfileService->driverProfile((int) $this->driverid);
         if (!isset($driverInformation['email'])) {
             return false;
         }
@@ -156,5 +159,6 @@ class ContactHelpContr extends GetDriver {
             exit();
         }
     }
-} 
+}
+
 ?>

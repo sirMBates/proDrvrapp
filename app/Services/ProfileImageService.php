@@ -1,11 +1,22 @@
 <?php
 
-use Core\Database;
+declare(strict_types=1);
 
-class ProfileImageUpload extends GetDriver {
-    protected function uploadImage($drvrid, $file) {
-        $db = new Database;
-        $driverInformation = $this->getDrvrInfo($drvrid);
+namespace App\Services;
+
+use App\Repositories\DriverRepository;
+
+class ProfileImageService {
+    private DriverProfileService $profileService;
+    private DriverRepository $driverRepository;
+
+    public function __construct() {
+        $this->profileService = new DriverProfileService();
+        $this->driverRepository = new DriverRepository();
+    }
+
+    public function uploadImage(int $driverId, array $file): array {
+        $driverInformation = $this->profileService->driverProfile((int) $driverId);
         $operatorBasicInfo = [
             $driverInformation['firstName'],
             $driverInformation['lastName'],
@@ -32,7 +43,7 @@ class ProfileImageUpload extends GetDriver {
 
         // Move the uploaded file to the server directory
         if (!move_uploaded_file($file['tmp_name'], $filePath)) {
-            echo json_encode([
+            return ([
                 'status' => 'error',
                 'message' => 'Error uploading the image.'
             ]);
@@ -40,23 +51,9 @@ class ProfileImageUpload extends GetDriver {
         }
 
         // Update the database with the path to the profile picture
-        $sql = "UPDATE drivers
-                SET profile_picture = :profile_picture
-                WHERE driver_id = :driver_id";
-        $stmt = $db->connect()->prepare($sql);
-        $stmt->bindParam(':profile_picture', $storedPath);
-        $stmt->bindParam(':driver_id', $drvrid);
-        $stmt->execute();
+        $updated = $this->driverRepository->updateProfilePicture($driverId, $storedPath);
 
-        if (!$stmt) {
-            //http_response_code(401);
-            return [
-                'status' => 'error',
-                'message' => 'There was a problem with your request. Please try again.'
-            ];
-        }
-
-        if ($stmt->rowCount() === 0) {
+        if (!$updated) {
             return [
                 'status' => 'error',
                 'message' => 'Upload failed!'

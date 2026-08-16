@@ -38,6 +38,39 @@ class DriverRepository {
 
         return $stmt->fetch() !== false;        
     }
+
+    public function findById(int $driverId): array {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "SELECT * FROM drivers
+                WHERE driver_id = :driver_id
+                LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':driver_id' => $driverId
+        ]);
+        
+        $driver = $stmt->fetch();
+        if (!$driver) {
+            throw new \RuntimeException('Driver not found.');
+        }
+        return $driver;
+    }
+
+    public function updateProfilePicture(int $driverId, string $storedPath): bool {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "UPDATE drivers
+                SET profile_picture = :profile_picture
+                WHERE driver_id = :driver_id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':profile_picture' => $storedPath,
+            ':driver_id' => $driverId
+        ]);
+    }
 }
 
 ?>

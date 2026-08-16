@@ -1,12 +1,11 @@
 <?php
 
+use App\Services\DriverProfileService;
+
 header('Content-Type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
-
-/*dd(getallHeaders(), true);
-exit();*/
 
 requireLoginAjax();
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
@@ -21,10 +20,9 @@ if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)
     exit();
 }
 
-include_once base_path("app/models/getdrvrmodel.php");
 include_once base_path("app/SubmissionHandlers/get_drvr.php");
 
-$getDriversProfile = new GetDrvrContr();
-$getDriversProfile->driverInfo();
+$profileService = new DriverProfileService();
+$operator = $profileService->driverProfile((int) $_SESSION['driver_id']);
 
 ?>
