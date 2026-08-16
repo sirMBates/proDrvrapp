@@ -1,6 +1,7 @@
 import { Validation } from "./validation.js";
 import formValidation from "./helpers.js";
 import { fetchDrvr } from "./helpers.js";
+const driverToken = document.querySelector('#drvrToken')?.value ?? '';
 const driverName = document.querySelector('#drvr-name');
 const operatorId = document.querySelector('#operatorid');
 const driverEmail = document.querySelector('#drvr-email');
@@ -16,7 +17,13 @@ const getDriver = fetchDrvr;
 window.addEventListener('DOMContentLoaded', () => {
     helpDeskEmail.value = "help-desk@prodriver.local";
     getDriver("https://prodriver.local/getprofile", {
-        mode: 'cors'
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+            'X-CSRF-Token': driverToken
+        }
     })
     .then(data => {
         const driver = data;

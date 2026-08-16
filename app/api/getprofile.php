@@ -1,7 +1,5 @@
 <?php
 
-use App\Services\DriverProfileService;
-
 header('Content-Type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
@@ -22,7 +20,9 @@ if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)
 
 include_once base_path("app/SubmissionHandlers/get_drvr.php");
 
-$profileService = new DriverProfileService();
-$operator = $profileService->driverProfile((int) $_SESSION['driver_id']);
+$getDriversProfile = new GetDrvrContr();
+$getDriversProfile->driverInfo();
+echo json_encode($operator);
+exit();
 
 ?>

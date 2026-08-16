@@ -70,6 +70,8 @@ class DriverRepository {
             ':profile_picture' => $storedPath,
             ':driver_id' => $driverId
         ]);
+
+        return $stmt;
     }
 }
 
