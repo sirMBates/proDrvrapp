@@ -22,6 +22,23 @@ class DriverRepository {
         return (int) $pdo->lastInsertId();
     }
 
+    public function findByUsername(string $username): ?array {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "SELECT * FROM drivers
+                WHERE username = :username
+                LIMIT 1";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':username' => $username
+        ]);
+
+        $driver = $stmt->fetch();
+        return $driver !== false ? $driver : null;
+    }
+
     public function checkDriver(string $username, string $email): bool {
         $db = new Database();
         $pdo = $db->connect();
@@ -66,12 +83,10 @@ class DriverRepository {
                 SET profile_picture = :profile_picture
                 WHERE driver_id = :driver_id";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
+        return $stmt->execute([
             ':profile_picture' => $storedPath,
             ':driver_id' => $driverId
         ]);
-
-        return $stmt;
     }
 }
 

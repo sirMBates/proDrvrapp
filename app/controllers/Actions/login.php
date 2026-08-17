@@ -1,17 +1,30 @@
 <?php
-$alert = new Core\Flash();
 
-if (session_status() !== 2) {
+use Core\Flash;
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['loginAcct'])) {
+    header("Location: /signin");
+    exit();
+}
+
+$sessionToken = $_SESSION['drvr_token'] ?? '';
+$formToken = (string) ($_POST['drvrtoken'] ?? '');
+
+if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
+    Flash::setMsg('error', 'Your session has expired. Please try again.');
+    header("Location: /signin?error=csrf");
+    exit();
+}
+
 if (isset($_POST['loginAcct'])) {
-    // Getting the info from the form using POST method from the name attribute.
-    $username = htmlspecialchars($_POST['username']);
-    $password = htmlspecialchars($_POST['password']);
-    $formToken = htmlspecialchars($_POST['drvrtoken']);
+    $username = trim((string) ($_POST['username'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
+    
     // Instantiate the sign in user controller class. ↓
-    include_once base_path("app/models/logindrvrmodel.php");
     include_once base_path("app/SubmissionHandlers/login_drvr.php");
     $signin = new Logincontr($username, $password);
     // Running error handlers and user signin.
@@ -28,7 +41,7 @@ if (isset($_POST['loginAcct'])) {
         );
     }
     // Redirect to home page upon successful login with valid message.
-    $alert::setMsg('success', $_SESSION['first_name'], ['greet' => true]);
+    Flash::setMsg('success', $_SESSION['first_name'], ['greet' => true]);
     header("Location: /");
     exit();
 }
