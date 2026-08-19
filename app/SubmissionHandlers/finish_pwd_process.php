@@ -1,69 +1,42 @@
 <?php
 
-$alert = new Core\Flash();
+declare(strict_types=1);
 
-class CompleteResetContr extends CompleteReset {
-    private $token;
-    private $password;
+use App\Services\PasswordResetService;
+use App\Validation\Validator;
+use App\Validation\UserValidator;
+use Core\Flash;
 
-    public function __construct($token, $password) {
+class CompleteResetContr {
+    private string $token;
+    private string $password;
+    private PasswordResetService $passwordResetService;
+
+    public function __construct(string $token, string $password) {
         $this->token = $token;
         $this->password = $password;
+        $this->passwordResetService = new PasswordResetService();
     }
 
-    public function changeDrvrPassword() {
-        if ($this->isEmpty() === false) {
-            $alert::setMsg('warning', 'Please enter your new password.');
+    public function completeReset(): void {
+        if (!Validator::required($this->password)) {
+            Flash::setMsg('warning', 'Please enter your new password.');
             header("Location: /compreset?warning=left+blank");
             exit();
         }
 
-        if ($this->invalidPsword() === false) {
-            $alert::setMsg('warning', 'Please re-type your password.');
+        if (!UserValidator::password($this->password)) {
+            Flash::setMsg('warning', 'Please re-type your password.');
             header("Location: /compreset?warning=fix");
             exit();
         }
 
-        $this->updatePassword($this->token, $this->password);
-    }
-
-    public function hasTokenCleared() {
-        if ($this->removedToken() === false) {
-            $alert::setMsg('error', 'There was a problem. Please try reset again!');
-            header("Location: /forget?error=not+cleared");
+        $completed = $this->passwordResetService->completeReset($this->token, $this->password);
+        if (!$completed) {
+            Flash::setMsg('error', 'This password reset is invalid, expired, or has already been used.');
+            header("Location: /forget?error=reset+failed");
             exit();
         }
     }
 
-    private function isEmpty() {
-        $result;
-        if (empty($this->password)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function invalidPsword() {
-        $result;
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function removedToken() {
-        $removed;
-        if ($this->clearToken($this->token) === false) {
-            $removed = false;
-        } else {
-            $removed = true;
-        }
-        return $removed;
-    }
 }

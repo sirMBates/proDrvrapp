@@ -39,23 +39,6 @@ class DriverRepository {
         return $driver !== false ? $driver : null;
     }
 
-    public function checkDriver(string $username, string $email): bool {
-        $db = new Database();
-        $pdo = $db->connect();
-
-        $sql = "SELECT username, email FROM drivers
-                WHERE username = :username OR email = :email
-                LIMIT 1";
-        $stmt = $pdo->prepare($sql);
-
-        $stmt->execute([
-            ':username' => $username,
-            ':email' => $email
-        ]);
-
-        return $stmt->fetch() !== false;        
-    }
-
     public function findById(int $driverId): array {
         $db = new Database();
         $pdo = $db->connect();
@@ -73,6 +56,56 @@ class DriverRepository {
             throw new \RuntimeException('Driver not found.');
         }
         return $driver;
+    }
+
+    public function findByEmail(string $email): ?array {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "SELECT * FROM drivers
+                WHERE email = :email
+                LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':email' => $email
+        ]);
+
+        $driver = $stmt->fetch();
+        return $driver !== false ? $driver : null;
+    }
+
+    public function checkDriver(string $username, string $email): bool {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "SELECT username, email FROM drivers
+                WHERE username = :username OR email = :email
+                LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+
+        $stmt->execute([
+            ':username' => $username,
+            ':email' => $email
+        ]);
+
+        return $stmt->fetch() !== false;        
+    }
+
+    public function updatePassword(int $driverId, string $password): bool {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        $sql = "UPDATE drivers
+                SET password = :password
+                WHERE driver_id = :driver_id";
+        $stmt = $pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':password' => $hashedPassword,
+            ':driver_id' => $driverId
+        ]);
     }
 
     public function updateProfilePicture(int $driverId, string $storedPath): bool {

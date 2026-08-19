@@ -1,24 +1,33 @@
 <?php
 
-$alert = new Core\Flash();
+declare(strict_types=1);
 
-class ResetPwdContr extends ResetPwd {
-    private $token;
+use App\Services\PasswordResetService;
+use Core\Flash;
+
+class ResetPwdContr {
+    private string $token;
+    private PasswordResetService $passwordResetService;
 
     public function __construct($token) {
         $this->token = $token;
+        $this->passwordResetService = new PasswordResetService();
     }
 
-    public function isTokenExpired() {
-        return $this->checkTokenandExpiration($this->token);
-    }
+    public function validateResetToken(): array {
+        $resetRequest = $this->passwordResetService->validateToken($this->token);
 
-    public function createNewToken() {
-        if ($this->checkNewToken() === false) {
-            $alert::setMsg('error', 'No new token! Token has been sent or already used.');
-            header("Location: /forget?error=token+set+already");
+        if ($resetRequest === null) {
+            Flash::setMsg('error', 'This password reset link is invalid or has expired.');
+            header("Location: /forget?error=invalid");
             exit();
-        } else {
+        }
+
+        return $resetRequest;
+    }
+}
+
+/**else {
             $mail = require_once base_path("core/emailSetup.php");
             $mail->setFrom('noreply@prodriver.local', 'Help Desk');
             $mail->addAddress($this->email);
@@ -37,18 +46,6 @@ class ResetPwdContr extends ResetPwd {
                 header("Location: /forget?danger=system+error");
                 exit();
             }
-        }
-    }
-
-    private function checkNewToken() {
-        $result;
-        if (!$this->updateToken($this->token, $this->tokenExpTime, $this->token)) {
-            $result = false;
-        } else {
-            $result = true;
-        }
-        return $result;
-    }
-}
+        } */
 
 ?>

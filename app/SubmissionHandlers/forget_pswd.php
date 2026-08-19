@@ -1,46 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Services\PasswordResetService;
+use App\Validation\Validator;
 use Core\Flash;
 
-class ForgetPswdContr extends ForgetPswd {
-    private $token;
-    private $tokenExpTime;
-    private $email;
+class ForgetPswdContr {
+    private string $email;
+    private PasswordResetService $passwordResetService;
 
-    public function __construct($token, $tokenExpTime, $email) {
-        $this->token = $token;
-        $this->tokenExpTime = $tokenExpTime;
+    public function __construct(string $email) {
         $this->email = $email;
+        $this->passwordResetService = new PasswordResetService();
     }
 
-    public function addTokenAndExpireTime() {
-        $alert = new Flash();
-        if ($this->isEmpty() === false) {
-            $alert::setMsg('warning', 'Please fill in all required fields.');
+    public function resetRequest(): ?array {
+        if (!$this->hasEmail()) {
+            Flash::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /forget?warning=empty"); //emptyinput
             exit();
         }
 
-        if ($this->invalidEmail() === false) {
-            $alert::setMsg('warning', 'Please re-enter your email.');
+        if (!$this->inValidEmail()) {
+            Flash::setMsg('warning', 'Please re-enter your email.');
             header("Location: /forget?warning=invalid"); //emailnotvalid
             exit();
         }
-
-        if ($this->emailExistandSend() === false) {
-            $alert::setMsg('error', 'Please use the email you created the account with to continue.');
-            header("Location: /forget?error=invalid");
-            exit();
-        }
-
-        if ($this->tokenExistAlready() === true) {
-            $alert::setMsg('info', 'Email sent already. Please check your inbox!');
-            header("Location: /forget?info=sent+already");
-            exit();
-        }
-        // Example: Store token hash and expiration time in the database for the user
-        // Assuming you have a method in the parent class to handle DB operations
-        $this->setForgetToken($this->token, $this->tokenExpTime, $this->email);
+        
+        return $this->passwordResetService->createResetRequest($this->email);
     }
 
     public function sendForgetEmail() {
@@ -70,48 +58,13 @@ class ForgetPswdContr extends ForgetPswd {
         }
     }
 
-    private function isEmpty() {
-        $result;
-        if (empty($this->email)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
+    private function hasEmail(): bool {
+        return Validator::required($this->email);
     }
 
     private function invalidEmail() {
-        $result;
-        $cleanEmail = filter_var($this->email, FILTER_SANITIZE_EMAIL);
-        if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function emailExistandSend() {
-        $result;
-        if (!$this->checkEmailExist($this->email)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function tokenExistAlready() {
-        $result;
-        if ($this->checkTokenExist($this->email)) {
-            $result = true;
-        } else {
-            $result = false;
-        }
-        return $result;
+        return Validator::email($this->email);
     }
 }
+
 ?>
