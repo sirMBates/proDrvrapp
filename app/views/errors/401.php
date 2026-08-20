@@ -1,6 +1,5 @@
 <?php
     $title = "Unauthorized";
-    require "../../config.php";
     require "partials/outhead.php";
 ?>
     <div class="">

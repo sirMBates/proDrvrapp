@@ -15,46 +15,54 @@ class ForgetPswdContr {
         $this->passwordResetService = new PasswordResetService();
     }
 
-    public function resetRequest(): ?array {
+    public function requestReset(): ?array {
         if (!$this->hasEmail()) {
             Flash::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /forget?warning=empty"); //emptyinput
             exit();
         }
 
-        if (!$this->inValidEmail()) {
+        if (!$this->isValidEmail()) {
             Flash::setMsg('warning', 'Please re-enter your email.');
             header("Location: /forget?warning=invalid"); //emailnotvalid
             exit();
         }
         
-        return $this->passwordResetService->createResetRequest($this->email);
+        $resetRequest = $this->passwordResetService->createResetRequest($this->email);
+
+        if ($resetRequest !== null) {
+            $this->sendForgetEmail($resetRequest);
+        }
+
+        return $resetRequest;
     }
 
-    public function sendForgetEmail() {
-        if ($this->emailExistandSend() === false) {
-            $alert::setMsg('error', 'Email not sent. Please try again.');
-            header('Location: /forget?error=try+again');
+    private function sendForgetEmail(array $resetRequest): void {
+        $mail = require_once base_path("core/emailSetup.php");
+        $rawToken = $resetRequest['rawToken'];
+        $email = $resetRequest['email'];        
+        $resetUrl = "https://prodriver.local/reset?token=" . urlencode($rawToken);
+
+        $mail->isHTML(true);
+        $mail->setFrom('noreply@prodriver.local', 'Help Desk');
+        $mail->addAddress($email);
+        $mail->Subject = "Password Reset";
+        $mail->Body = <<<HTML
+        <p>You requested a password reset.</p>
+        <p>
+            <a href="{$resetUrl}">
+                Reset your password
+            </a>
+        </p>
+        <p>This link expires in 15 minutes.</p>
+        HTML;
+
+        try {
+            $mail->send();
+        } catch (\Throwable $exception) {
+            Flash::setMsg('danger', "Message could not be sent. Please try again.");
+            header("Location: /forget?danger=system+error");
             exit();
-        } else {
-            $mail = require_once base_path("core/emailSetup.php");
-            $mail->setFrom('noreply@prodriver.local', 'Help Desk');
-            $mail->addAddress($this->email);
-            $mail->Subject = "Forget Password";
-            $mail->Body = <<<END
-
-                    Click <a href="https://prodriver.local/reset?token=$this->token">here</a> to reset password.
-
-                    END;
-            try {
-                $mail->send();
-            } catch (Exception $e) {
-                //remove(comment out if need to check mailer errors).
-                //echo "Message could not be sent. Mailer error: {$mail->ErrorInfo}";
-                $alert::setMsg('danger', "Message not sent. Try again. {$mail->ErrorInfo}");
-                header("Location: /forget?danger=system+error");
-                exit();
-            }
         }
     }
 
@@ -62,7 +70,7 @@ class ForgetPswdContr {
         return Validator::required($this->email);
     }
 
-    private function invalidEmail() {
+    private function isValidEmail(): bool {
         return Validator::email($this->email);
     }
 }

@@ -1,6 +1,5 @@
 <?php
     $title = "Page not Found";
-    require "../../config.php";
     require "partials/outhead.php";
 ?>
     <div class="">

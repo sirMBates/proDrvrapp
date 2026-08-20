@@ -1,6 +1,5 @@
 <?php
     $title = "Not supported";
-    require "../../config.php";
     require "partials/outhead.php";
 ?>
     <div class="">

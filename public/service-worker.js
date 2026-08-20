@@ -139,6 +139,8 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/logout') ||
     url.pathname.startsWith('/register') ||
     url.pathname.startsWith('/forget') ||
+    url.pathname.startsWith('/reset') ||
+    url.pathname.startsWith('/compreset') ||
     url.pathname.startsWith('/completereset') ||
     url.pathname.startsWith('/getprofile')
   ) {

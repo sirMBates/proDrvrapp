@@ -10,10 +10,12 @@ use App\Repositories\DriverRepository;
 class PasswordResetService {
     private PasswordResetRepository $passwordResetRepository;
     private DriverRepository $driverRepository;
+    private int $resetLifetimeMinutes;
 
     public function __construct() {
         $this->passwordResetRepository = new PasswordResetRepository();
         $this->driverRepository = new DriverRepository();
+        $this->resetLifetimeMinutes = (int) ($_ENV['PASSWORD_RESET_LIFETIME_MINUTES'] ?? 15);
     }
 
     public function createResetRequest(string $email): ?array {
@@ -24,7 +26,7 @@ class PasswordResetService {
 
         $rawToken = bin2hex(random_bytes(32));
         $tokenHash = hash('sha256', $rawToken);
-        $expiresAt = date('Y-m-d H:i:s', time() + ($resetLifetimeMinutes * 60));
+        $expiresAt = date('Y-m-d H:i:s', time() + ($this->resetLifetimeMinutes * 60));
 
         $resetId = $this->passwordResetRepository->createRequest((int) $driver['driver_id'], $tokenHash, $expiresAt);
 

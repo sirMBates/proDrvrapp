@@ -1,25 +1,24 @@
 <?php
 
-$alert = new Core\Flash();
+declare(strict_types=1);
 
-if (session_status() !== 2) {
+use Core\Flash;
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-if (!isset($_GET['token'])) {
+$token = trim((string) ($_GET['token'] ?? ''));
+if ($token === '') {
     header("Location: /forget");
     exit();
 }
-// Get the token from the queryString using GET
-$token = htmlspecialchars($_GET['token']);
-$formToken = htmlspecialchars($_POST['drvrtoken']);
-//$getToken = hash("sha256", $token);
-include_once base_path("app/models/resetpwdmodel.php");
+
 include_once base_path("app/SubmissionHandlers/reset_pwd.php");
 $isResetValid = new ResetPwdContr($token);
-$isResetValid->isTokenExpired();
-$alert::setMsg('success', 'Please fill out form below to complete the reset');
-header("Location: /compreset?cleared=$token");
+$isResetValid->validateResetToken();
+Flash::setMsg('success', 'Please fill out form below to complete the reset.');
+header("Location: /completereset?cleared=" . urlencode($token));
 exit();
 
 ?>

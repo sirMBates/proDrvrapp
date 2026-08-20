@@ -1,34 +1,33 @@
 <?php
 
-$alert = new Core\Flash();
+declare(strict_types=1);
 
-if (session_status() !== 2) {
+use Core\Flash;
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$formToken = htmlspecialchars(trim($_POST['drvrtoken']));
-if ($formToken === $_SESSION['drvr_token']) {
-    if (isset($_POST['forget-pswd'])) {
-    // Getting the EMAIL value from the form using POST method from the name attribute.
-        $email = htmlspecialchars($_POST['email']);
-        $createToken = bin2hex(random_bytes(16));
-        $token = hash("sha256", $createToken);
-        // The time() method gives you the current time in seconds.
-        $token_expires = date('Y-m-d H:i:s', time() + 60 * 30); // 30 minutes expiration
-        include_once base_path("app/models/forgetpwdmodel.php");
-        include_once base_path("app/SubmissionHandlers/forget_pswd.php");
-        $startReset = new ForgetPswdContr($token, $token_expires, $email);
-        $startReset->addTokenAndExpireTime();
-        $startReset->sendForgetEmail();
-        //echo $createToken."<br>";
-        //echo $token;
-        $alert::setMsg('info', 'Email sent! Please check your inbox to complete the reset.');
-        header("Location: /forget?info=email+sent");
-        exit();
-    }
-} else {
-    $alert::setMsg('danger', 'Please retry your request.');
-    header("Location: /signup?danger=try+again");
+$formToken = (string) ($_POST['drvrtoken'] ?? '');
+$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
+
+if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
+    Flash::setMsg('danger', 'Please retry your request.');
+    header("Location: /forget?danger=try+again");
     exit();
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forget-pswd'])) {
+    //Getting the EMAIL value from the form using POST method from the name attribute.
+    $email = trim((string) ($_POST['email'] ?? ''));
+    
+    include_once base_path("app/SubmissionHandlers/forget_pswd.php");
+    $startReset = new ForgetPswdContr($email);
+    $resetRequest = $startReset->requestReset();
+    
+    Flash::setMsg('info', 'If an account matches that email, a password reset link has been sent.');
+    header("Location: /forget?info=email+sent");
+    exit();
+}
+
 ?>
