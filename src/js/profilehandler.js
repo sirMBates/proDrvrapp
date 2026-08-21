@@ -1,28 +1,27 @@
 import { Validation } from "./validation.js";
 import formValidation from "./helpers.js";
-import { fetchDrvr } from "./helpers.js";
+import { fetchDrvr, showFlashAlert } from "./helpers.js";
+import { initProfilePictureHandler } from "./profile.js";
 
-//const birthDateChangeBtn = document.querySelector('#birth-date-change');
-const emailChangeBtn = document.querySelector('#email-change');
-const phoneChangeBtn = document.querySelector('#phone-change');
-const pwdChangeBtn = document.querySelector('#pwd-change');
-const profileInputs = document.querySelectorAll('input');
-const drvrFullName = profileInputs[2];
-const operatorID = profileInputs[3];
-const drvrUserName = profileInputs[4];
-const drvrEmail = profileInputs[5];
-const drvrBirthDate = profileInputs[6];
-const drvrPhoneNumber = profileInputs[7];
-const drvrPsword = profileInputs[8];
-const pswordIcon = document.querySelector('#psword-icon');
-const drvrStatus = profileInputs[9];
+// Elements
+const drvrAlert = showFlashAlert;
+const pageInput = document.querySelector('#profilePictureInput');
+const pageImage = document.querySelector('#profilePictureImage');
+const defaultProfileImage = '../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png'; 
 const drvrToken = document.querySelector('#drvrToken').value;
-const updatePswordBtn = document.querySelector('#updatePsword');
-const updateInfoBtn = document.querySelector('#updateTel-email');
-const getDriver = fetchDrvr;
+const fullnameDisplay = document.querySelector('#fullnameDisplay');
+const operatorIdDisplay = document.querySelector('#operatorIdDisplay');
+const usernameDisplay = document.querySelector('#usernameDisplay');
+const emailDisplay = document.querySelector('#emailDisplay');
+const mobileDisplay = document.querySelector('#mobileDisplay');
+const statusDisplay = document.querySelector('#statusDisplay');
 
+const updateInfoBtn = document.querySelector('#updateInfoBtn');
+const updatePswdBtn = document.querySelector('#updatePswdBtn');
+
+// Fetch driver profile
 window.addEventListener('DOMContentLoaded', () => {
-    getDriver("https://prodriver.local/getprofile", {
+    fetchDrvr("https://prodriver.local/getprofile", {
         mode: 'cors',
         credentials: 'include',
         headers: {
@@ -30,136 +29,103 @@ window.addEventListener('DOMContentLoaded', () => {
             'X-CSRF-Token': drvrToken
         }
     })
-        .then(data => {
-            const driver = data;
-            if (driver) {
-                drvrFullName.value = `${driver['firstName']} ${driver['lastName']}`;
-                operatorID.value = driver['operatorid'];
-                drvrUserName.value = driver['username'];
-                drvrEmail.value = driver['email'];
-                drvrBirthDate.value = driver['birthdate'];
-                drvrPhoneNumber.value = driver['mobileNumber'];
-                drvrStatus.value = localStorage.getItem('status') ? localStorage.getItem('status') : sessionStorage.getItem('status');
+    .then(driver => {
+        fullnameDisplay.textContent = `${driver.firstName} ${driver.lastName}`;
+        operatorIdDisplay.textContent = driver.operatorid;
+        usernameDisplay.textContent = driver.username;
+        emailDisplay.textContent = driver.email;
+        mobileDisplay.textContent = driver.mobileNumber;
+        statusDisplay.textContent = localStorage.getItem('status') || sessionStorage.getItem('status');
+    })
+    .catch(err => console.error("Profile fetch error:", err));
+});
+
+if (pageInput && pageImage) {
+    initProfilePictureHandler({
+        profileInput: pageInput,
+        profileImage: pageImage,
+        drvrToken,
+        getDriver: fetchDrvr,
+        defaultProfileImage: defaultProfileImage,
+        Validation,
+        drvrAlert
+    });
+};
+
+// Inline editing for cards
+document.querySelectorAll('.editable').forEach(card => {
+    const btn = card.querySelector('.edit-btn');
+    const field = card.dataset.field;
+    const display = card.querySelector('.field-value');
+
+    btn.addEventListener('click', () => {
+        const currentValue = display.textContent;
+
+        display.innerHTML = `
+            <input type="${field === 'password' ? 'password' : 'text'}"
+                   class="form-control form-control-sm edit-input"
+                   id="${field}Input"
+                   value="${field === 'password' ? '' : currentValue}">
+            <button class="btn btn-primary btn-sm mt-2 save-btn">Save</button>
+        `;
+
+        const input = document.querySelector(`#${field}Input`);
+        const saveBtn = card.querySelector('.save-btn');
+
+        saveBtn.addEventListener('click', () => {
+            const newValue = input.value.trim();
+
+            // Validation
+            let isValid = true;
+
+            if (field === 'email') {
+                isValid = Validation.validate(newValue, 'email');
+            } else if (field === 'mobile') {
+                isValid = Validation.validate(newValue, 'tel');
+            } else if (field === 'password') {
+                isValid = Validation.validate(newValue, 'password');
             }
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        })
+
+            if (!isValid) {
+                input.classList.add('is-invalid');
+                return;
+            }
+
+            input.classList.remove('is-invalid');
+
+            // Update display
+            display.textContent = newValue || "********";
+
+            // Store updated value for submission
+            display.dataset.updated = newValue;
+        });
+    });
 });
 
-emailChangeBtn.addEventListener('click', () => {
-    if (drvrEmail.hasAttribute('disabled')) {
-        $(drvrEmail).prop('disabled', false);
-    } else if (drvrEmail.setAttribute('disabled', 'false')) {
-        $(drvrEmail).attr('disabled');
-    }
+// Submit updated info
+updateInfoBtn.addEventListener('click', () => {
+    const updatedEmail = emailDisplay.dataset.updated;
+    const updatedMobile = mobileDisplay.dataset.updated;
+
+    const payload = {
+        email: updatedEmail,
+        mobile: updatedMobile,
+        drvrtoken: drvrToken,
+        __method: "PATCH"
+    };
+
+    return formValidation(payload);
 });
 
-/*birthDateChangeBtn.addEventListener('click', () => {
-    if (drvrBirthDate.hasAttribute('disabled')) {
-        $(drvrBirthDate).prop('disabled', false);
-    } else if (drvrBirthDate.setAttribute('disabled', 'false')) {
-        $(drvrBirthDate).attr('disabled');
-    }
-});*/
+// Submit updated password
+updatePswdBtn.addEventListener('click', () => {
+    const updatedPassword = document.querySelector('#passwordDisplay')?.dataset.updated;
 
-phoneChangeBtn.addEventListener('click', () => {
-    if (drvrPhoneNumber.hasAttribute('disabled')) {
-        $(drvrPhoneNumber).prop('disabled', false);
-    } else if (drvrPhoneNumber.setAttribute('disabled', 'false')) {
-        $(drvrPhoneNumber).attr('disabled');
-    }
-});
+    const payload = {
+        password: updatedPassword,
+        drvrtoken: drvrToken,
+        __method: "PATCH"
+    };
 
-pwdChangeBtn.addEventListener('click', () => {
-    if (drvrPsword.hasAttribute('disabled')) {
-        $(drvrPsword).prop('disabled', false);
-    } else if (drvrPsword.setAttribute('disabled', 'false')) {
-        $(drvrPsword).attr('disabled');
-    }
-});
-
-$(drvrFullName).on('input', () => {
-    let isValid = Validation.validate($(drvrFullName).val(), $(drvrFullName).attr('type'));
-    if (!isValid) {
-        $(drvrFullName).addClass('is-invalid');
-    } else {
-        $(drvrFullName).removeClass('is-invalid');
-        $(drvrFullName).addClass('is-valid');
-    }
-})
-
-$(operatorID).on('input', () => {
-    let isValid = Validation.validate($(operatorID).val(), $(operatorID).attr('type'));
-    if (!isValid) {
-        $(operatorID).addClass('is-invalid');
-    } else {
-        $(operatorID).removeClass('is-invalid');
-        $(operatorID).addClass('is-valid');
-    }
-})
-
-$(drvrEmail).on('input', () => {
-    let isValid = Validation.validate($(drvrEmail).val(), $(drvrEmail).attr('type'));
-    if (!isValid) {
-        $(drvrEmail).addClass('is-invalid');
-    } else {
-        $(drvrEmail).removeClass('is-invalid');
-        $(drvrEmail).addClass('is-valid');
-    }
-})
-
-$(drvrBirthDate).on('input', () => {
-    let isValid = Validation.validate($(drvrBirthDate).val(), $(drvrBirthDate).attr('type'));
-    if (!isValid) {
-        $(drvrBirthDate).addClass('is-invalid');
-    } else {
-        $(drvrBirthDate).removeClass('is-invalid');
-        $(drvrBirthDate).addClass('is-valid');
-    }
-});
-
-$(drvrPhoneNumber).on('input', () => {
-    let isValid = Validation.validate($(drvrPhoneNumber).val(), $(drvrPhoneNumber).attr('type'));
-    if (!isValid) {
-        $(drvrPhoneNumber).addClass('is-invalid');
-    } else {
-        $(drvrPhoneNumber).removeClass('is-invalid');
-        $(drvrPhoneNumber).addClass('is-valid');
-    }
-});
-
-$(drvrUserName).on('input', () => {
-    let isValid = Validation.validateOnlyUsername($(drvrUserName).val(), $(drvrUserName).attr('type'));
-    if (!isValid) {
-        $(drvrUserName).addClass('is-invalid');
-    } else {
-        $(drvrUserName).removeClass('is-invalid');
-        $(drvrUserName).addClass('is-valid');
-    }
-});
-
-$(drvrPsword).on('input', () => {
-    let isValid = Validation.validate($(drvrPsword).val(), 'password');
-    if (!isValid) {
-        $(drvrPsword).addClass('is-invalid');
-    } else {
-        $(drvrPsword).removeClass('is-invalid');
-        $(drvrPsword).addClass('is-valid');
-    }
-});
-
-$(pswordIcon).on('click', function() {
-    if ($(drvrPsword).prop('disabled')) return;
-    const isHidden = $(drvrPsword).attr('type') === 'password';
-    $(drvrPsword).attr('type', isHidden ? 'text' : 'password');
-    $(pswordIcon).toggleClass('fa-eye fa-eye-slash')
-});
-
-$(updatePswordBtn).on('submit', () => {
-    return formValidation();
-});
-
-$(updateInfoBtn).on('submit', () => {
-    return formValidation();
+    return formValidation(payload);
 });

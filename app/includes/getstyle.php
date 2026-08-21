@@ -51,7 +51,7 @@ function pageStyle($value) {
                         break;
 
                 case "/profile":
-                        return;
+                        echo "<link rel='stylesheet' href='/dist/styles/profile.css'>\n";
                         break;
 
                 case "/views/404.php":
