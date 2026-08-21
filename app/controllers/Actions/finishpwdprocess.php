@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-pswd'])) {
     $password = (string) ($_POST['password'] ?? '');
     // Instantiate the reset token controller class. ↓
     
-    include_once base_path("app/SubmissionHandlers/finish_pwd_process.php");
-    $createNewPwd = new CompleteResetContr($token, $password);
-    $createNewPwd->completeReset();
+    include_once base_path("app/SubmissionHandlers/completepasswordreset.php");
+    $completePasswordReset = new CompletePasswordResetContr($token, $password);
+    $completePasswordReset->completePasswordReset();
     
     Flash::setMsg('success', 'Please log in to your account.');
     header("Location: /signin?success=reset+complete");

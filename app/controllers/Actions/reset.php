@@ -18,7 +18,7 @@ include_once base_path("app/SubmissionHandlers/reset_pwd.php");
 $isResetValid = new ResetPwdContr($token);
 $isResetValid->validateResetToken();
 Flash::setMsg('success', 'Please fill out form below to complete the reset.');
-header("Location: /completereset?cleared=" . urlencode($token));
+header("Location: /reset-password?cleared=" . urlencode($token));
 exit();
 
 ?>

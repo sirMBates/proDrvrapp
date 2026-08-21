@@ -59,7 +59,7 @@ return new class {
 
         if (isset($_SESSION['driver_id']) && isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
             // prevent Logged-in users from hitting signup/signin
-            if (in_array($uri, ['/signup', '/signin', '/register', '/forget', '/completereset'])) {
+            if (in_array($uri, ['/signup', '/signin', '/register', '/forget', '/reset-password'])) {
                 header("Location: /");
                 exit();
             }

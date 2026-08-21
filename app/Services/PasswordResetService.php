@@ -61,7 +61,7 @@ class PasswordResetService {
         return $resetRequest;
     }
 
-    public function completeReset(string $rawToken, string $newPassword): bool {
+    public function completePasswordReset(string $rawToken, string $newPassword): bool {
         $resetRequest = $this->validateToken($rawToken);
         if ($resetRequest === null) {
             return false;
