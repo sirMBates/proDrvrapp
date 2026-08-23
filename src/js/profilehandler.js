@@ -7,7 +7,7 @@ import { initProfilePictureHandler } from "./profile.js";
 const drvrAlert = showFlashAlert;
 const pageInput = document.querySelector('#profilePictureInput');
 const pageImage = document.querySelector('#profilePictureImage');
-const defaultProfileImage = '../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png'; 
+const defaultProfileImage = '../../dist/images-videos/logoandicons/defaultProfileImg.png';
 const drvrToken = document.querySelector('#drvrToken').value;
 const fullnameDisplay = document.querySelector('#fullnameDisplay');
 const operatorIdDisplay = document.querySelector('#operatorIdDisplay');
