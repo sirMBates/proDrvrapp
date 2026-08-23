@@ -1,13 +1,12 @@
 import { Validation } from "./validation.js";
-import formValidation from "./helpers.js";
-import { fetchDrvr, showFlashAlert } from "./helpers.js";
+import { fetchDrvr, showFlashAlert, formValidation } from "./helpers.js";
 import { initProfilePictureHandler } from "./profile.js";
 
 // Elements
 const drvrAlert = showFlashAlert;
 const pageInput = document.querySelector('#profilePictureInput');
 const pageImage = document.querySelector('#profilePictureImage');
-const defaultProfileImage = '../../dist/images-videos/logoandicons/defaultProfileImg.png';
+const defaultProfileImage = '../../dist/images-videos/logoandicons/defaultProfileImage.jpg';
 const drvrToken = document.querySelector('#drvrToken').value;
 const fullnameDisplay = document.querySelector('#fullnameDisplay');
 const operatorIdDisplay = document.querySelector('#operatorIdDisplay');
@@ -59,23 +58,58 @@ document.querySelectorAll('.editable').forEach(card => {
     const display = card.querySelector('.field-value');
 
     btn.addEventListener('click', () => {
+        btn.disabled = true;
         const currentValue = display.textContent;
 
-        display.innerHTML = `
-            <input type="${field === 'password' ? 'password' : 'text'}"
-                   class="form-control form-control-sm edit-input"
-                   id="${field}Input"
-                   value="${field === 'password' ? '' : currentValue}">
-            <button class="btn btn-primary btn-sm mt-2 save-btn">Save</button>
-        `;
+        if (field === 'password') {
+            display.innerHTML = `
+                <div class="input-group">
+                    <input type="password" class="form-control form-control-sm edit-input" id="passwordInput" autocomplete="new-password">
+                    <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Show password" aria-pressed="false"><i class="fa-solid fa-eye"></i></button>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm mt-2 save-btn">
+                    Save
+                </button>
+            `;
+        } else {
+            display.innerHTML = `
+                <input type="text" class="form-control form-control-sm edit-input" id="${field}Input" value="${currentValue}">
+                <button type="button" class="btn btn-primary btn-sm mt-2 save-btn">
+                    Save
+                </button>
+            `;
+        }
 
-        const input = document.querySelector(`#${field}Input`);
+        const input = card.querySelector(`#${field}Input`);
         const saveBtn = card.querySelector('.save-btn');
+        const passwordToggle = card.querySelector('.password-toggle');
+
+        if (passwordToggle) {
+            const icon = passwordToggle.querySelector('i');
+
+            passwordToggle.addEventListener('click', () => {
+                const isHidden = input.type === 'password';
+
+                input.type = isHidden ? 'text' : 'password';
+
+                icon.classList.toggle('fa-eye', !isHidden);
+                icon.classList.toggle('fa-eye-slash', isHidden);
+
+                passwordToggle.setAttribute(
+                    'aria-label',
+                    isHidden ? 'Hide password' : 'Show password'
+                );
+
+                passwordToggle.setAttribute(
+                    'aria-pressed',
+                    String(isHidden)
+                );
+            });
+        }
 
         saveBtn.addEventListener('click', () => {
-            const newValue = input.value.trim();
+            const newValue = field === 'password' ? input.value : input.value.trim();
 
-            // Validation
             let isValid = true;
 
             if (field === 'email') {
@@ -93,11 +127,14 @@ document.querySelectorAll('.editable').forEach(card => {
 
             input.classList.remove('is-invalid');
 
-            // Update display
-            display.textContent = newValue || "********";
-
-            // Store updated value for submission
             display.dataset.updated = newValue;
+
+            if (field === 'password') {
+                display.textContent = '********';
+            } else {
+                display.textContent = newValue;
+            }
+            btn.disabled = false;
         });
     });
 });
@@ -108,8 +145,9 @@ updateInfoBtn.addEventListener('click', () => {
     const updatedMobile = mobileDisplay.dataset.updated;
 
     const payload = {
-        email: updatedEmail,
-        mobile: updatedMobile,
+        action: 'update-contact-information',
+        email: updatedEmail ?? '',
+        mobile: updatedMobile ?? '',
         drvrtoken: drvrToken,
         __method: "PATCH"
     };
@@ -122,7 +160,8 @@ updatePswdBtn.addEventListener('click', () => {
     const updatedPassword = document.querySelector('#passwordDisplay')?.dataset.updated;
 
     const payload = {
-        password: updatedPassword,
+        action: 'update-password',
+        password: updatedPassword ?? '',
         drvrtoken: drvrToken,
         __method: "PATCH"
     };

@@ -74,6 +74,25 @@ class DriverRepository {
         return $driver !== false ? $driver : null;
     }
 
+    public function emailExistsForOtherDriver(int $driverId, string $email): bool {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "SELECT driver_id
+                FROM drivers
+                WHERE email = :email AND driver_id <> :driver_id
+                LIMIT 1";
+
+        $stmt = $pdo->prepare($sql);
+
+        $stmt->execute([
+            ':email' => $email,
+            ':driver_id' => $driverId
+        ]);
+
+        return $stmt->fetch() !== false;
+    }
+
     public function checkDriver(string $username, string $email): bool {
         $db = new Database();
         $pdo = $db->connect();
@@ -120,6 +139,37 @@ class DriverRepository {
             ':profile_picture' => $storedPath,
             ':driver_id' => $driverId
         ]);
+    }
+
+    public function updateContactInformation(int $driverId, ?string $email, ?string $encryptedMobile): bool {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $fields = [];
+        $params = [
+            ':driver_id' => $driverId
+        ];
+
+        if ($email !== null && $email !== '') {
+            $fields[] = 'email = :email';
+            $params[':email'] = $email;
+        }
+
+        if ($encryptedMobile !== null && $encryptedMobile !== '') {
+            $fields[] = 'mobile_number = :mobile_number';
+            $params[':mobile_number'] = $encryptedMobile;
+        }
+
+        if ($fields === []) {
+            return false;
+        }
+
+        $sql = "UPDATE drivers
+                SET " . implode(', ', $fields) . "
+                WHERE driver_id = :driver_id";
+
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute($params);
     }
 }
 

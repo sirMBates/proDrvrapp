@@ -1,149 +1,85 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Services\ProfileAccountService;
+use App\Validation\Validator;
+use App\Validation\UserValidator;
 use Core\Flash;
 
-class UpdateDrvrContr extends UpdateDrvr {
-    private $drvrid;
-    private $password;
-    private $email;
-    //private $birthdate;
-    private $mobileNum;
+class UpdateDrvrContr {
+    private int $driverId;
+    private ?string $password;
+    private ?string $email;
+    private ?string $phoneNumber;
+    private ProfileAccountService $profileAccountService;
 
-    public function __construct($drvrid, $password, $email, $birthdate, $mobileNum) {
-        $this->drvrid = $drvrid;
+    public function __construct(int $driverId, ?string $password, ?string $email, ?string $phoneNumber) {
+        $this->driverId = $driverId;
         $this->password = $password;  
-        $this->email = $email;
-        //$this->birthdate = $birthdate;  
-        $this->mobileNum = $mobileNum;  
+        $this->email = $email;  
+        $this->phoneNumber = $phoneNumber;
+        $this->profileAccountService = new ProfileAccountService();  
     }
 
-    public function changeDrvrPwd() {
-        $alert = new Flash();
-        if ($this->doesDrvrExist() === false) {
-            $alert::setMsg('danger', 'You must be logged into your account for this change.');
-            header("location: /profile?danger=not+authorize");
+    public function changeDriverPassword(): void {
+        if ($this->driverId < 1) {
+            Flash::setMsg('danger', 'You must be logged into your account for this change.');
+            header("location: /profile?danger=not+authorized");
             exit();
         }
 
-        if ($this->isInputEmpty() === true) {
-            $alert::setMsg('warning', 'Please enter your new password.');
+        if (!Validator::required($this->password)) {
+            Flash::setMsg('warning', 'Please enter your new password.');
             header("Location: /profile?warning=empty");
             exit();
         }
 
-        if ($this->isPswordValid() === false) {
-            $alert::setMsg('warning', 'Please re-type your password.');
+        if (!UserValidator::password($this->password)) {
+            Flash::setMsg('warning', 'Please re-type your password.');
             header("Location: /profile?warning=check+password");
             exit();
         }
 
-        $this->drvrPwdUpdate($this->drvrid, $this->password);
+        $updated = $this->profileAccountService->updatePassword($this->driverId, $this->password);
+        if (!$updated) {
+            Flash::setMsg('error', 'The request was not completed. Please try again.');
+            header("Location: /profile?error=try+again");
+            exit();
+        }
     }
 
-    public function changeDrvrData() {
-        $alert = new Flash();
-        if ($this->isInputEmpty() === true) {
-            $alert::setMsg('warning', 'You must enter a email, birthdate or number.');
+    public function updateContactInformation(): void {
+        if (!Validator::required($this->email) && !Validator::required($this->phoneNumber)) {
+            Flash::setMsg('warning', 'Please enter an email address or mobile number.');
             header("Location: /profile?warning=empty");
             exit();
         }
 
-        if (!empty($this->email) && $this->isEmailValid() === false) {
-            $alert::setMsg('warning', 'Please enter a email address.');
+        if (Validator::required($this->email) && !Validator::email($this->email)) {
+            Flash::setMsg('warning', 'Please enter a valid email address.');
             header("Location: /profile?warning=invalid+email");
             exit();
         }
 
-        /*if (!empty($this->birthdate) && $this->isBirthDateValid() === false) {
-            $alert::setMsg('warning', 'Please re-type your birth date.');
-            header("Location: /profile?warning=invalid+birthdate");
+        if (Validator::required($this->email) && $this->profileAccountService->emailExistsForOtherDriver($this->driverId, $this->email)) {
+            Flash::setMsg('warning', 'That email address is already in use.');
+            header("Location: /profile?warning=email+exists");
             exit();
-        }*/
+        }
 
-        if (!empty($this->mobileNum) && $this->isMobileNumberValid() === false) {
-            $alert::setMsg('warning', 'Please enter a mobile number.');
+        if (Validator::required($this->phoneNumber) && !UserValidator::mobileNumber($this->phoneNumber)) {
+            Flash::setMsg('warning', 'Please enter a valid mobile number.');
             header("Location: /profile?warning=invalid+number");
             exit();
         }
-        $this->drvrUpdateData($this->drvrid, $this->email, /*$this->birthdate,*/$this->mobileNum);
-    }
-
-    private function doesDrvrExist() {
-        $doesExist;
-        if (!$this->drvrExist($this->drvrid)) {
-            $doesExist = false;
-        } else {
-            $doesExist = true;
+        
+        $updated = $this->profileAccountService->updateContactInformation($this->driverId, $this->email, $this->phoneNumber);
+        if (!$updated) {
+            Flash::setMsg('error', 'The request was not completed. Please try again.');
+            header("Location: /profile?error=try+again");
+            exit();
         }
-        return $doesExist;
-    }
-
-    private function isInputEmpty() {
-        $result;
-        if (!empty($this->password) || !empty($this->email) || /*!empty($this->birthdate) ||*/!empty($this->mobileNum)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function isPswordValid() {
-        $result;
-        if (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&_]).\S{7,}$/", $this->password)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function isEmailValid() {
-        $result;
-        $cleanEmail = filter_var($this->email, FILTER_SANITIZE_EMAIL);
-        if (!filter_var($cleanEmail, FILTER_VALIDATE_EMAIL)) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    /*private function isBirthDateValid() {
-        $result;
-        $getDate = $this->birthdate;
-        function cleanDateOfBirth($date) {
-            $cleanDob = filter_var($date, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
-            return $cleanDob;
-        }
-
-        if (DateTime::createFromFormat('Y-m-d', cleanDateOfBirth($getDate)) === false) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }*/
-
-    private function isMobileNumberValid() {
-        $result;
-        $mobNumber = $this->mobileNum;
-        function cleanMobileNumber($number) {
-            $cleanMobNum = filter_var($number, FILTER_SANITIZE_NUMBER_INT);
-            return $cleanMobNum;
-        }
-
-        if (!preg_match("/^[0-9]{10}$/", cleanMobileNumber($mobNumber))) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
     }
 }
 

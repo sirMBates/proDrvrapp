@@ -1,44 +1,64 @@
 <?php
 
-$alert = new Core\Flash();
+declare(strict_types=1);
 
-if (session_status() !== 2) {
+use Core\Flash;
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
+$method = strtoupper($_POST['__method'] ?? $_SERVER['REQUEST_METHOD']);
 
-if ($method === 'POST' && isset($_POST['__method'])) {
-    $method = strtoupper($_POST['__method']);
+if ($method !== 'PATCH') {
+    http_response_code(405);
+    exit();
 }
 
-if ($method === 'PATCH') {
-    if (isset($_POST['updatepswd'])) {
-        $drvrid = htmlspecialchars(trim($_SESSION['driver_id']));
-        $password = htmlspecialchars(trim($_POST['password']));
-        $email = htmlspecialchars(trim(null));
-        $phoneNumber = htmlspecialchars(trim(null));
-        include_once base_path("app/models/updateprofilemodel.php");
-        include_once base_path("app/SubmissionHandlers/update_profile.php");
-        $newDrvrPwd = new UpdateDrvrContr($drvrid, $password, $email, $phoneNumber);
-        $newDrvrPwd->changeDrvrPwd();
-        $alert::setMsg('success', 'You\'ve successfully updated your password!');
-        header("Location: /profile?success=password+updated");
-        exit();
-    }
-    elseif (isset($_POST['updateinfo'])) {
-        $driver = htmlspecialchars(Trim($_SESSION['driver_id']));
-        $drvrPassword = null; 
-        $drvrEmail = isset($_POST['email'])? htmlspecialchars(trim($_POST['email'])) : null;
-        //$drvrBirthDate = isset($_POST['birthdate'])? htmlspecialchars(trim($_POST['birthdate'])) : null;
-        $drvrMobile = isset($_POST['mobile'])? htmlspecialchars(trim($_POST['mobile'])) : null;
-        include_once base_path("app/models/updateprofilemodel.php");
-        include_once base_path("app/SubmissionHandlers/update_profile.php");
-        $changeData = new UpdateDrvrContr($driver, $drvrPassword, $drvrEmail, /*$drvrBirthDate,*/$drvrMobile);
-        $changeData->changeDrvrData();
-        $alert::setMsg('info', 'Your information has been updated.');
-        header("Location: /profile?info=data+saved");
-        exit();
-    }
+$driverId = (int) ($_SESSION['driver_id'] ?? 0);
+
+if ($driverId < 1) {
+    Flash::setMsg('danger', 'You must be logged into your account for this change.');
+    header("Location: /signin");
+    exit();
 }
+
+$formToken = (string) ($_POST['drvrtoken'] ?? '');
+$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
+
+if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
+    Flash::setMsg('danger', 'Please retry your request.');
+    header("Location: /profile?danger=try+again");
+    exit();
+}
+
+$action = (string) ($_POST['action'] ?? '');
+include_once base_path("app/SubmissionHandlers/update_profile.php");
+
+if ($action === 'update-password') {
+    $password = (string) ($_POST['password'] ?? '');
+
+    $updateProfile = new UpdateDrvrContr($driverId, $password, null, null);
+    $updateProfile->changeDriverPassword();
+    Flash::setMsg('info', 'You\'ve successfully updated your password!');
+    header("Location: /profile?info=password+updated");
+    exit();
+}
+
+if ($action === 'update-contact-information') {
+    $email = trim((string) ($_POST['email'] ?? ''));
+    $phoneNumber = trim((string) ($_POST['mobile'] ?? ''));
+
+    $updateProfile = new UpdateDrvrContr($driverId, null, $email !== '' ? $email : null, $phoneNumber !== '' ? $phoneNumber : null);
+    $updateProfile->updateContactInformation();
+    Flash::setMsg('success', 'Your information has been updated.');
+    header("Location: /profile?success=data+saved");
+    exit();
+}
+
+http_response_code(400);
+Flash::setMsg('error', 'Invalid profile update request.');
+header("Location: /profile?error=invalid+request");
+exit();
+
 ?>

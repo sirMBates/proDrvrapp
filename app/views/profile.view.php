@@ -9,7 +9,7 @@ include "partials/info-modal.php";
                 <input type="hidden" name="__method" value="patch">
                 <!-- Profile Picture -->
                 <div class="text-center mb-4">
-                        <img id="profilePictureImage" src="../dist/images-videos/logoandicons/defaultProfileImg.png" class="profile-pic shadow-sm" alt="Profile Picture">
+                        <img id="profilePictureImage" src="../dist/images-videos/logoandicons/defaultProfileImage.jpg" class="profile-pic shadow-sm" alt="Profile Picture">
                         <input type="file" id="profilePictureInput" class="d-none" accept="image/*">
                 </div>
 
@@ -66,7 +66,7 @@ include "partials/info-modal.php";
                                                         <h6 class="text-muted mb-1">Email</h6>
                                                         <p id="emailDisplay" class="field-value"></p>
                                                 </div>
-                                                <button class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
+                                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
                                         </div>
                                 </div>
                         </div>
@@ -79,7 +79,7 @@ include "partials/info-modal.php";
                                                         <h6 class="text-muted mb-1">Mobile</h6>
                                                         <p id="mobileDisplay" class="field-value"></p>
                                                 </div>
-                                                <button class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
+                                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
                                         </div>
                                 </div>
                         </div>
@@ -90,9 +90,9 @@ include "partials/info-modal.php";
                                         <div class="card-body d-flex justify-content-between align-items-center">
                                                 <div class="field-content">
                                                         <h6 class="text-muted mb-1">Password</h6>
-                                                        <p class="field-value">********</p>
+                                                        <p id="passwordDisplay" class="field-value">********</p>
                                                 </div>
-                                                <button class="btn btn-outline-primary btn-sm edit-btn">Change</button>
+                                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn">Change</button>
                                         </div>
                                 </div>
                         </div>
@@ -112,8 +112,8 @@ include "partials/info-modal.php";
                 </div>
 
                 <div class="text-center mt-4">
-                        <button id="updateInfoBtn" class="btn btn-secondary mx-2">Update Information</button>
-                        <button id="updatePswdBtn" class="btn btn-primary mx-2">Update Password</button>
+                        <button type="button" id="updateInfoBtn" class="btn btn-secondary mx-2">Update Information</button>
+                        <button type="button" id="updatePswdBtn" class="btn btn-primary mx-2">Update Password</button>
                 </div>
         </form>
 </main>
