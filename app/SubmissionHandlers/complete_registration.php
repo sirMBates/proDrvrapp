@@ -26,7 +26,7 @@ class RegistrationContr {
         $this->registrationService = new RegistrationService();
     }
 
-    public function processProfile (): void {
+    public function processProfile(): void {
         if (!Validator::required($this->operatorId) || !Validator::required($this->firstName) || !Validator::required($this->lastName) || !Validator::required($this->mobileNumber) || !Validator::required($this->birthDate)) {
             Flash::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /register?warning=missing+info"); //emptyinputs
