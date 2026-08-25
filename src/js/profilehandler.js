@@ -1,5 +1,5 @@
 import { Validation } from "./validation.js";
-import { fetchDrvr, showFlashAlert, submitFormPayload } from "./helpers.js";
+import { fetchDrvr, showFlashAlert, formValidation } from "./helpers.js";
 import { initProfilePictureHandler } from "./profile.js";
 
 // Elements
