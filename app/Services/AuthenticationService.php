@@ -37,6 +37,19 @@ class AuthenticationService {
             'birthdate' => Crypto::decrypt($driver['birth_date'], $key)
         ];
     }
+
+    public function verifyPasswordByDriverId(int $driverId, string $password): bool {
+        if ($driverId < 1 || $password === '') {
+            return false;
+        }
+
+        try{
+            $driver = $this->driverRepository->findById($driverId);
+        } catch (\RuntimeException) {
+            return false;
+        }
+        return password_verify($password, $driver['password']);
+    }
 }
 
 ?>

@@ -9,14 +9,18 @@ use Core\Flash;
 
 class UpdateDrvrContr {
     private int $driverId;
-    private ?string $password;
+    private ?string $currentPassword;
+    private ?string $newPassword;
+    private ?string $confirmPassword;
     private ?string $email;
     private ?string $phoneNumber;
     private ProfileAccountService $profileAccountService;
 
-    public function __construct(int $driverId, ?string $password, ?string $email, ?string $phoneNumber) {
+    public function __construct(int $driverId, ?string $currentPassword, ?string $newPassword, ?string $confirmPassword, ?string $email, ?string $phoneNumber) {
         $this->driverId = $driverId;
-        $this->password = $password;  
+        $this->currentPassword = $currentPassword;
+        $this->newPassword = $newPassword;
+        $this->confirmPassword = $confirmPassword;  
         $this->email = $email;  
         $this->phoneNumber = $phoneNumber;
         $this->profileAccountService = new ProfileAccountService();  
@@ -25,26 +29,44 @@ class UpdateDrvrContr {
     public function changeDriverPassword(): void {
         if ($this->driverId < 1) {
             Flash::setMsg('danger', 'You must be logged into your account for this change.');
-            header("location: /profile?danger=not+authorized");
+            header("location: /signin");
             exit();
         }
 
-        if (!Validator::required($this->password)) {
+        if (!Validator::required($this->currentPassword)) {
+            Flash::setMsg('warning', 'Please enter your current password.');
+            header("Location: /profile?warning=current+password+required");
+            exit();
+        }
+
+        if (!Validator::required($this->newPassword)) {
             Flash::setMsg('warning', 'Please enter your new password.');
-            header("Location: /profile?warning=empty");
+            header("Location: /profile?warning=new+password+required");
             exit();
         }
 
-        if (!UserValidator::password($this->password)) {
-            Flash::setMsg('warning', 'Please re-type your password.');
-            header("Location: /profile?warning=check+password");
+        if (!Validator::required($this->confirmPassword)) {
+            Flash::setMsg('warning', 'Please confirm your new password.');
+            header("Location: /profile?warning=confirm+password+required");
             exit();
         }
 
-        $updated = $this->profileAccountService->updatePassword($this->driverId, $this->password);
+        if (!UserValidator::password($this->newPassword)) {
+            Flash::setMsg('warning', 'Your new password does not meet the password requirements.');
+            header("Location: /profile?warning=invalid+password");
+            exit();
+        }
+
+        if ($this->newPassword !== $this->confirmPassword) {
+            Flash::setMsg('warning', 'Your new passwords do not match.');
+            header("Location: /profile?warning=passwords+not+match");
+            exit();
+        }
+
+        $updated = $this->profileAccountService->updatePassword($this->driverId, $this->currentPassword, $this->newPassword);
         if (!$updated) {
-            Flash::setMsg('error', 'The request was not completed. Please try again.');
-            header("Location: /profile?error=try+again");
+            Flash::setMsg('warning', 'The current password you entered is incorrect.');
+            header("Location: /profile?warning=incorrect+password");
             exit();
         }
     }

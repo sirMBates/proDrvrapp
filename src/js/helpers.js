@@ -1,19 +1,43 @@
 export default (() => {
-// Fetch all the forms we want to apply custom Bootstrap validation styles to
-const forms = document.querySelectorAll('.needs-validation')
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation');
   
-// Loop over them and prevent submission
-Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
-        if (!form.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            form.classList.add('was-validated');
+        }, false)
+    })
+})();
+
+export function submitFormPayload(formSelector, payload) {
+    const form = document.querySelector(formSelector);
+
+    if (!form) {
+        throw new Error(`Form not found: ${formSelector}`);
+    }
+
+    Object.entries(payload).forEach(([name, value]) => {
+        let input = form.querySelector(`input[type="hidden"][name="${name}"]`);
+
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            form.appendChild(input);
         }
 
-        form.classList.add('was-validated')
-    }, false)
-})
-})();
+        input.value = value ?? '';
+    });
+
+    //form.requestSubmit();
+    form.submit();
+};
 
 export function getCurrentView() {
     return window.location.pathname;

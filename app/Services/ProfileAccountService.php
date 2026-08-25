@@ -10,13 +10,20 @@ use Defuse\Crypto\Key;
 
 class ProfileAccountService {
     private DriverRepository $driverRepository;
+    private AuthenticationService $authenticationService;
 
     public function __construct() {
         $this->driverRepository = new DriverRepository();
+        $this->authenticationService = new AuthenticationService();
     }
 
-    public function updatePassword(int $driverId, string $password): bool {
-        return $this->driverRepository->updatePassword($driverId, $password);
+    public function updatePassword(int $driverId, string $currentPassword, string $newPassword): bool {
+        $verified = $this->authenticationService->verifyPasswordByDriverId($driverId, $currentPassword);
+        if (!$verified) {
+            return false;
+        }
+
+        return $this->driverRepository->updatePassword($driverId, $newPassword);
     }
 
     public function emailExistsForOtherDriver(int $driverId, string $email): bool {

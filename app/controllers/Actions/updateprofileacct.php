@@ -36,9 +36,11 @@ $action = (string) ($_POST['action'] ?? '');
 include_once base_path("app/SubmissionHandlers/update_profile.php");
 
 if ($action === 'update-password') {
-    $password = (string) ($_POST['password'] ?? '');
+    $currentPassword = (string) ($_POST['currentPassword'] ?? '');
+    $newPassword = (string) ($_POST['newPassword'] ?? '');
+    $confirmPassword = (string) ($_POST['confirmPassword'] ?? '');
 
-    $updateProfile = new UpdateDrvrContr($driverId, $password, null, null);
+    $updateProfile = new UpdateDrvrContr($driverId, $currentPassword, $newPassword, $confirmPassword, null, null);
     $updateProfile->changeDriverPassword();
     Flash::setMsg('info', 'You\'ve successfully updated your password!');
     header("Location: /profile?info=password+updated");
@@ -49,7 +51,7 @@ if ($action === 'update-contact-information') {
     $email = trim((string) ($_POST['email'] ?? ''));
     $phoneNumber = trim((string) ($_POST['mobile'] ?? ''));
 
-    $updateProfile = new UpdateDrvrContr($driverId, null, $email !== '' ? $email : null, $phoneNumber !== '' ? $phoneNumber : null);
+    $updateProfile = new UpdateDrvrContr($driverId, null, null, null, $email !== '' ? $email : null, $phoneNumber !== '' ? $phoneNumber : null);
     $updateProfile->updateContactInformation();
     Flash::setMsg('success', 'Your information has been updated.');
     header("Location: /profile?success=data+saved");

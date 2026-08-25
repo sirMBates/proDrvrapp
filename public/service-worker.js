@@ -142,6 +142,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/reset') ||
     url.pathname.startsWith('/compreset') ||
     url.pathname.startsWith('/reset-password') ||
+    url.pathname.startsWith('/profile') ||
     url.pathname.startsWith('/getprofile')
   ) {
     //event.respondWith(fetch(request)); // always let network handle
