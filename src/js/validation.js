@@ -1,5 +1,5 @@
 // This file contains validation logic for various input types using regular expressions.
-const namePattern = /^[a-zA-Z]{1,}$/;
+const namePattern = /^[a-zA-Z'\-]{1,}$/;
 const statusPattern = /^(?!.*-.*-)[a-zA-Z0-9 \-]+$/;
 const numberPattern = /^[0-9]{1,}$/;
 const phoneNumberPattern = /^\d{10}$/

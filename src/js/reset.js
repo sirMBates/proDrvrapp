@@ -1,5 +1,5 @@
 import { Validation } from './validation.js';
-import  formValidation  from './helpers.js';
+import { formValidation } from './helpers.js';
 
 const resetpwd = document.querySelector('#resetpswd');
 const confRespwd = document.querySelector('#conf-reset-pswd');

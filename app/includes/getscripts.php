@@ -1,4 +1,5 @@
 <?php
+
 $url = parse_url($_SERVER['REQUEST_URI'])['path'];
 function getClockandMainOrNav($value) {
     switch($value) {
@@ -36,7 +37,7 @@ function pageScripts($value) {
                 break;
 
             case "/register":
-                echo "<script type='module' src='/dist/js/regisprofile.js'></script>\n";
+                echo "<script type='module' src='/dist/js/registerprofilehandler.js'></script>\n";
                 break;
 
             case "/signin":
@@ -93,4 +94,5 @@ function pageScripts($value) {
 };
 getClockandMainOrNav($url);
 pageScripts($url);
+
 ?>

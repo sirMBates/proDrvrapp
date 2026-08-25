@@ -1,49 +1,70 @@
 <?php
 
-$alert = new Core\Flash();
+declare(strict_types=1);
 
-if (session_status() !== 2) {
+use Core\Flash;
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
+$method = strtoupper($_POST['__method'] ?? $_SERVER['REQUEST_METHOD']);
 
-if ($method === 'POST' && isset($_POST['__method'])) {
-    $method = strtoupper($_POST['__method']);
+if ($method !== 'PATCH') {
+    http_response_code(405);
+    exit();
 }
 
-$formToken = htmlspecialchars(trim($_POST['drvrtoken']));
-if ($method === 'PATCH' && $formToken === $_SESSION['drvr_token']) {
-    if (isset($_POST['reginfo'])) {
-        // Getting the info from the form using POST method from the name attribute.
-        $firstname = htmlspecialchars(trim($_POST['forename']));
-        $lastname = htmlspecialchars(trim($_POST['surname']));
-        $mobileNum = htmlspecialchars(trim($_POST['mobilenum']));
-        $birthdate = htmlspecialchars(trim($_POST['dateofbirth']));
-        $newCompanyId = htmlspecialchars(trim($_POST['operatorid']));
-        // Instantiate the add user controller class. ↓
-        include_once base_path("app/models/registrationmodel.php");
-        include_once base_path("app/SubmissionHandlers/complete_registration.php");
-        $enterData = new RegistrationContr($newCompanyId, $firstname, $lastname, $mobileNum, $birthdate);
-        $enterData->processProfile();
-        setcookie(
-            'driver_registered', 
-            'true', 
-            time() + (86400 * 365), // 1 year
-            '/',                    // path
-            'prodriver.local',      // domain
-            true,                   // secure ( works with HTTPS )
-            true                    // httponly
-        );
-        unset($_SESSION['driver_id']);
-        // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
-        $alert::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');
-        header("Location: /signin?success=profile+updated");
-        exit();
-    }
-} else {
-    $alert::setMsg('danger', 'Please retry your request.');
-    header("Location: /signup?danger=try+again");
+$driverId = (int) ($_SESSION['driver_id'] ?? 0);
+if ($driverId < 1) {
+    Flash::setMsg('danger', 'Your registration session is no longer valid. Please start again.');
+    header("Location: /signup?danger=session+expired");
     exit();
-};
+}
+
+$formToken = (string) ($_POST['drvrtoken'] ?? '');
+$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
+if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
+    Flash::setMsg('danger', 'Please retry your request.');
+    header("Location: /register?danger=try+again");
+    exit();
+}
+
+$action = (string) ($_POST['action'] ?? '');
+if ($action !== 'complete-registration') {
+    Flash::setMsg('error', 'Invalid registration request.');
+    header("Location: /register?error=invalid+request");
+    exit();
+}
+
+// Getting the info from the form using POST method from the name attribute.
+$firstName = trim((string) ($_POST['forename'] ?? ''));
+$lastName = trim((string) ($_POST['surname'] ?? ''));
+$mobileNumber = trim((string) ($_POST['mobilenum'] ?? ''));
+$birthDate = trim((string) ($_POST['dateofbirth'] ?? ''));
+$operatorId = trim((string) ($_POST['operatorid'] ?? ''));
+
+// Complete the driver's registration profile. ↓
+include_once base_path("app/SubmissionHandlers/complete_registration.php");
+$registration = new RegistrationContr($driverId, $operatorId, $firstName, $lastName, $mobileNumber, $birthDate);
+$registration->processProfile();
+
+setcookie(
+    'driver_registered', 
+    'true', 
+    time() + (86400 * 365), // 1 year
+    '/',                    // path
+    'prodriver.local',      // domain
+    true,                   // secure ( works with HTTPS )
+    true                    // httponly
+);
+
+unset($_SESSION['driver_id']);
+unset($_SESSION['user_name']);
+
+// Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
+Flash::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');
+header("Location: /signin?success=profile+updated");
+exit();
+
 ?>

@@ -1,144 +1,70 @@
 <?php
 
-$alert = new Core\Flash();
+declare(strict_types=1);
 
-class RegistrationContr extends RegistrationInformation {
-    private $newCompanyId;
-    private $firstname;
-    private $lastname;
-    private $mobileNum;
-    private $birthdate;
+use App\Services\RegistrationService;
+use App\Validation\Validator;
+use App\Validation\UserValidator;
+use Core\Flash;
 
-    public function __construct($newCompanyId, $firstname, $lastname, $mobileNum, $birthdate) {
-        $this->newCompanyId = $newCompanyId;
-        $this->firstname = $firstname;
-        $this->lastname = $lastname;
-        $this->mobileNum = $mobileNum;
-        $this->birthdate = $birthdate;
+class RegistrationContr {
+    private int $driverId;
+    private string $operatorId;
+    private string $firstName;
+    private string $lastName;
+    private string $mobileNumber;
+    private string $birthDate;
+    private RegistrationService $registrationService;
+
+    public function __construct(int $driverId, string $operatorId, string $firstName, string $lastName, string $mobileNumber, string $birthDate) {
+        $this->driverId = $driverId;
+        $this->operatorId = $operatorId;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->mobileNumber = $mobileNumber;
+        $this->birthDate = $birthDate;
+        $this->registrationService = new RegistrationService();
     }
 
-    public function processProfile () {
-        if ($this->isEmpty() === true) {
-            $alert::setMsg('warning', 'Please fill in all required fields.');
-            header("Location: /register?warning=empty"); //emptyinputs
+    public function processProfile (): void {
+        if (!Validator::required($this->operatorId) || !Validator::required($this->firstName) || !Validator::required($this->lastName) || !Validator::required($this->mobileNumber) || !Validator::required($this->birthDate)) {
+            Flash::setMsg('warning', 'Please fill in all required fields.');
+            header("Location: /register?warning=missing+info"); //emptyinputs
             exit();
         }
 
-        if ($this->drvrNameInvalid() === false) {
-            $alert::setMsg('warning', 'Please re-enter your first or last name.');
-            header("Location: /register?warning=invalid"); //FirstorLastnameNotValid
+        if (!UserValidator::name($this->firstName) || !UserValidator::name($this->lastName)) {
+            Flash::setMsg('warning', 'Please re-enter your first or last name.');
+            header("Location: /register?warning=invalid+name"); //FirstorLastnameNotValid
             exit();
         }
 
-        if ($this->drvrInvalidMobileNumber() === false) {
-            $alert::setMsg('warning', 'Please re-enter your mobile number.');
-            header("Location: /register?warning=invalid"); //mobileNumberNotValid
+        if (!UserValidator::mobileNumber($this->mobileNumber)) {
+            Flash::setMsg('warning', 'Please re-enter your mobile number.');
+            header("Location: /register?warning=invalid+mobile"); //mobileNumberNotValid
             exit();
         }
 
-        if ($this->drvrInvalidBirthDate() === false) {
-            $alert::setMsg('warning', 'Please re-enter your date of birth.');
-            header("Location: /register?warning=invalid"); //birthdateNotValid
+        if (!Validator::date($this->birthDate)) {
+            Flash::setMsg('warning', 'Please re-enter your date of birth.');
+            header("Location: /register?warning=invalid+birthdate"); //birthdateNotValid
             exit();
         }
 
-        if (!$this->checkCompanyId()) {
-            $alert::setMsg('danger', 'A problem arised! Please try again.');
-            header("Location: /register?danger=failed+op+id");
+        if (!Validator::matches($this->operatorId, '/^[a-zA-Z0-9-]+$/')) {
+            Flash::setMsg('danger', 'A problem arised! Please try again.');
+            header("Location: /register?danger=failed+operator+id");
             exit();
         }
 
-        $this->addDriverDetails($this->newCompanyId, $this->firstname, $this->lastname, $this->mobileNum, $this->birthdate, $_SESSION['user_name']);
-    }
+        $updated = $this->registrationService->completeRegistration($this->driverId, $this->operatorId, $this->firstName, $this->lastName, $this->mobileNumber, $this->birthDate);
 
-    private function isEmpty() {
-        $result;
-        $dataEntry = [
-            $this->newCompanyId,
-            $this->firstname, 
-            $this->lastname, 
-            $this->mobileNum, 
-            $this->birthdate
-        ];
-        function cleanData($array) {
-            $clean_data = [];
-            foreach($array as $value) {
-                $clean_data = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW);
-            }
-            return $clean_data;
+        if (!$updated) {
+            Flash::setMsg('error', 'The registration could not be completed. Please try again.');
+            header("Location: /register?error=try+again");
+            exit();
         }
-        if (empty(cleanData($dataEntry))) {
-            $result = true;
-        }
-        else {
-            $result = false;
-        }
-        return $result;
-    }
-
-    private function drvrNameInvalid() {
-        $result;
-        $drvrFullName = array($this->firstname, $this->lastname);
-        function cleanFullName($array) {
-            $clean_name = [];
-            foreach($array as $value) {
-                $clean_name = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW);
-            }
-            return $clean_name;
-        }
-        
-        $cleanedFullName = cleanFullName($drvrFullName);
-        if (!preg_match("/^[a-zA-Z]{1,}$/", $cleanedFullName)) {
-            $result = false;
-        } 
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function drvrInvalidMobileNumber() {
-        $result;
-        $mobNumber = $this->mobileNum;
-        function cleanMobileNumber($number) {
-            $cleanMobNum = filter_var($number, FILTER_SANITIZE_NUMBER_INT);
-            return $cleanMobNum;
-        }
-
-        if (!preg_match("/^[0-9]{10}$/", cleanMobileNumber($mobNumber))) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function drvrInvalidBirthDate() {
-        $result;
-        $getDate = $this->birthdate;
-        function cleanDateOfBirth($date) {
-            $cleanDob = filter_var($date, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
-            return $cleanDob;
-        }
-
-        if (DateTime::createFromFormat('Y-m-d', cleanDateOfBirth($getDate)) === false) {
-            $result = false;
-        }
-        else {
-            $result = true;
-        }
-        return $result;
-    }
-
-    private function checkCompanyId() {
-        $result;
-        if (!preg_match("/^[a-zA-Z0-9\-]{1,}$/", $this->newCompanyId)) {
-            $result = false;
-        } else {
-            $result = true;
-        }
-        return $result;
     }
 }
+
 ?>

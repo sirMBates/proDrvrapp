@@ -1,5 +1,5 @@
 import { Validation } from "./validation";
-import formValidation from "./helpers.js";
+import { formValidation } from "./helpers.js";
 import { buildModal } from './appmodal.js';
 
 const checkInputs = document.querySelectorAll('.form-control');

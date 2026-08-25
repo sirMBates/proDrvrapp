@@ -22,6 +22,26 @@ class DriverRepository {
         return (int) $pdo->lastInsertId();
     }
 
+    public function completeRegistration(int $driverId, string $operatorId, string $encryptedFirstName, string $encryptedLastName, string $encryptedMobile, string $encryptedBirthDate): bool {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "UPDATE drivers
+                SET operator_id = :operator_id, first_name = :first_name,
+                last_name = :last_name, mobile_number = :mobile_number, birth_date = :birth_date
+                WHERE driver_id = :driver_id";
+        $stmt = $pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':operator_id' => $operatorId,
+            ':first_name' => $encryptedFirstName,
+            ':last_name' => $encryptedLastName,
+            ':mobile_number' => $encryptedMobile,
+            ':birth_date' => $encryptedBirthDate,
+            ':driver_id' => $driverId
+        ]);
+    }
+
     public function findByUsername(string $username): ?array {
         $db = new Database();
         $pdo = $db->connect();

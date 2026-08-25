@@ -13,6 +13,10 @@ class UserValidator {
         return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&$_]).\S{8,}$/', $password) === 1;
     }
 
+    public static function name(string $name): bool {
+        return preg_match("/^[a-zA-Z'\-]+$/", $name) === 1;
+    }
+
     public static function mobileNumber(string $mobileNumber): bool {
         return preg_match('/^[0-9]{10}$/', $mobileNumber) === 1;
     }

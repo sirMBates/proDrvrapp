@@ -1,5 +1,5 @@
 import { Validation } from "./validation.js";
-import formValidation from "./helpers.js";
+import { formValidation } from "./helpers.js";
 import { fetchDrvr } from "./helpers.js";
 const driverToken = document.querySelector('#drvrToken')?.value ?? '';
 const driverName = document.querySelector('#drvr-name');
