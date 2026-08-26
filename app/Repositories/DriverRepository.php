@@ -12,7 +12,7 @@ class DriverRepository {
 
         $hashPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO drivers (username, email, operator_id, password, first_name, last_name, mobile_number, birth_date, profile_picture) 
+        $sql = "INSERT INTO users (username, email, operator_id, password, first_name, last_name, mobile_number, birth_date, profile_picture) 
             VALUES (?,?,?,?,?,?,?,?,?)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -26,7 +26,7 @@ class DriverRepository {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "UPDATE drivers
+        $sql = "UPDATE users
                 SET operator_id = :operator_id, first_name = :first_name,
                 last_name = :last_name, mobile_number = :mobile_number, birth_date = :birth_date
                 WHERE driver_id = :driver_id";
@@ -46,7 +46,7 @@ class DriverRepository {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "SELECT * FROM drivers
+        $sql = "SELECT * FROM users
                 WHERE username = :username
                 LIMIT 1";
 
@@ -63,7 +63,7 @@ class DriverRepository {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "SELECT * FROM drivers
+        $sql = "SELECT * FROM users
                 WHERE driver_id = :driver_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
@@ -82,7 +82,7 @@ class DriverRepository {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "SELECT * FROM drivers
+        $sql = "SELECT * FROM users
                 WHERE email = :email
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
@@ -99,7 +99,7 @@ class DriverRepository {
         $pdo = $db->connect();
 
         $sql = "SELECT driver_id
-                FROM drivers
+                FROM users
                 WHERE email = :email AND driver_id <> :driver_id
                 LIMIT 1";
 
@@ -117,7 +117,7 @@ class DriverRepository {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "SELECT username, email FROM drivers
+        $sql = "SELECT username, email FROM users
                 WHERE username = :username OR email = :email
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
@@ -136,7 +136,7 @@ class DriverRepository {
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "UPDATE drivers
+        $sql = "UPDATE users
                 SET password = :password
                 WHERE driver_id = :driver_id";
         $stmt = $pdo->prepare($sql);
@@ -151,7 +151,7 @@ class DriverRepository {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "UPDATE drivers
+        $sql = "UPDATE users
                 SET profile_picture = :profile_picture
                 WHERE driver_id = :driver_id";
         $stmt = $pdo->prepare($sql);
@@ -184,7 +184,7 @@ class DriverRepository {
             return false;
         }
 
-        $sql = "UPDATE drivers
+        $sql = "UPDATE users
                 SET " . implode(', ', $fields) . "
                 WHERE driver_id = :driver_id";
 

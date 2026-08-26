@@ -9,8 +9,8 @@ include "partials/info-modal.php";
                 <input type="hidden" name="__method" value="patch">
                 <!-- Profile Picture -->
                 <div class="text-center mb-4">
-                        <img id="profilePictureImage" src="../dist/images-videos/logoandicons/defaultProfileImage.jpg" class="profile-pic shadow-sm" alt="Profile Picture">
-                        <input type="file" id="profilePictureInput" class="d-none" accept="image/*">
+                        <label for="profilePictureInput"><img id="profilePictureImage" src="../dist/images-videos/logoandicons/defaultProfileImage.jpg" class="profile-pic shadow-sm" alt="Profile Picture"></label>
+                        <input type="file" id="profilePictureInput" class="d-none" accept="image/jpg, image/jpeg, image/png, image/gif">
                 </div>
 
                 <div class="row g-3">

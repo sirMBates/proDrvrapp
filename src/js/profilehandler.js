@@ -1,5 +1,5 @@
 import { Validation } from "./validation.js";
-import { fetchDrvr, showFlashAlert } from "./helpers.js";
+import { fetchDrvr, showFlashAlert, submitFormPayload } from "./helpers.js";
 import { initProfilePictureHandler } from "./profile.js";
 
 // Elements
@@ -35,6 +35,12 @@ window.addEventListener('DOMContentLoaded', () => {
         emailDisplay.textContent = driver.email;
         mobileDisplay.textContent = driver.mobileNumber;
         statusDisplay.textContent = localStorage.getItem('status') || sessionStorage.getItem('status') || '';
+
+        if (driver.profilePicture) {
+            pageImage.src = `/setprofilepicture?t=${Date.now()}`;
+        } else {
+            pageImage.src = defaultProfileImage;
+        }
     })
     .catch(error => {
         console.error("Profile fetch error:", error);
@@ -52,6 +58,10 @@ if (pageInput && pageImage) {
         drvrAlert
     });
 };
+
+pageImage.addEventListener('error', () => {
+    pageImage.src = defaultProfileImage;
+}, { once: true });
 
 // Password visibility
 function initializePasswordToggles(card) {

@@ -344,9 +344,9 @@ class UpdateAssignment {
         $logger = new Logger('D:/webapps/logs/error.log');
 
         // Fetch current assignment from DB
-        $sql = "SELECT wo.*, d.first_name, d.last_name 
+        $sql = "SELECT wo.*, u.first_name, u.last_name 
                 FROM work_orders wo
-                INNER JOIN drivers d ON d.driver_id = wo.driver_id
+                INNER JOIN users u ON u.driver_id = wo.driver_id
                 WHERE wo.assignment_control = :assignment_control AND wo.order_id = :order_id AND wo.driver_id = :driver_id
                 LIMIT 1";
         $stmt = $pdo->prepare($sql);
@@ -473,9 +473,9 @@ class UpdateAssignment {
         $alert = new Core\flash();
 
         // Fetch assignment + driver name
-        $sql = "SELECT wo.*, d.first_name, d.last_name 
+        $sql = "SELECT wo.*, u.first_name, u.last_name 
                 FROM work_orders wo
-                INNER JOIN drivers d ON d.driver_id = wo.driver_id
+                INNER JOIN users u ON u.driver_id = wo.driver_id
                 WHERE wo.assignment_control = :assignment_control
                 AND wo.order_id = :order_id
                 AND wo.driver_id = :driver_id

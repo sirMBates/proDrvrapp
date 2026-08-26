@@ -91,11 +91,11 @@ class JobOrderImporter {
                     continue;
                 }
 
-                // Lookup driver_id from drivers table
+                // Lookup driver_id from users table
                 $db = new Database();
                 $pdo = $db->connect();
                 $sql = "SELECT driver_id, first_name, last_name
-                        FROM drivers
+                        FROM users
                         WHERE operator_id = :operator_id
                         LIMIT 1";
                 $stmt = $pdo->prepare($sql);
@@ -222,7 +222,7 @@ class JobOrderImporter {
             $db = new Database();
             $pdo = $db->connect();
             $sql = "SELECT email, first_name, last_name 
-                    FROM drivers
+                    FROM users
                     WHERE driver_id = :driver_id
                     LIMIT 1";
             $stmt = $pdo->prepare($sql);

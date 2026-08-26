@@ -26,7 +26,7 @@ class AssignmentRepository {
                             FROM work_orders
                             WHERE vehicle_id = :vehicle_id
                             AND start_date_time = :start_date_time
-                            AND driver_id = ( SELECT driver_id FROM drivers
+                            AND driver_id = ( SELECT driver_id FROM users
                                             WHERE operator_id = :operator_id LIMIT 1)
                                             AND order_ref = :order_ref";
             $dupStmt = $pdo->prepare($dupCheckSql);
@@ -44,7 +44,7 @@ class AssignmentRepository {
 
             //$this->logger->debug("Looking up driver with operator_id='{$operatorId}'");
             $driverSql = "SELECT driver_id 
-                        FROM drivers
+                        FROM users
                         WHERE operator_id = :operator_id
                         LIMIT 1";
             $driverStmt = $pdo->prepare($driverSql);
@@ -119,8 +119,8 @@ class AssignmentRepository {
     public function findActiveAssignmentsByDriver(int $driverId): array {
         $db = new Database;
         $pdo = $db->connect();
-        $sql = "SELECT wo.*, d.operator_id, d.first_name, d.last_name, d.birth_date
-                FROM work_orders wo INNER JOIN drivers d ON wo.driver_id = d.driver_id
+        $sql = "SELECT wo.*, u.operator_id, u.first_name, u.last_name, u.birth_date
+                FROM work_orders wo INNER JOIN users u ON wo.driver_id = u.driver_id
                 WHERE wo.driver_id = :driver_id AND wo.completed_at IS NULL AND wo.canceled_at IS NULL AND wo.assignment_status <> 'canceled'
                 ORDER BY wo.start_date_time ASC, wo.order_id ASC";
         $stmt = $pdo->prepare($sql);
