@@ -4,8 +4,8 @@ import { initProfilePictureHandler } from "./profile.js";
 
 // Elements
 const drvrAlert = showFlashAlert;
-const pageInput = document.querySelector('#profilePictureInput');
-const pageImage = document.querySelector('#profilePictureImage');
+const profilePageInput = document.querySelector('#profilePictureInput');
+const profilePageImage = document.querySelector('#profilePictureImage');
 const defaultProfileImage = '../../dist/images-videos/logoandicons/defaultProfileImage.jpg';
 const drvrToken = document.querySelector('#drvrToken').value;
 const fullnameDisplay = document.querySelector('#fullnameDisplay');
@@ -37,9 +37,9 @@ window.addEventListener('DOMContentLoaded', () => {
         statusDisplay.textContent = localStorage.getItem('status') || sessionStorage.getItem('status') || '';
 
         if (driver.profilePicture) {
-            pageImage.src = `/setprofilepicture?t=${Date.now()}`;
+            profilePageImage.setAttribute('src', `/setprofilepicture?t=${Date.now()}`);
         } else {
-            pageImage.src = defaultProfileImage;
+            profilePageImage.setAttribute('src', defaultProfileImage);
         }
     })
     .catch(error => {
@@ -47,10 +47,10 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-if (pageInput && pageImage) {
+if (profilePageInput && profilePageImage) {
     initProfilePictureHandler({
-        profileInput: pageInput,
-        profileImage: pageImage,
+        profileInput: profilePageInput,
+        profileImage: profilePageImage,
         drvrToken,
         getDriver: fetchDrvr,
         defaultProfileImage: defaultProfileImage,
@@ -60,7 +60,7 @@ if (pageInput && pageImage) {
 };
 
 pageImage.addEventListener('error', () => {
-    pageImage.src = defaultProfileImage;
+    pageImage.setAttribute('src', defaultProfileImage);
 }, { once: true });
 
 // Password visibility
