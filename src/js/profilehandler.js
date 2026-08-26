@@ -59,8 +59,8 @@ if (profilePageInput && profilePageImage) {
     });
 };
 
-pageImage.addEventListener('error', () => {
-    pageImage.setAttribute('src', defaultProfileImage);
+profilePageImage.addEventListener('error', () => {
+    profilePageImage.setAttribute('src', defaultProfileImage);
 }, { once: true });
 
 // Password visibility
