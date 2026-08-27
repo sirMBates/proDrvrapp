@@ -20,42 +20,44 @@ class AssignmentRepository {
         $pdo = $db->connect();
 
         try {
-            // Step 1: Pre-check for duplicate assignment
+            $operatorId = isset($data['operator_id']) ? trim((string) $data['operator_id']) : null;
+
+            // Step 1: Resolve driver/user from driver_credentials
+            $driverSql = "SELECT user_id
+                        FROM driver_credentials
+                        WHERE operator_id = :operator_id
+                        LIMIT 1";
+            $driverStmt = $pdo->prepare($driverSql);
+            $driverStmt->bindValue(':operator_id', $operatorId, PDO::PARAM_STR);
+            $driverStmt->execute();
+
+            $driverFound = $driverStmt->fetch();
+            if (!$driverFound) {
+                $this->logger?->log("❌ FAILURE: No driver found for operator_id: {$data['operator_id']}");
+                return 'driver_not_found';
+            }
+            $driverId = (int) $driverFound['user_id'];
+
+            // Step 2: Pre-check for duplicate assignment
             // Prevents identical assignment records for the same vehicle, start time, driver & order ref
             $dupCheckSql = "SELECT COUNT(*) as cnt
                             FROM work_orders
                             WHERE vehicle_id = :vehicle_id
                             AND start_date_time = :start_date_time
-                            AND driver_id = ( SELECT driver_id FROM users
-                                            WHERE operator_id = :operator_id LIMIT 1)
-                                            AND order_ref = :order_ref";
+                            AND driver_id = :driver_id
+                            AND order_ref = :order_ref";
             $dupStmt = $pdo->prepare($dupCheckSql);
             $dupStmt->execute([
                 ':vehicle_id' => $data['vehicle_id'] ?? null,
                 ':start_date_time' => $data['start_date_time'] ?? null,
-                ':operator_id' => $data['operator_id'] ?? null,
+                ':driver_id' => $driverId,
                 ':order_ref' => $data['order_ref'] ?? null
             ]);
+
             $exists = $dupStmt->fetchColumn();
             if ($exists > 0) {
                 $this->logger?->warning("Skipped duplicate assignment - Vehicle {$data['vehicle_id']} at {$data['start_date_time']} for driver with operator id {$data['operator_id']} and order ref {$data['order_ref']}");
                 return 'duplicate';
-            }
-
-            //$this->logger->debug("Looking up driver with operator_id='{$operatorId}'");
-            $driverSql = "SELECT driver_id 
-                        FROM users
-                        WHERE operator_id = :operator_id
-                        LIMIT 1";
-            $driverStmt = $pdo->prepare($driverSql);
-            $operatorId = isset($data['operator_id']) ? trim($data['operator_id']) : null;
-            $driverStmt->bindValue(':operator_id', $operatorId, PDO::PARAM_STR);
-            $driverStmt->execute();
-            $driverFound = $driverStmt->fetch();
-
-            if (!$driverFound) {
-                $this->logger?->log("❌ FAILURE: No driver found for operator_id: {$data['operator_id']}");
-                return 'driver_not_found';
             }
 
             $sql = "INSERT INTO work_orders (assignment_control, order_ref, vehicle_id, driver_id, num_of_coaches, start_date_time, spot_time, leave_date_time, return_date_drop_time, actual_drop_time, end_date_time, actual_end_time, total_job_time, driving_time, origin, destination, group_name, group_leader, group_leader_mobile, customer_name, customer_phone, contact_name, contact_mobile, pickup_details, destination_details, signature_required, signature_status, pre_signature_path, post_signature_path)
@@ -74,7 +76,7 @@ class AssignmentRepository {
             $stmt->bindValue(1, $assignmentControl);
             $stmt->bindValue(2, $data['order_ref']);
             $stmt->bindValue(3, $data['vehicle_id'] ?? null);
-            $stmt->bindValue(4, $driverFound['driver_id'], PDO::PARAM_INT); // driver_id inserted
+            $stmt->bindValue(4, $driverId, PDO::PARAM_INT); // driver_id inserted
             $stmt->bindValue(5, $data['num_of_coaches'] ?? null);
             $stmt->bindValue(6, $data['start_date_time'] ?? null);
             $stmt->bindValue(7, $data['spot_time'] ?? null);
@@ -119,8 +121,9 @@ class AssignmentRepository {
     public function findActiveAssignmentsByDriver(int $driverId): array {
         $db = new Database;
         $pdo = $db->connect();
-        $sql = "SELECT wo.*, u.operator_id, u.first_name, u.last_name, u.birth_date
+        $sql = "SELECT wo.*, dc.operator_id, u.first_name, u.last_name, u.birth_date
                 FROM work_orders wo INNER JOIN users u ON wo.driver_id = u.driver_id
+                INNER JOIN driver_credentials dc ON dc.user_id = u.driver_id
                 WHERE wo.driver_id = :driver_id AND wo.completed_at IS NULL AND wo.canceled_at IS NULL AND wo.assignment_status <> 'canceled'
                 ORDER BY wo.start_date_time ASC, wo.order_id ASC";
         $stmt = $pdo->prepare($sql);

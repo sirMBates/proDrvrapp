@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\ImportExport;
 
-use PDO;
 use Exception;
 use App\Repositories\AssignmentRepository;
+use App\Repositories\DriverCredentialRepository;
+use App\Repositories\DriverRepository;
+use App\Validation\ImporterAssignmentValidator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-use Core\Database;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
-use App\Validation\ImporterAssignmentValidator;
 
 class JobOrderImporter {
     protected string $excelFile;
@@ -52,6 +52,7 @@ class JobOrderImporter {
             $controlBatch = 'PD-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(2)));
             $controlSequence = 0;
             $assignmentRepository = new AssignmentRepository($this->logger);
+            $credentialRepository = new DriverCredentialRepository();
             $notifiedDrivers = [];
             $insertedCount = 0;
             $duplicateCount = 0;
@@ -91,28 +92,20 @@ class JobOrderImporter {
                     continue;
                 }
 
-                // Lookup driver_id from users table
-                $db = new Database();
-                $pdo = $db->connect();
-                $sql = "SELECT driver_id, first_name, last_name
-                        FROM users
-                        WHERE operator_id = :operator_id
-                        LIMIT 1";
-                $stmt = $pdo->prepare($sql);
-                $stmt->bindValue(':operator_id', $rowData['operator_id'], PDO::PARAM_STR);
-                $stmt->execute();
-                $driver = $stmt->fetch();
-        
-                if (!$driver) {
+                // Lookup driver_id from credentials table
+                $credentials = $credentialRepository->findByOperatorId($operatorId);
+                if ($credentials === null) {
                     $failedCount++;
                     $this->logger->error("No driver found for operator_id: " . "{$operatorId} (row {$index})");
-                    continue; // skip this row
+                    continue;
                 }
+
+                $driverId = (int) $credentials['user_id'];
 
                 $controlSequence++;
                 $assignmentControl = $controlBatch . '-' . str_pad((string) $controlSequence, 4, '0', STR_PAD_LEFT);
 
-                $signatureRequired = strtolower(trim((String) ($rowData['signature_required'] ?? 'no'))) === 'yes' ? 1 : 0;
+                $signatureRequired = strtolower(trim((string) ($rowData['signature_required'] ?? 'no'))) === 'yes' ? 1 : 0;
                 $signatureStatus = $signatureRequired === 1 ? 'pending' : 'not-required';
 
                 $this->logger->info("[SIGNATURE IMPORT] Row {$index}: " . "raw=" . var_export($rowData['signature_required'] ?? null, true) . ", required={$signatureRequired}" . ", status={$signatureStatus}");
@@ -121,9 +114,9 @@ class JobOrderImporter {
                 $rowData['assignment_control']          = $assignmentControl;
                 $rowData['order_ref']                   = $orderRef; // shared across all rows in this file
                 $rowData['vehicle_id']                  = trim((string) ($rowData['vehicle_id'] ?? ''));
-                $rowData['driver_id']                   = $driver['driver_id']; // insert only driver_id
+                $rowData['driver_id']                   = $driverId; // insert only driver_id
                 $rowData['operator_id']                 = $operatorId; // for display/log only
-                $rowData['operator_name']               = $driver['first_name'] . ' ' . $driver['last_name']; // display/log only
+                ////////////////////////////////////////////////////////////////////////////////////
                 $rowData['num_of_coaches']              = trim((string) ($rowData['num_of_coaches'] ?? ''));
                 $rowData['start_date_time']             = $this->normalizeDateTime($rowData['start_date_time'] ?? '');
                 $rowData['spot_time']                   = $this->normalizeDateTime($rowData['spot_time'] ?? '', true);
@@ -165,7 +158,7 @@ class JobOrderImporter {
                     $this->logger->info('[JOB IMPORTER] Inserted assignment ' . $assignmentControl . ' from Excel row ' . $index);
                     $this->logger->info("Inserted vehicle: {$rowData['vehicle_id']} ({$rowData['order_ref']}) at {$rowData['start_date_time']}");
                     // Track drivers to notify
-                    $notifiedDrivers[$rowData['driver_id']] = $rowData['operator_name'];
+                    $notifiedDrivers[$driverId] = true;
                 } elseif ($result === 'duplicate') {
                     $duplicateCount++;
                     $this->logger->warning("Duplicate vehicle: {$rowData['vehicle_id']} at {$rowData['start_date_time']}");
@@ -179,8 +172,8 @@ class JobOrderImporter {
                 $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
                 $writer->save($this->excelFile);
                 $this->logger->info('[JOB IMPORTER] Saved assignment control numbers to the Excel workbook.');
-                foreach ($notifiedDrivers as $driverId => $driverName) {
-                    $this->sendAssignmentEmail($driverId, $driverName, $orderRef);
+                foreach ($notifiedDrivers as $driverId => $_) {
+                    $this->sendAssignmentEmail($driverId, $orderRef);
                 }
             }
 
@@ -191,8 +184,8 @@ class JobOrderImporter {
                 return false;
             }
 
-        } catch (Exception $e) {
-            $this->logger->error("Job import error: " . $e->getMessage());
+        } catch (\Throwable $exception) {
+            $this->logger->error("Job import error: " . $exception->getMessage());
             return false;
         }
         $this->logger->info("[JOBORDER IMPORTER] completed successfully with reference {$orderRef}.");
@@ -217,18 +210,15 @@ class JobOrderImporter {
         return $timeOnly ? date('H:i:s', $ts) : date('Y-m-d H:i:s', $ts);
     }
 
-    protected function sendAssignmentEmail($driverId, $driverName, $orderRef) {
+    protected function sendAssignmentEmail(int $driverId, string $orderRef): void {
         try {
-            $db = new Database();
-            $pdo = $db->connect();
-            $sql = "SELECT email, first_name, last_name 
-                    FROM users
-                    WHERE driver_id = :driver_id
-                    LIMIT 1";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':driver_id', $driverId);
-            $stmt->execute();
-            $driver = $stmt->fetch();
+            $driverRepository = new DriverRepository();
+            try {
+                $driver = $driverRepository->findById($driverId);
+            } catch (\RuntimeException $exception) {
+                $this->logger->warning("No driver found for driver ID: {$driverId}");
+                return;
+            }
 
             if (!$driver || empty($driver['email'])) {
                 $this->logger->warning("No valid email found for driver ID: {$driverId}");
@@ -240,8 +230,8 @@ class JobOrderImporter {
                 if (!empty($_ENV['SECRET_KEY'])) {
                     $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
                 }
-            } catch (Exception $e) {
-                $this->logger->error("Failed to load encryption key: " . $e->getMessage());
+            } catch (\Throwable $exception) {
+                $this->logger->error("Failed to load encryption key: " . $exception->getMessage());
             }
 
             $safeDecrypt = function ($value, $field) use ($key) {
@@ -257,8 +247,8 @@ class JobOrderImporter {
                 } catch (WrongKeyOrModifiedCiphertextException $e) {
                     $this->logger->warning("[Decrypt] {$field} not encrypted - using plaintext");
                     return $value;
-                } catch (Exception $e) {
-                    $this->logger->error("[Decrypt] Failed to decrypt {$field}: " . $e->getMessage());
+                } catch (\Throwable $exception) {
+                    $this->logger->error("[Decrypt] Failed to decrypt {$field}: " . $exception->getMessage());
                     return $value;
                 }
             };
@@ -286,8 +276,8 @@ class JobOrderImporter {
             $mail->AltBody = "Hi {$fullName},\n\nNew job assignments are ready for confirmation.\nReference: {$orderRef}\nPlease log in to your driver portal to review and confirm.\n\n- Dispatch Team";
             $mail->send();
             $this->logger->info("Notification email sent to {$fullName} ({$to}) for order {$orderRef}");
-        } catch (Exception $e){
-            $this->logger->error("Email send failed for driver {$fullName} (ID {$driverId}): " . $e->getMessage());
+        } catch (\Throwable $exception){
+            $this->logger->error("Email send failed for driver {$fullName} (ID {$driverId}): " . $exception->getMessage());
         }
     }
 };
