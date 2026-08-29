@@ -15,8 +15,8 @@ if ($method !== 'PATCH') {
     exit();
 }
 
-$driverId = (int) ($_SESSION['driver_id'] ?? 0);
-if ($driverId < 1) {
+$userId = (int) ($_SESSION['user_id'] ?? 0);
+if ($userId < 1) {
     Flash::setMsg('danger', 'Your registration session is no longer valid. Please start again.');
     header("Location: /signup?danger=session+expired");
     exit();
@@ -42,11 +42,11 @@ $firstName = trim((string) ($_POST['forename'] ?? ''));
 $lastName = trim((string) ($_POST['surname'] ?? ''));
 $mobileNumber = trim((string) ($_POST['mobilenum'] ?? ''));
 $birthDate = trim((string) ($_POST['dateofbirth'] ?? ''));
-$operatorId = trim((string) ($_POST['operatorid'] ?? ''));
+$operatorId = 'PRODRVR-' . str_pad((string) $userId, 5, '0', STR_PAD_LEFT);
 
 // Complete the driver's registration profile. ↓
 include_once base_path("app/SubmissionHandlers/complete_registration.php");
-$registration = new RegistrationContr($driverId, $operatorId, $firstName, $lastName, $mobileNumber, $birthDate);
+$registration = new RegistrationContr($userId, $operatorId, $firstName, $lastName, $mobileNumber, $birthDate);
 $registration->processProfile();
 
 setcookie(
@@ -59,7 +59,7 @@ setcookie(
     true                    // httponly
 );
 
-unset($_SESSION['driver_id']);
+unset($_SESSION['user_id']);
 unset($_SESSION['user_name']);
 
 // Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓

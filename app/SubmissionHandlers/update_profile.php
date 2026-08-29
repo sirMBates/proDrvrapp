@@ -7,8 +7,8 @@ use App\Validation\Validator;
 use App\Validation\UserValidator;
 use Core\Flash;
 
-class UpdateDrvrContr {
-    private int $driverId;
+class UpdateProfileContr {
+    private int $userId;
     private ?string $currentPassword;
     private ?string $newPassword;
     private ?string $confirmPassword;
@@ -16,8 +16,8 @@ class UpdateDrvrContr {
     private ?string $phoneNumber;
     private ProfileAccountService $profileAccountService;
 
-    public function __construct(int $driverId, ?string $currentPassword, ?string $newPassword, ?string $confirmPassword, ?string $email, ?string $phoneNumber) {
-        $this->driverId = $driverId;
+    public function __construct(int $userId, ?string $currentPassword, ?string $newPassword, ?string $confirmPassword, ?string $email, ?string $phoneNumber) {
+        $this->userId = $userId;
         $this->currentPassword = $currentPassword;
         $this->newPassword = $newPassword;
         $this->confirmPassword = $confirmPassword;  
@@ -26,8 +26,8 @@ class UpdateDrvrContr {
         $this->profileAccountService = new ProfileAccountService();  
     }
 
-    public function changeDriverPassword(): void {
-        if ($this->driverId < 1) {
+    public function changeUserPassword(): void {
+        if ($this->userId < 1) {
             Flash::setMsg('danger', 'You must be logged into your account for this change.');
             header("location: /signin");
             exit();
@@ -63,7 +63,7 @@ class UpdateDrvrContr {
             exit();
         }
 
-        $updated = $this->profileAccountService->updatePassword($this->driverId, $this->currentPassword, $this->newPassword);
+        $updated = $this->profileAccountService->updatePassword($this->userId, $this->currentPassword, $this->newPassword);
         if (!$updated) {
             Flash::setMsg('warning', 'The current password you entered is incorrect.');
             header("Location: /profile?warning=incorrect+password");
@@ -84,7 +84,7 @@ class UpdateDrvrContr {
             exit();
         }
 
-        if (Validator::required($this->email) && $this->profileAccountService->emailExistsForOtherDriver($this->driverId, $this->email)) {
+        if (Validator::required($this->email) && $this->profileAccountService->emailExistsForOtherUser($this->userId, $this->email)) {
             Flash::setMsg('warning', 'That email address is already in use.');
             header("Location: /profile?warning=email+exists");
             exit();
@@ -96,7 +96,7 @@ class UpdateDrvrContr {
             exit();
         }
         
-        $updated = $this->profileAccountService->updateContactInformation($this->driverId, $this->email, $this->phoneNumber);
+        $updated = $this->profileAccountService->updateContactInformation($this->userId, $this->email, $this->phoneNumber);
         if (!$updated) {
             Flash::setMsg('error', 'The request was not completed. Please try again.');
             header("Location: /profile?error=try+again");

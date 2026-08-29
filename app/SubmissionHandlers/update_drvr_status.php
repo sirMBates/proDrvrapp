@@ -1,20 +1,22 @@
 <?php
 
-class UpdateDrvrStatusContr extends UpdateDrvrStatus {
-    private $drvrid;
-    private $drvrStatus;
-    private $drvrTimeStamp;
-    private $drvrToken;
+declare(strict_types=1);
 
-    public function __construct($drvrid, $drvrStatus, $drvrTimeStamp, $drvrToken) {
-        $this->drvrid = $drvrid;
+class UpdateDrvrStatusContr extends UpdateDrvrStatus {
+    private int $driverId;
+    private string $drvrStatus;
+    private string $drvrTimeStamp;
+    private string $drvrToken;
+
+    public function __construct(int $driverId, string $drvrStatus, string $drvrTimeStamp, string $drvrToken) {
+        $this->driverId = $driverId;
         $this->drvrStatus = $drvrStatus;
         $this->drvrTimeStamp = $drvrTimeStamp;
         $this->drvrToken = $drvrToken;
     }
 
     public function checkAndUpdateDrvrStatus() {
-        if ($this->drvrStatusInvalid() === false) {
+        if (!$this->isDriverStatusValid()) {
             header('Content-Type: application/json');
             http_response_code(401);
             return [
@@ -41,58 +43,31 @@ class UpdateDrvrStatusContr extends UpdateDrvrStatus {
             ];
         }
 
-        return $this->processUpdateStatus($this->drvrid, $this->drvrStatus, $this->drvrTimeStamp);
+        return $this->processUpdateStatus($this->driverId, $this->drvrStatus, $this->drvrTimeStamp);
     }
 
-    private function drvrStatusInvalid() {
-        $result;
-        $currentStatus = $this->drvrStatus;
-        function cleanStatus($drvrStatus) {
-            $clean_Status = filter_var($drvrStatus, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW);            
-            return $clean_Status;
-        }
-        $cleanedDrvrStatus = cleanStatus($currentStatus);
-        if (!preg_match("/^[a-zA-Z ]{5,}$/", $cleanedDrvrStatus)) {
-            $result = false;
-        } else {
-            $result = true;
-        }
-        return $result;
+    private function isDriverStatusValid(): bool {
+        $cleanedStatus = filter_var($this->drvrStatus, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW);
+
+        return preg_match('/^[a-zA-Z ]{5,}$/', $cleanedStatus) === 1;
     }
 
-    private function checkDrvrTimeStamp() {
-        $result;
-        $getStamp = $this->drvrTimeStamp;
-        function cleanDrvrTimeStamp($stamp) {
-            $cleanStamp = filter_var($stamp, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
-            return $cleanStamp;
-        }
-        if (DateTime::createFromFormat('Y-m-d H:i:s', cleanDrvrTimeStamp($getStamp)) === false) {
-            $result = false;
-        } else {
-            $result = true;
-        }
-        return $result;
+    private function checkDrvrTimeStamp(): bool {
+        $cleanedTimestamp = filter_var($this->drvrTimeStamp, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_STRIP_HIGH);
+
+        return DateTime::createFromFormat('Y-m-d H:i:s', $cleanedTimestamp) !== false;
     }
 
-    private function checkDrvrAccess() {
-        $getToken = $this->drvrToken ?? '';
-        $secretToken = $_SESSION['drvr_token'] ?? null;
+    private function checkDrvrAccess(): bool {
+        $getToken = (string) ($this->drvrToken ?? '');
+        $secretToken = (string) ($_SESSION['drvr_token'] ?? '');
 
-        $getToken = preg_replace('/[^a-f0-9]/i', '', (string) $getToken);
-        $secretToken = $secretToken ? preg_replace('/[^a-f0-9]/i', '', (string) $secretToken) : null;
-        
-        if ( empty($secretToken) && !empty($getToken)) {
-            error_log("[AUTH DEBUG] No session token, accepting replay token.");
-            return true;
+        if ($getToken === '' || $secretToken === '') {
+            return false;
         }
 
-        return $secretToken && $getToken && hash_equals($secretToken, $getToken);
+        return hash_equals($secretToken, $getToken);
     }
 }
-//error_log("Sanitized Driver Status: " . $cleanedDrvrStatus);
-//error_log("Sanitized Timestamp: " . cleanDateOfBirth($getStamp));
-//error_log("Sanitized Token: " . cleanToken($getToken));
-//error_log("Session Token: " . $secretToken);
-//error_log("Driver ID in Session: " . $drvrId);
+
 ?>

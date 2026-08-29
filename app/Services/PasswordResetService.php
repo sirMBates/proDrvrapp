@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Repositories\PasswordResetRepository;
-use App\Repositories\DriverRepository;
+use App\Repositories\UserRepository;
 
 class PasswordResetService {
     private PasswordResetRepository $passwordResetRepository;
-    private DriverRepository $driverRepository;
+    private UserRepository $userRepository;
     private int $resetLifetimeMinutes;
 
     public function __construct() {
         $this->passwordResetRepository = new PasswordResetRepository();
-        $this->driverRepository = new DriverRepository();
+        $this->userRepository = new UserRepository();
         $this->resetLifetimeMinutes = (int) ($_ENV['PASSWORD_RESET_LIFETIME_MINUTES'] ?? 15);
     }
 
     public function createResetRequest(string $email): ?array {
-        $driver = $this->driverRepository->findByEmail($email);
-        if ($driver === null) {
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
             return null;
         }
 
@@ -28,12 +28,12 @@ class PasswordResetService {
         $tokenHash = hash('sha256', $rawToken);
         $expiresAt = date('Y-m-d H:i:s', time() + ($this->resetLifetimeMinutes * 60));
 
-        $resetId = $this->passwordResetRepository->createRequest((int) $driver['driver_id'], $tokenHash, $expiresAt);
+        $resetId = $this->passwordResetRepository->createRequest((int) $user['user_id'], $tokenHash, $expiresAt);
 
         return [
             'resetId' => $resetId,
             'rawToken' => $rawToken,
-            'email' => $driver['email'],
+            'email' => $user['email'],
             'expiresAt' => $expiresAt
         ];
     }
@@ -67,8 +67,8 @@ class PasswordResetService {
             return false;
         }
 
-        $driverId = (int) $resetRequest['driver_id'];
-        $passwordUpdated = $this->driverRepository->updatePassword($driverId, $newPassword);
+        $userId = (int) $resetRequest['user_id'];
+        $passwordUpdated = $this->userRepository->updatePassword($userId, $newPassword);
         if (!$passwordUpdated) {
             return false;
         }

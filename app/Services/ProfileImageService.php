@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\DriverRepository;
+use App\Repositories\UserRepository;
 
 class ProfileImageService {
     private DriverProfileService $profileService;
-    private DriverRepository $driverRepository;
+    private UserRepository $userRepository;
 
     public function __construct() {
         $this->profileService = new DriverProfileService();
-        $this->driverRepository = new DriverRepository();
+        $this->userRepository = new UserRepository();
     }
 
     public function uploadImage(int $driverId, array $file): array {
@@ -51,7 +51,7 @@ class ProfileImageService {
         }
 
         // Update the database with the path to the profile picture
-        $updated = $this->driverRepository->updateProfilePicture($driverId, $storedPath);
+        $updated = $this->userRepository->updateProfilePicture($driverId, $storedPath);
 
         if (!$updated) {
             return [

@@ -6,14 +6,14 @@ namespace App\Repositories;
 use Core\Database;
 use PDO;
 
-class DriverRepository {
+class UserRepository {
     private PDO $pdo;
 
     public function __construct(?PDO $pdo = null) {
         $this->pdo = $pdo ?? (new Database())->connect();
     }
 
-    public function createDriver(string $username, string $email, string $password): int {
+    public function createUser(string $username, string $email, string $password): int {
         $hashPassword = password_hash($password, PASSWORD_BCRYPT);
 
         $sql = "INSERT INTO users (username, email, password, first_name, last_name, mobile_number, birth_date, profile_picture) VALUES (?,?,?,?,?,?,?,?)";
@@ -25,11 +25,11 @@ class DriverRepository {
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function completeRegistration(int $driverId, string $encryptedFirstName, string $encryptedLastName, string $encryptedMobile, string $encryptedBirthDate): bool {
+    public function completeRegistration(int $userId, string $encryptedFirstName, string $encryptedLastName, string $encryptedMobile, string $encryptedBirthDate): bool {
         $sql = "UPDATE users
                 SET first_name = :first_name, last_name = :last_name,
                 mobile_number = :mobile_number, birth_date = :birth_date
-                WHERE driver_id = :driver_id";
+                WHERE user_id = :user_id";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([
@@ -37,7 +37,7 @@ class DriverRepository {
             ':last_name' => $encryptedLastName,
             ':mobile_number' => $encryptedMobile,
             ':birth_date' => $encryptedBirthDate,
-            ':driver_id' => $driverId
+            ':user_id' => $userId
         ]);
     }
 
@@ -51,24 +51,24 @@ class DriverRepository {
             ':username' => $username
         ]);
 
-        $driver = $stmt->fetch();
-        return $driver !== false ? $driver : null;
+        $user = $stmt->fetch();
+        return $user !== false ? $user : null;
     }
 
-    public function findById(int $driverId): array {
+    public function findById(int $userId): array {
         $sql = "SELECT * FROM users
-                WHERE driver_id = :driver_id
+                WHERE user_id = :user_id
                 LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':driver_id' => $driverId
+            ':user_id' => $userId
         ]);
         
-        $driver = $stmt->fetch();
-        if (!$driver) {
-            throw new \RuntimeException('Driver not found.');
+        $user = $stmt->fetch();
+        if (!$user) {
+            throw new \RuntimeException('User not found.');
         }
-        return $driver;
+        return $user;
     }
 
     public function findByEmail(string $email): ?array {
@@ -80,27 +80,27 @@ class DriverRepository {
             ':email' => $email
         ]);
 
-        $driver = $stmt->fetch();
-        return $driver !== false ? $driver : null;
+        $user = $stmt->fetch();
+        return $user !== false ? $user : null;
     }
 
-    public function emailExistsForOtherDriver(int $driverId, string $email): bool {
-        $sql = "SELECT driver_id
+    public function emailExistsForOtherUser(int $userId, string $email): bool {
+        $sql = "SELECT user_id
                 FROM users
-                WHERE email = :email AND driver_id <> :driver_id
+                WHERE email = :email AND user_id <> :user_id
                 LIMIT 1";
 
         $stmt = $this->pdo->prepare($sql);
 
         $stmt->execute([
             ':email' => $email,
-            ':driver_id' => $driverId
+            ':user_id' => $userId
         ]);
 
         return $stmt->fetch() !== false;
     }
 
-    public function checkDriver(string $username, string $email): bool {
+    public function checkUser(string $username, string $email): bool {
         $sql = "SELECT username, email FROM users
                 WHERE username = :username OR email = :email
                 LIMIT 1";
@@ -114,35 +114,35 @@ class DriverRepository {
         return $stmt->fetch() !== false;        
     }
 
-    public function updatePassword(int $driverId, string $password): bool {
+    public function updatePassword(int $userId, string $password): bool {
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
         $sql = "UPDATE users
                 SET password = :password
-                WHERE driver_id = :driver_id";
+                WHERE user_id = :user_id";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([
             ':password' => $hashedPassword,
-            ':driver_id' => $driverId
+            ':user_id' => $userId
         ]);
     }
 
-    public function updateProfilePicture(int $driverId, string $storedPath): bool {
+    public function updateProfilePicture(int $userId, string $storedPath): bool {
         $sql = "UPDATE users
                 SET profile_picture = :profile_picture
-                WHERE driver_id = :driver_id";
+                WHERE user_id = :user_id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             ':profile_picture' => $storedPath,
-            ':driver_id' => $driverId
+            ':user_id' => $userId
         ]);
     }
 
-    public function updateContactInformation(int $driverId, ?string $email, ?string $encryptedMobile): bool {
+    public function updateContactInformation(int $userId, ?string $email, ?string $encryptedMobile): bool {
         $fields = [];
         $params = [
-            ':driver_id' => $driverId
+            ':user_id' => $userId
         ];
 
         if ($email !== null && $email !== '') {
@@ -161,7 +161,7 @@ class DriverRepository {
 
         $sql = "UPDATE users
                 SET " . implode(', ', $fields) . "
-                WHERE driver_id = :driver_id";
+                WHERE user_id = :user_id";
 
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute($params);

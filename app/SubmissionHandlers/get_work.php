@@ -13,7 +13,7 @@ class GetAssignmentContr {
     
     public function assignmentInformation(): void {
         try {
-            $driverId = (int) ($_SESSION['driver_id'] ?? 0);
+            $driverId = (int) ($_SESSION['user_id'] ?? 0);
             if ($driverId < 1) {
                 http_response_code(401);
                 echo json_encode([

@@ -58,7 +58,7 @@ include_once base_path("app/SubmissionHandlers/check_assignment.php");
 
 $assignmentControl = trim((string) ($_POST['assignment_control'] ?? ''));
 $orderId = filter_var($_POST['order_id'] ?? null, FILTER_VALIDATE_INT);
-$driverId = (int) ($_SESSION['driver_id'] ?? 0);
+$driverId = (int) ($_SESSION['user_id'] ?? 0);
 
 if ($orderId === false || $orderId < 1 || $driverId < 1) {
     http_response_code(400);

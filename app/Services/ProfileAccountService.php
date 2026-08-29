@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\DriverRepository;
+use App\Repositories\UserRepository;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 
 class ProfileAccountService {
-    private DriverRepository $driverRepository;
+    private UserRepository $userRepository;
     private AuthenticationService $authenticationService;
 
     public function __construct() {
-        $this->driverRepository = new DriverRepository();
+        $this->userRepository = new UserRepository();
         $this->authenticationService = new AuthenticationService();
     }
 
-    public function updatePassword(int $driverId, string $currentPassword, string $newPassword): bool {
-        $verified = $this->authenticationService->verifyPasswordByDriverId($driverId, $currentPassword);
+    public function updatePassword(int $userId, string $currentPassword, string $newPassword): bool {
+        $verified = $this->authenticationService->verifyPasswordByUserId($userId, $currentPassword);
         if (!$verified) {
             return false;
         }
 
-        return $this->driverRepository->updatePassword($driverId, $newPassword);
+        return $this->userRepository->updatePassword($userId, $newPassword);
     }
 
-    public function emailExistsForOtherDriver(int $driverId, string $email): bool {
-        return $this->driverRepository->emailExistsForOtherDriver($driverId, $email);
+    public function emailExistsForOtherUser(int $userId, string $email): bool {
+        return $this->userRepository->emailExistsForOtherUser($userId, $email);
     }
 
-    public function updateContactInformation(int $driverId, ?string $email, ?string $mobile): bool {
+    public function updateContactInformation(int $userId, ?string $email, ?string $mobile): bool {
         $encryptedMobile = null;
 
         if ($mobile !== null && $mobile !== '') {
@@ -38,7 +38,7 @@ class ProfileAccountService {
             $encryptedMobile = Crypto::encrypt($mobile, $key);
         }
 
-        return $this->driverRepository->updateContactInformation($driverId, $email, $encryptedMobile);
+        return $this->userRepository->updateContactInformation($userId, $email, $encryptedMobile);
     }
 }
 

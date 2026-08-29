@@ -11,7 +11,7 @@ if (!in_array($method, ['GET', 'PATCH'], true)) {
     exit();
 }
 
-$driverId = (int) ($_SESSION['driver_id'] ?? 0);
+$driverId = (int) ($_SESSION['user_id'] ?? 0);
 if ($driverId < 1) {
     http_response_code(401);
     exit();

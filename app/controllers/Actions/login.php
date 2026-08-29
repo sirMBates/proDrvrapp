@@ -26,9 +26,9 @@ if (isset($_POST['loginAcct'])) {
     
     // Instantiate the sign in user controller class. ↓
     include_once base_path("app/SubmissionHandlers/login_drvr.php");
-    $signin = new Logincontr($username, $password);
+    $signin = new LoginContr($username, $password);
     // Running error handlers and user signin.
-    $signin->loginDriver();
+    $signin->loginUser();
     if (!isset($_COOKIE['driver_registered'])) {
         setcookie(
             'driver_registered', 

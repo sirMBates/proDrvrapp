@@ -6,8 +6,6 @@ const firstNameInput = document.querySelector('#forename');
 const lastNameInput = document.querySelector('#surname');
 const mobileNumberInput = document.querySelector('#mobile_num');
 const birthDateInput = document.querySelector('#date-of-birth');
-const driverId = document.querySelector('#driverId')?.value ?? '';
-const operatorIdInput = document.querySelector('#newOperatorId');
 
 function setValidationState(input, isValid) {
     const feedback = input.closest('.form-floating')?.nextElementSibling;
@@ -35,18 +33,6 @@ birthDateInput?.addEventListener('input', () => {
     const isValid = Validation.validate(birthDateInput.value, 'date');
     setValidationState(birthDateInput, isValid);
 });
-
-function createOperatorId(value) {
-    if (!operatorIdInput || value === '') {
-        return;
-    }
-    
-    const prefix = 'PRODRVR';
-    const idNumber = value.padStart(5, '0');
-    const operatorId = `${prefix}-${idNumber}`;
-    operatorIdInput.value = operatorId;
-};
-createOperatorId(driverId);
 
 // Initialize Bootstrap/native form validation.
 formValidation();

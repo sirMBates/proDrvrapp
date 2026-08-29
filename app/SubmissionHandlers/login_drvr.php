@@ -6,7 +6,7 @@ use App\Services\AuthenticationService;
 use App\Validation\Validator;
 use Core\Flash;
 
-class Logincontr {
+class LoginContr {
     private string $username;
     private string $password;
     private AuthenticationService $authenticationService;    
@@ -17,7 +17,7 @@ class Logincontr {
         $this->authenticationService = new AuthenticationService();
     }
 
-    public function loginDriver(): void {
+    public function loginUser(): void {
         if ($this->isEmpty()) {
             Flash::setMsg('error', 'Please fill in all fields.');
             header("Location: /signin?error=empty"); // emptyInputs
@@ -38,7 +38,7 @@ class Logincontr {
         }
         session_regenerate_id(true);
 
-        $_SESSION['driver_id'] = $result['driverId'];
+        $_SESSION['user_id'] = $result['userId'];
         $_SESSION['first_name'] = $result['firstName'];
         $_SESSION['logged_in'] = true;
         $birthdate = $result['birthdate'];

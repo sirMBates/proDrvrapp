@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Validation\Validator;
 use App\Validation\UserValidator;
-use App\Repositories\DriverRepository;
+use App\Repositories\UserRepository;
 use Core\Logger;
 use Core\Flash;
 
@@ -12,13 +12,13 @@ class AddDrvrContr {
     private string $username;
     private string $email;
     private string $password;
-    private DriverRepository $driverRepository;
+    private UserRepository $userRepository;
     
     public function __construct(string $username, string $email, string $password) {
         $this->username = $username;
         $this->email = $email;
         $this->password = $password;
-        $this->driverRepository = new DriverRepository();  
+        $this->userRepository = new UserRepository();
     }
 
     public function addDriver() {
@@ -54,8 +54,8 @@ class AddDrvrContr {
         }
         
         try {
-            $driverId = $this->driverRepository->createDriver($this->username, $this->email, $this->password);
-            $_SESSION['driver_id'] = $driverId;
+            $userId = $this->userRepository->createUser($this->username, $this->email, $this->password);
+            $_SESSION['user_id'] = $userId;
         } catch (\Throwable $exception) {
             $logger = new Logger(base_path('storage/logs/error.log'));
             $logger->error('[SIGNUP ERROR] ' . $exception->getMessage() . ' in ' . $exception->getFile() . ':' . $exception->getLine());
@@ -82,7 +82,7 @@ class AddDrvrContr {
     }
 
     private function usernameOrEmailExists(): bool {
-        return $this->driverRepository->checkDriver($this->username, $this->email);
+        return $this->userRepository->checkUser($this->username, $this->email);
     }
 }
 ?>

@@ -15,9 +15,9 @@ if ($method !== 'PATCH') {
     exit();
 }
 
-$driverId = (int) ($_SESSION['driver_id'] ?? 0);
+$userId = (int) ($_SESSION['user_id'] ?? 0);
 
-if ($driverId < 1) {
+if ($userId < 1) {
     Flash::setMsg('danger', 'You must be logged into your account for this change.');
     header("Location: /signin");
     exit();
@@ -40,8 +40,8 @@ if ($action === 'update-password') {
     $newPassword = (string) ($_POST['newPassword'] ?? '');
     $confirmPassword = (string) ($_POST['confirmPassword'] ?? '');
 
-    $updateProfile = new UpdateDrvrContr($driverId, $currentPassword, $newPassword, $confirmPassword, null, null);
-    $updateProfile->changeDriverPassword();
+    $updateProfile = new UpdateProfileContr($userId, $currentPassword, $newPassword, $confirmPassword, null, null);
+    $updateProfile->changeUserPassword();
     Flash::setMsg('info', 'You\'ve successfully updated your password!');
     header("Location: /profile?info=password+updated");
     exit();
@@ -51,7 +51,7 @@ if ($action === 'update-contact-information') {
     $email = trim((string) ($_POST['email'] ?? ''));
     $phoneNumber = trim((string) ($_POST['mobile'] ?? ''));
 
-    $updateProfile = new UpdateDrvrContr($driverId, null, null, null, $email !== '' ? $email : null, $phoneNumber !== '' ? $phoneNumber : null);
+    $updateProfile = new UpdateProfileContr($userId, null, null, null, $email !== '' ? $email : null, $phoneNumber !== '' ? $phoneNumber : null);
     $updateProfile->updateContactInformation();
     Flash::setMsg('success', 'Your information has been updated.');
     header("Location: /profile?success=data+saved");

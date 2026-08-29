@@ -8,7 +8,7 @@ use App\Validation\UserValidator;
 use Core\Flash;
 
 class RegistrationContr {
-    private int $driverId;
+    private int $userId;
     private string $operatorId;
     private string $firstName;
     private string $lastName;
@@ -16,8 +16,8 @@ class RegistrationContr {
     private string $birthDate;
     private RegistrationService $registrationService;
 
-    public function __construct(int $driverId, string $operatorId, string $firstName, string $lastName, string $mobileNumber, string $birthDate) {
-        $this->driverId = $driverId;
+    public function __construct(int $userId, string $operatorId, string $firstName, string $lastName, string $mobileNumber, string $birthDate) {
+        $this->userId = $userId;
         $this->operatorId = $operatorId;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
@@ -52,12 +52,12 @@ class RegistrationContr {
         }
 
         if (!Validator::matches($this->operatorId, '/^[a-zA-Z0-9-]+$/')) {
-            Flash::setMsg('danger', 'A problem arised! Please try again.');
+            Flash::setMsg('danger', 'A problem occurred. Please try again.');
             header("Location: /register?danger=failed+operator+id");
             exit();
         }
 
-        $updated = $this->registrationService->completeRegistration($this->driverId, $this->operatorId, $this->firstName, $this->lastName, $this->mobileNumber, $this->birthDate);
+        $updated = $this->registrationService->completeRegistration($this->userId, $this->operatorId, $this->firstName, $this->lastName, $this->mobileNumber, $this->birthDate);
 
         if (!$updated) {
             Flash::setMsg('error', 'The registration could not be completed. Please try again.');

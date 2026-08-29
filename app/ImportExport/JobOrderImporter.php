@@ -7,7 +7,7 @@ namespace App\ImportExport;
 use Exception;
 use App\Repositories\AssignmentRepository;
 use App\Repositories\DriverCredentialRepository;
-use App\Repositories\DriverRepository;
+use App\Repositories\UserRepository;
 use App\Validation\ImporterAssignmentValidator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -212,9 +212,9 @@ class JobOrderImporter {
 
     protected function sendAssignmentEmail(int $driverId, string $orderRef): void {
         try {
-            $driverRepository = new DriverRepository();
+            $userRepository = new UserRepository();
             try {
-                $driver = $driverRepository->findById($driverId);
+                $driver = $userRepository->findById($driverId);
             } catch (\RuntimeException $exception) {
                 $this->logger->warning("No driver found for driver ID: {$driverId}");
                 return;

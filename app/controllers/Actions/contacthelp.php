@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sendmsg'])) {
 
     include_once base_path("app/SubmissionHandlers/contact_help.php");
 
-    $sendingInfo = new ContactHelpContr((int) $_SESSION['driver_id'], $operatorId, $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage);
+    $sendingInfo = new ContactHelpContr((int) $_SESSION['user_id'], $operatorId, $driverName, $driverEmail, $helpDeskEmail, $emailSubject, $emailMessage);
     $sendingInfo->contactHelpDesk();
     $alert::setMsg('info', 'Your message was sent. You\'ll receive a response shortly.');
     header("Location: /contact?info=message+sent");

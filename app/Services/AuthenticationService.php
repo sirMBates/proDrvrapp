@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\DriverRepository;
+use App\Repositories\UserRepository;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 
 class AuthenticationService {
-    private DriverRepository $driverRepository;
+    private UserRepository $userRepository;
 
     public function __construct() {
-        $this->driverRepository = new DriverRepository();
+        $this->userRepository = new UserRepository();
     }
 
     public function authenticate(string $username, string $password): ?array {
-        $driver = $this->driverRepository->findByUsername($username);
+        $user = $this->userRepository->findByUsername($username);
 
-        if ($driver === null) {
+        if ($user === null) {
             return null;
         }
 
-        if (!password_verify($password, $driver['password'])) {
+        if (!password_verify($password, $user['password'])) {
             return [
                 'authenticated' => false,
                 'reason' => 'invalid_password'
@@ -32,23 +32,23 @@ class AuthenticationService {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         return [
             'authenticated' => true,
-            'driverId' => (int) $driver['driver_id'],
-            'firstName' => Crypto::decrypt($driver['first_name'], $key),
-            'birthdate' => Crypto::decrypt($driver['birth_date'], $key)
+            'userId' => (int) $user['user_id'],
+            'firstName' => Crypto::decrypt($user['first_name'], $key),
+            'birthdate' => Crypto::decrypt($user['birth_date'], $key)
         ];
     }
 
-    public function verifyPasswordByDriverId(int $driverId, string $password): bool {
-        if ($driverId < 1 || $password === '') {
+    public function verifyPasswordByUserId(int $userId, string $password): bool {
+        if ($userId < 1 || $password === '') {
             return false;
         }
 
-        try{
-            $driver = $this->driverRepository->findById($driverId);
+        try {
+            $user = $this->userRepository->findById($userId);
         } catch (\RuntimeException) {
             return false;
         }
-        return password_verify($password, $driver['password']);
+        return password_verify($password, $user['password']);
     }
 }
 

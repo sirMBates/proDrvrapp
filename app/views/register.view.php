@@ -50,12 +50,8 @@ include "partials/flashmessage.php";
 
                                 <input id="drvrToken" type="hidden" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
 
-                                <input id="driverId" type="hidden" value="<?= $_SESSION['driver_id']?>">
-
-                                <input id="newOperatorId" type="hidden" name="operatorid" value="" required>
-
                                 <div id="save_btn_box" class="col-12 row mx-auto mb-3">
-                                        <button id="register" type="submit" class="btn btn-primary btn-lg text-uppercase">save & log-in</button>
+                                        <button id="register" type="submit" class="btn btn-primary btn-lg text-uppercase">complete registration</button>
                                 </div>
                         </form>
                 </div>

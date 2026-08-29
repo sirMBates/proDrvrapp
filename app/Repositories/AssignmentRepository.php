@@ -122,8 +122,8 @@ class AssignmentRepository {
         $db = new Database;
         $pdo = $db->connect();
         $sql = "SELECT wo.*, dc.operator_id, u.first_name, u.last_name, u.birth_date
-                FROM work_orders wo INNER JOIN users u ON wo.driver_id = u.driver_id
-                INNER JOIN driver_credentials dc ON dc.user_id = u.driver_id
+                FROM work_orders wo INNER JOIN users u ON wo.driver_id = u.user_id
+                INNER JOIN driver_credentials dc ON dc.user_id = u.user_id
                 WHERE wo.driver_id = :driver_id AND wo.completed_at IS NULL AND wo.canceled_at IS NULL AND wo.assignment_status <> 'canceled'
                 ORDER BY wo.start_date_time ASC, wo.order_id ASC";
         $stmt = $pdo->prepare($sql);

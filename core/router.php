@@ -39,7 +39,7 @@ class Router {
         foreach($this->routes as $route) {
             if($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
                 // Check if route is protected
-                if ($route['protected'] && (!isset($_SESSION['driver_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
+                if ($route['protected'] && (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
                     header("Location: /signin");
                     exit();
                 }

@@ -7,15 +7,15 @@ namespace App\Repositories;
 use Core\Database;
 
 class PasswordResetRepository {
-    public function createRequest(int $driverId, string $tokenHash, string $expiresAt): int {
+    public function createRequest(int $userId, string $tokenHash, string $expiresAt): int {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "INSERT INTO password_reset (driver_id, token_hash, expires_at)
-                VALUES (:driver_id, :token_hash, :expires_at)";
+        $sql = "INSERT INTO password_reset (user_id, token_hash, expires_at)
+                VALUES (:user_id, :token_hash, :expires_at)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            ':driver_id' => $driverId,
+            ':user_id' => $userId,
             ':token_hash' => $tokenHash,
             ':expires_at' => $expiresAt
         ]);
@@ -27,7 +27,7 @@ class PasswordResetRepository {
         $db = new Database();
         $pdo = $db->connect();
 
-        $sql = "SELECT reset_id, driver_id, token_hash, expires_at, used_at, created_at
+        $sql = "SELECT reset_id, user_id, token_hash, expires_at, used_at, created_at
                 FROM password_reset
                 WHERE token_hash = :token_hash
                 LIMIT 1";
