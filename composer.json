@@ -9,11 +9,12 @@
     "autoload": {
         "psr-4": {
             "Core\\": "core/",
-            "App\\Validation\\": "app/validation/",
-            "App\\Sanitization\\": "app/sanitization/",
+            "App\\Validation\\": "app/Validation/",
+            "App\\Sanitization\\": "app/Sanitization/",
             "App\\ImportExport\\": "app/ImportExport/",
             "App\\Repositories\\": "app/Repositories/",
-            "App\\Services\\": "app/Services/"
+            "App\\Services\\": "app/Services/",
+            "App\\Enums\\": "app/Enums/"
         }
     }
 }

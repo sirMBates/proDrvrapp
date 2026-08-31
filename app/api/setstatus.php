@@ -1,5 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Repositories\DriverStatusRepository;
+use App\Services\DriverStatusService;
+
 requireLoginAjax();
 header('Content-Type: application/json');
 
@@ -8,7 +13,7 @@ try {
         http_response_code(405);
         echo json_encode([
             'status' => 'error',
-            'message' => 'There was a problem updating status.'
+            'message' => 'Method not allowed.'
         ]);
         exit();
     }
@@ -25,12 +30,13 @@ try {
         exit();
     }
 
-    $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($data['csrf_token'] ?? null);
-    if (empty($csrfToken)) {
-        http_response_code(401);
+    $csrfToken = (string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? $data['csrf_token'] ?? '');
+    $sessionToken = (string) ($_SESSION['drvr_token'] ?? ''); 
+    if ($csrfToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $csrfToken)) {
+        http_response_code(403);
         echo json_encode([
             'status' => 'error',
-            'message' => 'You\'re unauthorized for this action.'
+            'message' => 'Unauthorized request!'
         ]);
         exit();
     }
@@ -45,27 +51,34 @@ try {
         exit();
      }
 
-    $driverStatus = $data['drvrStatus'] ?? null;
-    $isoTimeStamp = $data['drvrStamp'] ?? null;
-    $timeStringStamp = $isoTimeStamp !== null ? strtotime($isoTimeStamp) : false;
-    if ($timeStringStamp === false) {
+    $driverStatus = trim((string) ($data['drvrStatus'] ?? ''));
+    if ($driverStatus === '') {
         http_response_code(400);
         echo json_encode([
             'status' => 'error',
-            'message' => 'Invalid status timestamp.'
+            'message' => 'Driver status is required.'
         ]);
         exit();
     }
 
-    $driverTimeStamp = date('Y-m-d H:i:s', $timeStringStamp);
+    $repository = new DriverStatusRepository();
+    $service = new DriverStatusService($repository);
 
-    include_once base_path("app/models/updatestatusmodel.php");
-    include_once base_path("app/SubmissionHandlers/update_drvr_status.php");
+    $statusRecord = $service->changeStatus($driverId, $driverStatus);
 
-    $statusUpdater = new UpdateDrvrStatusContr($driverId, $driverStatus, $driverTimeStamp, $csrfToken);
-    $result = $statusUpdater->checkAndUpdateDrvrStatus();
-
-    echo json_encode($result);
+    http_response_code(200);
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Your status has been updated!',
+        'data' => $statusRecord
+    ]);
+    exit();
+} catch (InvalidArgumentException $e) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
     exit();
 } catch (Throwable) {
     http_response_code(500);
