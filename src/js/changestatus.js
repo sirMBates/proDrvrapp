@@ -1,12 +1,20 @@
 import { showFlashAlert } from "./helpers.js";
 import { handleStatusFetch } from "./pwa.js";
+
+const STATUS_MAP = Object.freeze({
+    'status-enroute-garage': 'Enroute to garage',
+    'status-checkedin-garage': 'Arrived at garage',
+    'status-onlocation': 'Arrived at location',
+    'status-working-assignment': 'On assignment',
+    'status-end-shift': 'End of Shift',
+    'status-emergency': 'Emergency'
+});
 export class ChangeStatus {
     constructor(array, drvrToken, bannerMsg) {
         this.array = array;
         this.drvrToken = drvrToken;
         this.bannerMsg = bannerMsg;
         this.drvrStatus = '';
-        this.timeStamp = '';
     }
 
     init() {
@@ -15,44 +23,16 @@ export class ChangeStatus {
         });
     }
 
-    updateDrvrStatusControl(e) {
-        const statusMap = {
-            'status-enroute-garage': 'Enroute to garage',
-            'status-checkedin-garage': 'Arrived at garage',
-            'status-enroute-location': 'Enroute to location',
-            'status-onlocation': 'Arrived at location',
-            'status-working-assignment': 'On assignment',
-            'status-end-shift': 'End of Shift',
-            'status-emergency': 'Emergency'
-        };
-
-        const clickedClass = [...e.target.classList].find(cls => statusMap[cls]);
+    async updateDrvrStatusControl(e) {
+        const clickedClass = [...e.currentTarget.classList].find(cls => STATUS_MAP[cls]);
         if (!clickedClass) return;
 
-        const newStatus = statusMap[clickedClass];
-        const newTime = new Date();
-        const timeOptions = {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        }
+        const newStatus = STATUS_MAP[clickedClass];
 
-        this.drvrStatus = newStatus;
-        let viewedTimeStamp = newTime.toLocaleString('en-us', timeOptions);
-        //this.timeStamp = newTime.toISOString().slice(0, 19).replace('T', ' ');
-        this.timeStamp = newTime.toISOString();
-
-        localStorage.setItem('status', this.drvrStatus);
-        this.bannerMsg.textContent = this.drvrStatus;
-        console.log(`Driver access: ${this.drvrToken} \n Driver status currently: ${this.drvrStatus} \n Switched at: ${viewedTimeStamp}`);
-        this.updateDBStatus(this.drvrToken, this.drvrStatus, this.timeStamp);        
+        await this.updateDBStatus(this.drvrToken, newStatus);       
     };
 
-    async updateDBStatus(token, drvrstatus, stamp) {
+    async updateDBStatus(token, driverStatus) {
         try {
             const result = await handleStatusFetch({
                 method: 'POST',
@@ -63,25 +43,31 @@ export class ChangeStatus {
                     'X-CSRF-Token': token
                 },
                 body: JSON.stringify({
-                    drvrStatus: drvrstatus,
-                    drvrStamp: stamp
+                    drvrStatus: driverStatus
                 })
             });
 
             if ( result.status === 'success' ) {
+                const statusRecord = result.data;
+                this.drvrStatus = statusRecord.driverStatus;
+                localStorage.setItem('status', this.drvrStatus);
+                this.bannerMsg.textContent = this.drvrStatus;
+                console.log(`Driver status: ${this.drvrStatus}\n` + `Updated at: ${statusRecord.statusTimestamp}`);
                 showFlashAlert(result.status, result.message);
-            } else if ( result.status === 'queued' ) {
+                return;
+            } 
+            
+            if ( result.status === 'queued' ) {
+                this.drvrStatus = driverStatus;
+                this.bannerMsg.textContent = this.drvrStatus;
                 showFlashAlert('info', result.message || 'Status saved offline - will sync.');
-            } else if ( result.status === 'error' ) {
+                return;                
+            }
+            
+            if ( result.status === 'error' ) {
                 showFlashAlert(result.status, result.message);
             }
-            /*.then(res => {
-                return res.json()
-            })*/
-            /*.then(data => console.log(data))
-            .catch (error => console.log('Error', error))*/
         } catch (err) {
-            //console.error('[STATUS] Failed to send status:', err);
             showFlashAlert('error', 'Error saving status.');
         }
     }

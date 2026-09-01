@@ -51,7 +51,6 @@ include "partials/custom-modal.php";
                                 <div id="update-status-con" class="mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
                                         <button type="button" class="btn btn-outline-primary set-status status-enroute-garage">Enroute to Garage/Yard</button>
                                         <button type="button" class="btn btn-outline-primary set-status status-checkedin-garage">Check-In Garage/Yard</button>
-                                        <button type="button" class="btn btn-outline-primary set-status status-enroute-location">Enroute to Loc</button>
                                         <button type="button" class="btn btn-outline-primary set-status status-onlocation">Arrived at Loc</button>
                                         <button type="button" class="btn btn-outline-primary set-status status-working-assignment">On Assignment</button>
                                         <button type="button" class="btn btn-outline-primary set-status status-end-shift">End Shift</button>
