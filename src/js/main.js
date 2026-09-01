@@ -15,7 +15,7 @@ const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn.nextElementSibling;
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
 const changeStatusCon = document.querySelector('#driver-status-contlr');
-const logoutLink = driverMenu.childNodes[11].firstElementChild;
+const logoutLink = driverMenu.querySelector('#logout-link');
 const emergencyBtn = document.querySelectorAll('.status-emergency');
 let isActiveEmergency;
 const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
@@ -309,20 +309,18 @@ function activeLink () {
 activeLink();
 
 $(logoutLink).on('click', () => {
-        if (localStorage.getItem('status') === 'End of Shift') {
-                localStorage.removeItem('status');
-        }
+        localStorage.removeItem('status');
+        localStorage.removeItem('driverStatusHistoryCache');
 
-        if (localStorage.getItem('isActiveEmergency') !== null) {
-                localStorage.removeItem('isActiveEmergency');
-        }
+        // Emergency State
+        localStorage.removeItem('isActiveEmergency');
 
-        if (sessionStorage.getItem('status') !== null) {
-                sessionStorage.removeItem('status');
-        }
+        // Legacy/session status state
+        sessionStorage.removeItem('status');
 
         // Clear user override so auto theme resumes
         localStorage.removeItem('userThemeOverride');
+
         // Immediately apply auto theme
         autoThemeSwitcher();
         updateThemeIndicator();

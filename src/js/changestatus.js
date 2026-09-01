@@ -21,6 +21,17 @@ export class ChangeStatus {
         this.array.forEach(button => {
             button.addEventListener('click', (e) => this.updateDrvrStatusControl(e));
         });
+
+        window.addEventListener('driver-status-updated', (e) => {
+            const statusRecord = e.detail;
+            if (!statusRecord?.driverStatus) {
+                return;
+            }
+
+            this.drvrStatus = statusRecord.driverStatus;
+            this.bannerMsg.textContent = this.drvrStatus;
+            localStorage.setItem('status', this.drvrStatus);
+        });
     }
 
     async updateDrvrStatusControl(e) {
@@ -58,9 +69,7 @@ export class ChangeStatus {
             } 
             
             if ( result.status === 'queued' ) {
-                this.drvrStatus = driverStatus;
-                this.bannerMsg.textContent = this.drvrStatus;
-                showFlashAlert('info', result.message || 'Status saved offline - will sync.');
+                showFlashAlert('info', result.message || 'Status queued - will sync when back online.');
                 return;                
             }
             
