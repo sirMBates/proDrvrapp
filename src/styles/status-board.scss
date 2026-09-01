@@ -1,0 +1,85 @@
+.driver-status-history {
+    overflow: hidden;
+    width: 100%;
+    margin-top: 1.25rem;
+
+    @media (min-width: 992px) {
+        width: 48%;
+        min-width: 540px;
+        align-self: flex-start;
+    }
+
+    &__header {
+        h2 {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+    }
+
+    &__body {
+        padding: 0;
+    }
+
+    &__labels,
+    &__item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: 1rem;
+        align-items: center;
+
+        @media (min-width: 992px) {
+            column-gap: 2rem;
+        }
+    }
+
+    &__labels {
+        padding: 0.65rem 1rem;
+        font-weight: 600;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    &__list {
+        max-height: 15rem;
+        overflow-y: auto;
+    }
+
+    &__item {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__item:last-child {
+        border-bottom: 0;
+    }
+
+    &__status {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    &__time {
+        white-space: nowrap;
+        text-align: right;
+    }
+
+    &__date {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.65rem 1rem;
+    }
+
+    &__date, &__labels, &__item {
+        padding-inline: 1rem;
+        @media (min-width: 992) {
+            padding-inline: 1.5rem;
+        }
+    }
+
+    &__empty {
+        margin: 0;
+        padding: 1.25rem 1rem;
+        text-align: center;
+    }
+}

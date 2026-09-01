@@ -52,7 +52,7 @@ export class ChangeStatus {
                 this.drvrStatus = statusRecord.driverStatus;
                 localStorage.setItem('status', this.drvrStatus);
                 this.bannerMsg.textContent = this.drvrStatus;
-                console.log(`Driver status: ${this.drvrStatus}\n` + `Updated at: ${statusRecord.statusTimestamp}`);
+                window.dispatchEvent(new CustomEvent('driver-status-updated', { detail: statusRecord }));
                 showFlashAlert(result.status, result.message);
                 return;
             } 

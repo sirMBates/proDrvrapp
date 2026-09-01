@@ -479,6 +479,9 @@ window.addEventListener('online', async () => {
 
       if (data?.status === 'success') {
         await clearQueued(req.id);
+        if (isStatusUpdate && data.data) {
+          window.dispatchEvent(new CustomEvent('driver-status-updated', { detail: data.data }));
+        }
         showFlashAlert('success', 'Offline request synced!');
       }
     } catch (err) {
@@ -498,6 +501,10 @@ export async function handleStatusFetch(options) {
   } catch (err) {
     return queueStatusRequest(options);
   }
+};
+
+export async function handleStatusHistoryFetch(options) {
+  return await fetchDrvr('https://prodriver.local/getstatus', options);
 };
 
 async function queueStatusRequest(options) {

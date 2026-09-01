@@ -59,6 +59,11 @@ include "partials/custom-modal.php";
                         </div>
                 </div>
         </div>
+        <section class="dashboard-preview-grid">
+                <?php
+                        require "partials/status-history.php"
+                ?>
+        </section>
 </main>
 <?php
 require "partials/footer.php";

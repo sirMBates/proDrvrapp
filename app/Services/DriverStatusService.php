@@ -32,12 +32,7 @@ class DriverStatusService {
             throw new RuntimeException('Driver status could not be retrieved.');
         }
 
-        return [
-            'statusId' => (int) $statusRecord['status_id'],
-            'driverId' => (int) $statusRecord['driver_id'],
-            'driverStatus' => (string) $statusRecord['status'],
-            'statusTimestamp' => (string) $statusRecord['status_timestamp']
-        ];
+        return $this->normalizeStatusRecord($statusRecord);
     }
 
     public function getCurrentStatus(int $driverId): ?array {
@@ -45,7 +40,12 @@ class DriverStatusService {
             throw new InvalidArgumentException('Invalid driver ID.');
         }
 
-        return $this->driverStatusRepository->findLatestByDriverId($driverId);
+        $statusRecord = $this->driverStatusRepository->findLatestByDriverId($driverId);
+        if ($statusRecord === null) {
+            return null;
+        }
+
+        return $this->normalizeStatusRecord($statusRecord);
     }
 
     public function getRecentHistory(int $driverId, int $limit = 20): array {
@@ -57,7 +57,18 @@ class DriverStatusService {
             throw new InvalidArgumentException('Invalid status history limit.');
         }
 
-        return $this->driverStatusRepository->findRecentByDriverId($driverId, $limit);
+        $history = $this->driverStatusRepository->findRecentByDriverId($driverId, $limit);
+
+        return array_map(fn(array $statusRecord): array => $this->normalizeStatusRecord($statusRecord), $history);
+    }
+
+    private function normalizeStatusRecord(array $statusRecord): array {
+        return [
+            'statusId' => (int) $statusRecord['status_id'],
+            'driverId' => (int) $statusRecord['driver_id'],
+            'driverStatus' => (string) $statusRecord['status'],
+            'statusTimestamp' => (string) $statusRecord['status_timestamp']
+        ];
     }
 }
 

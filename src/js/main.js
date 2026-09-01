@@ -4,18 +4,12 @@ import { fetchDrvr, showFlashAlert, getCurrentView } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
 import { Validation } from './validation.js';
 
-
 const curView = getCurrentView();
-//const profCon = document.querySelector("#profilecon");
-// Profile image display in navbar.
-// [default image is firstChild.nextElementSibling] & [file selector is 3]
 const menuProfileImage = document.querySelector('#menuProfileImage');
 const menuProfileInput = document.querySelector('#menuProfileInput');
 const defaultProfileImage = "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
 const mainMenuItems = document.querySelectorAll("#navbarSupportedContent .nav-link");
-//const textLink = document.querySelector("#drivermenu");
 const driverMenu = document.querySelector(".offcanvas-body");
-//const viewPayCard = driverMenu.childNodes[5];
 let isDarkMode;
 const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn.nextElementSibling;
@@ -27,11 +21,9 @@ let isActiveEmergency;
 const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
 const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontrol :)
 const getDriver = fetchDrvr;
-const statusEndpoint = "https://prodriver.local/setstatus";
 const drvrToken = document.getElementById('drvrToken').value;
 const drvrAlert = showFlashAlert;
 const statusMsg = document.querySelector('#statusMessage');
-
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq

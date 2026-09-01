@@ -1,0 +1,17 @@
+.dashboard-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    width: 100%;
+    margin-top: 1.25rem;
+
+    @media (min-width: 992px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        > :only-child {
+            grid-column: 1 / -1;
+            width: 55%;
+            justify-self: center;
+        }
+    }
+}

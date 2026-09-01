@@ -18,6 +18,7 @@ $router->get('/counter', 'app/controllers/Pages/counter.php', true);
 $router->get('/logout', 'app/controllers/Actions/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
 $router->get('/getassignments', 'app/api/getassignments.php');
+$router->get('/getstatus', 'app/api/getstatus.php', true);
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');

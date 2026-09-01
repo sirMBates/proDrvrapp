@@ -23,7 +23,8 @@ function pageStyle($value) {
                         break;
 
                 case "/":
-                        return;
+                        echo "<link rel='stylesheet' href='/dist/styles/status-board.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/driver-dashboard.css'>\n";
                         break;
 
                 case "/contact":

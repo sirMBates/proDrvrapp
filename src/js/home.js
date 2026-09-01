@@ -1,14 +1,15 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { fetchDrvr, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
+import { DriverStatusHistory } from './driver-status-history.js';
+
 const drvrBirthDate = document.querySelector('#drvrbday')?.value ?? '';
 const mainContent = document.querySelector('main');
-const getDriver = fetchDrvr;
+const statusHistoryContainer = document.getElementById('driver-status-history');
+const driverStatusHistory = new DriverStatusHistory(statusHistoryContainer);
 const getAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
 const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
-const bannerMsg = document.querySelector('#statusMessage');
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
-const dashboardStatusBtns = document.querySelector('#update-status-con');
 const birthdayThemeBtn = document.querySelector('#birthday-theme-btn');
 const todayDate = dtHelper(new Date(), 'date');
 let lastAssignmentsUpdate = 0;
@@ -86,6 +87,8 @@ function renderHomeTable(assignments, fromSync = false) {
 
         lastAssignmentsUpdate = Date.now();
 };
+
+driverStatusHistory.init();
 
 // --- BroadcastChannel + Fallback Setup ---
 let bcSupported = false;
