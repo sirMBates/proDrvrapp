@@ -137,6 +137,62 @@ class AssignmentRepository {
 
         return $stmt->fetchAll();
     }
+
+    public function hasBlockingAssignmentsForEOS(int $driverId, string $dayStart, string $nextDayStart): bool {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "SELECT 1
+                FROM work_orders
+                WHERE driver_id = :driver_id
+                AND start_date_time >= :day_start
+                AND start_date_time < :next_day_start
+                AND assignment_status IN ('pending', 'confirmed')
+                AND completed_at IS NULL
+                AND canceled_at IS NULL
+                LIMIT 1";
+
+        $stmt = $pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':driver_id' => $driverId,
+            ':day_start' => $dayStart,
+            ':next_day_start' => $nextDayStart
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('End of Shift assignment check failed.');
+        }
+
+        return $stmt->fetchColumn() !== false;
+    }
+
+    public function findLatestCompletedAssignmentByDriver(int $driverId): ?array {
+        $db = new Database();
+        $pdo = $db->connect();
+
+        $sql = "SELECT order_id, start_date_time, completed_at
+                FROM work_orders
+                WHERE driver_id = :driver_id
+                AND assignment_status = 'completed'
+                AND completed_at IS NOT NULL
+                ORDER BY completed_at DESC, order_id DESC
+                LIMIT 1";
+
+        $stmt = $pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':driver_id' => $driverId
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Latest completed assignment query failed.');
+        }
+
+        $assignment = $stmt->fetch();
+
+        return $assignment !== false ? $assignment : null;
+    }
 }
 
 ?>

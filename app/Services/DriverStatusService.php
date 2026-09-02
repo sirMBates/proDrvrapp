@@ -6,11 +6,12 @@ namespace App\Services;
 
 use App\Enums\DriverStatus;
 use App\Repositories\DriverStatusRepository;
+use App\Repositories\AssignmentRepository;
 use InvalidArgumentException;
 use RuntimeException;
 
 class DriverStatusService {
-    public function __construct(private DriverStatusRepository $driverStatusRepository) {}
+    public function __construct(private DriverStatusRepository $driverStatusRepository, private AssignmentRepository $assignmentRepository) {}
 
     public function changeStatus(int $driverId, string $status): array {
         if ($driverId < 1) {
@@ -20,6 +21,10 @@ class DriverStatusService {
         $driverStatus = DriverStatus::tryFrom($status);
         if ($driverStatus === null) {
             throw new InvalidArgumentException('Invalid driver status.');
+        }
+
+        if ($driverStatus === DriverStatus::END_OF_SHIFT && !$this->isEOSReady($driverId)) {
+            throw new InvalidArgumentException('End of Shift is not available while assignments remain incomplete.');
         }
 
         $statusId = $this->driverStatusRepository->createStatus($driverId, $driverStatus->value);
@@ -69,6 +74,23 @@ class DriverStatusService {
             'driverStatus' => (string) $statusRecord['status'],
             'statusTimestamp' => (string) $statusRecord['status_timestamp']
         ];
+    }
+
+    private function isEOSReady(int $driverId): bool {
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $latestCompletedAssignment = $this->assignmentRepository->findLatestCompletedAssignmentByDriver($driverId);
+        if ($latestCompletedAssignment === null) {
+            return false;
+        }
+
+        $startDateTime = new \DateTimeImmutable($latestCompletedAssignment['start_date_time']);
+        $dayStart = $startDateTime->setTime(0, 0, 0);
+        $nextDayStart = $dayStart->modify('+1 day');
+
+        return !$this->assignmentRepository->hasBlockingAssignmentsForEOS($driverId, $dayStart->format('Y-m-d H:i:s'), $nextDayStart->format('Y-m-d H:i:s'));
     }
 }
 

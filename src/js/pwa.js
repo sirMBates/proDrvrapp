@@ -491,15 +491,20 @@ window.addEventListener('online', async () => {
 });
 
 export async function handleStatusFetch(options) {
-   // 🟩 Check actual online status first
   if (!navigator.onLine) {
-    return queueStatusRequest(options);
+      return queueStatusRequest(options);
   }
+
   try {
-    const res = await fetchDrvr('https://prodriver.local/setstatus', options);
-    return res;
+      return await fetchDrvr('https://prodriver.local/setstatus', options);
   } catch (err) {
-    return queueStatusRequest(options);
+      // The server responded, so this is NOT an offline failure.
+      if (err?.status >= 400 && err?.response) {
+          return err.response;
+      }
+      // No usable HTTP response means this may genuinely
+      // be a connection/network failure.
+      return queueStatusRequest(options);
   }
 };
 

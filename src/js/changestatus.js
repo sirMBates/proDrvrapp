@@ -60,9 +60,6 @@ export class ChangeStatus {
 
             if ( result.status === 'success' ) {
                 const statusRecord = result.data;
-                this.drvrStatus = statusRecord.driverStatus;
-                localStorage.setItem('status', this.drvrStatus);
-                this.bannerMsg.textContent = this.drvrStatus;
                 window.dispatchEvent(new CustomEvent('driver-status-updated', { detail: statusRecord }));
                 showFlashAlert(result.status, result.message);
                 return;

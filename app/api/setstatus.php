@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Repositories\DriverStatusRepository;
+use App\Repositories\AssignmentRepository;
 use App\Services\DriverStatusService;
 
 requireLoginAjax();
@@ -62,7 +63,8 @@ try {
     }
 
     $repository = new DriverStatusRepository();
-    $service = new DriverStatusService($repository);
+    $assignmentRepository = new AssignmentRepository();
+    $service = new DriverStatusService($repository, $assignmentRepository);
 
     $statusRecord = $service->changeStatus($driverId, $driverStatus);
 

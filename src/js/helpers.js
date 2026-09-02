@@ -86,7 +86,12 @@ export async function fetchDrvr(url, options = {}) {
     });
 
     const message = data?.message || data?.error || `Network response was not OK: ${response.status}`;
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    error.statusText = response.statusText;
+    error.response = data;
+    error.requestUrl = requestUrl;
+    throw error;
   }
 
   if (response.status === 204 || !text.trim()) {
@@ -94,7 +99,7 @@ export async function fetchDrvr(url, options = {}) {
   }
 
   return data;
-}
+};
 
 function normalizeProDrvrUrl(url) {
   const parsedUrl = new URL(url, window.location.origin);

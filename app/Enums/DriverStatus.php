@@ -9,7 +9,7 @@ enum DriverStatus: string {
     case ARRIVED_AT_GARAGE = 'Arrived at garage';
     case ARRIVED_AT_LOCATION = 'Arrived at location';
     case ON_ASSIGNMENT = 'On assignment';
-    case END_OF_SHIFT = 'End of shift';
+    case END_OF_SHIFT = 'End of Shift';
     case EMERGENCY = 'Emergency';
 }
 
