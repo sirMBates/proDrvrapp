@@ -15,13 +15,20 @@ use Throwable;
 class EmergencyService {
     public function __construct(private PDO $pdo, private EmergencyRepository $emergencyRepository, private DriverStatusRepository $driverStatusRepository) {}
 
+    public function hasActiveEmergency(int $driverId): bool {
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        return $this->emergencyRepository->findActiveByDriverId($driverId) !== null;
+    }
+
     public function activateEmergency(int $driverId): array {
         if ($driverId < 1) {
             throw new InvalidArgumentException('Invalid driver ID.');
         }
 
-        $activeEmergency = $this->emergencyRepository->findActiveByDriverId($driverId);
-        if ($activeEmergency !== null) {
+        if ($this->hasActiveEmergency($driverId)) {
             throw new InvalidArgumentException('An emergency is already active.');
         }
 
@@ -58,6 +65,16 @@ class EmergencyService {
         }
     }
 
+    public function assertNoActiveEmergency(int $driverId): void {
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        if ($this->hasActiveEmergency($driverId)) {
+            throw new InvalidArgumentException('This action is unavailable while an emergency is active.');
+        }
+    }
+
     private function normalizeEmergency(array $emergency): array {
         return [
             'emergencyId' => (int) $emergency['emergency_id'],
@@ -72,6 +89,5 @@ class EmergencyService {
         ];
     }
 }
-
 
 ?>

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 use App\Repositories\DriverStatusRepository;
 use App\Repositories\AssignmentRepository;
+use App\Repositories\EmergencyRepository;
+use App\Services\EmergencyService;
 use App\Services\DriverStatusService;
+use Core\Database;
 
 requireLoginAjax();
+
 header('Content-Type: application/json');
 
 try {
@@ -62,9 +66,13 @@ try {
         exit();
     }
 
-    $repository = new DriverStatusRepository();
+    $pdo = (new Database())->connect();
+
+    $driverStatusRepository = new DriverStatusRepository($pdo);
+    $emergencyRepository = new EmergencyRepository($pdo);
     $assignmentRepository = new AssignmentRepository();
-    $service = new DriverStatusService($repository, $assignmentRepository);
+    $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
+    $service = new DriverStatusService($driverStatusRepository, $assignmentRepository, $emergencyService);
 
     $statusRecord = $service->changeStatus($driverId, $driverStatus);
 

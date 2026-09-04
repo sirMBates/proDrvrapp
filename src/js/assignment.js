@@ -2,6 +2,7 @@ import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, Ser
 import { buildModal } from "./appmodal.js";
 import { normalizeDecimalValue, validateEditableElement, validateAssignmentTextarea, validateCrossFieldRules, validateCurrentAssignmentFields, appendHiddenFields, toInputDateTime, toDisplayDateTime, appendEditableFields } from "./assignment-form.js";
 import { handleAssignmentFetch } from "./pwa.js";
+
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
 const groupC = document.querySelector('#tableC');

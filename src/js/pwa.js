@@ -430,7 +430,12 @@ export async function handleAssignmentFetch(options) {
   try {
     return await fetchDrvr('https://prodriver.local/assignmenthandler', options);
   } catch (err) {
-    //console.warn('[PWA] Network unavailable - queuing request');
+    // The server responded with an HTTP error.
+    // This is NOT an offline/network failure.
+    if (err?.status >= 400 && err?.response) {
+      return err?.response;
+    }
+    
     let serializedBody = null;
     if (options.body instanceof FormData) {
       serializedBody = serializeFormData(options.body);

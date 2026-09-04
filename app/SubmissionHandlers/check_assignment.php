@@ -2,6 +2,7 @@
 
 use App\Validation\Validator;
 use App\Validation\AssignmentValidator;
+use App\Services\EmergencyService;
 header("Content-Type: application/json");
 
 class UpdateAssignmentContr extends UpdateAssignment {
@@ -9,13 +10,14 @@ class UpdateAssignmentContr extends UpdateAssignment {
     private int $orderId;
     private int $driverId;
 
-    public function __construct(string $assignmentControl, int $orderId, int $driverId) {
+    public function __construct(string $assignmentControl, int $orderId, int $driverId, private EmergencyService $emergencyService) {
         $this->assignmentControl = trim($assignmentControl);
         $this->orderId = $orderId;
         $this->driverId = $driverId;
     }
 
     public function confirm(): array {
+        $this->emergencyService->assertNoActiveEmergency($this->driverId);
         if ($this->isInfoMissing()) {
             http_response_code(400);
             return [
@@ -69,6 +71,7 @@ class UpdateAssignmentContr extends UpdateAssignment {
     }
 
     public function cancel(): array {
+        $this->emergencyService->assertNoActiveEmergency($this->driverId);
         if ($this->isInfoMissing()) {
             http_response_code(400);
             return [

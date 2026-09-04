@@ -7,11 +7,12 @@ namespace App\Services;
 use App\Enums\DriverStatus;
 use App\Repositories\DriverStatusRepository;
 use App\Repositories\AssignmentRepository;
+use App\Services\EmergencyService;
 use InvalidArgumentException;
 use RuntimeException;
 
 class DriverStatusService {
-    public function __construct(private DriverStatusRepository $driverStatusRepository, private AssignmentRepository $assignmentRepository) {}
+    public function __construct(private DriverStatusRepository $driverStatusRepository, private AssignmentRepository $assignmentRepository, private EmergencyService $emergencyService) {}
 
     public function changeStatus(int $driverId, string $status): array {
         if ($driverId < 1) {
@@ -21,6 +22,21 @@ class DriverStatusService {
         $driverStatus = DriverStatus::tryFrom($status);
         if ($driverStatus === null) {
             throw new InvalidArgumentException('Invalid driver status.');
+        }
+
+        if ($driverStatus === DriverStatus::EMERGENCY) {
+            $this->emergencyService->activateEmergency($driverId);
+
+            $statusRecord = $this->driverStatusRepository->findLatestByDriverId($driverId);
+            if ($statusRecord === null) {
+                throw new RuntimeException('Emergency status could not be retrieved.');
+            }
+
+            return $this->normalizeStatusRecord($statusRecord);
+        }
+
+        if ($this->emergencyService->hasActiveEmergency($driverId)) {
+            throw new InvalidArgumentException('Status changes are unavailable while an emergency is active.');
         }
 
         if ($driverStatus === DriverStatus::END_OF_SHIFT && !$this->isEOSReady($driverId)) {

@@ -2,6 +2,11 @@
 
 requireLoginAjax();
 
+use Core\Database;
+use App\Repositories\EmergencyRepository;
+use App\Repositories\DriverStatusRepository;
+use App\Services\EmergencyService;
+
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
@@ -69,7 +74,12 @@ if ($orderId === false || $orderId < 1 || $driverId < 1) {
     exit();
 }
 
-$assignmentController = new UpdateAssignmentContr($assignmentControl, $orderId, $driverId);
+$pdo = (new Database())->connect();
+$emergencyRepository = new EmergencyRepository($pdo);
+$driverStatusRepository = new DriverStatusRepository($pdo);
+$emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
+
+$assignmentController = new UpdateAssignmentContr($assignmentControl, $orderId, $driverId, $emergencyService);
 $confirmRequested = isset($_POST['confirm']);
 $cancelRequested = isset($_POST['cancel']);
 
@@ -82,8 +92,24 @@ if ($confirmRequested === $cancelRequested) {
     exit();
 }
 
-$result = $confirmRequested ? $assignmentController->confirm() : $assignmentController->cancel();
-echo json_encode($result);
-exit();
+try {
+    $result = $confirmRequested ? $assignmentController->confirm() : $assignmentController->cancel();
+    echo json_encode($result);
+    exit();
+} catch (InvalidArgumentException $e) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
+    exit();
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Unexpected server error.'
+    ]);
+    exit();
+}
 
 ?>
