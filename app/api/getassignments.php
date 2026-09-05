@@ -14,7 +14,7 @@ if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)
     http_response_code(403);
     echo json_encode([
         'status' => 'error',
-        'message' => 'Access denied' // Invalid CRSF Token
+        'message' => 'Access denied' // Invalid CSRF Token
     ]);
     exit();
 }

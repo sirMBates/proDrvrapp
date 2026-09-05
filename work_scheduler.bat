@@ -3,12 +3,12 @@ REM -------------------------
 REM Configuration
 REM -------------------------
 set PHP_PATH=C:/php/php.exe
-set SCRIPT_PATH=D:/webapps/prodrvrapp/public/index.php
-set MASTER_LOG=D:/webapps/prodrvrapp/storage/logs/work_scheduler.log
-set DEBUG_LOG=D:/webapps/prodrvrapp/storage/logs/debug_task.log
+set SCRIPT_PATH=D:/ProDrvrOps/prodrvrapp/public/index.php
+set MASTER_LOG=D:/ProDrvrOps/prodrvrapp/storage/logs/work_scheduler.log
+set DEBUG_LOG=D:/ProDrvrOps/prodrvrapp/storage/logs/debug_task.log
 
 REM Ensure logs directory exists
-if not exist "D:/webapps/prodrvrapp/storage/logs" mkdir "D:/webapps/prodrvrapp/storage/logs"
+if not exist "D:/ProDrvrOps/prodrvrapp/storage/logs" mkdir "D:/ProDrvrOps/prodrvrapp/storage/logs"
 
 REM Log start of task
 echo [%DATE% %TIME%] Task Scheduler started >> "%MASTER_LOG%"

@@ -51,7 +51,7 @@ class JobOrderImporter {
 
             $controlBatch = 'PD-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(2)));
             $controlSequence = 0;
-            $assignmentRepository = new AssignmentRepository($this->logger);
+            $assignmentRepository = new AssignmentRepository(null, $this->logger);
             $credentialRepository = new DriverCredentialRepository();
             $notifiedDrivers = [];
             $insertedCount = 0;

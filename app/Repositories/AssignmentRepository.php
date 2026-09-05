@@ -9,16 +9,15 @@ use Core\Logger;
 use Core\Database;
 
 class AssignmentRepository {
+    private PDO $pdo;
     private ?Logger $logger;
 
-    public function __construct(?Logger $logger = null) {
+    public function __construct(?PDO $pdo = null, ?Logger $logger = null) {
+        $this->pdo = $pdo ?? (new Database())->connect();
         $this->logger = $logger;
     }
 
     public function insertAssignment(array $data): bool|string {
-        $db = new Database();
-        $pdo = $db->connect();
-
         try {
             $operatorId = isset($data['operator_id']) ? trim((string) $data['operator_id']) : null;
 
@@ -27,7 +26,8 @@ class AssignmentRepository {
                         FROM driver_credentials
                         WHERE operator_id = :operator_id
                         LIMIT 1";
-            $driverStmt = $pdo->prepare($driverSql);
+            $driverStmt = $this->pdo->prepare($driverSql);
+
             $driverStmt->bindValue(':operator_id', $operatorId, PDO::PARAM_STR);
             $driverStmt->execute();
 
@@ -46,7 +46,8 @@ class AssignmentRepository {
                             AND start_date_time = :start_date_time
                             AND driver_id = :driver_id
                             AND order_ref = :order_ref";
-            $dupStmt = $pdo->prepare($dupCheckSql);
+            $dupStmt = $this->pdo->prepare($dupCheckSql);
+
             $dupStmt->execute([
                 ':vehicle_id' => $data['vehicle_id'] ?? null,
                 ':start_date_time' => $data['start_date_time'] ?? null,
@@ -65,8 +66,8 @@ class AssignmentRepository {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                             ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $this->pdo->prepare($sql);
 
-            $stmt = $pdo->prepare($sql);
             $assignmentControl = trim((string) ($data['assignment_control'] ?? ''));
             if ($assignmentControl === '') {
                 $this->logger?->error('[ASSIGNMENT INSERT] Missing assignment_control.');
@@ -119,14 +120,13 @@ class AssignmentRepository {
     }
 
     public function findActiveAssignmentsByDriver(int $driverId): array {
-        $db = new Database;
-        $pdo = $db->connect();
         $sql = "SELECT wo.*, dc.operator_id, u.first_name, u.last_name, u.birth_date
                 FROM work_orders wo INNER JOIN users u ON wo.driver_id = u.user_id
                 INNER JOIN driver_credentials dc ON dc.user_id = u.user_id
                 WHERE wo.driver_id = :driver_id AND wo.completed_at IS NULL AND wo.canceled_at IS NULL AND wo.assignment_status <> 'canceled'
                 ORDER BY wo.start_date_time ASC, wo.order_id ASC";
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
+
         $executed = $stmt->execute([
             ':driver_id' => $driverId
         ]);
@@ -138,10 +138,31 @@ class AssignmentRepository {
         return $stmt->fetchAll();
     }
 
-    public function hasBlockingAssignmentsForEOS(int $driverId, string $dayStart, string $nextDayStart): bool {
-        $db = new Database();
-        $pdo = $db->connect();
+    public function findByIdentity(int $orderId, int $driverId, string $assignmentControl): ?array {
+        $sql = "SELECT order_id, assignment_control, driver_id, assignment_status, confirmed_at, canceled_at, completed_at
+                FROM work_orders
+                WHERE order_id = :order_id
+                AND driver_id = :driver_id
+                AND assignment_control = :assignment_control
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
 
+        $executed = $stmt->execute([
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId,
+            ':assignment_control' => $assignmentControl
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Assignment lookup failed.');
+        }
+
+        $assignment = $stmt->fetch();
+
+        return $assignment !== false ? $assignment : null;
+    }
+
+    public function hasBlockingAssignmentsForEOS(int $driverId, string $dayStart, string $nextDayStart): bool {
         $sql = "SELECT 1
                 FROM work_orders
                 WHERE driver_id = :driver_id
@@ -151,8 +172,7 @@ class AssignmentRepository {
                 AND completed_at IS NULL
                 AND canceled_at IS NULL
                 LIMIT 1";
-
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
 
         $executed = $stmt->execute([
             ':driver_id' => $driverId,
@@ -168,9 +188,6 @@ class AssignmentRepository {
     }
 
     public function findLatestCompletedAssignmentByDriver(int $driverId): ?array {
-        $db = new Database();
-        $pdo = $db->connect();
-
         $sql = "SELECT order_id, start_date_time, completed_at
                 FROM work_orders
                 WHERE driver_id = :driver_id
@@ -178,8 +195,7 @@ class AssignmentRepository {
                 AND completed_at IS NOT NULL
                 ORDER BY completed_at DESC, order_id DESC
                 LIMIT 1";
-
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
 
         $executed = $stmt->execute([
             ':driver_id' => $driverId
@@ -192,6 +208,125 @@ class AssignmentRepository {
         $assignment = $stmt->fetch();
 
         return $assignment !== false ? $assignment : null;
+    }
+
+    public function confirmAssignment(int $orderId, int $driverId): bool {
+        $sql = "UPDATE work_orders
+                SET assignment_status = 'confirmed', confirmed_at = CURRENT_TIMESTAMP
+                WHERE order_id = :order_id
+                AND driver_id = :driver_id
+                AND assignment_status = 'pending'
+                AND completed_at IS NULL
+                AND canceled_at IS NULL";
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Assignment confirmation failed.');
+        }
+
+        return $stmt->rowCount() === 1;
+    }
+
+    public function cancelAssignment(string $assignmentControl, int $orderId, int $driverId, ?string $reason = null): bool {
+        try {
+            $this->pdo->beginTransaction();
+
+            $fetchSql = "SELECT order_id, assignment_control, order_ref, driver_id, vehicle_id, assignment_status, completed_at, canceled_at
+                    FROM work_orders
+                    WHERE assignment_control = :assignment_control
+                    AND order_id = :order_id
+                    AND driver_id = :driver_id
+                    LIMIT 1
+                    FOR UPDATE";
+            $fetchStmt = $this->pdo->prepare($fetchSql);
+
+            $fetchStmt->execute([
+                ':assignment_control' => $assignmentControl,
+                ':order_id' => $orderId,
+                ':driver_id' => $driverId
+            ]);
+
+            $assignment = $fetchStmt->fetch();
+
+            if (!$assignment) {
+                throw new \RuntimeException('Assignment could not be found.');
+            }
+
+            if (!empty($assignment['completed_at']) || $assignment['assignment_status'] === 'completed') {
+                throw new \RuntimeException('A completed assignment cannot be canceled.');
+            }
+
+            if (!empty($assignment['canceled_at']) || $assignment['assignment_status'] === 'canceled') {
+                throw new \RuntimeException('This assignment has already been canceled.');
+            }
+
+            if ($assignment['assignment_status'] !== 'pending') {
+                throw new \RuntimeException('Only a pending assignment can be canceled.');
+            }
+
+            $previousStatus = $assignment['assignment_status'];
+
+            $updateSql = "UPDATE work_orders
+                        SET assignment_status = 'canceled',
+                            canceled_at = NOW(),
+                            canceled_by = :canceled_by,
+                            canceled_by_role = 'driver',
+                            cancel_reason = :cancel_reason
+                        WHERE assignment_control = :assignment_control
+                        AND order_id = :order_id
+                        AND driver_id = :driver_id
+                        AND assignment_status = 'pending'
+                        AND completed_at IS NULL
+                        AND canceled_at IS NULL";
+            $updateStmt = $this->pdo->prepare($updateSql);
+
+            $updateSaved = $updateStmt->execute([
+                ':canceled_by' => $driverId,
+                ':cancel_reason' => $reason,
+                ':assignment_control' => $assignmentControl,
+                ':order_id' => $orderId,
+                ':driver_id' => $driverId,
+            ]);
+
+            if (!$updateSaved || $updateStmt->rowCount() !== 1) {
+                throw new \RuntimeException('Assignment could not be canceled.');
+            }
+
+            $historySql = "INSERT INTO assignment_history (order_id, assignment_control, order_ref, driver_id, vehicle_id, action_type, previous_status, new_status, performed_by, performed_by_role, reason)
+                        VALUES (:order_id, :assignment_control, :order_ref, :driver_id, :vehicle_id, 'canceled', :previous_status, 'canceled', :performed_by, 'driver', :reason)";
+            $historyStmt = $this->pdo->prepare($historySql);
+
+            $historySaved = $historyStmt->execute([
+                ':order_id' => $assignment['order_id'],
+                ':assignment_control' => $assignment['assignment_control'],
+                ':order_ref' => $assignment['order_ref'],
+                ':driver_id' => $assignment['driver_id'],
+                ':vehicle_id' => $assignment['vehicle_id'],
+                ':previous_status' => $previousStatus,
+                ':performed_by' => $driverId,
+                ':reason' => $reason
+            ]);
+
+            if (!$historySaved || $historyStmt->rowCount() !== 1) {
+                throw new \RuntimeException('The assignment cancellation history was not saved.');
+            }
+
+            $this->pdo->commit();
+
+            return true;
+
+        } catch (\Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $e;
+        }
     }
 }
 

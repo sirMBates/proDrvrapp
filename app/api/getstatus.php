@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use Core\Database;
 use App\Repositories\DriverStatusRepository;
 use App\Repositories\AssignmentRepository;
+use App\Repositories\EmergencyRepository;
 use App\Services\DriverStatusService;
+use App\Services\EmergencyService;
 
 requireLoginAjax();
 header('Content-Type: application/json');
@@ -32,9 +35,15 @@ try {
         exit();
     }
 
-    $repository = new DriverStatusRepository();
-    $assignmentRepository = new AssignmentRepository();
-    $service = new DriverStatusService($repository, $assignmentRepository);
+    $pdo = (new Database())->connect();
+
+    $driverStatusRepository = new DriverStatusRepository($pdo);
+    $assignmentRepository = new AssignmentRepository($pdo);
+    $emergencyRepository = new EmergencyRepository($pdo);
+
+    $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
+    $service = new DriverStatusService($driverStatusRepository, $assignmentRepository, $emergencyService);
+
     $currentStatus = $service->getCurrentStatus($driverId);
     $recentHistory = $service->getRecentHistory($driverId, 20);
 
@@ -54,7 +63,7 @@ try {
         'message' => $e->getMessage()
     ]);
     exit();
-} catch (Throwable) {
+} catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
         'status' => 'error',

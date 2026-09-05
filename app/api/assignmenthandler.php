@@ -3,8 +3,10 @@
 requireLoginAjax();
 
 use Core\Database;
+use App\Repositories\AssignmentRepository;
 use App\Repositories\EmergencyRepository;
 use App\Repositories\DriverStatusRepository;
+use App\Services\AssignmentService;
 use App\Services\EmergencyService;
 
 header("Content-Type: application/json; charset=utf-8");
@@ -12,11 +14,11 @@ header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
 header("Access-Control-Allow-Methods: POST, PATCH, OPTIONS");
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit();
 }
-
 
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;
@@ -58,9 +60,6 @@ if ($method !== 'PATCH') {
     exit();
 }
 
-include_once base_path("app/models/assignmenthandlermodel.php");
-include_once base_path("app/SubmissionHandlers/check_assignment.php");
-
 $assignmentControl = trim((string) ($_POST['assignment_control'] ?? ''));
 $orderId = filter_var($_POST['order_id'] ?? null, FILTER_VALIDATE_INT);
 $driverId = (int) ($_SESSION['user_id'] ?? 0);
@@ -75,11 +74,14 @@ if ($orderId === false || $orderId < 1 || $driverId < 1) {
 }
 
 $pdo = (new Database())->connect();
+
 $emergencyRepository = new EmergencyRepository($pdo);
 $driverStatusRepository = new DriverStatusRepository($pdo);
-$emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
+$assignmentRepository = new AssignmentRepository($pdo);
 
-$assignmentController = new UpdateAssignmentContr($assignmentControl, $orderId, $driverId, $emergencyService);
+$emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
+$assignmentService = new AssignmentService($assignmentRepository, $emergencyService);
+
 $confirmRequested = isset($_POST['confirm']);
 $cancelRequested = isset($_POST['cancel']);
 
@@ -93,7 +95,11 @@ if ($confirmRequested === $cancelRequested) {
 }
 
 try {
-    $result = $confirmRequested ? $assignmentController->confirm() : $assignmentController->cancel();
+    if ($confirmRequested) {
+        $result = $assignmentService->confirm($driverId, $orderId, $assignmentControl);
+    } else {
+        $result = $assignmentService->cancel($driverId, $orderId, $assignmentControl);
+    }
     echo json_encode($result);
     exit();
 } catch (InvalidArgumentException $e) {
