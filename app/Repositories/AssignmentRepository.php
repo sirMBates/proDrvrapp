@@ -139,7 +139,7 @@ class AssignmentRepository {
     }
 
     public function findByIdentity(int $orderId, int $driverId, string $assignmentControl): ?array {
-        $sql = "SELECT order_id, assignment_control, driver_id, assignment_status, confirmed_at, canceled_at, completed_at
+        $sql = "SELECT order_id, assignment_control, order_ref, driver_id, start_date_time, signature_required, assignment_status, confirmed_at, canceled_at, completed_at
                 FROM work_orders
                 WHERE order_id = :order_id
                 AND driver_id = :driver_id
@@ -232,7 +232,7 @@ class AssignmentRepository {
         return $stmt->rowCount() === 1;
     }
 
-    public function cancelAssignment(string $assignmentControl, int $orderId, int $driverId, ?string $reason = null): bool {
+    public function cancelAssignment(int $orderId, int $driverId, string $assignmentControl, ?string $reason = null): bool {
         try {
             $this->pdo->beginTransaction();
 
@@ -327,6 +327,96 @@ class AssignmentRepository {
 
             throw $e;
         }
+    }
+
+    public function updateAssignment(int $orderId, int $driverId, string $assignmentControl, array $data): bool {
+        $setClauses = [
+            'vehicle_id = :vehicle_id',
+            'actual_drop_time = :actual_drop_time',
+            'actual_end_time = :actual_end_time',
+            'total_job_time = :total_job_time',
+            'driving_time = :driving_time',
+            'pickup_details = :pickup_details',
+            'destination_details = :destination_details'
+        ];
+
+        $parameters = [
+            ':vehicle_id' => $data['vehicle_id'],
+            ':actual_drop_time' => $data['actual_drop_time'],
+            ':actual_end_time' => $data['actual_end_time'],
+            ':total_job_time' => $data['total_job_time'],
+            ':driving_time' => $data['driving_time'],
+            ':pickup_details' => $data['pickup_details'],
+            ':destination_details' => $data['destination_details'],
+            ':assignment_control' => $assignmentControl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ];
+
+        $signatureFields = [
+            'pre_signature_path',
+            'pre_signature_hash',
+            'pre_signature_at',
+            'post_signature_path',
+            'post_signature_hash',
+            'post_signature_at',
+            'signature_status'
+        ];
+
+        foreach ($signatureFields as $field) {
+            if (!array_key_exists($field, $data)) {
+                continue;
+            }
+
+            $setClauses[] = "{$field} = :{$field}";
+            $parameters[":{$field}"] = $data[$field];
+        }
+
+        $sql = sprintf(
+            "UPDATE work_orders
+            SET %s
+            WHERE assignment_control = :assignment_control
+            AND order_id = :order_id
+            AND driver_id = :driver_id
+            AND assignment_status = 'confirmed'
+            AND completed_at IS NULL
+            AND canceled_at IS NULL",
+            implode(', ', $setClauses)
+        );
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute($parameters);
+
+        if (!$executed) {
+            throw new \RuntimeException('Assignment update failed.');
+        }
+
+        if ($stmt->rowCount() > 0) {
+            return true;
+        }
+        
+        // A zero row count does not necessarily mean failure.
+        // MySQL may report zero affected rows when the submitted values
+        // are identical to the values already stored.
+
+        $verifySql = "SELECT order_id
+                    FROM work_orders
+                    WHERE assignment_control = :assignment_control
+                    AND order_id = :order_id
+                    AND driver_id = :driver_id
+                    AND assignment_status = 'confirmed'
+                    AND completed_at IS NULL
+                    AND canceled_at IS NULL
+                    LIMIT 1";
+        $verifyStmt = $this->pdo->prepare($verifySql);
+
+        $verifyStmt->execute([
+            ':assignment_control' => $assignmentControl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ]);
+
+        return $verifyStmt->fetchColumn() !== false;
     }
 }
 

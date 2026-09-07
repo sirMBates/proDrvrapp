@@ -106,6 +106,15 @@ function clearStoredSignatures(assignmentControl) {
     console.log(`[SIGNATURE] Cleared stored signatures for ${control}.`);
 };
 
+function clearStoredPostSignature(assignmentControl) {
+    const control = String(assignmentControl ?? '');
+    if (!control) return;
+
+    localStorage.removeItem(`post-signature:${control}`);
+
+    console.log(`[SIGNATURE] Cleared stored post-trip signature for ${control}.`);
+};
+
 async function refreshAssignmentsFromServer(preferredOrderId = null) {
     try {
         const response = await getAssignment('https://prodriver.local/getassignments', {            
@@ -456,66 +465,103 @@ function getAssignmentDraft(assignment) {
     }
 };
 
+function findStoredAssignmentIdentity(orderId, assignmentControl) {
+    try {
+        const storedAssignments = JSON.parse(localStorage.getItem('assignments') || '[]');
+
+        if (!Array.isArray(storedAssignments)) {
+            return null;
+        }
+
+        return storedAssignments.find(assignment => {
+            return (String(assignment.order_id ?? '') === String(orderId) && String(assignment.assignment_control ?? '') === String(assignmentControl));
+        }) ?? null;
+
+    } catch (err) {
+        console.warn('[ASSIGNMENT DRAFT] Unable to resolve stored assignment identity.', err);
+        return null;
+    }
+}
+
 function clearAssignmentDraftByIdentity(orderId, orderRef) {
-    const normalizedOrderId = String(orderId ?? '').trim();
-    const normalizedOrderRef = String(orderRef ?? '').trim();
+    const assignmentIdentity = {
+        order_id: orderId,
+        order_ref: orderRef
+    };
 
-    if (!normalizedOrderId || !normalizedOrderRef) return false;
+    const key = getAssignmentDraftKey(assignmentIdentity);
 
-    const key =
-        `assignment_draft_${normalizedOrderId}_${normalizedOrderRef}`;
+    if (!key) {
+        console.warn('[ASSIGNMENT DRAFT] Unable to build draft key.', { orderId, orderRef });
+        return false;
+    }
 
     try {
         const existed = localStorage.getItem(key) !== null;
         localStorage.removeItem(key);
+        console.log('[ASSIGNMENT DRAFT] Cleared:', { key, existed });
+
         return existed;
     } catch (err) {
-        console.warn(
-            'Failed to clear assignment draft:',
-            err
-        );
-
+        console.warn('[ASSIGNMENT DRAFT] Failed to clear:', err);
         return false;
     }
 };
 
 function clearSubmittedAssignmentDraftFromUrl() {
-    const params = new URLSearchParams(
-        window.location.search
-    );
+    const params = new URLSearchParams(window.location.search);
 
     const status = params.get('status');
+    const error = params.get('error');
     const orderId = params.get('order_id');
-    const orderRef = params.get('order_ref');
+    let orderRef = params.get('order_ref');
+    const assignmentControl = params.get('assignment_control');
 
     const successfulStatuses = [
         'saved',
         'completed'
     ];
 
-    if (
-        !successfulStatuses.includes(status) ||
-        !orderId ||
-        !orderRef
-    ) {
+    const rejectedStatuses = [
+        'assignment_update'
+    ];
+
+    const shouldClearDraft = successfulStatuses.includes(status) || rejectedStatuses.includes(error);
+
+    if (!orderRef && orderId && assignmentControl) {
+        const storedAssignment = findStoredAssignmentIdentity(orderId, assignmentControl);
+
+        orderRef = String(storedAssignment?.order_ref ?? '').trim();
+    }
+
+    if (!shouldClearDraft || !orderId || !orderRef) {
         return;
     }
 
-    const cleared = clearAssignmentDraftByIdentity(
-        orderId,
-        orderRef
-    );
-
+    const cleared = clearAssignmentDraftByIdentity(orderId, orderRef);
     if (cleared) {
-        console.log(
-            `[DRAFT] Cleared ${status} assignment draft:`,
-            { orderId, orderRef }
-        );
+        console.log(`[ASSIGNMENT DRAFT] Cleared submitted draft:`, { status, error, orderId, orderRef });
+    }
+
+    if (rejectedStatuses.includes(error) && assignmentControl) {
+        const preSignatureKey = `pre-signature:${assignmentControl}`;
+        const postSignatureKey = `post-signature:${assignmentControl}`;
+
+        const preSignature = localStorage.getItem(preSignatureKey);
+        const postSignature = localStorage.getItem(postSignatureKey);
+
+        if (preSignature && postSignature) {
+            clearStoredPostSignature(assignmentControl);
+        } else {
+            clearStoredSignatures(assignmentControl);
+        }
     }
 
     params.delete('status');
+    params.delete('error');
     params.delete('order_id');
     params.delete('order_ref');
+    params.delete('assignment_control');
 
     const remainingQuery = params.toString();
 
@@ -1575,7 +1621,6 @@ cancelBtn.addEventListener('click', async (e) => {
         formData.append('cancel', '1');
         formData.append('__method', 'PATCH');
         const options = {
-        //const result = await cancelAssignment("https://prodriver.local/assignmenthandler.php", {
             method: 'POST',
             mode: 'cors',
             credentials: 'include',

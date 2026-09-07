@@ -19,6 +19,7 @@ $router->get('/logout', 'app/controllers/Actions/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
 $router->get('/getassignments', 'app/api/getassignments.php');
 $router->get('/getstatus', 'app/api/getstatus.php', true);
+$router->get('/emergencystatus', 'app/api/emergencystatus.php', true);
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
@@ -31,5 +32,5 @@ $router->post('/contact', 'app/controllers/Actions/contacthelp.php');
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');
 $router->patch('/setprofilepicture', 'app/api/setprofilepicture.php', true);
-$router->patch('/assignmenthandler', 'app/api/assignmenthandler.php');
+$router->patch('/assignmentstatushandler', 'app/api/assignmentstatushandler.php');
 $router->patch('/assignments', 'app/controllers/Actions/updateassignment.php');

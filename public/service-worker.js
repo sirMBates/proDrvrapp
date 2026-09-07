@@ -1,418 +1,660 @@
 // public/service-worker.js
-importScripts('https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
-// Generate a dynamic cache version based on build timestamp
-const CACHE_VERSION = 'v' + new Date().getTime();
-const CACHE_NAME = `prodriver-${CACHE_VERSION}`;
+'use strict';
 
-// Core files to cache
+/**
+ * ProDriver Service Worker
+ *
+ * Current responsibilities:
+ *  - Cache explicitly approved static application assets.
+ *  - Cache Google Font resources.
+ *  - Never cache authenticated HTML pages or dynamic application/API data.
+ *  - Never cache Emergency, profile, assignment, or authentication responses.
+ *  - Queue ONLY driver-status updates when the network is genuinely unavailable.
+ *  - Replay queued driver-status updates with Background Sync when supported.
+ *
+ * Future systems such as Timesheet and Internal Messenger are intentionally
+ * NOT handled here yet. Add their offline behavior only when those systems
+ * have explicit application-level rules.
+ */
+
+const CACHE_VERSION = 'v1';
+const STATIC_CACHE = `prodriver-static-${CACHE_VERSION}`;
+const FONT_CACHE = `prodriver-fonts-${CACHE_VERSION}`;
+
+const STATUS_QUEUE_DB = 'prodriver-status-sync';
+const STATUS_QUEUE_STORE = 'requests';
+const STATUS_SYNC_TAG = 'prodriver-status-sync';
+
 const STATIC_ASSETS = [
-  '/manifest.json',
-  '/dist/js/app.js',
-  '/dist/js/main.js',
-  '/dist/styles/scss/main.css',
-  '/dist/styles/style.css',
-  '/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png',
-  '/dist/images-videos/logoandicons/prodrvr-bus-icon-512.png'
+    '/manifest.json',
+    '/dist/js/app.js',
+    '/dist/js/main.js',
+    '/dist/styles/scss/main.css',
+    '/dist/styles/style.css',
+    '/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png',
+    '/dist/images-videos/logoandicons/prodrvr-bus-icon-512.png'
 ];
 
-// Precache Google Font CSS and WOFF2 files
-const PRECACHE_FONTS = [
-  // CSS stylesheets
-  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap',
-  'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap',
-  'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap',
+/**
+ * Routes whose failed non-GET request may be queued for later replay.
+ *
+ * Keep this allow-list deliberately small.
+ * Assignment changes and Emergency actions must remain network-authoritative.
+ */
+const OFFLINE_QUEUE_ROUTES = new Set([
+    '/setstatus'
+]);
 
-  // Actual WOFF2 files (add the key ones used by your site)
-  'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.woff2',
-  'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlfBBc9.woff2'
-];
 
-// 🔹 Listen for messages from the client (e.g., SKIP_WAITING)
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[SW] Received SKIP_WAITING message from client');
-    self.skipWaiting(); // immediately activate the new worker
-  }
-});
+/* -------------------------------------------------------------------------- */
+/* INSTALL                                                                    */
+/* -------------------------------------------------------------------------- */
 
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing, cache version:', CACHE_VERSION);
-  event.waitUntil(
-    (async () => {
-      const appCache = await caches.open(CACHE_NAME);
+    console.log('[SW] Installing:', CACHE_VERSION);
 
-      // --- Safer static asset caching ---
-      const results = await Promise.allSettled(
-        STATIC_ASSETS.map(asset =>
-          fetch(asset)
-            .then(response => {
-              if (response.ok) return appCache.put(asset, response);
-              console.warn('[SW] Skipping failed asset:', asset, response.status);
-            })
-            .catch(err => console.warn('[SW] Failed to fetch asset:', asset, err))
-        )
-      );
-      console.log('[SW] Cached app assets:', results);
+    event.waitUntil(
+        (async () => {
+            const cache = await caches.open(STATIC_CACHE);
 
-      // --- Pre-cache Google Fonts or other static font assets ---
-      if (typeof FONT_CACHE !== 'undefined' && typeof PRECACHE_FONTS !== 'undefined') {
-        const fontCache = await caches.open(FONT_CACHE);
-        const fontResults = await Promise.allSettled(
-          PRECACHE_FONTS.map(font =>
-            fetch(font)
-              .then(response => {
-                if (response.ok) return fontCache.put(font, response);
-                console.warn('[SW] Skipping failed font:', font, response.status);
-              })
-              .catch(err => console.warn('[SW] Failed to fetch font:', font, err))
-          )
-        );
-        console.log('[SW] Pre-cached fonts:', fontResults);
-      }
+            const results = await Promise.allSettled(
+                STATIC_ASSETS.map(async (asset) => {
+                    try {
+                        const response = await fetch(asset, {
+                            cache: 'no-cache'
+                        });
 
-      await self.skipWaiting();
-      console.log('[SW] Installed new version');
-    })()
-  );
-});
+                        if (!response.ok) {
+                            console.warn(
+                                '[SW] Static asset not cached:',
+                                asset,
+                                response.status
+                            );
+                            return;
+                        }
 
-// Activate event – remove old caches
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
+                        await cache.put(asset, response);
+                    } catch (error) {
+                        console.warn(
+                            '[SW] Static asset unavailable during install:',
+                            asset,
+                            error
+                        );
+                    }
+                })
+            );
 
-  event.waitUntil(
-    (async () => {
-      // 1️⃣ Remove outdated caches
-      const keys = await caches.keys();
-      await Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', key);
-            return caches.delete(key);
-          }
+            console.log('[SW] Static precache complete:', results.length);
 
-          if (key.startsWith('prodriver-fonts-') && key !== FONT_CACHE) {
-              console.log('[SW] Deleting old font cache:', key);
-              return caches.delete(key);
-          }
-
-          if (key !== CACHE_NAME && key !== FONT_CACHE) {
-              console.log('[SW] Deleting old cache:', key);
-              return caches.delete(key);
-          }
-        })
-      );
-
-      // 2️⃣ Immediately take control of all open clients
-      self.skipWaiting();
-      await self.clients.claim();
-
-      // 3️⃣ Notify clients that a new version is active
-      const allClients = await self.clients.matchAll({ includeUncontrolled: true });
-      for (const client of allClients) {
-        client.postMessage({ type: 'SW_UPDATED' });
-      }
-
-      console.log('[SW] Activated new version:', CACHE_NAME);
-    })()
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Ignore non-GET requests
-  if (request.method !== 'GET') return;
-
-  // Skip browser extension requests
-  if (request.url.startsWith('chrome-extension://')) return;
-
-  // Skip favicon requests
-  if (url.pathname === '/favicon.ico') return;
-
-  // Skip caching / intercepting sensitive/auth routes
-  if (
-    url.pathname === '/' ||
-    url.pathname.startsWith('/signin') ||
-    url.pathname.startsWith('/signup') ||
-    url.pathname.startsWith('/logout') ||
-    url.pathname.startsWith('/register') ||
-    url.pathname.startsWith('/forget') ||
-    url.pathname.startsWith('/reset') ||
-    url.pathname.startsWith('/compreset') ||
-    url.pathname.startsWith('/reset-password') ||
-    url.pathname.startsWith('/profile') ||
-    url.pathname.startsWith('/getprofile') ||
-    url.pathname.startsWith('/getstatus')
-  ) {
-    //event.respondWith(fetch(request)); // always let network handle
-    return;
-  }
-
-  // Detect API or dynamic routes — prefer network first
-  const isDynamicRequest =
-    url.pathname.startsWith('/api/') ||
-    url.pathname.includes('assignmenthandler') ||
-    url.pathname.startsWith('/getassignments');
-
-  if (isDynamicRequest) {
-    event.respondWith(networkFirst(request));
-  } else {
-    event.respondWith(cacheFirst(request));
-  }
-});
-
-// --- STRATEGIES ---
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-
-  try {
-    const response = await fetch(request, { redirect: 'follow' });
-    if (!response.ok || response.type === 'opaqueredirect') {
-      //console.warn('[SW] Skipping redirected or invalid response:', request.url);
-      return response;
-    }
-
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
-    return response;
-  } catch (err) {
-    //console.warn('[SW] CacheFirst failed:', request.url, err);
-    return new Response('Offline or not cached', { status: 503 });
-  }
-};
-
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request, { redirect: 'follow' });
-    if (!response.ok || response.type === 'opaqueredirect') {
-      //console.warn('[SW] Skipping redirected or invalid response:', request.url);
-      return response;
-    }
-
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
-    return response;
-  } catch (err) {
-    //console.warn('[SW] NetworkFirst failed, trying cache:', request.url);
-    const cached = await caches.match(request);
-    return cached || new Response('Offline or fetch failed', { status: 503 });
-  }
-};
-
-// --- GOOGLE FONT OPTIMIZATION ---
-// When you update your font list or add a new font, just bump the cache version:
-const FONT_CACHE = 'prodriver-fonts-v2';
-
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Handle Google Fonts CSS (stylesheets)
-  if (url.origin === 'https://fonts.googleapis.com') {
-    event.respondWith(cacheGoogleFontCSS(request));
-    return;
-  }
-
-  // Handle Google Fonts font files (woff2)
-  if (url.origin === 'https://fonts.gstatic.com') {
-    event.respondWith(cacheGoogleFontFiles(request));
-    return;
-  }
-});
-
-// Cache and serve Google Fonts CSS
-async function cacheGoogleFontCSS(request) {
-  const cache = await caches.open(FONT_CACHE);
-  const cachedResponse = await cache.match(request);
-  if (cachedResponse) return cachedResponse;
-
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      // Clone and cache CSS
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (err) {
-    //console.warn('[SW] Font CSS fetch failed:', request.url, err);
-    return cachedResponse || new Response('', { status: 503 });
-  }
-};
-
-// Cache and serve Google Fonts font files
-async function cacheGoogleFontFiles(request) {
-  const cache = await caches.open(FONT_CACHE);
-  const cachedResponse = await cache.match(request);
-  if (cachedResponse) return cachedResponse;
-
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (err) {
-    //console.warn('[SW] Font file fetch failed:', request.url, err);
-    return cachedResponse || new Response('', { status: 503 });
-  }
-};
-
-// --- AUTO UPDATE DETECTION ---
-// Notify clients when a new service worker takes control
-self.addEventListener('install', () => {
-  console.log('[SW] Installed new version');
-});
-
-// --- OFFLINE SYNC QUEUE ---
-const OFFLINE_QUEUE = 'prodriver-sync-queue';
-
-// Intercept POST / PATCH / DELETE requests
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Bypass SW for assignment form submissions and API endpoints
-  if ( request.method === 'POST' || request.method === 'PATCH' || request.method === 'DELETE') {
-    if (url.pathname.startsWith('/assignments') || url.pathname.startsWith('/api')) {
-      // Let these go directly to network
-      return;
-    }
-    
-    event.respondWith(
-      (async () => {
-        try {
-          // Try network first
-          const response = await fetch(request.clone());
-          return response;
-        } catch (err) {
-          // Save request for background sync
-          const queue = await openQueue();
-          const body = await request.clone().text();
-          await queue.add({
-            url: request.url,
-            method: request.method,
-            body,
-            headers: [...request.headers],
-            timestamp: Date.now(),
-          });
-
-          // Register background sync event
-          if ('sync' in self.registration) {
-            await self.registration.sync.register('prodriver-sync');
-          }
-
-          //console.warn('[SW] Queued offline request for sync later:', request.url);
-          return new Response(
-            JSON.stringify({ status: 'queued', message: 'Offline — will sync when online.' }),
-            { headers: { 'Content-Type': 'application/json' } }
-          );
-        }
-      })()
+            await self.skipWaiting();
+        })()
     );
-    return;
-  }
 });
 
-// Helper: open IndexedDB queue
-async function openQueue() {
-  const db = await idb.openDB(OFFLINE_QUEUE, 1, {
-    upgrade(db) {
-      db.createObjectStore('requests', { keyPath: 'timestamp' });
-    },
-  });
-  return {
-    async add(requestData) {
-      const tx = db.transaction('requests', 'readwrite');
-      await tx.store.add(requestData);
-      await tx.done;
-    },
-    async getAll() {
-      return (await db.getAll('requests')) || [];
-    },
-    async clear() {
-      const tx = db.transaction('requests', 'readwrite');
-      await tx.store.clear();
-      await tx.done;
-    },
-  };
+
+/* -------------------------------------------------------------------------- */
+/* ACTIVATE                                                                   */
+/* -------------------------------------------------------------------------- */
+
+self.addEventListener('activate', (event) => {
+    console.log('[SW] Activating:', CACHE_VERSION);
+
+    event.waitUntil(
+        (async () => {
+            const allowedCaches = new Set([
+                STATIC_CACHE,
+                FONT_CACHE
+            ]);
+
+            const cacheNames = await caches.keys();
+
+            await Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (!allowedCaches.has(cacheName)) {
+                        console.log('[SW] Removing old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+
+                    return Promise.resolve(false);
+                })
+            );
+
+            await self.clients.claim();
+
+            const clients = await self.clients.matchAll({
+                includeUncontrolled: true,
+                type: 'window'
+            });
+
+            for (const client of clients) {
+                client.postMessage({
+                    type: 'SW_UPDATED',
+                    version: CACHE_VERSION
+                });
+            }
+
+            console.log('[SW] Activated:', CACHE_VERSION);
+        })()
+    );
+});
+
+
+/* -------------------------------------------------------------------------- */
+/* MESSAGES                                                                   */
+/* -------------------------------------------------------------------------- */
+
+self.addEventListener('message', (event) => {
+    if (event.data?.type === 'SKIP_WAITING') {
+        console.log('[SW] SKIP_WAITING received.');
+        self.skipWaiting();
+    }
+});
+
+
+/* -------------------------------------------------------------------------- */
+/* FETCH                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * One fetch listener owns all request routing.
+ *
+ * Default rule:
+ *     If a request is not explicitly safe to cache or explicitly approved
+ *     for offline queueing, the service worker leaves it alone and the
+ *     browser talks directly to the server.
+ */
+self.addEventListener('fetch', (event) => {
+    const request = event.request;
+    const url = new URL(request.url);
+
+    // Ignore unsupported schemes such as chrome-extension://.
+    if (!url.protocol.startsWith('http')) {
+        return;
+    }
+
+    /* ------------------------------ NAVIGATION ----------------------------- */
+
+    /**
+     * PHP/application pages may contain:
+     *  - authenticated user information
+     *  - CSRF tokens
+     *  - server-authoritative application state
+     *
+     * Never serve these from Cache Storage.
+     */
+    if (request.mode === 'navigate') {
+        return;
+    }
+
+    /* ----------------------------- GOOGLE FONTS ---------------------------- */
+
+    if (
+        request.method === 'GET' &&
+        url.origin === 'https://fonts.googleapis.com'
+    ) {
+        event.respondWith(cacheGoogleFontCss(request));
+        return;
+    }
+
+    if (
+        request.method === 'GET' &&
+        url.origin === 'https://fonts.gstatic.com'
+    ) {
+        event.respondWith(cacheGoogleFontFile(request));
+        return;
+    }
+
+    /* --------------------------- CROSS-ORIGIN DATA ------------------------- */
+
+    // Other third-party requests are not ours to cache or queue.
+    if (url.origin !== self.location.origin) {
+        return;
+    }
+
+    /* ------------------------------ STATIC GET ----------------------------- */
+
+    if (request.method === 'GET') {
+        if (isApprovedStaticAsset(url)) {
+            event.respondWith(cacheFirstStatic(request));
+        }
+
+        /**
+         * Everything else intentionally falls through to normal browser
+         * networking. Examples:
+         *
+         *  /emergencystatus
+         *  /getprofile
+         *  /getassignments
+         *  /getstatus
+         *  /assignments
+         *  /profile
+         *  /
+         *
+         * No Cache Storage fallback is used for these routes.
+         */
+        return;
+    }
+
+    /* ------------------------- NON-GET MUTATIONS --------------------------- */
+
+    /**
+     * Queue only explicitly approved requests.
+     *
+     * Current ProDriver policy:
+     *  - /setstatus may queue when the network is actually unavailable.
+     *  - Assignment PATCH/POST operations are NOT queued.
+     *  - Emergency operations are NOT queued here.
+     *  - Auth/profile mutations are NOT queued.
+     */
+    if (
+        ['POST', 'PATCH', 'DELETE'].includes(request.method) &&
+        OFFLINE_QUEUE_ROUTES.has(url.pathname)
+    ) {
+        event.respondWith(
+            networkOrQueueStatusRequest(request)
+        );
+    }
+});
+
+
+/* -------------------------------------------------------------------------- */
+/* STATIC CACHE                                                               */
+/* -------------------------------------------------------------------------- */
+
+function isApprovedStaticAsset(url) {
+    if (url.origin !== self.location.origin) {
+        return false;
+    }
+
+    return (
+        url.pathname.startsWith('/dist/') ||
+        url.pathname === '/manifest.json'
+    );
 }
 
-// --- Background sync handler ---
+
+async function cacheFirstStatic(request) {
+    const cache = await caches.open(STATIC_CACHE);
+    const cached = await cache.match(request);
+
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const response = await fetch(request);
+
+        if (response.ok) {
+            await cache.put(request, response.clone());
+        }
+
+        return response;
+    } catch (error) {
+        console.warn(
+            '[SW] Static request unavailable:',
+            request.url,
+            error
+        );
+
+        return new Response(
+            'Static resource unavailable.',
+            {
+                status: 503,
+                statusText: 'Service Unavailable'
+            }
+        );
+    }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* GOOGLE FONT CACHE                                                          */
+/* -------------------------------------------------------------------------- */
+
+async function cacheGoogleFontCss(request) {
+    const cache = await caches.open(FONT_CACHE);
+    const cached = await cache.match(request);
+
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const response = await fetch(request);
+
+        if (response.ok) {
+            await cache.put(request, response.clone());
+        }
+
+        return response;
+    } catch (error) {
+        console.warn(
+            '[SW] Google Font CSS unavailable:',
+            request.url,
+            error
+        );
+
+        return new Response('', {
+            status: 503,
+            statusText: 'Service Unavailable'
+        });
+    }
+}
+
+
+async function cacheGoogleFontFile(request) {
+    const cache = await caches.open(FONT_CACHE);
+    const cached = await cache.match(request);
+
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const response = await fetch(request);
+
+        if (response.ok) {
+            await cache.put(request, response.clone());
+        }
+
+        return response;
+    } catch (error) {
+        console.warn(
+            '[SW] Google Font file unavailable:',
+            request.url,
+            error
+        );
+
+        return new Response('', {
+            status: 503,
+            statusText: 'Service Unavailable'
+        });
+    }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* STATUS OFFLINE QUEUE                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * IMPORTANT:
+ * HTTP 4xx/5xx responses are real server responses and are returned directly.
+ * They are NOT treated as offline failures.
+ *
+ * Only a genuine fetch/network exception causes queueing.
+ */
+async function networkOrQueueStatusRequest(request) {
+    try {
+        return await fetch(request.clone());
+    } catch (error) {
+        console.warn(
+            '[SW] Network unavailable. Queueing status request:',
+            request.url
+        );
+
+        const queuedRequest = await serializeRequest(request);
+
+        await addQueuedStatusRequest(queuedRequest);
+
+        if ('sync' in self.registration) {
+            try {
+                await self.registration.sync.register(
+                    STATUS_SYNC_TAG
+                );
+            } catch (syncError) {
+                console.warn(
+                    '[SW] Background Sync registration failed:',
+                    syncError
+                );
+            }
+        }
+
+        return new Response(
+            JSON.stringify({
+                status: 'queued',
+                message: 'Status queued - will sync when back online.'
+            }),
+            {
+                status: 202,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+    }
+}
+
+
+async function serializeRequest(request) {
+    const headers = {};
+
+    for (const [key, value] of request.headers.entries()) {
+        headers[key] = value;
+    }
+
+    return {
+        id: createQueueId(),
+        url: request.url,
+        method: request.method,
+        headers,
+        body: await request.clone().text(),
+        createdAt: Date.now()
+    };
+}
+
+
+function createQueueId() {
+    if (self.crypto?.randomUUID) {
+        return self.crypto.randomUUID();
+    }
+
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* INDEXEDDB                                                                  */
+/* -------------------------------------------------------------------------- */
+
+function openStatusQueueDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(
+            STATUS_QUEUE_DB,
+            1
+        );
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+
+            if (!db.objectStoreNames.contains(STATUS_QUEUE_STORE)) {
+                db.createObjectStore(
+                    STATUS_QUEUE_STORE,
+                    {
+                        keyPath: 'id'
+                    }
+                );
+            }
+        };
+
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
+
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
+
+async function addQueuedStatusRequest(requestData) {
+    const db = await openStatusQueueDatabase();
+
+    try {
+        await new Promise((resolve, reject) => {
+            const transaction = db.transaction(
+                STATUS_QUEUE_STORE,
+                'readwrite'
+            );
+
+            const store = transaction.objectStore(
+                STATUS_QUEUE_STORE
+            );
+
+            store.put(requestData);
+
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
+    } finally {
+        db.close();
+    }
+}
+
+
+async function getQueuedStatusRequests() {
+    const db = await openStatusQueueDatabase();
+
+    try {
+        return await new Promise((resolve, reject) => {
+            const transaction = db.transaction(
+                STATUS_QUEUE_STORE,
+                'readonly'
+            );
+
+            const store = transaction.objectStore(
+                STATUS_QUEUE_STORE
+            );
+
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                resolve(request.result || []);
+            };
+
+            request.onerror = () => {
+                reject(request.error);
+            };
+        });
+    } finally {
+        db.close();
+    }
+}
+
+
+async function deleteQueuedStatusRequest(id) {
+    const db = await openStatusQueueDatabase();
+
+    try {
+        await new Promise((resolve, reject) => {
+            const transaction = db.transaction(
+                STATUS_QUEUE_STORE,
+                'readwrite'
+            );
+
+            const store = transaction.objectStore(
+                STATUS_QUEUE_STORE
+            );
+
+            store.delete(id);
+
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
+    } finally {
+        db.close();
+    }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* BACKGROUND SYNC                                                            */
+/* -------------------------------------------------------------------------- */
+
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'prodriver-sync') {
-    event.waitUntil(processOfflineQueue());
-  }
+    if (event.tag !== STATUS_SYNC_TAG) {
+        return;
+    }
+
+    event.waitUntil(
+        processStatusQueue()
+    );
 });
 
-async function processOfflineQueue() {
-  const queue = await openQueue();
-  const requests = await queue.getAll();
-  //console.log(`[SW] Processing ${requests.length} queued requests...`);
 
-  let syncedStatusCount = 0;
-  let successCount = 0;
+async function processStatusQueue() {
+    const queuedRequests =
+        await getQueuedStatusRequests();
 
-  for (const req of requests) {
-    try {
-      //console.log('[SW] 🔁 Replaying queued request:', req.url);
-
-      // Body should always be JSON at this point
-      let bodyToSend = req.options?.body;
-      if (typeof bodyToSend === 'object') {
-        bodyToSend = JSON.stringify(bodyToSend);
-      }
-
-      const isStatusUpdate = req.url.includes('/setstatus');
-
-      // --- 🔹 Extract X-CSRF-Token safely regardless of header structure ---
-      let tokenHeader = '';
-      if (req.options?.headers instanceof Headers) {
-        tokenHeader = req.options.headers.get('X-CSRF-Token') || '';
-      } else if (Array.isArray(req.options?.headers)) {
-        tokenHeader =
-          req.options.headers.find(([k]) => k.toLowerCase() === 'x-csrf-token')?.[1] || '';
-      } else if (typeof req.options?.headers === 'object') {
-        tokenHeader = req.options.headers['X-CSRF-Token'] || req.options.headers['x-csrf-token'] || '';
-      }
-
-      // --- Build final headers ---
-      const headers = new Headers();
-      headers.set('Content-Type', 'application/json');
-      if (tokenHeader) headers.set('X-CSRF-Token', tokenHeader);
-
-      // --- Execute replay ---
-      const res = await fetch(req.url, {
-        method: req.options?.method || 'POST',
-        headers,
-        body: bodyToSend,
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        console.log('[SW] ✅ Synced successfully:', req.url);
-        successCount++;
-        if (isStatusUpdate) syncedStatusCount++;
-      } else {
-        console.warn('[SW] ❌ Server returned', res.status, 'for', req.url);
-      }
-    } catch (err) {
-      console.error('[SW] ⚠️ Failed to re-sync request:', req.url, err);
+    if (queuedRequests.length === 0) {
+        return;
     }
-  }
 
-  await queue.clear();
+    let successCount = 0;
 
-  //console.log(`[SW] Sync complete — ${successCount} successful (${syncedStatusCount} statuses)`);
+    for (const queued of queuedRequests) {
+        try {
+            const response = await fetch(
+                queued.url,
+                {
+                    method: queued.method,
+                    headers: queued.headers,
+                    body: queued.body || undefined,
+                    credentials: 'include'
+                }
+            );
 
-  const allClients = await self.clients.matchAll({ includeUncontrolled: true });
-  for (const client of allClients) {
-    client.postMessage({
-      type: 'OFFLINE_SYNC_COMPLETE',
-      successCount,
-      synced: { statuses: syncedStatusCount },
+            /**
+             * Remove only requests the server actually processed successfully.
+             *
+             * A server-side 4xx/5xx remains queued so we do not silently
+             * pretend synchronization succeeded.
+             *
+             * NOTE:
+             * A queued CSRF token may become invalid after logout/login.
+             * We therefore report failed replay to the client instead of
+             * deleting it as though it succeeded.
+             */
+            if (response.ok) {
+                await deleteQueuedStatusRequest(
+                    queued.id
+                );
+
+                successCount++;
+            } else {
+                console.warn(
+                    '[SW] Queued status rejected by server:',
+                    response.status,
+                    queued.url
+                );
+            }
+        } catch (error) {
+            console.warn(
+                '[SW] Status replay still offline:',
+                queued.url,
+                error
+            );
+
+            // Network is still unavailable. Leave remaining entries queued.
+            break;
+        }
+    }
+
+    const clients = await self.clients.matchAll({
+        includeUncontrolled: true,
+        type: 'window'
     });
-  }
-};
+
+    for (const client of clients) {
+        client.postMessage({
+            type: 'OFFLINE_SYNC_COMPLETE',
+            successCount,
+            synced: {
+                statuses: successCount
+            }
+        });
+    }
+}

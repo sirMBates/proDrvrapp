@@ -2,6 +2,7 @@ import { initProfilePictureHandler } from './profile.js';
 import { buildModal } from './appmodal.js';
 import { fetchDrvr, showFlashAlert, getCurrentView } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
+import { syncEmergencyState } from './emergency-state.js';
 import { Validation } from './validation.js';
 
 const curView = getCurrentView();
@@ -24,6 +25,48 @@ const getDriver = fetchDrvr;
 const drvrToken = document.getElementById('drvrToken').value;
 const drvrAlert = showFlashAlert;
 const statusMsg = document.querySelector('#statusMessage');
+
+// Load theme on page load
+window.addEventListener('load', async () => {
+        const userOverride = localStorage.getItem('userThemeOverride');
+        const lastTheme = localStorage.getItem('isDarkMode');
+
+        if (userOverride === 'dark') {
+                themeSet.darkTheme();
+        } else if (userOverride === 'light') {
+                themeSet.lightTheme();
+        } else if (lastTheme === 'true') {
+                themeSet.darkTheme();
+        } else {
+                themeSet.lightTheme();
+                autoThemeSwitcher(); // initial check
+        }
+        updateThemeIndicator();
+
+        if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
+                sessionStorage.setItem('status', 'Official');
+                let startUpStatus = sessionStorage.getItem('status');
+                statusMsg.textContent = startUpStatus;                
+        } else if (localStorage.getItem('status') !== null) {
+                sessionStorage.clear;
+                let drvrStatus = localStorage.getItem('status');
+                statusMsg.textContent = drvrStatus;
+        } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
+                let drvrStatus = sessionStorage.getItem('status');
+                statusMsg.textContent = drvrStatus;
+        }
+
+        const emergencyState = await syncEmergencyState();
+        if (emergencyState === true) {
+                applyEmergencyUiState(true);
+        } else if (emergencyState === false) {
+                applyEmergencyUiState(false);
+        }
+
+        if (curView !== '/') {
+                $(changeStatusCon).removeClass('d-none');
+        }
+}, false);
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq
@@ -132,17 +175,47 @@ if (menuProfileInput && menuProfileImage) {
 // The status controls and the connection to the DB api
 const driverStatus = new ChangeStatus(DSC, drvrToken, statusMsg);
 driverStatus.init();
+window.addEventListener('driver-status-updated', (e) => {
+        const statusRecord = e.detail;
 
-emergencyBtn.forEach(btn => {
-        btn.addEventListener('click', () => {
-                localStorage.setItem('isActiveEmergency', true);
-                emergencyBackground.forEach(background => {
-                        background.classList.remove('bg-besttrailsclr');
-                        background.classList.add('bg-danger');
-                        return isActiveEmergency = localStorage.getItem('isActiveEmergency');
-                })
-        })
-});
+        if (statusRecord?.driverStatus === 'Emergency') {
+            applyEmergencyUiState(true);
+        }
+    }
+);
+
+function applyEmergencyUiState(active) {
+    isActiveEmergency = active;
+
+    if (active) {
+        localStorage.setItem('isActiveEmergency', 'true');
+
+        emergencyBackground.forEach(background => {
+            background.classList.remove('bg-besttrailsclr');
+            background.classList.add('bg-danger');
+        });
+
+        if (statusMsg) {
+                statusMsg.classList.remove('text-btd-white-floral');
+                statusMsg.classList.add('text-danger');
+                statusMsg.textContent = 'Emergency';
+        }
+
+        return;
+    }
+
+    localStorage.removeItem('isActiveEmergency');
+
+    emergencyBackground.forEach(background => {
+        background.classList.remove('bg-danger');
+        background.classList.add('bg-besttrailsclr');
+    });
+
+    if (statusMsg) {
+        statusMsg.classList.remove('text-danger');
+        statusMsg.classList.add('text-btd-white-floral');
+    }
+};
 
 // Set the theme.
 const themeSet = {
@@ -236,49 +309,6 @@ function autoThemeSwitcher() {
 
 // Run auto theme every minute
 setInterval(autoThemeSwitcher, 60 * 1000); // 60 seconds
-
-// Load theme on page load
-window.addEventListener('load', () => {
-        const userOverride = localStorage.getItem('userThemeOverride');
-        const lastTheme = localStorage.getItem('isDarkMode');
-
-        if (userOverride === 'dark') {
-                themeSet.darkTheme();
-        } else if (userOverride === 'light') {
-                themeSet.lightTheme();
-        } else if (lastTheme === 'true') {
-                themeSet.darkTheme();
-        } else {
-                themeSet.lightTheme();
-                autoThemeSwitcher(); // initial check
-        }
-        updateThemeIndicator();
-
-        if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
-                sessionStorage.setItem('status', 'Official');
-                let startUpStatus = sessionStorage.getItem('status');
-                statusMsg.textContent = startUpStatus;                
-        } else if (localStorage.getItem('status') !== null) {
-                sessionStorage.clear;
-                let drvrStatus = localStorage.getItem('status');
-                statusMsg.textContent = drvrStatus;
-        } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
-                let drvrStatus = sessionStorage.getItem('status');
-                statusMsg.textContent = drvrStatus;
-        }
-
-        isActiveEmergency = localStorage.getItem('isActiveEmergency');
-        if (isActiveEmergency === 'true') {
-                emergencyBackground.forEach(background => {
-                        background.classList.remove('bg-besttrailsclr');
-                        background.classList.add('bg-danger');
-                })
-        }
-
-        if (curView !== '/') {
-                $(changeStatusCon).removeClass('d-none');
-        }
-}, false);
 
 function updateThemeIndicator() {
     const userOverride = localStorage.getItem('userThemeOverride');

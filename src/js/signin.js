@@ -11,7 +11,7 @@ const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
 const infoModBtn = document.querySelector('#info-ok');
 
-$(function() {
+$(document).ready(() => {
     $(usernameInput).on('input', () => {
         let isValid = Validation.validateOnlyUsername($(usernameInput).val(), $(usernameInput).attr('type'));
         if (!isValid) {
@@ -52,7 +52,7 @@ if (paramValue === 'logged out') {
     setInterval(() => {
         window.location.href = '/signin';
     }, 2000);
-}
+};
 
 // Check if the client has agreed already
 const drvrAgreed = localStorage.getItem('operator_consented');

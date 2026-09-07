@@ -428,7 +428,7 @@ function serializeFormData(formData) {
 
 export async function handleAssignmentFetch(options) {
   try {
-    return await fetchDrvr('https://prodriver.local/assignmenthandler', options);
+    return await fetchDrvr('https://prodriver.local/assignmentstatushandler', options);
   } catch (err) {
     // The server responded with an HTTP error.
     // This is NOT an offline/network failure.
@@ -444,7 +444,7 @@ export async function handleAssignmentFetch(options) {
     }
 
     await queueRequest({
-      url: 'https://prodriver.local/assignmenthandler',
+      url: 'https://prodriver.local/assignmentstatushandler',
       options: {
         method: options.method,
         headers: options.headers,

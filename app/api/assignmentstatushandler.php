@@ -6,6 +6,7 @@ use Core\Database;
 use App\Repositories\AssignmentRepository;
 use App\Repositories\EmergencyRepository;
 use App\Repositories\DriverStatusRepository;
+use App\Repositories\DriverSharedNoteRepository;
 use App\Services\AssignmentService;
 use App\Services\EmergencyService;
 
@@ -78,9 +79,10 @@ $pdo = (new Database())->connect();
 $emergencyRepository = new EmergencyRepository($pdo);
 $driverStatusRepository = new DriverStatusRepository($pdo);
 $assignmentRepository = new AssignmentRepository($pdo);
+$driverSharedNoteRepository = new DriverSharedNoteRepository($pdo);
 
 $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-$assignmentService = new AssignmentService($assignmentRepository, $emergencyService);
+$assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService);
 
 $confirmRequested = isset($_POST['confirm']);
 $cancelRequested = isset($_POST['cancel']);
@@ -96,9 +98,9 @@ if ($confirmRequested === $cancelRequested) {
 
 try {
     if ($confirmRequested) {
-        $result = $assignmentService->confirm($driverId, $orderId, $assignmentControl);
+        $result = $assignmentService->confirm($orderId, $driverId, $assignmentControl);
     } else {
-        $result = $assignmentService->cancel($driverId, $orderId, $assignmentControl);
+        $result = $assignmentService->cancel($orderId, $driverId, $assignmentControl);
     }
     echo json_encode($result);
     exit();

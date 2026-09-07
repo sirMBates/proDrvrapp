@@ -1,5 +1,8 @@
 import { buildModal } from './appmodal.js';
 import 'jSignature';
+import { isEmergencyActive, syncEmergencyState } from './emergency-state.js';
+import { showFlashAlert } from './helpers.js';
+
 const signatureBoxBtn = document.querySelector('#signature-widget-buttons')
 const openSignBoxBtn = document.querySelector('#open-sign-box');
 const getPostSignatureBtn = document.querySelector('#get-next-signature');
@@ -26,6 +29,21 @@ let signatureWarningTimer = null;
 let signature;
 let secondSignature;
 let currentSignatureAssignmentControl = '';
+
+async function blockIfEmergencyActive() {
+    const emergencyState = await syncEmergencyState();
+    if (emergencyState === true) {
+        showFlashAlert('error', 'Signature actions are unavailable while an Emergency is active.');
+        return true;
+    }
+
+    if (emergencyState === null) {
+        showFlashAlert('error', 'Emergency status could not be verified. Signature actions are temporarily unavailable.');
+        return true;
+    }
+
+    return false;
+}
 
 function restoreSignatureState(assignmentControl) {
     const preSignature = localStorage.getItem(getSignatureStorageKey('pre', assignmentControl));
@@ -174,7 +192,11 @@ function confirmPostSignHandler () {
     signBtn.classList.add('d-none');
     secondSignBtn.classList.remove('d-none');
 
-    $(secondSignBtn).off('click.postSignature').on('click.postSignature', () => {
+    $(secondSignBtn).off('click.postSignature').on('click.postSignature', async () => {
+        if (await blockIfEmergencyActive()) {
+            return;
+        }
+
         if (!currentSignatureAssignmentControl) {
             console.error('[SIGNATURE] No active assignment control is available.');
             return;
@@ -202,10 +224,14 @@ function confirmPostSignHandler () {
 };
 
 // On unconfirm modal btn, handle signature already recorded for post trip.
-function unConfirmPostSignHandler() {
+async function unConfirmPostSignHandler() {
+    if (await blockIfEmergencyActive()) {
+        return false;
+    }
+
     if (!currentSignatureAssignmentControl) {
         console.error('[SIGNATURE] No active assignment control is available.');
-        return;
+        return false;
     }
 
     const preSignatureKey = getSignatureStorageKey('pre', currentSignatureAssignmentControl);
@@ -266,11 +292,15 @@ getPostSignatureBtn.addEventListener('click', () => {
     });
 
     // No: reuse the pre-trip signature
-    $(unconfirmModalOptBtn).on('click.signature', () => {
+    $(unconfirmModalOptBtn).on('click.signature', async () => {
         modalInstance.hide();
 
+        const postSignatureSaved = await unConfirmPostSignHandler();
+        if (!postSignatureSaved) {
+            return;
+        }
+
         signBtnContainer.classList.remove('d-none');
-        unConfirmPostSignHandler();
         setTimeout(() => {
             getPostSignatureBtn.classList.add('d-none');
             closeSignPadBtn.classList.remove('d-none');
@@ -304,7 +334,11 @@ $(clearBtn).on('click', () => {
 });
 
 // When widget 1st opens, handle 1st signature capture and set rest of buttons and rendered preview.
-$(signBtn).on('click', () => {
+$(signBtn).on('click', async () => {
+    if (await blockIfEmergencyActive()) {
+        return;
+    }
+
     if (!currentSignatureAssignmentControl) {
         console.error('[SIGNATURE] No active assignment control is available.');
         return;

@@ -61,6 +61,97 @@ class Storage {
         return $result;
     }
 
+    public function createSignatureBackup(string|int $orderId): array {
+        $orderId = $this->normalizeIdentifier($orderId, 'order ID');
+        $directory = $this->buildAssignmentDirectory($orderId);
+
+        $files = [
+            'pre-trip.png',
+            'post-trip.png'
+        ];
+
+        $backup = [];
+
+        foreach ($files as $fileName) {
+            $absolutePath = "{$directory}/{$fileName}";
+            $backupPath = sprintf('%s.bak.%s', $absolutePath, bin2hex(random_bytes(8)));
+
+            if (!is_file($absolutePath)) {
+                $backup[$fileName] = [
+                    'existed' => false,
+                    'backup_path' => null
+                ];
+
+                continue;
+            }
+
+            if (!copy($absolutePath, $backupPath)) {
+                throw new RuntimeException("Unable to create signature backup: {$fileName}");
+            }
+
+            $backup[$fileName] = [
+                'existed' => true,
+                'backup_path' => $backupPath
+            ];
+        }
+
+        return [
+            'directory' => $directory,
+            'files' => $backup
+        ];
+    }
+
+    public function rollbackSignatureBackup(array $backup): void {
+        $directory = (string) ($backup['directory'] ?? '');
+        $files = $backup['files'] ?? [];
+
+        if ($directory === '' || !is_array($files)) {
+            return;
+        }
+
+        foreach ($files as $fileName => $state) {
+            $absolutePath = "{$directory}/{$fileName}";
+            $existed = (bool) ($state['existed'] ?? false);
+            $backupPath = $state['backup_path'] ?? null;
+
+            if ($existed) {
+                if (!is_string($backupPath) || !is_file($backupPath)) {
+                    throw new RuntimeException("Signature backup is missing: {$fileName}");
+                }
+
+                if (!copy($backupPath, $absolutePath)) {
+                    throw new RuntimeException("Unable to restore signature backup: {$fileName}");
+                }
+
+                @unlink($backupPath);
+                continue;
+            }
+
+            /*
+            * This signature did not exist before the attempted write,
+            * so remove it if the failed operation created it.
+            */
+            if (is_file($absolutePath)) {
+                @unlink($absolutePath);
+            }
+        }
+    }
+
+    public function discardSignatureBackup(array $backup): void {
+        $files = $backup['files'] ?? [];
+
+        if (!is_array($files)) {
+            return;
+        }
+
+        foreach ($files as $state) {
+            $backupPath = $state['backup_path'] ?? null;
+
+            if (is_string($backupPath) && is_file($backupPath)) {
+                @unlink($backupPath);
+            }
+        }
+    }
     /**
      * Verify signature records fetched from the database.
      *
