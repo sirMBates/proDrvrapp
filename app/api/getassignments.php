@@ -7,12 +7,6 @@ header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-Wi
 
 requireLoginAjax();
 
-error_log(
-    '[EMERGENCY STATUS AUTH DEBUG] ' .
-    'session_id=' . session_id() .
-    ' user_id=' . ($_SESSION['user_id'] ?? 'MISSING')
-);
-
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;
 

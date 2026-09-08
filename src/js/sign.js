@@ -88,19 +88,19 @@ function finalizeSignatureInterface() {
     $(openSignBoxBtn).prop('disabled', true);
 };
 
+function getSignatureWarningKey(assignmentControl) {
+    return `signature-warning-ack:${assignmentControl}`;
+}
+
 function getSignatureStorageKey(type, assignmentControl) {
     return `${type}-signature:${assignmentControl}`;
 };
 
 // Show warning modal once per assignment (integrated with MutationObserver)
+// Show signature-required warning once per assignment.
 function showWarnModalForAssignment(assignmentControl, requiresSignature) {
-    const assignmentKey = String(assignmentControl ?? '');
-    const lastWarned = localStorage.getItem('warnModalShownFor') ?? '';
-    console.log({
-        assignmentControl, lastWarned: localStorage.getItem('warnModalShownFor'), requiresSignature
-    });
+    const assignmentKey = String(assignmentControl ?? '').trim();
 
-    // If no signature is required - hide everything
     if (!requiresSignature || assignmentKey === '') {
         if (signatureWarningTimer !== null) {
             clearTimeout(signatureWarningTimer);
@@ -108,6 +108,7 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
         }
 
         pendingWarningFor = null;
+
         $(signatureBoxBtn).addClass('d-none');
         signBox?.classList.add('d-none');
 
@@ -121,8 +122,11 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
         return;
     }
 
-    // If signature required but already warned once
-    if (assignmentKey === lastWarned) {
+    const warningKey = getSignatureWarningKey(assignmentKey);
+    const acknowledged = localStorage.getItem(warningKey) === 'true';
+
+    // Already acknowledged for THIS assignment.
+    if (acknowledged) {
         if (signatureWarningTimer !== null) {
             clearTimeout(signatureWarningTimer);
             signatureWarningTimer = null;
@@ -130,9 +134,11 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
 
         pendingWarningFor = null;
         $(signatureBoxBtn).removeClass('d-none');
-        return;
-    };
 
+        return;
+    }
+
+    // Already waiting to warn for this assignment.
     if (pendingWarningFor === assignmentKey && signatureWarningTimer !== null) {
         return;
     }
@@ -140,14 +146,14 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
     if (signatureWarningTimer !== null) {
         clearTimeout(signatureWarningTimer);
     }
-    
+
     pendingWarningFor = assignmentKey;
 
     signatureWarningTimer = setTimeout(() => {
         signatureWarningTimer = null;
-        const acknowledged = localStorage.getItem('warnModalShownFor') ?? '';
+        const alreadyAcknowledged = localStorage.getItem(warningKey) === 'true';
 
-        if (acknowledged === assignmentKey) {
+        if (alreadyAcknowledged) {
             pendingWarningFor = null;
             $(signatureBoxBtn).removeClass('d-none');
             return;
@@ -161,11 +167,13 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
     });
 
     $(warnModalBtn).off('click.signatureWarning').on('click.signatureWarning', function () {
-        localStorage.setItem('warnModalShownFor', assignmentKey);
+        localStorage.setItem(warningKey, 'true');
+
         if (signatureWarningTimer !== null) {
             clearTimeout(signatureWarningTimer);
             signatureWarningTimer = null;
         }
+
         pendingWarningFor = null;
         $(signatureBoxBtn).removeClass('d-none');
         $(warnModal).modal('hide');

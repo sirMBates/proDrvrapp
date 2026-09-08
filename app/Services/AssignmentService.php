@@ -13,7 +13,7 @@ use InvalidArgumentException;
 use RuntimeException;
 
 class AssignmentService {
-    public function __construct(private AssignmentRepository $assignmentRepository, private DriverSharedNoteRepository $driverSharedNoteReository, private EmergencyService $emergencyService) {}
+    public function __construct(private AssignmentRepository $assignmentRepository, private DriverSharedNoteRepository $driverSharedNoteRepository, private EmergencyService $emergencyService) {}
 
     public function confirm(int $orderId, int $driverId, string $assignmentControl): array {
         if ($driverId < 1 || $orderId < 1) {
