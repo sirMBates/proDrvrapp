@@ -86,6 +86,7 @@ class AssignmentExporter {
                 ]
             ];
 
+            $workbookChanged = false;
             foreach ($columns as $field => $config) {
                 $col = $config['column'];
                 $submittedKey = $config['submitted_key'];
@@ -118,6 +119,7 @@ class AssignmentExporter {
                 $currentValue = trim((string)$sheet->getCell("$col$matchRow")->getValue());
                 if ((string) $currentValue !== (string) $valueToWrite && $valueToWrite !== '') {
                     $sheet->setCellValue("$col$matchRow", $valueToWrite);
+                    $workbookChanged = true;
                     $this->logger->info("[ASSIGNMENT EXPORTER] Updated {$field} " . "in row {$matchRow}: " . "'{$currentValue}' → '{$valueToWrite}'");
                 } else {
                     $this->logger->debug("[ASSIGNMENT EXPORTER] No change for {$field} " . "in row {$matchRow} " . "(current: '{$currentValue}')");
@@ -125,11 +127,14 @@ class AssignmentExporter {
             }
 
             // Save spreadsheet
-            $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->save($this->filePath);
-            $this->logger->info("[ASSIGNMENT EXPORTER] Excel sheet saved successfully: {$this->filePath}");
+            if ($workbookChanged) {
+                $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+                $writer->save($this->filePath);
+                $this->logger->info("[ASSIGNMENT EXPORTER] Excel sheet saved successfully: {$this->filePath}");
+            } else {
+                $this->logger->debug('[ASSIGNMENT EXPORTER] No workbook changes detected; save skipped.');
+            }
             return true;
-
         } catch (\Throwable $e) {
             $this->logger->error("[ASSIGNMENT EXPORTER] Error updating Excel: " . $e->getMessage());
             throw $e;

@@ -124,16 +124,14 @@ export function validateCurrentAssignmentFields(options) {
         setFieldValid(target);
     }
 
-    for (const id of ['pickup-details', 'destination-details', 'shared-job-note']) {
-        const el = document.getElementById(id);
-        if (!el) continue;
+    const sharedJobNote = document.getElementById('shared-job-note');
+    if (sharedJobNote) {
+        const value = sharedJobNote.value.trim();
 
-        if (isSaveMode && el.value.trim() === '') {
-            continue;
-        }
-
-        if (!validateAssignmentTextarea(el)) {
-            errors.push(el);
+        if (!(isSaveMode && value === '')) {
+            if (!validateAssignmentTextarea(sharedJobNote)) {
+                errors.push(sharedJobNote);
+            }
         }
     }
 

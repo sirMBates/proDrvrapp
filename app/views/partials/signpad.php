@@ -16,10 +16,9 @@
             <button type="button" class="btn btn-md btn-primary m-2 d-none">Sign</button>
         </div>
         <div id="insp_img_box">
-            <div id="rendered" class="my-3"></div>
-        </div>
-        <div id="inspect-signature-box">
-            <div id="pre-trip" class="w-100 bg-btd-white-floral border border-2 rounded-1 border-dark d-none"><p class='h5 text-center text-capitalize text-nowrap text-btd-blue-bright text-decoration-underline'>pre-trip signature</p></div>
-            <div id="post-trip" class="w-100 bg-btd-white-floral border border-2 rounded-1 border-dark d-none"><p class='h5 text-center text-capitalize text-nowrap text-btd-blue-bright text-decoration-underline'>post-trip signature</p></div>
+            <div id="inspect-signature-box">
+                <div id="pre-trip" class="w-100 bg-btd-white-floral border border-2 rounded-1 border-dark d-none"><p class='h5 text-center text-capitalize text-nowrap text-btd-blue-bright text-decoration-underline'>pre-trip signature</p></div>
+                <div id="post-trip" class="w-100 bg-btd-white-floral border border-2 rounded-1 border-dark d-none"><p class='h5 text-center text-capitalize text-nowrap text-btd-blue-bright text-decoration-underline'>post-trip signature</p></div>
+            </div>
         </div>
     </section>

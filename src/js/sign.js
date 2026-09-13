@@ -12,7 +12,6 @@ const signpad = document.querySelector('#signaturePad');
 const clearBtn = signpad.parentNode.childNodes[3].childNodes[1];
 const signBtn = signpad.parentNode.childNodes[3].childNodes[3];
 const secondSignBtn = signBtn.nextElementSibling;
-const signatureCheck = document.querySelector('#rendered');
 const imgInspBox = document.querySelector('#insp_img_box');
 const preInspSign = document.querySelector('#pre-trip');
 const postInspSign = document.querySelector('#post-trip');
@@ -53,20 +52,30 @@ function restoreSignatureState(assignmentControl) {
         openSignBoxBtn?.classList.remove('d-none');
         getPostSignatureBtn?.classList.add('d-none');
         closeSignPadBtn?.classList.add('d-none');
+        imgInspBox?.classList.add('d-none');
+
         return;
     }
 
     openSignBoxBtn?.classList.add('d-none');
 
+    // Show preview area again after page reload.
+    imgInspBox?.classList.remove('d-none');
+
+    preInspSign?.classList.remove('d-none');
+
+    renderSignaturePreview(preInspSign, preSignature, 'Pre-trip signature');
+
     if (!postSignature) {
         getPostSignatureBtn?.classList.remove('d-none');
         closeSignPadBtn?.classList.add('d-none');
-        preInspSign?.classList.remove('d-none');
+
         return;
     }
 
-    preInspSign?.classList.remove('d-none');
     postInspSign?.classList.remove('d-none');
+
+    renderSignaturePreview(postInspSign, postSignature, 'Post-trip signature');
 
     finalizeSignatureInterface();
 };
@@ -82,6 +91,8 @@ function finalizeSignatureInterface() {
     getPostSignatureBtn?.classList.add('d-none');
     closeSignPadBtn?.classList.add('d-none');
 
+    imgInspBox?.classList.add('d-none');
+
     signBox?.classList.add('d-none');
 
     openSignBoxBtn?.classList.remove('d-none');
@@ -96,8 +107,30 @@ function getSignatureStorageKey(type, assignmentControl) {
     return `${type}-signature:${assignmentControl}`;
 };
 
-// Show warning modal once per assignment (integrated with MutationObserver)
-// Show signature-required warning once per assignment.
+function renderSignaturePreview(container, signatureData, altText) {
+    if (!container || !signatureData) {
+        return;
+    }
+
+    let previewHolder = container.querySelector('.signature-preview');
+
+    if (!previewHolder) {
+        previewHolder = document.createElement('div');
+        previewHolder.classList.add('signature-preview');
+
+        container.appendChild(previewHolder);
+    }
+
+    previewHolder.replaceChildren();
+
+    const image = document.createElement('img');
+    image.src = signatureData;
+    image.alt = altText;
+
+    previewHolder.appendChild(image);
+};
+
+// Show signature-required warning modal once per assignment (integrated with MutationObserver)
 function showWarnModalForAssignment(assignmentControl, requiresSignature) {
     const assignmentKey = String(assignmentControl ?? '').trim();
 
@@ -209,16 +242,15 @@ function confirmPostSignHandler () {
             console.error('[SIGNATURE] No active assignment control is available.');
             return;
         }
+
         secondSignature = $(signpad).jSignature("getData");
         const postSignatureKey = getSignatureStorageKey('post', currentSignatureAssignmentControl);
         localStorage.setItem(postSignatureKey, secondSignature);
-        $(signatureCheck).append(`<img src='${secondSignature}' alt='Post-trip signature'>`);
+
         postInspSign.classList.remove('d-none');
-        const holder = document.createElement('div');
-        postInspSign.firstChild.after(holder);
-        $(holder).append(`<img src='${secondSignature}' alt='Post-trip signature'>`);
+
+        renderSignaturePreview(postInspSign, secondSignature, 'Post-trip signature');
         setTimeout(() => {
-            imgInspBox.classList.add('d-none');
             $(signpad).jSignature('clear');
         }, 500);
         signpad.classList.add('d-none');
@@ -247,20 +279,30 @@ async function unConfirmPostSignHandler() {
     const preSignature = localStorage.getItem(preSignatureKey);
     if (!preSignature) {
         console.error('[SIGNATURE] No pre-trip signature is available to reuse.');
-        return;
+        return false;
     }
 
+    // Show the complete preview area.
+    signBox.classList.remove('d-none');
+    imgInspBox.classList.remove('d-none');
+
+    // We are previewing, NOT capturing another signature.
+    signpad.classList.add('d-none');
+    signpad.nextElementSibling?.classList.add('d-none');
+
     signBtn.classList.add('d-none');
-    postInspSign.classList.remove('d-none');
-
-    const holder = document.createElement('div');
-    postInspSign.firstChild.after(holder);
-    $(holder).append(`<img src="${preSignature}" alt="Post-trip signature">`);
-    localStorage.setItem(postSignatureKey, preSignature);
-
-    signBtn.classList.remove('d-none');
     secondSignBtn.classList.add('d-none');
     signBtnContainer.classList.add('d-none');
+
+    // Make sure both signatures previews remain visible
+    preInspSign.classList.remove('d-none');
+    postInspSign.classList.remove('d-none');
+
+    renderSignaturePreview(preInspSign, preSignature, 'Pre-trip signature');
+    renderSignaturePreview(postInspSign, preSignature, 'Post-trip signature');
+    localStorage.setItem(postSignatureKey, preSignature);
+
+    return true;
 };
 
 // Open signature widget.
@@ -303,12 +345,15 @@ getPostSignatureBtn.addEventListener('click', () => {
     $(unconfirmModalOptBtn).on('click.signature', async () => {
         modalInstance.hide();
 
+        // Reopen the signature interface so the previews are visible.
+        signBox.classList.remove('d-none');
+        imgInspBox.classList.remove('d-none');
+
         const postSignatureSaved = await unConfirmPostSignHandler();
         if (!postSignatureSaved) {
             return;
         }
 
-        signBtnContainer.classList.remove('d-none');
         setTimeout(() => {
             getPostSignatureBtn.classList.add('d-none');
             closeSignPadBtn.classList.remove('d-none');
@@ -355,15 +400,11 @@ $(signBtn).on('click', async () => {
     signature = $(signpad).jSignature('getData');
     const preSignatureKey = getSignatureStorageKey('pre', currentSignatureAssignmentControl);
     localStorage.setItem(preSignatureKey, signature);
-    $(signatureCheck).append(`<img src="${signature}" alt="Pre-trip signature">`);
 
     preInspSign.classList.remove('d-none');
-    const holder = document.createElement('div');
-    preInspSign.firstChild.after(holder);
-    $(holder).append(`<img src="${signature}" alt="Pre-trip signature">`);
+    renderSignaturePreview(preInspSign, signature, 'Pre-trip signature');
 
     setTimeout(() => {
-        imgInspBox.classList.add('d-none');
         $(signpad).jSignature('clear');
     }, 500);
 

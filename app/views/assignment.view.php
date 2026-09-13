@@ -104,13 +104,13 @@ include "partials/confirm-modal.php";
                                         <div class="d-block w-100 mb-2 p-1">
                                                 <label for="pickup-details" class="h6 form-label text-capitalize"><u>pickup details:</u></label>
                                                 <div class="col">
-                                                        <textarea id="pickup-details" class="form-control bg-btd-textarea-clr text-dark" name="pickup_details" style="height: 200px;"></textarea>
+                                                        <textarea id="pickup-details" class="form-control bg-btd-textarea-clr text-dark dispatch-details" name="pickup_details" style="height: 200px;" readonly></textarea>
                                                 </div>
                                         </div>
                                         <div class="d-block w-100 mb-2 p-1">
                                                 <label for="destination-details" class="h6 form-label text-capitalize"><u>destination details:</u></label>
                                                 <div class="col">
-                                                        <textarea id="destination-details" class="form-control bg-btd-textarea-clr text-dark" name="destination_details" style="height: 200px;"></textarea>
+                                                        <textarea id="destination-details" class="form-control bg-btd-textarea-clr text-dark dispatch-details" name="destination_details" style="height: 200px;" readonly></textarea>
                                                 </div>
                                         </div>
                                 </div>

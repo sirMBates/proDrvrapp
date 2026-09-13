@@ -7,6 +7,7 @@ use App\Repositories\AssignmentRepository;
 use App\Repositories\DriverSharedNoteRepository;
 use App\Repositories\EmergencyRepository;
 use App\Repositories\DriverStatusRepository;
+use App\Repositories\TimesheetRepository;
 use App\Services\AssignmentService;
 use App\Services\EmergencyService;
 use App\Validation\AssignmentValidator;
@@ -68,9 +69,10 @@ if ($method === 'PATCH') {
             $driverSharedNoteRepository = new DriverSharedNoteRepository($pdo);
             $emergencyRepository = new EmergencyRepository($pdo);
             $driverStatusRepository = new DriverStatusRepository($pdo);
+            $timesheetRepository = new TimesheetRepository($pdo);
 
             $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService);
+            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository);
 
             $prepared = $assignmentService->prepareUpdate((int) $orderId, $driverId, $assignmentControl, $data);
 
@@ -194,40 +196,219 @@ if ($method === 'PATCH') {
         }        
     }
     elseif (isset($_POST['assignment-complete'])) {
-        include_once base_path("app/models/assignmenthandlermodel.php");
-        include_once base_path("app/SubmissionHandlers/check_assignment_details.php");
-
-        // Sanitize incoming POST data
         $data = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS) ?? [];
-        $storage = new Storage();
+        $orderId = filter_var($data['order_id'] ?? null, FILTER_VALIDATE_INT);
+        $driverId = (int) ($_SESSION['user_id'] ?? 0);
+        $assignmentControl = trim((string) ($data['assignment_control'] ?? ''));
 
-        // Validate & check assignment details using existing error checker
-        $jobValidator = new UpdateAssignmentDetailsContr($data, $storage);
-        $jobValidator->validateForCompletion($data, false);
-        $jobValidator->modify();
+        if ($orderId === false || $orderId < 1 || $driverId < 1 || $assignmentControl === '') {
+            $alert::setMsg('danger', 'Invalid assignment completion request.');
+            header('Location: /assignments');
+            exit();
+        }
 
-        $model = new UpdateAssignment();
-        $updatedAssignment = $model->getAssignmentForExcel($data);
-        $jobValidator->verifySignaturesForCompletion($updatedAssignment);
-
-        // Pass updated data to excel exporter
+        // Filesystem resources participating in completion.
+        $storage = null;
+        $signatureBackup = null;
         $filePath = 'D:/Documents/TestAssignments.xlsx';
-        $exporter = new AssignmentExporter($filePath, $devLogger);
-        $exporter->assignmentSubmitted($data, $updatedAssignment);
-        $completedAssignment = $model->completeAssignmentPublic($data, true);
+        $workbookBackupPath = null;
+        $workbookOriginallyExisted = false;
 
-        $devLogger->info('[ASSIGNMENT COMPLETE] Operation executed.');
-        $alert::setMsg('success', 'Assignment completed and submitted.');
-        $orderId = (string) ($completedAssignment['order_id'] ?? $updatedAssignment['order_id'] ?? $data['order_id'] ?? '');
-        $orderRef = (string) ($completedAssignment['order_ref'] ?? $updatedAssignment['order_ref'] ?? '');
-        $query = http_build_query([
-            'status' => 'completed',
-            'completed' => $orderId,
-            'order_id' => $orderId,
-            'order_ref' => $orderRef
-        ]);
-        header("Location: /assignments?{$query}");
-        exit();
+        $pdo = null;
+
+        try {
+            /*
+            * COMPOSITION ROOT
+            * Every repository participating in Complete receives the
+            * same PDO connection so they can participate in one MySQL
+            * transaction.
+            */
+            $pdo = (new Database())->connect();
+
+            $assignmentRepository = new AssignmentRepository($pdo);
+            $driverSharedNoteRepository = new DriverSharedNoteRepository($pdo);
+            $timesheetRepository = new TimesheetRepository($pdo);
+            $emergencyRepository = new EmergencyRepository($pdo);
+            $driverStatusRepository = new DriverStatusRepository($pdo);
+
+            $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
+            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository);
+
+            // PREPARE / VALIDATE
+            // No database or filesystem mutations happen here.
+            $prepared = $assignmentService->prepareCompletion((int) $orderId, $driverId, $assignmentControl, $data);
+
+            /*
+            * SIGNATURE BACKUP
+            * We only need a signature backup if the browser actually
+            * submitted a new pre/post signature.
+            */
+            $signaturePayload = $prepared['signature_payload'] ?? [];
+            $preSignature = trim((string) ($signaturePayload['pre_signature_base64'] ?? ''));
+            $postSignature = trim((string) ($signaturePayload['post_signature_base64'] ?? ''));
+
+            $storage = new Storage();
+            if ($preSignature !== '' || $postSignature !== '') {
+                $signatureBackup = $storage->createSignatureBackup((string) $orderId);
+            }
+
+            /*
+            * EXCEL BACKUP
+            * MySQL cannot roll an .xlsx file back, so preserve the
+            * workbook before AssignmentExporter touches it.
+            */
+            $workbookOriginallyExisted = is_file($filePath);
+            if ($workbookOriginallyExisted) {
+                $workbookBackupPath = $filePath . '.completion-' . bin2hex(random_bytes(8)) . '.bak';
+
+                if (!copy($filePath, $workbookBackupPath)) {
+                    throw new RuntimeException('Unable to create a workbook backup.');
+                }
+            }
+            /*
+            * Exporter is created only after its source workbook has
+            * been protected.
+            */
+            $exporter = new AssignmentExporter($filePath, $devLogger);
+            /*
+            * DATABASE TRANSACTION
+            */
+            if (!$pdo->beginTransaction()) {
+                throw new RuntimeException('Unable to begin assignment completion transaction.');
+            }
+
+            /*
+            * completePrepared() performs:
+            *
+            * - Emergency recheck
+            * - signature persistence
+            * - changed-field update
+            * - shared-note update
+            * - authoritative reload
+            * - signature verification
+            * - Excel export
+            * - final Emergency recheck
+            * - confirmed -> completed
+            * - completed assignment reload
+            * - Timesheet snapshot creation
+            */
+            $result = $assignmentService->completePrepared((int) $orderId, $driverId, $assignmentControl, $prepared, $storage, $exporter);
+
+            // Nothing becomes permanent in MySQL until every database
+            // operation above succeeds.
+            $pdo->commit();
+
+            // SUCCESS — DISCARD COMPENSATING BACKUP
+            if ($signatureBackup !== null) {
+                try {
+                    $storage->discardSignatureBackup($signatureBackup);
+                } catch (Throwable $cleanupError) {
+                    $devLogger->error('[ASSIGNMENT COMPLETE] Unable to discard ' . 'signature backup: ' . $cleanupError->getMessage());
+                }
+
+                $signatureBackup = null;
+            }
+
+            if ($workbookBackupPath !== null && is_file($workbookBackupPath)) {
+                if (!unlink($workbookBackupPath)) {
+                    $devLogger->error('[ASSIGNMENT COMPLETE] Unable to remove ' . 'workbook backup: ' . $workbookBackupPath);
+                }
+
+                $workbookBackupPath = null;
+            }
+
+            // SUCCESS RESPONSE
+            $devLogger->info('[ASSIGNMENT COMPLETE] Operation executed.', [
+                    'order_id' => $orderId,
+                    'driver_id' => $driverId,
+                    'assignment_control' => $assignmentControl
+                ]
+            );
+
+            $alert::setMsg('success', $result['message'] ?? 'Assignment completed and submitted.');
+
+            $resultData = $result['data'] ?? [];
+            $completedOrderId = (string) ($resultData['order_id'] ?? $orderId);
+            $orderRef = (string) ($resultData['order_ref'] ?? '');
+
+            $query = http_build_query([
+                'status' => 'completed',
+                'completed' => $completedOrderId,
+                'order_id' => $completedOrderId,
+                'order_ref' => $orderRef
+            ]);
+
+            header("Location: /assignments?{$query}");
+            exit();
+        } catch (InvalidArgumentException $e) {
+            // DATABASE ROLLBACK
+            if ($pdo instanceof PDO && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            // EXCEL ROLLBACK
+            if ($workbookBackupPath !== null && is_file($workbookBackupPath)) {
+                if (!copy($workbookBackupPath, $filePath)) {
+                    $devLogger->error('[ASSIGNMENT COMPLETE] Workbook rollback failed.');
+                }
+
+                @unlink($workbookBackupPath);
+                $workbookBackupPath = null;
+
+            } elseif (!$workbookOriginallyExisted && is_file($filePath)) {
+                // Workbook did not exist before Complete but was created
+                // before a later failure.
+                @unlink($filePath);
+            }
+
+            // SIGNATURE ROLLBACK
+            if ($storage !== null && $signatureBackup !== null) {
+                try {
+                    $storage->rollbackSignatureBackup($signatureBackup);
+                } catch (Throwable $rollbackError) {
+                    $devLogger->error('[ASSIGNMENT COMPLETE] Signature rollback failed: ' . $rollbackError->getMessage());
+                }
+            }
+
+            $devLogger->warning('[ASSIGNMENT COMPLETE] Validation failed: ' . $e->getMessage());
+
+            $alert::setMsg('danger', $e->getMessage());
+            header('Location: /assignments');
+            exit();
+        } catch (Throwable $e) {
+            // DATABASE ROLLBACK        
+            if ($pdo instanceof PDO && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            // EXCEL ROLLBACK        
+            if ($workbookBackupPath !== null && is_file($workbookBackupPath)) {
+                if (!copy($workbookBackupPath, $filePath)) {
+                    $devLogger->error('[ASSIGNMENT COMPLETE] Workbook rollback failed.');
+                }
+
+                @unlink($workbookBackupPath);
+                $workbookBackupPath = null;
+
+            } elseif (!$workbookOriginallyExisted && is_file($filePath)) {
+                @unlink($filePath);
+            }
+
+            // SIGNATURE ROLLBACK
+            if ($storage !== null && $signatureBackup !== null) {
+                try {
+                    $storage->rollbackSignatureBackup($signatureBackup);
+                } catch (Throwable $rollbackError) {
+                    $devLogger->error('[ASSIGNMENT COMPLETE] Signature rollback failed: ' . $rollbackError->getMessage());
+                }
+            }
+
+            $devLogger->error('[ASSIGNMENT COMPLETE] Operation failed: ' . $e->getMessage());
+
+            $alert::setMsg('danger', 'Assignment could not be completed. Please try again.');
+            header('Location: /assignments');
+            exit();
+        }
     }
 };
 

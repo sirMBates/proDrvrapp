@@ -373,13 +373,9 @@ function updateAssignmentDraftField(assignment, field, value) {
         const originalValues = {
             vehicle_id: assignment.vehicle_id ?? '',
             actual_drop_time: assignment.actual_drop_time ?? '',
-            actual_end_time: assignment.actual_end_time
-                ? assignment.actual_end_time.replace(' ', 'T').slice(0, 16)
-                : '',
+            actual_end_time: assignment.actual_end_time ? assignment.actual_end_time.replace(' ', 'T').slice(0, 16) : '',
             total_hrs: assignment.total_job_time ?? '',
             driving_time: assignment.driving_time ?? '',
-            pickup_details: assignment.pickup_details ?? '',
-            destination_details: assignment.destination_details ?? '',
             shared_job_note: assignment.current_driver_shared_note ?? ''
         };
 
@@ -429,14 +425,6 @@ function saveCurrentVisibleAssignmentDraft() {
     });
 
     const textareaDraftFields = [
-        {
-            id: 'pickup-details',
-            field: 'pickup_details'
-        },
-        {
-            id: 'destination-details',
-            field: 'destination_details'
-        },
         {
             id: 'shared-job-note',
             field: 'shared_job_note'
@@ -854,14 +842,6 @@ window.addEventListener('DOMContentLoaded', () => {
             tertiaryDriveTime.textContent = draft.driving_time;
         };
 
-        if (draft['pickup_details'] !== undefined) {
-            pickupDetails.value = draft['pickup_details'];
-        };
-
-        if (draft['destination_details'] !== undefined) {
-            destinationDetails.value = draft['destination_details'];
-        };
-
         if (draft['shared_job_note'] !== undefined) {
             opNotes.value = draft['shared_job_note'];
         };
@@ -874,8 +854,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 actual_end_time: assignment['actual_end_time'] ?? '',
                 total_hrs: assignment['total_job_time'] ?? '',
                 driving_time: assignment['driving_time'] ?? '',
-                pickup_details: assignment['pickup_details'] ?? '',
-                destination_details: assignment['destination_details'] ?? '',
                 shared_job_note: assignment['current_driver_shared_note'] ?? ''
             })
         );
@@ -1255,14 +1233,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const textareaDraftFields = [
         {
-            id: 'pickup-details',
-            field: 'pickup_details'
-        },
-        {
-            id: 'destination-details',
-            field: 'destination_details'
-        },
-        {
             id: 'shared-job-note',
             field: 'shared_job_note'
         }
@@ -1470,13 +1440,17 @@ function submitAssignment(options) {
             actual_end_time: actualEndValue
         });
 
-        // Append textareas
-        ['pickup-details', 'destination-details', 'shared-job-note'].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            form.querySelectorAll(`input[name="${el.name}"]`).forEach(h => h.remove());
-            appendHiddenFields(form, { [el.name]: el.value.trim() });
-        });
+        // Append driver shared note
+        const sharedJobNote = document.getElementById('shared-job-note');
+
+        if (sharedJobNote) {
+            form.querySelectorAll(`input[name="${sharedJobNote.name}"]`).forEach(input => input.remove());
+
+            appendHiddenFields(form, {
+                [sharedJobNote.name]:
+                    sharedJobNote.value.trim()
+            });
+        };
 
         // Ensure driving time to 0.00 if empty
         const drivingTimeCell = document.querySelector("[data-field='driving_time']");

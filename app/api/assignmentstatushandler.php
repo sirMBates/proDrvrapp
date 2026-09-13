@@ -7,6 +7,7 @@ use App\Repositories\AssignmentRepository;
 use App\Repositories\EmergencyRepository;
 use App\Repositories\DriverStatusRepository;
 use App\Repositories\DriverSharedNoteRepository;
+use App\Repositories\TimesheetRepository;
 use App\Services\AssignmentService;
 use App\Services\EmergencyService;
 
@@ -80,9 +81,10 @@ $emergencyRepository = new EmergencyRepository($pdo);
 $driverStatusRepository = new DriverStatusRepository($pdo);
 $assignmentRepository = new AssignmentRepository($pdo);
 $driverSharedNoteRepository = new DriverSharedNoteRepository($pdo);
+$timesheetRepository = new TimesheetRepository($pdo);
 
 $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-$assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService);
+$assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository);
 
 $confirmRequested = isset($_POST['confirm']);
 $cancelRequested = isset($_POST['cancel']);

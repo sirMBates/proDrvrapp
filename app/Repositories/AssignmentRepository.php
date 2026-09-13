@@ -162,6 +162,29 @@ class AssignmentRepository {
         return $assignment !== false ? $assignment : null;
     }
 
+    public function findFullByIdentity(int $orderId, int $driverId, string $assignmentControl): ?array {
+        $sql = "SELECT * FROM work_orders
+                WHERE order_id = :order_id
+                AND driver_id = :driver_id
+                AND assignment_control = :assignment_control
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId,
+            ':assignment_control' => $assignmentControl
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Full assignment lookup failed.');
+        }
+
+        $assignment = $stmt->fetch();
+
+        return $assignment !== false ? $assignment : null;
+    }
+
     public function hasBlockingAssignmentsForEOS(int $driverId, string $dayStart, string $nextDayStart): bool {
         $sql = "SELECT 1
                 FROM work_orders
@@ -335,9 +358,7 @@ class AssignmentRepository {
             'actual_drop_time = :actual_drop_time',
             'actual_end_time = :actual_end_time',
             'total_job_time = :total_job_time',
-            'driving_time = :driving_time',
-            'pickup_details = :pickup_details',
-            'destination_details = :destination_details'
+            'driving_time = :driving_time'
         ];
 
         $parameters = [
@@ -346,8 +367,6 @@ class AssignmentRepository {
             ':actual_end_time' => $data['actual_end_time'],
             ':total_job_time' => $data['total_job_time'],
             ':driving_time' => $data['driving_time'],
-            ':pickup_details' => $data['pickup_details'],
-            ':destination_details' => $data['destination_details'],
             ':assignment_control' => $assignmentControl,
             ':order_id' => $orderId,
             ':driver_id' => $driverId
@@ -417,6 +436,118 @@ class AssignmentRepository {
         ]);
 
         return $verifyStmt->fetchColumn() !== false;
+    }
+
+    public function updateAssignmentChanges(int $orderId, int $driverId, string $assignmentControl, array $changes): bool {
+        if ($changes === []) {
+            return true;
+        }
+
+        $allowedFields = [
+            'vehicle_id',
+            'actual_drop_time',
+            'actual_end_time',
+            'total_job_time',
+            'driving_time',
+            'pre_signature_path',
+            'pre_signature_hash',
+            'pre_signature_at',
+            'post_signature_path',
+            'post_signature_hash',
+            'post_signature_at',
+            'signature_status'
+        ];
+
+        $setClauses = [];
+        $parameters = [
+            ':assignment_control' => $assignmentControl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ];
+
+        foreach ($changes as $field => $value) {
+            if (!in_array($field, $allowedFields, true)) {
+                throw new \InvalidArgumentException("Field '{$field}' cannot be updated during assignment completion.");
+            }
+
+            $setClauses[] = "{$field} = :{$field}";
+            $parameters[":{$field}"] = $value;
+        }
+
+        $sql = sprintf(
+            "UPDATE work_orders
+            SET %s
+            WHERE assignment_control = :assignment_control
+            AND order_id = :order_id
+            AND driver_id = :driver_id
+            AND assignment_status = 'confirmed'
+            AND completed_at IS NULL
+            AND canceled_at IS NULL",
+            implode(', ', $setClauses)
+        );
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute($parameters);
+
+        if (!$executed) {
+            throw new \RuntimeException('Assignment completion changes could not be saved.');
+        }
+
+        if ($stmt->rowCount() > 0) {
+            return true;
+        }
+
+        // A zero row count may mean the values were already identical,
+        // so verify that the assignment is still eligible for completion.
+        $verifySql = "SELECT order_id FROM work_orders
+                    WHERE assignment_control = :assignment_control
+                    AND order_id = :order_id
+                    AND driver_id = :driver_id
+                    AND assignment_status = 'confirmed'
+                    AND completed_at IS NULL
+                    AND canceled_at IS NULL
+                    LIMIT 1";
+        $verifyStmt = $this->pdo->prepare($verifySql);
+
+        $verified = $verifyStmt->execute([
+            ':assignment_control' => $assignmentControl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ]);
+
+        if (!$verified) {
+            throw new \RuntimeException('Assignment completion state verification failed.');
+        }
+
+        return $verifyStmt->fetchColumn() !== false;
+    }
+
+    public function markCompleted(int $orderId, int $driverId, string $assignmentControl): bool {
+        $sql = "UPDATE work_orders
+                SET assignment_status = 'completed', completed_at = CURRENT_TIMESTAMP
+                WHERE assignment_control = :assignment_control
+                AND order_id = :order_id
+                AND driver_id = :driver_id
+                AND assignment_status = 'confirmed'
+                AND canceled_at IS NULL
+                AND completed_at IS NULL";
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':assignment_control' => $assignmentControl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Assignment completion update failed.');
+        }
+
+        if ($stmt->rowCount() !== 1) {
+            throw new \RuntimeException('Assignment could not be marked as completed.');
+        }
+
+        return true;
     }
 }
 
