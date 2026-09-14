@@ -878,6 +878,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         window.dispatchEvent(new CustomEvent('assignmentChanged', {
             detail: {
+                orderId: assignment.order_id,
                 assignmentControl: assignment.assignment_control,
                 requiresSignature: Number(assignment.signature_required) === 1
             }

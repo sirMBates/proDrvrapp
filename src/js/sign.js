@@ -1,7 +1,7 @@
 import { buildModal } from './appmodal.js';
 import 'jSignature';
 import { isEmergencyActive, syncEmergencyState } from './emergency-state.js';
-import { showFlashAlert } from './helpers.js';
+import { showFlashAlert, fetchDrvr } from './helpers.js';
 
 const signatureBoxBtn = document.querySelector('#signature-widget-buttons')
 const openSignBoxBtn = document.querySelector('#open-sign-box');
@@ -27,6 +27,7 @@ let pendingWarningFor = null;
 let signatureWarningTimer = null;
 let signature;
 let secondSignature;
+let currentSignatureOrderId = '';
 let currentSignatureAssignmentControl = '';
 
 async function blockIfEmergencyActive() {
@@ -130,6 +131,44 @@ function renderSignaturePreview(container, signatureData, altText) {
     previewHolder.appendChild(image);
 };
 
+async function createSignatureRequest(signatureType) {
+    if (!currentSignatureOrderId) {
+        console.error('[SIGNATURE REQUEST] No active order ID.');
+        return null;
+    }
+
+    if (!currentSignatureAssignmentControl) {
+        console.error('[SIGNATURE REQUEST] No active assignment control.');
+        return null;
+    }
+
+    const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
+    if (!drvrtokenInput?.value) {
+        console.error('[SIGNATURE REQUEST] CSRF token unavailable.');
+        return null;
+    }
+
+    try {
+        const data = await fetchDrvr('/signature-request', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': drvrtokenInput.value
+            },
+
+            body: JSON.stringify({
+                order_id: currentSignatureOrderId,
+                assignment_control: currentSignatureAssignmentControl,
+                signature_type: signatureType
+            })
+        });
+
+        return data.signatureData;
+    } catch (error) {
+        console.error('[SIGNATURE REQUEST ERROR]', error);
+        return null;
+    }
+};
+
 // Show signature-required warning modal once per assignment (integrated with MutationObserver)
 function showWarnModalForAssignment(assignmentControl, requiresSignature) {
     const assignmentKey = String(assignmentControl ?? '').trim();
@@ -216,10 +255,12 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
 // Listen for the event from jobhandler.js
 window.addEventListener('assignmentChanged', (e) => {
     const {
+        orderId,
         assignmentControl,
         requiresSignature
     } = e.detail ?? {};
 
+    currentSignatureOrderId = orderId ?? '';
     currentSignatureAssignmentControl = String(assignmentControl ?? '');
     showWarnModalForAssignment(currentSignatureAssignmentControl, Boolean(requiresSignature));
     if (requiresSignature) {
@@ -306,7 +347,18 @@ async function unConfirmPostSignHandler() {
 };
 
 // Open signature widget.
-$(openSignBoxBtn).on('click', () => {
+$(openSignBoxBtn).on('click', async () => {
+    if (await blockIfEmergencyActive()) {
+        return;
+    }
+
+    const signatureData = await createSignatureRequest('pre');
+
+    if (!signatureData) {
+        return;
+    }
+
+    console.log('[SIGNATURE DATA]', JSON.stringify(signatureData, null, 2));
     signBox.classList.remove('d-none');
 });   
 

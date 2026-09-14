@@ -20,6 +20,8 @@ $router->get('/getprofile', 'app/api/getprofile.php');
 $router->get('/getassignments', 'app/api/getassignments.php');
 $router->get('/getstatus', 'app/api/getstatus.php', true);
 $router->get('/emergencystatus', 'app/api/emergencystatus.php', true);
+$router->get('/signature', 'app/controllers/Pages/signature.php');
+$router->get('/signature-access', 'app/api/signature-access.php');
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
@@ -28,6 +30,7 @@ $router->post('/reset-password', 'app/controllers/Actions/finishpwdprocess.php')
 $router->post('/reset', 'app/controllers/Actions/reset.php');
 $router->post('/setstatus', 'app/api/setstatus.php');
 $router->post('/contact', 'app/controllers/Actions/contacthelp.php');
+$router->post('/signature-request', 'app/api/signature-request.php', true);
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');
