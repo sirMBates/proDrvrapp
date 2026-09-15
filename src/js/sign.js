@@ -1,5 +1,6 @@
 import { buildModal } from './appmodal.js';
 import 'jSignature';
+import QRCode from 'qrcode';
 import { isEmergencyActive, syncEmergencyState } from './emergency-state.js';
 import { showFlashAlert, fetchDrvr } from './helpers.js';
 
@@ -23,6 +24,8 @@ const confirmModal = document.querySelector('#confirm-modal');
 const confirmModalOptBtn = document.querySelector('#confirm-modal-confirm');
 const unconfirmModalOptBtn = document.querySelector('#confirm-modal-cancel');
 const signBtnContainer = signBox.childNodes[3];
+const signatureQrContainer = document.querySelector('#signature-qr-container');
+const signatureQr = document.querySelector('#signature-qr');
 let pendingWarningFor = null;
 let signatureWarningTimer = null;
 let signature;
@@ -358,8 +361,13 @@ $(openSignBoxBtn).on('click', async () => {
         return;
     }
 
-    console.log('[SIGNATURE DATA]', JSON.stringify(signatureData, null, 2));
-    signBox.classList.remove('d-none');
+    const signingUrl = new URL(signatureData.signing_path, window.location.origin).href;
+    const qrDataUrl = await QRCode.toDataURL(signingUrl);
+    signatureQr.src = qrDataUrl;
+    signatureQrContainer.classList.remove('d-none');
+
+    console.log('[QR DATA URL]', qrDataUrl);
+    //signBox.classList.remove('d-none');
 });   
 
 // show confirm dialog modal for signature handlers.

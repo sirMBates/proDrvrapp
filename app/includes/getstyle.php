@@ -55,6 +55,10 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='/dist/styles/profile.css'>\n";
                         break;
 
+                case "/signature":
+                        return;
+                        break;
+
                 case "/views/404.php":
                         return;
                         break;

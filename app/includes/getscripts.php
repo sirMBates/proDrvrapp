@@ -22,6 +22,10 @@ function getClockandMainOrNav($value) {
         case '/reset-password':
             return;
             break;
+
+        case '/signature':
+            return;
+            break;
         
         default:
             echo "<script type='module' src='/dist/js/clock.js'></script>\n";
@@ -85,6 +89,10 @@ function pageScripts($value) {
 
             case "/profile":
                 echo "<script type='module' src='/dist/js/profilehandler.js'></script>\n";
+                break;
+
+            case "/signature":
+                echo "<script type='module' src='/dist/js/signature-access.js'></script>\n";
                 break;
 
             default:

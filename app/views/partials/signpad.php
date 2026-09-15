@@ -8,6 +8,9 @@
     <button id="get-next-signature" class="btn btn-primary text-capitalize d-none" type="button"><i class="px-2 fa-solid fa-signature"></i>post-inspection signature</button>
     <button id="close-sign-pad" class="btn btn-primary text-capitalize d-none" type="button"><i class="px-2 fa-solid fa-signature"></i>complete signatures</button>
 </div>
+    <section id="signature-qr-container" class="container d-flex justify-content-center d-none">
+        <img id="signature-qr" alt="Scan QR code to provide customer signature">
+    </section>
     <section id="signaturecon" class="container-fluid d-flex flex-column align-items-center d-none overflow-x-auto">
         <div id="signaturePad"></div>
         <div class="container d-inline-flex justify-content-center">

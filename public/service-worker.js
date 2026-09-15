@@ -266,10 +266,11 @@ function isApprovedStaticAsset(url) {
         return false;
     }
 
-    return (
+    return STATIC_ASSETS.includes(url.pathname);
+    /*return (
         url.pathname.startsWith('/dist/') ||
         url.pathname === '/manifest.json'
-    );
+    );*/
 }
 
 
