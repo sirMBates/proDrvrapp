@@ -33,6 +33,9 @@ require "partials/head.php";
                 <label class="form-label fw-semibold">Customer Signature</label>
                 <div id="signature-orientation-hint" class="alert alert-info d-none" role="status">For a larger signing area, turn your device sideways.</div>
                 <div id="customer-signature-pad" class="border rounded bg-white"></div>
+                <div id="customer-signature-error" class="text-danger small mt-2 d-none" role="alert">
+                    Please provide your signature before submitting.
+                </div>
             </div>
 
             <div class="d-flex gap-2">

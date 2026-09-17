@@ -9,6 +9,7 @@ const signatureOrientationHint = document.getElementById('signature-orientation-
 const customerSignaturePad = document.getElementById('customer-signature-pad');
 const clearCustomerSignatureBtn = document.getElementById('clear-customer-signature');
 const submitCustomerSignatureBtn = document.getElementById('submit-customer-signature');
+const customerSignatureError = document.getElementById('customer-signature-error');
 
 function initializeCustomerSignaturePad() {
     if (!customerSignaturePad) {
@@ -20,6 +21,25 @@ function initializeCustomerSignaturePad() {
         height: '160px'
     });
 };
+
+clearCustomerSignatureBtn?.addEventListener('click', () => {
+    $(customerSignaturePad).jSignature('clear');
+    customerSignatureError?.classList.add('d-none');
+});
+
+submitCustomerSignatureBtn?.addEventListener('click', () => {
+    const signatureData = $(customerSignaturePad).jSignature('getData', 'native');
+    if (signatureData.length === 0) {
+        customerSignatureError?.classList.remove('d-none');
+        return;
+    }
+
+    customerSignatureError?.classList.add('d-none');
+
+    const [signatureMime, signatureBase64] = $(customerSignaturePad).jSignature('getData', 'image');
+
+    const signatureDataUrl = `data:${signatureMime},${signatureBase64}`;
+});
 
 function updateSignatureOrientationHint() {
     if (!signatureOrientationHint) {
