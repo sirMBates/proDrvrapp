@@ -10,6 +10,7 @@ const customerSignaturePad = document.getElementById('customer-signature-pad');
 const clearCustomerSignatureBtn = document.getElementById('clear-customer-signature');
 const submitCustomerSignatureBtn = document.getElementById('submit-customer-signature');
 const customerSignatureError = document.getElementById('customer-signature-error');
+const signatureToken = new URLSearchParams(window.location.search).get('token');
 
 function initializeCustomerSignaturePad() {
     if (!customerSignaturePad) {
@@ -27,7 +28,7 @@ clearCustomerSignatureBtn?.addEventListener('click', () => {
     customerSignatureError?.classList.add('d-none');
 });
 
-submitCustomerSignatureBtn?.addEventListener('click', () => {
+submitCustomerSignatureBtn?.addEventListener('click', async () => {
     const signatureData = $(customerSignaturePad).jSignature('getData', 'native');
     if (signatureData.length === 0) {
         customerSignatureError?.classList.remove('d-none');
@@ -39,6 +40,24 @@ submitCustomerSignatureBtn?.addEventListener('click', () => {
     const [signatureMime, signatureBase64] = $(customerSignaturePad).jSignature('getData', 'image');
 
     const signatureDataUrl = `data:${signatureMime},${signatureBase64}`;
+
+    try {
+        const response = await fetch('/signature', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: signatureToken,
+                signature: signatureDataUrl
+            })
+        });
+
+        const data = await response.json();
+        console.log('[SIGNATURE SUBMIT]', data);
+    } catch (error) {
+        console.error('[SIGNATURE SUBMIT ERROR]', error);
+    }
 });
 
 function updateSignatureOrientationHint() {
@@ -52,16 +71,13 @@ function updateSignatureOrientationHint() {
 };
 
 async function validateSignatureAccess() {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-
-    if (!token) {
+    if (!signatureToken) {
         showInvalidRequest('Signature token is missing.');
         return;
     }
 
     try {
-        const response = await fetch(`/signature-access?token=${encodeURIComponent(token)}`);
+        const response = await fetch(`/signature-access?token=${encodeURIComponent(signatureToken)}`);
         const data = await response.json();
 
         console.log('[SIGNATURE ACCESS]', data);

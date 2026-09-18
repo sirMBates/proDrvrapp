@@ -31,6 +31,7 @@ $router->post('/reset', 'app/controllers/Actions/reset.php');
 $router->post('/setstatus', 'app/api/setstatus.php');
 $router->post('/contact', 'app/controllers/Actions/contacthelp.php');
 $router->post('/signature-request', 'app/api/signature-request.php', true);
+$router->post('/signature', 'app/api/signature-submit.php');
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');
