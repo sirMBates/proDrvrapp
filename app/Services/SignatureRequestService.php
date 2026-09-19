@@ -92,8 +92,7 @@ class SignatureRequestService {
             throw new RuntimeException('Invalid signature request ID.');
         }
 
-        $this->signatureRequestRepository
-            ->markUsed($signatureRequestId);
+        $this->signatureRequestRepository->markUsed($signatureRequestId);
     }
 
     private function validateIdentity(int $orderId, int $driverId, string $assignmentControl): void {

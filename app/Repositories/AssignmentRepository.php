@@ -549,6 +549,85 @@ class AssignmentRepository {
 
         return true;
     }
+
+    public function updateSignatureChanges(int $orderId, int $driverId, string $assignmentControl, array $changes): bool {
+        if ($changes === []) {
+            return true;
+        }
+
+        $allowedFields = [
+            'pre_signature_path',
+            'pre_signature_hash',
+            'pre_signature_at',
+            'post_signature_path',
+            'post_signature_hash',
+            'post_signature_at',
+            'signature_status'
+        ];
+
+        foreach ($changes as $field => $value) {
+            if (!in_array($field, $allowedFields, true)) {
+                throw new \InvalidArgumentException("Field '{$field}' cannot be updated as signature data.");
+            }
+        }
+
+        $setClauses = [];
+        $parameters = [
+            ':assignment_control' => $assignmentControl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ];
+
+        foreach ($changes as $field => $value) {
+            $setClauses[] = "{$field} = :{$field}";
+            $parameters[":{$field}"] = $value;
+        }
+
+        $setClause = implode(', ', $setClauses);
+        $sql = "UPDATE work_orders
+                SET {$setClause}
+                WHERE assignment_control = :assignment_control
+                AND order_id = :order_id
+                AND driver_id = :driver_id
+                AND assignment_status = 'confirmed'
+                AND completed_at IS NULL
+                AND canceled_at IS NULL";
+        $stmt = $this->pdo->prepare($sql);
+
+        error_log('[SIGNATURE SQL PARAMS] ' . print_r($parameters, true));
+        error_log('[SIGNATURE SQL] ' . $sql);
+        $executed = $stmt->execute($parameters);
+        if (!$executed) {
+            throw new \RuntimeException('Signature changes could not be saved.');
+        }
+
+        if ($stmt->rowCount() > 0) {
+            return true;
+        }
+
+        $verifySql = "SELECT order_id
+                    FROM work_orders
+                    WHERE assignment_control = :assignment_control
+                    AND order_id = :order_id
+                    AND driver_id = :driver_id
+                    AND assignment_status = 'confirmed'
+                    AND completed_at IS NULL
+                    AND canceled_at IS NULL
+                    LIMIT 1";
+        $verifyStmt = $this->pdo->prepare($verifySql);
+
+        $verified = $verifyStmt->execute([
+            ':assignment_control' => $assignmentControl,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId
+        ]);
+
+        if (!$verified) {
+            throw new \RuntimeException('Signature state verification failed.');
+        }
+
+        return $verifyStmt->fetchColumn() !== false;
+    }
 }
 
 ?>
