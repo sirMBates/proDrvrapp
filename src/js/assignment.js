@@ -880,7 +880,8 @@ window.addEventListener('DOMContentLoaded', () => {
             detail: {
                 orderId: assignment.order_id,
                 assignmentControl: assignment.assignment_control,
-                requiresSignature: Number(assignment.signature_required) === 1
+                requiresSignature: Number(assignment.signature_required) === 1,
+                signatureStatus: assignment.signature_status
             }
         }));
 

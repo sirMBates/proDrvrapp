@@ -58,7 +58,23 @@ final class SignatureService {
         try {
             $signatureData = $this->storage->saveSignatures($signaturePayload);
 
-            $updated = $this->assignmentRepository->updateSignatureChanges($orderId, $driverId, $assignmentControl, $signatureData);
+            if ($signatureType === 'pre') {
+                $signatureChanges = [
+                    'pre_signature_path' => $signatureData['pre_signature_path'],
+                    'pre_signature_hash' => $signatureData['pre_signature_hash'],
+                    'pre_signature_at' => $signatureData['pre_signature_at'],
+                    'signature_status' => $signatureData['signature_status']
+                ];
+            } else {
+                $signatureChanges = [
+                    'post_signature_path' => $signatureData['post_signature_path'],
+                    'post_signature_hash' => $signatureData['post_signature_hash'],
+                    'post_signature_at' => $signatureData['post_signature_at'],
+                    'signature_status' => $signatureData['signature_status']
+                ];
+            }
+
+            $updated = $this->assignmentRepository->updateSignatureChanges($orderId, $driverId, $assignmentControl, $signatureChanges);
             if (!$updated) {
                 throw new \RuntimeException('Signature metadata could not be saved.');
             }

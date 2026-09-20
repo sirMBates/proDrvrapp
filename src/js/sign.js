@@ -48,11 +48,11 @@ async function blockIfEmergencyActive() {
     return false;
 }
 
-function restoreSignatureState(assignmentControl) {
+function restoreSignatureState(assignmentControl, signatureStatus) {
     const preSignature = localStorage.getItem(getSignatureStorageKey('pre', assignmentControl));
     const postSignature = localStorage.getItem(getSignatureStorageKey('post', assignmentControl));
 
-    if (!preSignature) {
+    if (signatureStatus === 'pending') {
         openSignBoxBtn?.classList.remove('d-none');
         getPostSignatureBtn?.classList.add('d-none');
         closeSignPadBtn?.classList.add('d-none');
@@ -172,6 +172,21 @@ async function createSignatureRequest(signatureType) {
     }
 };
 
+async function showSignatureQr(signatureType) {
+    const signatureData = await createSignatureRequest(signatureType);
+    if (!signatureData) {
+        return false;
+    }
+
+    const signingUrl = new URL(signatureData.signing_path, window.location.origin).href;
+    const qrDataUrl = await QRCode.toDataURL(signingUrl);
+
+    signatureQr.src = qrDataUrl;
+    signatureQrContainer.classList.remove('d-none');
+
+    return true;
+};
+
 // Show signature-required warning modal once per assignment (integrated with MutationObserver)
 function showWarnModalForAssignment(assignmentControl, requiresSignature) {
     const assignmentKey = String(assignmentControl ?? '').trim();
@@ -260,14 +275,15 @@ window.addEventListener('assignmentChanged', (e) => {
     const {
         orderId,
         assignmentControl,
-        requiresSignature
+        requiresSignature,
+        signatureStatus
     } = e.detail ?? {};
 
     currentSignatureOrderId = orderId ?? '';
     currentSignatureAssignmentControl = String(assignmentControl ?? '');
     showWarnModalForAssignment(currentSignatureAssignmentControl, Boolean(requiresSignature));
     if (requiresSignature) {
-        restoreSignatureState(currentSignatureAssignmentControl);
+        restoreSignatureState(currentSignatureAssignmentControl, signatureStatus);
     }
 });
 
@@ -355,19 +371,7 @@ $(openSignBoxBtn).on('click', async () => {
         return;
     }
 
-    const signatureData = await createSignatureRequest('pre');
-
-    if (!signatureData) {
-        return;
-    }
-
-    const signingUrl = new URL(signatureData.signing_path, window.location.origin).href;
-    const qrDataUrl = await QRCode.toDataURL(signingUrl);
-    signatureQr.src = qrDataUrl;
-    signatureQrContainer.classList.remove('d-none');
-
-    console.log('[QR DATA URL]', qrDataUrl);
-    //signBox.classList.remove('d-none');
+    await showSignatureQr('pre');
 });   
 
 // show confirm dialog modal for signature handlers.
@@ -381,24 +385,19 @@ getPostSignatureBtn.addEventListener('click', () => {
     $(unconfirmModalOptBtn).off('click.signature');
 
     // Yes: capture a different post-trip signature
-    $(confirmModalOptBtn).on('click.signature', () => {
+    $(confirmModalOptBtn).on('click.signature', async () => {
         modalInstance.hide();
-        signBox.classList.remove('d-none');
-        imgInspBox.classList.remove('d-none');
-        signpad.classList.remove('d-none');
-        signBtnContainer.classList.remove('d-none');
 
-        signBtn.classList.add('d-none');
-        secondSignBtn.classList.remove('d-none');
+        if (await blockIfEmergencyActive()) {
+            return;
+        }
 
-        //setTimeout(() => {
-            getPostSignatureBtn.classList.add('d-none');
-            closeSignPadBtn.classList.add('d-none');
-        //}, 1000);
-
-        $(signpad).jSignature('clear');
-        confirmPostSignHandler();
+        const qrCreated = await showSignatureQr('post');
+        if (!qrCreated) {
+            return;
+        }
         
+        //getPostSignatureBtn.classList.add('d-none');
     });
 
     // No: reuse the pre-trip signature
