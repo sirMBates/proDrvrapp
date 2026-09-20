@@ -70,7 +70,7 @@ function restoreSignatureState(assignmentControl, signatureStatus) {
 
     renderSignaturePreview(preInspSign, preSignature, 'Pre-trip signature');
 
-    if (!postSignature) {
+    if (signatureStatus === 'pre-trip-complete') {
         getPostSignatureBtn?.classList.remove('d-none');
         closeSignPadBtn?.classList.add('d-none');
 
