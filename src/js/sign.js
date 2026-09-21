@@ -1,7 +1,7 @@
 import { buildModal } from './appmodal.js';
 import 'jSignature';
 import QRCode from 'qrcode';
-import { isEmergencyActive, syncEmergencyState } from './emergency-state.js';
+import { syncEmergencyState } from './emergency-state.js';
 import { showFlashAlert, fetchDrvr } from './helpers.js';
 
 const signatureBoxBtn = document.querySelector('#signature-widget-buttons')
@@ -13,13 +13,14 @@ const signpad = document.querySelector('#signaturePad');
 const clearBtn = signpad.parentNode.childNodes[3].childNodes[1];
 const signBtn = signpad.parentNode.childNodes[3].childNodes[3];
 const secondSignBtn = signBtn.nextElementSibling;
-const imgInspBox = document.querySelector('#insp_img_box');
-const preInspSign = document.querySelector('#pre-trip');
-const postInspSign = document.querySelector('#post-trip');
+const signatureDisplay = document.querySelector('#signature-display');
+const preSignatureDisplay = document.querySelector('#pre-signature-display');
+const postSignatureDisplay = document.querySelector('#post-signature-display');
+const preSignatureImage = document.querySelector('#pre-signature-image');
+const postSignatureImage = document.querySelector('#post-signature-image');
 const warnModalMsg = buildModal;
 const warnModal = document.querySelector('#warn-modal');
 const warnModalBtn = warnModal.childNodes[1].childNodes[1].childNodes[5].childNodes[1];
-const confirmModalMsg = buildModal;
 const confirmModal = document.querySelector('#confirm-modal');
 const confirmModalOptBtn = document.querySelector('#confirm-modal-confirm');
 const unconfirmModalOptBtn = document.querySelector('#confirm-modal-cancel');
@@ -29,9 +30,9 @@ const signatureQr = document.querySelector('#signature-qr');
 let pendingWarningFor = null;
 let signatureWarningTimer = null;
 let signature;
-let secondSignature;
 let currentSignatureOrderId = '';
 let currentSignatureAssignmentControl = '';
+let currentLocalSignatureType = null;
 
 async function blockIfEmergencyActive() {
     const emergencyState = await syncEmergencyState();
@@ -46,42 +47,39 @@ async function blockIfEmergencyActive() {
     }
 
     return false;
-}
+};
 
-function restoreSignatureState(assignmentControl, signatureStatus) {
-    const preSignature = localStorage.getItem(getSignatureStorageKey('pre', assignmentControl));
-    const postSignature = localStorage.getItem(getSignatureStorageKey('post', assignmentControl));
+function restoreSignatureState(signatureStatus) {
+    $(openSignBoxBtn).prop('disabled', false);
+    signatureDisplay?.classList.add('d-none');
+    preSignatureDisplay?.classList.add('d-none');
+    postSignatureDisplay?.classList.add('d-none');
 
     if (signatureStatus === 'pending') {
         openSignBoxBtn?.classList.remove('d-none');
         getPostSignatureBtn?.classList.add('d-none');
         closeSignPadBtn?.classList.add('d-none');
-        imgInspBox?.classList.add('d-none');
 
         return;
     }
 
     openSignBoxBtn?.classList.add('d-none');
 
-    // Show preview area again after page reload.
-    imgInspBox?.classList.remove('d-none');
-
-    preInspSign?.classList.remove('d-none');
-
-    renderSignaturePreview(preInspSign, preSignature, 'Pre-trip signature');
-
     if (signatureStatus === 'pre-trip-complete') {
+        showPersistedSignature('pre');
+
+        openSignBoxBtn?.classList.add('d-none');
         getPostSignatureBtn?.classList.remove('d-none');
         closeSignPadBtn?.classList.add('d-none');
 
         return;
     }
 
-    postInspSign?.classList.remove('d-none');
-
-    renderSignaturePreview(postInspSign, postSignature, 'Post-trip signature');
-
-    finalizeSignatureInterface();
+    if (signatureStatus === 'complete') {
+        showPersistedSignature('pre');
+        showPersistedSignature('post');
+        finalizeSignatureInterface();
+    }
 };
 
 function finalizeSignatureInterface() {
@@ -95,8 +93,6 @@ function finalizeSignatureInterface() {
     getPostSignatureBtn?.classList.add('d-none');
     closeSignPadBtn?.classList.add('d-none');
 
-    imgInspBox?.classList.add('d-none');
-
     signBox?.classList.add('d-none');
 
     openSignBoxBtn?.classList.remove('d-none');
@@ -105,33 +101,39 @@ function finalizeSignatureInterface() {
 
 function getSignatureWarningKey(assignmentControl) {
     return `signature-warning-ack:${assignmentControl}`;
-}
+};
 
 function getSignatureStorageKey(type, assignmentControl) {
     return `${type}-signature:${assignmentControl}`;
 };
 
-function renderSignaturePreview(container, signatureData, altText) {
-    if (!container || !signatureData) {
+function getSignatureImageUrl(signatureType) {
+    if (!currentSignatureOrderId || !currentSignatureAssignmentControl) {
+        return null;
+    }
+
+    const params = new URLSearchParams({
+        orderId: currentSignatureOrderId,
+        assignmentControl: currentSignatureAssignmentControl,
+        type: signatureType
+    });
+
+    return `/signature-image?${params.toString()}`;
+};
+
+function showPersistedSignature(signatureType) {
+    const signatureImage = signatureType === 'pre' ? preSignatureImage : postSignatureImage;
+    const signatureContainer = signatureType === 'pre' ? preSignatureDisplay : postSignatureDisplay;
+    const imageUrl = getSignatureImageUrl(signatureType);
+
+    if (!signatureImage || !signatureContainer || !imageUrl) {
         return;
     }
 
-    let previewHolder = container.querySelector('.signature-preview');
+    signatureImage.src = imageUrl;
 
-    if (!previewHolder) {
-        previewHolder = document.createElement('div');
-        previewHolder.classList.add('signature-preview');
-
-        container.appendChild(previewHolder);
-    }
-
-    previewHolder.replaceChildren();
-
-    const image = document.createElement('img');
-    image.src = signatureData;
-    image.alt = altText;
-
-    previewHolder.appendChild(image);
+    signatureDisplay?.classList.remove('d-none');
+    signatureContainer.classList.remove('d-none');
 };
 
 async function createSignatureRequest(signatureType) {
@@ -178,6 +180,12 @@ async function showSignatureQr(signatureType) {
         return false;
     }
 
+    // QR and local capture are mutually exclusive.
+    signBox?.classList.add('d-none');
+    signpad?.classList.add('d-none');
+    signBtn?.classList.add('d-none');
+    signBtnContainer?.classList.add('d-none');
+
     const signingUrl = new URL(signatureData.signing_path, window.location.origin).href;
     const qrDataUrl = await QRCode.toDataURL(signingUrl);
 
@@ -187,9 +195,44 @@ async function showSignatureQr(signatureType) {
     return true;
 };
 
+function openLocalSignaturePad(signatureType) {
+    if (!['pre', 'post'].includes(signatureType)) {
+        console.error('[SIGNATURE] Invalid local signature type.');
+        return;
+    }
+
+    currentLocalSignatureType = signatureType;
+
+    // QR and local capture are mutually exclusive.
+    signatureQrContainer?.classList.add('d-none');
+    signBox?.classList.remove('d-none');
+
+    signpad?.classList.remove('d-none');
+    signBtn?.classList.remove('d-none');
+    signBtnContainer?.classList.remove('d-none');
+
+    secondSignBtn?.classList.add('d-none');
+
+    setTimeout(() => {
+        $(signpad).jSignature('clear');
+    }, 100);
+};
+
 // Show signature-required warning modal once per assignment (integrated with MutationObserver)
-function showWarnModalForAssignment(assignmentControl, requiresSignature) {
+function showWarnModalForAssignment(assignmentControl, requiresSignature, signatureStatus) {
     const assignmentKey = String(assignmentControl ?? '').trim();
+
+    if (signatureStatus === 'pre-trip-complete' || signatureStatus === 'complete') {
+        if (signatureWarningTimer !== null) {
+            clearTimeout(signatureWarningTimer);
+            signatureWarningTimer = null;
+        }
+
+        pendingWarningFor = null;
+        $(signatureBoxBtn).removeClass('d-none');
+
+        return;
+    }
 
     if (!requiresSignature || assignmentKey === '') {
         if (signatureWarningTimer !== null) {
@@ -202,8 +245,9 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
         $(signatureBoxBtn).addClass('d-none');
         signBox?.classList.add('d-none');
 
-        preInspSign?.classList.add('d-none');
-        postInspSign?.classList.add('d-none');
+        signatureDisplay?.classList.add('d-none');
+        preSignatureDisplay?.classList.add('d-none');
+        postSignatureDisplay?.classList.add('d-none');
 
         $(openSignBoxBtn).removeClass('d-none');
         $(getPostSignatureBtn).addClass('d-none');
@@ -270,7 +314,7 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature) {
     });
 };
 
-// Listen for the event from jobhandler.js
+// Listen for the event from assignment.js
 window.addEventListener('assignmentChanged', (e) => {
     const {
         orderId,
@@ -281,47 +325,11 @@ window.addEventListener('assignmentChanged', (e) => {
 
     currentSignatureOrderId = orderId ?? '';
     currentSignatureAssignmentControl = String(assignmentControl ?? '');
-    showWarnModalForAssignment(currentSignatureAssignmentControl, Boolean(requiresSignature));
+    showWarnModalForAssignment(currentSignatureAssignmentControl, Boolean(requiresSignature), signatureStatus);
     if (requiresSignature) {
-        restoreSignatureState(currentSignatureAssignmentControl, signatureStatus);
+        restoreSignatureState(signatureStatus);
     }
 });
-
-// On confirm modal btn, handle new recorded signature for post trip.
-function confirmPostSignHandler () {
-    imgInspBox.classList.remove('d-none');
-    signBtn.classList.add('d-none');
-    secondSignBtn.classList.remove('d-none');
-
-    $(secondSignBtn).off('click.postSignature').on('click.postSignature', async () => {
-        if (await blockIfEmergencyActive()) {
-            return;
-        }
-
-        if (!currentSignatureAssignmentControl) {
-            console.error('[SIGNATURE] No active assignment control is available.');
-            return;
-        }
-
-        secondSignature = $(signpad).jSignature("getData");
-        const postSignatureKey = getSignatureStorageKey('post', currentSignatureAssignmentControl);
-        localStorage.setItem(postSignatureKey, secondSignature);
-
-        postInspSign.classList.remove('d-none');
-
-        renderSignaturePreview(postInspSign, secondSignature, 'Post-trip signature');
-        setTimeout(() => {
-            $(signpad).jSignature('clear');
-        }, 500);
-        signpad.classList.add('d-none');
-        signBtn.classList.add('d-none');
-        secondSignBtn.classList.add('d-none');
-        signBtnContainer.classList.add('d-none');
-
-        getPostSignatureBtn.classList.add('d-none');
-        closeSignPadBtn.classList.remove('d-none');
-    });
-};
 
 // On unconfirm modal btn, handle signature already recorded for post trip.
 async function unConfirmPostSignHandler() {
@@ -329,49 +337,71 @@ async function unConfirmPostSignHandler() {
         return false;
     }
 
-    if (!currentSignatureAssignmentControl) {
-        console.error('[SIGNATURE] No active assignment control is available.');
+    if (!currentSignatureOrderId || !currentSignatureAssignmentControl) {
+        console.error('[SIGNATURE] No active assignment information is available.');
         return false;
     }
 
-    const preSignatureKey = getSignatureStorageKey('pre', currentSignatureAssignmentControl);
-    const postSignatureKey = getSignatureStorageKey('post', currentSignatureAssignmentControl);
-    const preSignature = localStorage.getItem(preSignatureKey);
-    if (!preSignature) {
-        console.error('[SIGNATURE] No pre-trip signature is available to reuse.');
+    const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
+    if (!drvrtokenInput?.value) {
+        console.error('[SIGNATURE] CSRF token unavailable.');
         return false;
     }
 
-    // Show the complete preview area.
-    signBox.classList.remove('d-none');
-    imgInspBox.classList.remove('d-none');
+    try {
+        const data = await fetchDrvr('/reuse-signature', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': drvrtokenInput.value
+            },
+            body: JSON.stringify({
+                order_id: currentSignatureOrderId,
+                assignment_control: currentSignatureAssignmentControl
+            })
+        });
 
-    // We are previewing, NOT capturing another signature.
-    signpad.classList.add('d-none');
-    signpad.nextElementSibling?.classList.add('d-none');
+        if (data.status !== 'success') {
+            return false;
+        }
 
-    signBtn.classList.add('d-none');
-    secondSignBtn.classList.add('d-none');
-    signBtnContainer.classList.add('d-none');
+        showPersistedSignature('pre');
+        showPersistedSignature('post');
 
-    // Make sure both signatures previews remain visible
-    preInspSign.classList.remove('d-none');
-    postInspSign.classList.remove('d-none');
-
-    renderSignaturePreview(preInspSign, preSignature, 'Pre-trip signature');
-    renderSignaturePreview(postInspSign, preSignature, 'Post-trip signature');
-    localStorage.setItem(postSignatureKey, preSignature);
-
-    return true;
+        finalizeSignatureInterface();
+        return true;
+    } catch (error) {
+        console.error('[SIGNATURE REUSE ERROR]', error);
+        return false;
+    }
 };
 
 // Open signature widget.
+// Choose how to collect the pre-inspection signature.
 $(openSignBoxBtn).on('click', async () => {
     if (await blockIfEmergencyActive()) {
         return;
     }
 
-    await showSignatureQr('pre');
+    buildModal.confirm('How would you like to collect the client signature?', 'QR Code', 'This Device');
+    const modalInstance = bootstrap.Modal.getOrCreateInstance(confirmModal);
+
+    // Remove handlers from previous openings.
+    $(confirmModalOptBtn).off('click.signature');
+    $(unconfirmModalOptBtn).off('click.signature');
+
+    // QR Code: client signs from their own device.
+    $(confirmModalOptBtn).on('click.signature', async () => {
+        modalInstance.hide();
+        await showSignatureQr('pre');
+    });
+
+    // This Device: client signs on the driver's device.
+    $(unconfirmModalOptBtn).on('click.signature', () => {
+        modalInstance.hide();
+        openLocalSignaturePad('pre');
+    });
+
+    modalInstance.show();
 });   
 
 // show confirm dialog modal for signature handlers.
@@ -385,38 +415,38 @@ getPostSignatureBtn.addEventListener('click', () => {
     $(unconfirmModalOptBtn).off('click.signature');
 
     // Yes: capture a different post-trip signature
-    $(confirmModalOptBtn).on('click.signature', async () => {
-        modalInstance.hide();
+    $(confirmModalOptBtn).on('click.signature', () => {
+        // Remove the handlers belonging to the first POST question.
+        $(confirmModalOptBtn).off('click.signature');
+        $(unconfirmModalOptBtn).off('click.signature');
 
-        if (await blockIfEmergencyActive()) {
-            return;
-        }
+        // Reconfigure the modal that's already open.
+        buildModal.confirm('How would you like to collect the client signature?', 'QR Code', 'This Device');
 
-        const qrCreated = await showSignatureQr('post');
-        if (!qrCreated) {
-            return;
-        }
-        
-        //getPostSignatureBtn.classList.add('d-none');
+        $(confirmModalOptBtn).off('click.signatureCapture');
+        $(unconfirmModalOptBtn).off('click.signatureCapture');
+
+        $(confirmModalOptBtn).on('click.signatureCapture', async () => {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(confirmModal);
+            modalInstance.hide();
+            await showSignatureQr('post');
+        });
+
+        $(unconfirmModalOptBtn).on('click.signatureCapture', () => {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(confirmModal);
+            modalInstance.hide();
+            openLocalSignaturePad('post');
+        });
     });
 
     // No: reuse the pre-trip signature
     $(unconfirmModalOptBtn).on('click.signature', async () => {
         modalInstance.hide();
 
-        // Reopen the signature interface so the previews are visible.
-        signBox.classList.remove('d-none');
-        imgInspBox.classList.remove('d-none');
-
         const postSignatureSaved = await unConfirmPostSignHandler();
         if (!postSignatureSaved) {
             return;
         }
-
-        setTimeout(() => {
-            getPostSignatureBtn.classList.add('d-none');
-            closeSignPadBtn.classList.remove('d-none');
-        }, 1000);
     });
 
     modalInstance.show();
@@ -451,29 +481,75 @@ $(signBtn).on('click', async () => {
         return;
     }
 
-    if (!currentSignatureAssignmentControl) {
-        console.error('[SIGNATURE] No active assignment control is available.');
+    if (!currentSignatureOrderId || !currentSignatureAssignmentControl) {
+        console.error('[SIGNATURE] No active assignment information is available.');
         return;
     }
 
-    signature = $(signpad).jSignature('getData');
-    const preSignatureKey = getSignatureStorageKey('pre', currentSignatureAssignmentControl);
-    localStorage.setItem(preSignatureKey, signature);
+    const signatureData = $(signpad).jSignature('getData');
+    if (!signatureData) {
+        console.error('[SIGNATURE] No signature data is available.');
+        return;
+    }
 
-    preInspSign.classList.remove('d-none');
-    renderSignaturePreview(preInspSign, signature, 'Pre-trip signature');
+    const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
+    if (!drvrtokenInput?.value) {
+        console.error('[SIGNATURE] CSRF token unavailable.');
+        return;
+    }
 
-    setTimeout(() => {
+    if (!['pre', 'post'].includes(currentLocalSignatureType)) {
+        console.error('[SIGNATURE] No valid local signature type is active.');
+        return;
+    }
+
+    try {
+        const data = await fetchDrvr('/driver-signature', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': drvrtokenInput.value
+            },
+            body: JSON.stringify({
+                order_id: currentSignatureOrderId,
+                assignment_control: currentSignatureAssignmentControl,
+                signature_type: currentLocalSignatureType,
+                signature: signatureData
+            })
+        });
+
+        if (data.status !== 'success') {
+            return;
+        }
+
         $(signpad).jSignature('clear');
-    }, 500);
 
-    secondSignBtn.classList.remove('d-none');
-    signpad.classList.add('d-none');
-    signBtn.classList.add('d-none');
-    signBtnContainer.classList.add('d-none');
+        signpad.classList.add('d-none');
+        signBtn.classList.add('d-none');
+        secondSignBtn.classList.add('d-none');
+        signBtnContainer.classList.add('d-none');
 
-    setTimeout(() => {
-        openSignBoxBtn.classList.add('d-none');
-        getPostSignatureBtn.classList.remove('d-none');
-    }, 1000);
+        if (currentLocalSignatureType === 'pre') {
+            showPersistedSignature('pre');
+
+            openSignBoxBtn?.classList.add('d-none');
+            getPostSignatureBtn?.classList.remove('d-none');
+
+            currentLocalSignatureType = null;
+
+            return;
+        }
+
+        if (currentLocalSignatureType === 'post') {
+            showPersistedSignature('pre');
+            showPersistedSignature('post');
+
+            currentLocalSignatureType = null;
+
+            finalizeSignatureInterface();
+
+            return;
+        }
+    } catch (error) {
+        console.error('[DRIVER PRE SIGNATURE ERROR]', error);
+    }
 });

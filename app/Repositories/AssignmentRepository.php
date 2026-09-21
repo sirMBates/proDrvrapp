@@ -139,7 +139,7 @@ class AssignmentRepository {
     }
 
     public function findByIdentity(int $orderId, int $driverId, string $assignmentControl): ?array {
-        $sql = "SELECT order_id, assignment_control, order_ref, driver_id, start_date_time, signature_required, assignment_status, confirmed_at, canceled_at, completed_at
+        $sql = "SELECT order_id, assignment_control, order_ref, driver_id, start_date_time, signature_required, pre_signature_path, pre_signature_hash, pre_signature_at, post_signature_path, post_signature_hash, post_signature_at, signature_status, assignment_status, confirmed_at, canceled_at, completed_at
                 FROM work_orders
                 WHERE order_id = :order_id
                 AND driver_id = :driver_id

@@ -11,6 +11,7 @@ const clearCustomerSignatureBtn = document.getElementById('clear-customer-signat
 const submitCustomerSignatureBtn = document.getElementById('submit-customer-signature');
 const customerSignatureError = document.getElementById('customer-signature-error');
 const signatureToken = new URLSearchParams(window.location.search).get('token');
+const signatureSuccess = document.querySelector('#signature-success');
 
 function initializeCustomerSignaturePad() {
     if (!customerSignaturePad) {
@@ -38,7 +39,6 @@ submitCustomerSignatureBtn?.addEventListener('click', async () => {
     customerSignatureError?.classList.add('d-none');
 
     const [signatureMime, signatureBase64] = $(customerSignaturePad).jSignature('getData', 'image');
-
     const signatureDataUrl = `data:${signatureMime},${signatureBase64}`;
 
     try {
@@ -55,6 +55,13 @@ submitCustomerSignatureBtn?.addEventListener('click', async () => {
 
         const data = await response.json();
         console.log('[SIGNATURE SUBMIT]', data);
+
+        if (response.ok && data.status === 'success') {
+            validSection?.classList.add('d-none');
+            signatureSuccess?.classList.remove('d-none');
+
+            return;
+        }
     } catch (error) {
         console.error('[SIGNATURE SUBMIT ERROR]', error);
     }

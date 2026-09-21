@@ -87,6 +87,39 @@ final class SignatureService {
             throw $e;
         }
     }
+
+    public function reusePreSignatureAsPost(int $orderId, int $driverId, string $assignmentControl): array {
+        $assignment = $this->assignmentRepository->findByIdentity($orderId, $driverId, $assignmentControl);
+        if ($assignment === null) {
+            throw new InvalidArgumentException('Assignment could not be found.');
+        }
+
+        if (!AssignmentValidator::requiresSignature($assignment)) {
+            throw new InvalidArgumentException('This assignment does not require a signature.');
+        }
+
+        $preSignaturePath = $assignment['pre_signature_path'] ?? null;
+
+        if (!is_string($preSignaturePath) || $preSignaturePath === '') {
+            throw new InvalidArgumentException('A pre-inspection signature is not available.');
+        }
+
+        $backup = $this->storage->createSignatureBackup($orderId, $assignmentControl);
+
+        try {
+            $signatureData = $this->storage->reusePreSignatureAsPost($preSignaturePath);
+
+            $this->assignmentRepository->updateSignatureChanges($orderId, $driverId, $assignmentControl, $signatureData);
+
+            $this->storage->discardSignatureBackup($backup);
+
+            return $signatureData;
+        } catch (\Throwable $e) {
+            $this->storage->rollbackSignatureBackup($backup);
+
+            throw $e;
+        }
+    }
 }
 
 

@@ -22,6 +22,7 @@ $router->get('/getstatus', 'app/api/getstatus.php', true);
 $router->get('/emergencystatus', 'app/api/emergencystatus.php', true);
 $router->get('/signature', 'app/controllers/Pages/signature.php');
 $router->get('/signature-access', 'app/api/signature-access.php');
+$router->get('/signature-image', 'app/api/signature-image.php', true);
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
@@ -32,6 +33,8 @@ $router->post('/setstatus', 'app/api/setstatus.php');
 $router->post('/contact', 'app/controllers/Actions/contacthelp.php');
 $router->post('/signature-request', 'app/api/signature-request.php', true);
 $router->post('/signature', 'app/api/signature-submit.php');
+$router->post('/reuse-signature', 'app/api/reuse-signature.php', true);
+$router->post('/driver-signature', 'app/api/driver-signature.php', true);
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');

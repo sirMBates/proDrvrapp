@@ -400,6 +400,39 @@ class Storage {
 
         return 'pending';
     }
-};
+
+    public function reusePreSignatureAsPost(string $preSignaturePath): array {
+        $preSignaturePath = trim($preSignaturePath);
+        if ($preSignaturePath === '') {
+            throw new \RuntimeException('Pre-inspection signature path is required.');
+        }
+
+        $preFile = $this->signatureRoot . DIRECTORY_SEPARATOR . $preSignaturePath;
+        if (!is_file($preFile) || !is_readable($preFile)) {
+            throw new \RuntimeException('Pre-inspection signature file could not be found.');
+        }
+
+        $directory = dirname($preFile);
+        $postFile = $directory . DIRECTORY_SEPARATOR . 'post-trip.png';
+
+        if (!copy($preFile, $postFile)) {
+            throw new \RuntimeException('Post-inspection signature could not be created.');
+        }
+
+        $postHash = hash_file('sha256', $postFile);
+        if ($postHash === false) {
+            @unlink($postFile);
+
+            throw new \RuntimeException('Post-inspection signature hash could not be created.');
+        }
+
+        return [
+            'post_signature_path' => dirname($preSignaturePath) . '/post-trip.png',
+            'post_signature_hash' => $postHash,
+            'post_signature_at' => date('Y-m-d H:i:s'),
+            'signature_status' => 'complete'
+        ];
+    }
+}
 
 ?>

@@ -45,6 +45,15 @@ require "partials/head.php";
         </div>
     </section>
 
+    <section id="signature-success" class="d-none text-center py-4" role="status">
+        <h1 class="h3">Signature Submitted!</h1>
+
+        <p class="mb-0">
+            Your signature was submitted successfully.
+            You can now close this window.
+        </p>
+    </section>
+
     <section id="signature-invalid" class="d-none">
         <h1>Signature Unavailable</h1>
         <p id="signature-error-message">
@@ -52,7 +61,6 @@ require "partials/head.php";
         </p>
     </section>
 </main>
-
 
 <?php
 require "partials/footer.php";
