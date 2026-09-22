@@ -1,6 +1,6 @@
-import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, highlightErrorElement, clearValidationState, focusFirstInvalid, setSubmittingState } from "./helpers.js";
+import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, focusFirstInvalid, setSubmittingState } from "./helpers.js";
 import { buildModal } from "./appmodal.js";
-import { normalizeDecimalValue, validateEditableElement, validateAssignmentTextarea, validateCrossFieldRules, validateCurrentAssignmentFields, appendHiddenFields, toInputDateTime, toDisplayDateTime, appendEditableFields } from "./assignment-form.js";
+import { normalizeDecimalValue, validateEditableElement, validateAssignmentTextarea, validateCurrentAssignmentFields, appendHiddenFields, toInputDateTime, toDisplayDateTime, appendEditableFields } from "./assignment-form.js";
 import { handleAssignmentFetch } from "./pwa.js";
 
 const primaryA = document.querySelector('#tableA');
@@ -16,10 +16,7 @@ const cancelBtn = document.querySelector('#cancel-job');
 const saveBtn = document.querySelector('#save-assignment');
 const completeBtn = document.querySelector('#submit-assignment');
 const drvrToken = document.querySelector('#drvrToken').value;
-const getDriver = fetchDrvr;
 const getAssignment = fetchDrvr;
-const confirmAssignment = fetchDrvr;
-const cancelAssignment = fetchDrvr;
 const dtHelper = viewableDateTimeHelper;
 const drvrAlert = showFlashAlert;
 const COMPLETED_ASSIGNMENTS_KEY = 'completedAssignmentData';
@@ -82,14 +79,6 @@ function broadcastAssignmentsUpdate(assignments) {
 function getCurrentAssignment() {
     // safe guard
     return (Array.isArray(assignments) && assignments.length > 0 && typeof currentIndex === 'number') ? assignments[currentIndex] : null;
-};
-
-function refreshCurrentAssignment() {
-    // re-render same index (uses showAssignment defined inside the DOMContentLoaded; we'll expose a small helper for that)
-    // we'll call window._refreshAssignmentFromOutside() (see below) which showAssignment will set up
-    if ( typeof window._refreshAssignmentFromOutside === 'function') {
-        window._refreshAssignmentFromOutside();
-    }
 };
 
 function clearStoredSignatures(assignmentControl) {
@@ -335,10 +324,6 @@ async function clearAssignmentUI() {
     $(completeBtn).prop('disabled', true);
 
     await fadeIn(assignmentCard); // smooth fade back in
-};
-
-function getCurrentOrderId() {
-    return document.querySelector("#tableA tbody tr td:nth-child(4)")?.textContent.trim() || '';
 };
 
 function getAssignmentStorageId(assignment) {
@@ -892,11 +877,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 signatureStatus: assignment.signature_status ?? ''
             });
         }
-
-        // Expose refresh hook for refreshCurrentAssignment() ( safe, single assignment re-render)
-        window._refreshAssignmentFromOutside = function() {
-            showAssignment(currentIndex);
-        };
     };
 
     const storedAssignments = localStorage.getItem("assignments");

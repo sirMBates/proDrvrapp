@@ -175,6 +175,69 @@ async function createSignatureRequest(signatureType) {
     }
 };
 
+function addLogoToQr(qrDataUrl) {
+    return new Promise((resolve, reject) => {
+        const qrImage = new Image();
+        const logoImage = new Image();
+
+        qrImage.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = qrImage.width;
+            canvas.height = qrImage.height;
+
+            // Draw QR code.
+            ctx.drawImage(qrImage, 0, 0);
+
+            logoImage.onload = () => {
+                const logoSize = canvas.width * 0.25;
+                const logoX = (canvas.width - logoSize) / 2;
+                const logoY = (canvas.height - logoSize) / 2;
+                const padding = canvas.width * 0.025;
+                const plateX = logoX - padding;
+                const plateY = logoY - padding;
+                const plateSize = logoSize + (padding * 2);
+                const radius = canvas.width * 0.025;
+
+                ctx.save();
+
+                ctx.fillStyle = '#F6F4F1';
+
+                ctx.beginPath();
+                ctx.roundRect(
+                    plateX,
+                    plateY,
+                    plateSize,
+                    plateSize,
+                    radius
+                );
+
+                ctx.fill();
+
+                ctx.restore();
+
+                ctx.drawImage(
+                    logoImage,
+                    logoX,
+                    logoY,
+                    logoSize,
+                    logoSize
+                );
+
+                resolve(canvas.toDataURL('image/png'));
+            };
+
+            logoImage.onerror = reject;
+
+            logoImage.src = '/dist/images-videos/logoandicons/prodriverlogo.png';
+        };
+
+        qrImage.onerror = reject;
+        qrImage.src = qrDataUrl;
+    });
+};
+
 async function showSignatureQr(signatureType) {
     const signatureData = await createSignatureRequest(signatureType);
     if (!signatureData) {
@@ -188,9 +251,19 @@ async function showSignatureQr(signatureType) {
     signBtnContainer?.classList.add('d-none');
 
     const signingUrl = new URL(signatureData.signing_path, window.location.origin).href;
-    const qrDataUrl = await QRCode.toDataURL(signingUrl);
+    const qrDataUrl = await QRCode.toDataURL(signingUrl, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 320,
+        color: {
+            dark: '#1D5283',
+            light: '#F6F4F1'
+        }
+    });
 
-    signatureQr.src = qrDataUrl;
+    const brandedQrDataUrl = await addLogoToQr(qrDataUrl);
+
+    signatureQr.src = brandedQrDataUrl;
     signatureQrContainer.classList.remove('d-none');
     startSignatureStatusPolling(signatureType);
 
