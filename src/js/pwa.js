@@ -235,6 +235,11 @@ function showUpdateToast() {
   };
 
 window.addEventListener('DOMContentLoaded', () => {
+  // The public customer signature page is not part of
+  // The ProDriver installation experience.
+  if (window.location.pathname === '/signature') {
+    return;
+  }
     // 🧩 Custom Install Prompt
     let deferredPrompt;
     const installBtn = document.createElement('button');

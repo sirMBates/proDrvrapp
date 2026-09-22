@@ -33,6 +33,7 @@ let signature;
 let currentSignatureOrderId = '';
 let currentSignatureAssignmentControl = '';
 let currentLocalSignatureType = null;
+let signatureStatusPollTimer = null;
 
 async function blockIfEmergencyActive() {
     const emergencyState = await syncEmergencyState();
@@ -191,6 +192,7 @@ async function showSignatureQr(signatureType) {
 
     signatureQr.src = qrDataUrl;
     signatureQrContainer.classList.remove('d-none');
+    startSignatureStatusPolling(signatureType);
 
     return true;
 };
@@ -216,6 +218,69 @@ function openLocalSignaturePad(signatureType) {
     setTimeout(() => {
         $(signpad).jSignature('clear');
     }, 100);
+};
+
+function stopSignatureStatusPolling() {
+    if (signatureStatusPollTimer !== null) {
+        clearInterval(signatureStatusPollTimer);
+        signatureStatusPollTimer = null;
+    }
+};
+
+function startSignatureStatusPolling(signatureType) {
+    stopSignatureStatusPolling();
+
+    const orderId = currentSignatureOrderId;
+    const assignmentControl = currentSignatureAssignmentControl;
+
+    if (!orderId || !assignmentControl || !['pre', 'post'].includes(signatureType)) {
+        return;
+    }
+
+    signatureStatusPollTimer = setInterval(async () => {
+        // The driver switched assignments while polling.
+        if (currentSignatureOrderId !== orderId || currentSignatureAssignmentControl !== assignmentControl) {
+            stopSignatureStatusPolling();
+            return;
+        }
+
+        const params = new URLSearchParams({
+            orderId,
+            assignmentControl
+        });
+
+        try {
+            const data = await fetchDrvr(`/signature-status?${params.toString()}`);
+            if (data.status !== 'success') {
+                return;
+            }
+
+            const signatureStatus = data.signatureData?.signature_status;
+
+            if (signatureType === 'pre' && signatureStatus === 'pre-trip-complete') {
+                stopSignatureStatusPolling();
+                signatureQrContainer?.classList.add('d-none');
+                showPersistedSignature('pre');
+
+                openSignBoxBtn?.classList.add('d-none');
+                getPostSignatureBtn?.classList.remove('d-none');
+
+                return;
+            }
+
+            if (signatureType === 'post' && signatureStatus === 'complete') {
+                stopSignatureStatusPolling();
+                signatureQrContainer?.classList.add('d-none');
+
+                showPersistedSignature('pre');
+                showPersistedSignature('post');
+
+                finalizeSignatureInterface();
+            }
+        } catch (error) {
+            console.error('[SIGNATURE STATUS POLL ERROR]', error);
+        }
+    }, 3000);
 };
 
 // Show signature-required warning modal once per assignment (integrated with MutationObserver)
