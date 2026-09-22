@@ -70,9 +70,8 @@ function renderHomeTable(assignments, fromSync = false) {
         activeAssignments.forEach(assignment => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                        <td>${assignment.first_name ?? ''} ${assignment.last_name ?? ''}</td>
+                        <td><a href="/assignments?assignment=${encodeURIComponent(assignment.assignment_control)}" class="link-primary fw-semibold">${assignment.order_id ?? ''}</a></td>
                         <td>${assignment.operator_id ?? ''}</td>
-                        <td>${assignment.order_id ?? ''}</td>
                         <td>${dtHelper(assignment.start_date_time, 'date')}</td>
                         <td>${dtHelper(assignment.start_date_time, 'time')}</td>
                         <td>${dtHelper(assignment.spot_time, 'time')}</td>

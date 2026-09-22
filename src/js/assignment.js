@@ -922,6 +922,16 @@ window.addEventListener('DOMContentLoaded', () => {
     */
     assignments = assignments.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
     currentIndex = assignments.length === 0 ? 0 : Math.min(currentIndex, assignments.length - 1);
+    const requestedAssignment = new URLSearchParams(window.location.search).get('assignment');
+
+    if (requestedAssignment) {
+        const requestedIndex = assignments.findIndex(assignment => String(assignment.assignment_control) === requestedAssignment);
+
+        if (requestedIndex >= 0) {
+            currentIndex = requestedIndex;
+        }
+    }
+
     sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
     if (assignments.length > 0) {
         pagination = createPaginationControls();
@@ -956,6 +966,15 @@ window.addEventListener('DOMContentLoaded', () => {
             assignments = operator.data.filter(assignment => !assignment.completed_at && !assignment.canceled_at);
             localStorage.setItem('assignments', JSON.stringify(assignments));
             currentIndex = assignments.length === 0 ? 0 : Math.min(currentIndex, assignments.length - 1);
+
+            if (requestedAssignment) {
+                const requestedIndex = assignments.findIndex(assignment => String(assignment.assignment_control) === requestedAssignment);
+
+                if (requestedIndex >= 0) {
+                    currentIndex = requestedIndex;
+                }
+            }
+
             sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
 
             if (assignments.length > 0) {
