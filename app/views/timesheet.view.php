@@ -75,18 +75,23 @@ include "partials/info-modal.php";
                                                                         <span class="fw-normal">Order ID</span>
                                                                 </th>
                                                                 <th scope="col">Destination<br>
-                                                                        <span class="fw-normal">(To/From)</span>
+                                                                        <span class="fw-normal">(From/To)</span>
                                                                 </th>
                                                                 <th scope="col">Vehicle ID<br>
                                                                         <span class="fw-normal">Bus #</span>
                                                                 </th>
-                                                                <th scope="col">Date</th>
+                                                                <th scope="col">Garage Report Date</th>
                                                                 <th scope="col">Spot Time</th>
                                                                 <th scope="col">Drop Time</th>
-                                                                <th scope="col">Total Hours</th>
+                                                                <th scope="col">Job Details</th>
+                                                                <th scope="col">End of Duty<br>
+                                                                        <span class="fw-normal">(Date/Time)</span>
+                                                                </th>
+                                                                <th scope="col">Total Job Hours</th>
+                                                                <th scope="col">Total Shift Hours</th>
                                                                 <th scope="col">Tolls</th>
                                                                 <th scope="col">Tip</th>
-                                                                <th scope="col">Amount Paid</th>
+                                                                <th scope="col">Job Amount Paid</th>
                                                         </tr>
                                                 </thead>
 
