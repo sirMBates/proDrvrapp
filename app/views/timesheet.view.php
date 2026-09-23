@@ -3,81 +3,148 @@ require "partials/head.php";
 require "partials/banner.php";
 include "partials/info-modal.php";
 ?>
-<main class="container-fluid p-3 d-flex flex-column">
-        <form id="" action="" method="POST">                        
-                <div id="tsheet-data" class="card mb-auto">
-                        <div class="card-header bg-besttrailsclr">
-                                <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>time sheet information</h3>
-                        </div>
-                        <div class="card-body overflow-x-auto">
-                                <table class="table m-auto" style="width: 1300px;">
-                                        <thead class="table-info text-capitalize">
-                                                <tr>
-                                                        <th scope="col">order#/conf#</th>
-                                                        <th scope="col">destination</th>
-                                                        <th scope="col">vehicle id</th>
-                                                        <th scope="col">garage report<br>(date/time)</th>
-                                                        <th scope="col">spot time</th>
-                                                        <th scope="col">drop time</th>
-                                                        <th scope="col">job details</th>
-                                                        <th scope="col">end of duty<br>(date/time)</th>
-                                                        <th scope="col">total shift hours</th>
-                                                        <th scope="col">tolls</th>
-                                                        <th scope="col">tip</th>
-                                                        <th scope="col">job order pay</th>
-                                                </tr>
-                                        </thead>
-                                        <tbody class="table-group-divider">
-                                                <tr>
-                                                        <td scope="row" class="editable-data" data-inputs='[{"type":"number"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"textarea"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"number"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"datetime-local"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"time"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"time"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"textarea"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"datetime-local"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"text"}]'></td>
-                                                        <td class="editable-data" data-inputs='[{"type":"checkbox"}]'>
-                                                                <div class="form-check">
-                                                                        <input id="tolls-yes-box" class="form-check-input" type="checkbox" value="yes" aria-label="yes-checkbox">
-                                                                        <label class="form-check-label" for="tolls-yes-box">Yes</label>
-                                                                </div>
-                                                                <div class="form-check">
-                                                                        <input id="tolls-no-box" class="form-check-input" type="checkbox" value="no" aria-label="no-checkbox">
-                                                                        <label class="form-check-label" for="tolls-no-box">No</label>
-                                                                </div>
-                                                        </td>
-                                                        <td class="editable-data" data-inputs='[{"type":"checkbox"}]'>
-                                                                <div class="form-check">
-                                                                        <input id="tip-yes-box" class="form-check-input" type="checkbox" value="yes" aria-label="yes-checkbox">
-                                                                        <label class="form-check-label" for="tip-yes-box">Yes</label>
-                                                                </div>
-                                                                <div class="form-check">
-                                                                        <input id="tip-no-box" class="form-check-input" type="checkbox" value="no" aria-label="no-checkbox">
-                                                                        <label class="form-check-label" for="tip-no-box">No</label>
-                                                                </div>
-                                                        </td>
-                                                        <td class="editable-data" data-inputs='[{"type":"text"}]'></td>
-                                                </tr>
-                                        </tbody>
-                                </table>
-                        </div>
-                        <div class="card-footer d-flex flex-column align-items-center">
-                                <div class="row my-2 col-lg-10">                        
-                                        <button id="insert-info" type="button" name="insertinfo" class="text-capitalize btn btn-lg btn-outline-primary">add info</button>
-                                </div>
-                                <div class="row my-2 col-lg-10">
-                                        <button id="update-info" type="button" name="updateinfo" class="text-capitalize btn btn-lg btn-outline-primary">update & save</button>
-                                </div>
-                                <div class="row my-2 col-lg-10">
-                                        <button id="submit-info" type="button" name="submitinfo" class="text-capitalize btn btn-lg btn-outline-primary" disabled>submit</button>
-                                </div>
+
+<main class="container-fluid p-3">
+        <input id="drvrToken" type="hidden" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+        <section id="timesheet" class="card" aria-labelledby="timesheet-title">
+                <div class="card-header bg-besttrailsclr text-light">
+                        <div class="d-flex justify-content-between align-items-center gap-3">
+                                <h1 id="timesheet-title" class="h3 m-0 text-capitalize">
+                                        Time Sheet Information
+                                </h1>
+
+                                <button type="button" id="notifyinfo" class="btn btn-link p-0 text-light" aria-label="View timesheet information"><i class="fa-solid fa-circle-info fs-3" aria-hidden="true"></i>
+                                </button>
                         </div>
                 </div>
-                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-        </form>
+
+                <div class="card-body">
+                        <header class="mb-4">
+                                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                                        <div>
+                                                <p class="text-uppercase small mb-1">
+                                                        Pay Period
+                                                </p>
+
+                                                <h2 id="timesheet-period" class="h5 mb-1">
+                                                        Loading pay period…
+                                                </h2>
+
+                                                <span id="timesheet-status" class="badge text-bg-secondary">
+                                                        Loading
+                                                </span>
+                                        </div>
+
+                                        <nav class="d-flex gap-2" aria-label="Timesheet pay periods">
+                                                <button type="button" id="previous-timesheet" class="btn btn-outline-secondary">
+                                                        Previous
+                                                </button>
+
+                                                <button type="button" id="next-timesheet" class="btn btn-outline-secondary">
+                                                        Next
+                                                </button>
+                                        </nav>
+                                </div>
+
+                                <div id="timesheet-notice" class="alert alert-warning mt-3 mb-0 d-none" role="alert"></div>
+                        </header>
+
+                        <div id="timesheet-loading" class="py-5 text-center" role="status">
+                                <div class="spinner-border text-primary" aria-hidden="true"></div>
+
+                                <p class="mt-2 mb-0">Loading timesheet…</p>
+                        </div>
+
+                        <div id="timesheet-error" class="alert alert-danger d-none" role="alert"></div>
+
+                        <div id="timesheet-empty" class="text-center py-5 d-none">
+                                <i class="fa-regular fa-calendar-xmark fs-1 mb-3" aria-hidden="true"></i>
+
+                                <p class="mb-0">
+                                        No completed assignments are recorded for this pay period.
+                                </p>
+                        </div>
+
+                        <div id="timesheet-content" class="d-none">
+                                <!-- Desktop and larger-screen presentation -->
+                                <div id="timesheet-table-container" class="table-responsive d-none d-lg-block">
+                                        <table class="table table-striped align-middle mb-0">
+                                                <thead class="table-info text-capitalize">
+                                                        <tr>
+                                                                <th scope="col">Order#<br>
+                                                                        <span class="fw-normal">Order ID</span>
+                                                                </th>
+                                                                <th scope="col">Destination<br>
+                                                                        <span class="fw-normal">(To/From)</span>
+                                                                </th>
+                                                                <th scope="col">Vehicle ID<br>
+                                                                        <span class="fw-normal">Bus #</span>
+                                                                </th>
+                                                                <th scope="col">Date</th>
+                                                                <th scope="col">Spot Time</th>
+                                                                <th scope="col">Drop Time</th>
+                                                                <th scope="col">Total Hours</th>
+                                                                <th scope="col">Tolls</th>
+                                                                <th scope="col">Tip</th>
+                                                                <th scope="col">Amount Paid</th>
+                                                        </tr>
+                                                </thead>
+
+                                                <tbody id="timesheet-entries" class="table-group-divider"></tbody>
+                                        </table>
+                                </div>
+
+                                <!-- Phone and narrow-screen presentation -->
+                                <div id="timesheet-mobile-entries" class="accordion d-lg-none"></div>
+                        </div>
+
+                        <section id="timesheet-summary" class="border rounded p-3 mt-4 d-none" aria-labelledby="timesheet-summary-title">
+                                <h2 id="timesheet-summary-title" class="h5">
+                                        Weekly Summary
+                                </h2>
+
+                                <dl class="row mb-0">
+                                        <dt class="col-7">Completed assignments</dt>
+                                        <dd id="timesheet-assignment-count" class="col-5 text-end">
+                                                —
+                                        </dd>
+
+                                        <dt class="col-7">Total hours</dt>
+                                        <dd id="timesheet-total-hours" class="col-5 text-end">
+                                                —
+                                        </dd>
+                                </dl>
+                        </section>
+                </div>
+
+                <div class="card-footer">
+                        <div id="timesheet-edit-actions" class="d-flex flex-column flex-md-row justify-content-end gap-3">
+                                <button id="save-timesheet" type="button" class="btn btn-lg btn-outline-primary" disabled>
+                                        Save &amp; Lock
+                                </button>
+
+                                <button id="review-timesheet" type="button" class="btn btn-lg bg-besttrailsclr text-light" disabled>
+                                        Review &amp; Submit
+                                </button>
+                        </div>
+
+                        <div id="timesheet-document-actions" class="d-flex flex-column flex-md-row justify-content-end gap-3 d-none">
+                                <button id="view-timesheet-pdf" type="button" class="btn btn-outline-primary">
+                                        View PDF
+                                </button>
+
+                                <button id="download-timesheet-pdf" type="button" class="btn btn-outline-primary">
+                                        Download PDF
+                                </button>
+
+                                <button id="print-timesheet-pdf" type="button" class="btn btn-outline-primary">
+                                        Print
+                                </button>
+                        </div>
+                </div>
+        </section>
 </main>
-<?php
-        require "partials/footer.php";
+
+<?php 
+require "partials/footer.php";
 ?>
