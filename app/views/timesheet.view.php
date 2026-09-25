@@ -7,7 +7,7 @@ include "partials/info-modal.php";
 <main class="container-fluid p-3">
         <input id="drvrToken" type="hidden" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
         <section id="timesheet" class="card" aria-labelledby="timesheet-title">
-                <div class="card-header bg-besttrailsclr text-light">
+                <div class="card-header bg-prodriverclr text-light">
                         <div class="d-flex justify-content-between align-items-center gap-3">
                                 <h1 id="timesheet-title" class="h3 m-0 text-capitalize">
                                         Time Sheet Information
@@ -128,7 +128,7 @@ include "partials/info-modal.php";
                                         Save &amp; Lock
                                 </button>
 
-                                <button id="review-timesheet" type="button" class="btn btn-lg bg-besttrailsclr text-light" disabled>
+                                <button id="review-timesheet" type="button" class="btn btn-lg bg-prodriverclr text-light" disabled>
                                         Review &amp; Submit
                                 </button>
                         </div>

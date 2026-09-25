@@ -1,5 +1,5 @@
 <div class="banner-nav w-100 sticky-top">
-        <nav class="navbar navbar-expand-lg navbar-dark w-100 banner-main-nav">
+        <nav class="navbar navbar-expand-lg navbar-dark w-100 banner-main-nav bg-prodriverclr">
                 <div class="container-fluid">
                         <a class="navbar-brand m-0" data-bs-toggle="offcanvas" role="button" aria-controls="drivermenu" href="#drivermenu"><img src="../../dist/images-videos/logoandicons/prodrvr-bus-icon.png" alt="N/A" width="50" height="50" class="d-inline-block align-text-center"></a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

@@ -5,7 +5,7 @@ include "partials/info-modal.php";
 ?>
     <main class="container-fluid">
         <div class="card my-3" style="width: 100%;">
-            <div class="card-header bg-besttrailsclr text-btd-white-floral">
+            <div class="card-header bg-prodriverclr text-btd-white-floral">
                 <h3 class="text-capitalize text-center"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>send email</h3>
             </div>
             <div class="card-body">

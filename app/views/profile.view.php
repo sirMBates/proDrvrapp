@@ -17,7 +17,7 @@ include "partials/info-modal.php";
                         <!-- Full Name -->
                         <div class="col-12">
                                 <div class="card field-card">
-                                        <div class="card-header bg-besttrailsclr d-flex justify-content-between align-items-center">
+                                        <div class="card-header bg-prodriverclr d-flex justify-content-between align-items-center">
                                                 <h2 class="text-capitalize text-light mb-0">Profile Information</h2>
 
                                                 <button type="button" id="notifyinfo" class="btn btn-light btn-sm">

@@ -4,6 +4,7 @@ import { fetchDrvr, showFlashAlert, getCurrentView } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
 import { syncEmergencyState } from './emergency-state.js';
 import { Validation } from './validation.js';
+import { ConnectionIndicator } from './connectionindicator.js';
 
 const curView = getCurrentView();
 const menuProfileImage = document.querySelector('#menuProfileImage');
@@ -11,20 +12,19 @@ const menuProfileInput = document.querySelector('#menuProfileInput');
 const defaultProfileImage = "../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png";
 const mainMenuItems = document.querySelectorAll("#navbarSupportedContent .nav-link");
 const driverMenu = document.querySelector(".offcanvas-body");
-let isDarkMode;
 const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn.nextElementSibling;
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
-const changeStatusCon = document.querySelector('#driver-status-contlr');
 const logoutLink = driverMenu.querySelector('#logout-link');
-const emergencyBtn = document.querySelectorAll('.status-emergency');
-let isActiveEmergency;
-const emergencyBackground = document.querySelectorAll('.bg-besttrailsclr');
-const DSC = document.querySelectorAll('.set-status'); // (D)river(S)tatus(C)ontrol :)
+const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = fetchDrvr;
 const drvrToken = document.getElementById('drvrToken').value;
 const drvrAlert = showFlashAlert;
-const statusMsg = document.querySelector('#statusMessage');
+const connectionIndicatorElement = document.querySelector('#connection-indicator');
+let connectionIndicator;
+let isDarkMode;
+let driverStatus;
+let statusMsg;
 
 // Load theme on page load
 window.addEventListener('load', async () => {
@@ -43,28 +43,11 @@ window.addEventListener('load', async () => {
         }
         updateThemeIndicator();
 
-        if (sessionStorage.getItem('status') === null && localStorage.getItem('status') === null) {
-                sessionStorage.setItem('status', 'Official');
-                let startUpStatus = sessionStorage.getItem('status');
-                statusMsg.textContent = startUpStatus;                
-        } else if (localStorage.getItem('status') !== null) {
-                sessionStorage.clear;
-                let drvrStatus = localStorage.getItem('status');
-                statusMsg.textContent = drvrStatus;
-        } else if (sessionStorage.getItem('status') !== null && localStorage.getItem('status') === null) {
-                let drvrStatus = sessionStorage.getItem('status');
-                statusMsg.textContent = drvrStatus;
-        }
-
         const emergencyState = await syncEmergencyState();
         if (emergencyState === true) {
                 applyEmergencyUiState(true);
         } else if (emergencyState === false) {
                 applyEmergencyUiState(false);
-        }
-
-        if (curView !== '/') {
-                $(changeStatusCon).removeClass('d-none');
         }
 }, false);
 
@@ -126,7 +109,67 @@ $(document).ready(() => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-        getDriver("https://prodriver.local/getprofile", {
+        const statusButtons = document.querySelectorAll('#driver-status-controls .set-status');
+        statusMsg = document.querySelector('#driver-status-dock #statusMessage');
+        const tokenElement = document.getElementById('drvrToken');
+
+        if (statusButtons.length === 0 || !statusMsg || !tokenElement?.value) {
+                console.error('Driver status dock initialization failed.', {
+                        buttonCount: statusButtons.length,
+                        statusDisplayFound: Boolean(statusMsg),
+                        tokenFound: Boolean(tokenElement?.value)
+                });
+
+                return;
+        }
+
+        // The status controls and the connection to the DB api
+        driverStatus = new ChangeStatus(statusButtons, tokenElement.value, statusMsg);
+        driverStatus.init();
+
+        connectionIndicator = new ConnectionIndicator(connectionIndicatorElement, {
+                checkUrl: '/connection-check',
+                checkInterval: 30000,
+                timeout: 5000
+        });
+        connectionIndicator.init();
+
+        getDriver('/getstatus', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': drvrToken
+                }
+        })
+        .then(result => {
+                if (result?.status !== 'success') {
+                        throw new Error(result?.message || 'Current status could not be loaded.');
+                }
+
+                const currentStatus = result.data?.currentStatus ?? null;
+
+                driverStatus.setConfirmedStatus(currentStatus?.driverStatus || null);
+        })
+        .catch(error => {
+                console.error('Unable to load current driver status:', error);
+
+                /*
+                * Cache is only a temporary display fallback.
+                * It does not replace the database.
+                */
+                const cachedStatus = localStorage.getItem('status');
+
+                if (cachedStatus) {
+                        driverStatus.setConfirmedStatus(cachedStatus);
+                        showFlashAlert('info', 'Showing your last known status.');
+                        return;
+                }
+
+                statusMsg.textContent = 'Current status: Unavailable';
+        });
+
+        getDriver('/getprofile', {
                 method: 'GET', 
                 mode: 'cors',
                 credentials: 'include',
@@ -172,9 +215,6 @@ if (menuProfileInput && menuProfileImage) {
     });
 };
 
-// The status controls and the connection to the DB api
-const driverStatus = new ChangeStatus(DSC, drvrToken, statusMsg);
-driverStatus.init();
 window.addEventListener('driver-status-updated', (e) => {
         const statusRecord = e.detail;
 
@@ -185,20 +225,17 @@ window.addEventListener('driver-status-updated', (e) => {
 );
 
 function applyEmergencyUiState(active) {
-    isActiveEmergency = active;
-
     if (active) {
         localStorage.setItem('isActiveEmergency', 'true');
 
         emergencyBackground.forEach(background => {
-            background.classList.remove('bg-besttrailsclr');
+            background.classList.remove('bg-prodriverclr');
             background.classList.add('bg-danger');
         });
 
         if (statusMsg) {
-                statusMsg.classList.remove('text-btd-white-floral');
-                statusMsg.classList.add('text-danger');
-                statusMsg.textContent = 'Emergency';
+            statusMsg.classList.add('text-danger');
+            statusMsg.textContent = 'Current status: Emergency';
         }
 
         return;
@@ -208,12 +245,11 @@ function applyEmergencyUiState(active) {
 
     emergencyBackground.forEach(background => {
         background.classList.remove('bg-danger');
-        background.classList.add('bg-besttrailsclr');
+        background.classList.add('bg-prodriverclr');
     });
 
     if (statusMsg) {
         statusMsg.classList.remove('text-danger');
-        statusMsg.classList.add('text-btd-white-floral');
     }
 };
 

@@ -4,7 +4,7 @@ require_once "partials/banner.php";
 ?>
 <main class="container-fluid m-2 p-2">
     <div class="card">
-        <div class="card-header bg-besttrailsclr">
+        <div class="card-header bg-prodriverclr">
             <h2 class="text-capitalize text-center text-light">tick counter</h2>
         </div>
         <div class="card-body d-flex flex-column justify-content-center align-items-center">

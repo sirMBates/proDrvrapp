@@ -10,7 +10,7 @@
     <main class="container-fluid d-flex justify-content-center">
         <div class="card mb-auto" style="width: 35rem; margin-top: 5% !important;">
             <form id="resetpw" action="" method="POST" class="needs-validation" novalidate>
-                <div class="card-header bg-besttrailsclr text-btd-white-off">
+                <div class="card-header bg-prodriverclr text-btd-white-off">
                         <p class='h3 text-center text-capitalize'>complete password reset</p>
                 </div>
                 <p class="fs-4 mt-1 text-center text-besttrailsclr roboto-condensed"><u>Use this form to complete your reset.</u></p>

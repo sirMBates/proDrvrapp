@@ -14,8 +14,6 @@ $alert = new Core\Flash();
                 <div id="alert-container" class="flex-grow-1 d-flex justify-content-center align-items-center">
                         <?php include_once base_path("app/views/partials/flashmessage.php");?>
                 </div>
-
-                <div id="statusMessage" class="z-10 text-btd-white-floral fs-3 align-self-start mt-2"></div>
         </div>
 <?php
         require "info-nav.php";

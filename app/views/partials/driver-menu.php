@@ -1,5 +1,5 @@
 <div id="drivermenu" class="offcanvas offcanvas-start" tabindex="-1" aria-labelledby="drivermenuLabel">
-        <div class="offcanvas-header bg-besttrailsclr">
+        <div class="offcanvas-header bg-prodriverclr">
                 <div id="profilecon" style="width: 60px; height: 60px;" class="border border-2 border-primary rounded d-inline-block me-2">                        
                         <label for="menuProfileInput"><img id="menuProfileImage" src="../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="mx-1 my-1"></label>
                         <input type="file" id="menuProfileInput" accept="image/jpg, image/jpeg, image/png, image/gif">
@@ -15,17 +15,6 @@
                                 <li class="dropdown-item"><a href="tel:646-281-0778"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
                                 <li class="dropdown-item"><a href="tel:917-567-8218"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
                                 <li class="dropdown-item"><a href="tel:646-301-5715"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
-                        </ul>
-                </div>
-                <div id="driver-status-contlr" class="dropdown mt-3 d-none">                        
-                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="px-2 fa-solid fa-square-poll-horizontal"></i>Switch Status</button>
-                        <ul class="dropdown-menu">
-                                <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-enroute-garage" role="button"><i class="px-2 fa-solid fa-road"></i>Enroute/Yard</a></li>
-                                <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-checkedin-garage" role="button"><i class="px-2 fa-solid fa-map-pin"></i>At Yard</a></li>
-                                <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-onlocation" role="button"><i class="px-2 fa-solid fa-location-dot"></i>At Location</a></li>
-                                <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-working-assignment" role="button"><i class="px-2 fa-solid fa-clipboard"></i>On Assignment</a></li>
-                                <li><a href='#' class="dropdown-item text-btd-blue-dodger set-status status-end-shift" role="button"><i class="px-2 fa-solid fa-person-running"></i>End Shift</a></li>
-                                <li><a href='#' class="dropdown-item btn text-danger text-center set-status status-emergency" role="button">Emergency</a></li>
                         </ul>
                 </div>
                 <!--<div class="dropdown mt-3 d-none">

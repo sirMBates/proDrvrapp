@@ -7,7 +7,7 @@ include "partials/custom-modal.php";
 <main class="container-fluid mb-1 d-flex flex-column align-items-center">
         <button id="birthday-theme-btn" type="button" class="btn-sm position-absolute rounded-1 z-3 me-2 end-0 text-capitalize d-none"><i class="me-2 fa-solid fa-cake-candles"></i>happy birthday</button>
         <div class="card mb-auto w-100">
-                <div class="card-header bg-besttrailsclr text-btd-white-off">
+                <div class="card-header bg-prodriverclr text-btd-white-off">
                         <h3 class='text-center text-capitalize'><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>driver information</h3>
                 </div>
                 <div class="card-body overflow-x-auto">
@@ -43,18 +43,6 @@ include "partials/custom-modal.php";
                                         </div>
                                 </form>
                         </table>
-                </div>
-                <div class="card-footer d-inline-flex justify-content-center">
-                        <div class="my-2 overflow-x-auto">
-                                <div id="update-status-con" class="mx-auto btn-group btn-group-lg" role="group" aria-label="Large button group">
-                                        <button type="button" class="btn btn-outline-primary set-status status-enroute-garage">Enroute to Garage/Yard</button>
-                                        <button type="button" class="btn btn-outline-primary set-status status-checkedin-garage">Check-In Garage/Yard</button>
-                                        <button type="button" class="btn btn-outline-primary set-status status-onlocation">Arrived at Location</button>
-                                        <button type="button" class="btn btn-outline-primary set-status status-working-assignment">On Assignment</button>
-                                        <button type="button" class="btn btn-outline-primary set-status status-end-shift">End Shift</button>
-                                        <button type="button" class="btn btn-danger set-status status-emergency">Emergency</button>
-                                </div>
-                        </div>
                 </div>
         </div>
         <section class="dashboard-preview-grid">

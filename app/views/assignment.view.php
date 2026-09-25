@@ -8,7 +8,7 @@ include "partials/confirm-modal.php";
         <div id="assignmentContainer">
                 <form class="assignment-card" data-index="" action="/assignments" method="POST" novalidate>
                         <section id="dispatch-info" class="card mb-auto">
-                                <div class="card-header bg-besttrailsclr">
+                                <div class="card-header bg-prodriverclr">
                                         <h3 class="text-center text-capitalize text-light"><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>dispatch work order</h3>
                                 </div>
 
@@ -97,7 +97,7 @@ include "partials/confirm-modal.php";
                         </section>
 
                         <section id="customer_location_details" class="card my-3">
-                                <div class="card-header bg-besttrailsclr">
+                                <div class="card-header bg-prodriverclr">
                                         <h4 class="text-center text-capitalize text-light">location details</h4>
                                 </div>
                                 <div class="card-body conatiner">
@@ -121,7 +121,7 @@ include "partials/confirm-modal.php";
         }
 ?>
                         <section id="driver-notes-box" class="card my-3">
-                                <div class="card-header bg-besttrailsclr">
+                                <div class="card-header bg-prodriverclr">
                                         <h4 class="text-center text-capitalize text-light">shared job notes</h4>
                                 </div>
                                 

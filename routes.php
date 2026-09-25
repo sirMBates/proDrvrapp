@@ -24,6 +24,7 @@ $router->get('/signature', 'app/controllers/Pages/signature.php');
 $router->get('/signature-access', 'app/api/signature-access.php');
 $router->get('/signature-image', 'app/api/signature-image.php', true);
 $router->get('/signature-status', 'app/api/signature-status.php', true);
+$router->get('/connection-check', 'app/api/connection-check.php');
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
