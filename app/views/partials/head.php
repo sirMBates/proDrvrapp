@@ -6,6 +6,24 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex">
         <meta name="theme-color" content="#1D5283">
+        <script>(() => {
+                try {
+                        const savedMode = localStorage.getItem('prodriverThemeMode');
+                        const legacyOverride = localStorage.getItem('userThemeOverride');
+                        const validModes = ['auto', 'light', 'dark'];
+                        let mode = validModes.includes(savedMode) ? savedMode : ['light', 'dark'].includes(legacyOverride) ? legacyOverride : 'auto';
+
+                        if (mode === 'auto') {
+                                const hour = new Date().getHours();
+                                mode = hour >= 20 || hour <= 6 ? 'dark' : 'light';
+                        }
+
+                        document.documentElement.dataset.bsTheme = mode;
+                } catch (error) {
+                        document.documentElement.dataset.bsTheme = 'light';
+                }
+        })();</script>
+
         <link rel="manifest" href="/manifest.json">
         <link rel="stylesheet" href="/dist/styles/components.css">
         <?php

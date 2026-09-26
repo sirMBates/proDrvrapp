@@ -89,8 +89,12 @@ main {
     box-shadow: 0 4px 10px var(--banner-nav-shadow);
 }
 
-header.nightMode .banner-main-nav.bg-prodriverclr {
+html[data-bs-theme='dark'] header .banner-main-nav.bg-prodriverclr {
     background-color: var(--banner-nav-bg) !important;
+}
+
+.banner-main-nav.bg-danger {
+    background-color: var(--bs-danger) !important;
 }
 
 .banner-main-nav .navbar-brand,

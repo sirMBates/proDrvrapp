@@ -1,3 +1,4 @@
+import { ThemeManager } from './theme.js';
 import { initProfilePictureHandler } from './profile.js';
 import { buildModal } from './appmodal.js';
 import { fetchDrvr, showFlashAlert, getCurrentView } from './helpers.js';
@@ -13,7 +14,7 @@ const defaultProfileImage = "../../dist/images-videos/logoandicons/photo-camera-
 const mainMenuItems = document.querySelectorAll("#navbarSupportedContent .nav-link");
 const driverMenu = document.querySelector(".offcanvas-body");
 const themeBtn = document.querySelector("#themeBtn");
-const themeBtnText = themeBtn.nextElementSibling;
+const themeBtnText = themeBtn?.nextElementSibling ?? null;
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
 const logoutLink = driverMenu.querySelector('#logout-link');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
@@ -22,27 +23,11 @@ const drvrToken = document.getElementById('drvrToken').value;
 const drvrAlert = showFlashAlert;
 const connectionIndicatorElement = document.querySelector('#connection-indicator');
 let connectionIndicator;
-let isDarkMode;
+let themeManager;
 let driverStatus;
 let statusMsg;
 
-// Load theme on page load
 window.addEventListener('load', async () => {
-        const userOverride = localStorage.getItem('userThemeOverride');
-        const lastTheme = localStorage.getItem('isDarkMode');
-
-        if (userOverride === 'dark') {
-                themeSet.darkTheme();
-        } else if (userOverride === 'light') {
-                themeSet.lightTheme();
-        } else if (lastTheme === 'true') {
-                themeSet.darkTheme();
-        } else {
-                themeSet.lightTheme();
-                autoThemeSwitcher(); // initial check
-        }
-        updateThemeIndicator();
-
         const emergencyState = await syncEmergencyState();
         if (emergencyState === true) {
                 applyEmergencyUiState(true);
@@ -109,6 +94,15 @@ $(document).ready(() => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+        themeManager = new ThemeManager({
+                themeButton: themeBtn,
+                themeButtonText: themeBtnText,
+                modeIndicator: themeModeIndicator,
+                driverMenu,
+                currentView: curView
+        });
+        themeManager.init();
+
         const statusButtons = document.querySelectorAll('#driver-status-controls .set-status');
         statusMsg = document.querySelector('#driver-status-dock #statusMessage');
         const tokenElement = document.getElementById('drvrToken');
@@ -250,112 +244,6 @@ function applyEmergencyUiState(active) {
 
     if (statusMsg) {
         statusMsg.classList.remove('text-danger');
-    }
-};
-
-// Set the theme.
-const themeSet = {
-        // Set dark theme.
-        darkTheme() {
-                const page = document.querySelector('html');
-                const body = document.querySelector('body');
-                const header = document.querySelector('header');
-                const btnSwitch = themeBtn.childNodes[1];
-                const textbox = document.querySelectorAll('textarea');
-                if (curView === '/help') {
-                        const cardImage = document.querySelector('#card-img');
-                        cardImage.src = "../../dist/images-videos/busnitepics/drvr-area-nite.jpg";
-                };
-                themeBtnText.textContent = 'Light theme';
-                btnSwitch.classList.remove("fa-moon", "text-dark");
-                btnSwitch.classList.add("fa-sun", "text-btd-white-floral");
-                page.setAttribute('data-bs-theme', 'dark');
-                body.classList.add('niteMode');
-                header.classList.add('nightMode');
-                $(driverMenu).addClass('niteMode');
-                if (textbox) {
-                        $(textbox).removeClass('bg-btd-textarea-clr text-dark');
-                }
-                isDarkMode = true;
-        },
-        // Set the Light theme.
-        lightTheme() {
-                const page = document.querySelector('html');
-                const body = document.querySelector('body');
-                const header = document.querySelector('header');
-                const btnSwitch = themeBtn.childNodes[1];
-                const textbox = document.querySelectorAll('textarea');
-                if (curView === '/help') {
-                        const cardImage = document.querySelector('#card-img');
-                        cardImage.src = "../../dist/images-videos/drvrarea1.jpg";
-                };
-                themeBtnText.textContent = 'Dark theme';
-                btnSwitch.classList.remove('fa-sun', 'text-btd-white-floral');
-                btnSwitch.classList.add('fa-moon', 'text-dark');
-                page.removeAttribute('data-bs-theme');
-                body.classList.remove('niteMode');
-                header.classList.remove('nightMode');
-                $(driverMenu).removeClass('niteMode');
-                if (textbox) {
-                        $(textbox).addClass('bg-btd-textarea-clr text-dark');
-                }
-                isDarkMode = false;
-        },
-
-        savePreference(userOverride = false) {
-        // Save user's manual choice
-                if (userOverride) {
-                        localStorage.setItem('userThemeOverride', isDarkMode ? 'dark' : 'light');
-                }
-                // Save current theme for auto mode
-                localStorage.setItem('isDarkMode', isDarkMode);
-        }
-};
-
-// Manual button switch
-function themeSwitcher(e) {
-    e.preventDefault();
-    if (!isDarkMode) {
-        themeSet.darkTheme();
-    } else {
-        themeSet.lightTheme();
-    }
-    themeSet.savePreference(true); // user override
-    updateThemeIndicator();
-};
-
-themeBtn.addEventListener('click', themeSwitcher, false);
-
-// Auto theme based on time
-function autoThemeSwitcher() {
-    const hour = new Date().getHours();
-    const userOverride = localStorage.getItem('userThemeOverride');
-
-    // Only auto switch if no user override
-    if (!userOverride) {
-        if (hour >= 20 || hour <= 6) {
-            if (!isDarkMode) themeSet.darkTheme();
-        } else {
-            if (isDarkMode) themeSet.lightTheme();
-        }
-        themeSet.savePreference(false);
-    }
-    updateThemeIndicator();
-};
-
-// Run auto theme every minute
-setInterval(autoThemeSwitcher, 60 * 1000); // 60 seconds
-
-function updateThemeIndicator() {
-    const userOverride = localStorage.getItem('userThemeOverride');
-    if (userOverride) {
-        themeModeIndicator.textContent = 'Manual';
-        themeModeIndicator.classList.remove('theme-auto');
-        themeModeIndicator.classList.add('theme-manual');
-    } else {
-        themeModeIndicator.textContent = 'Auto';
-        themeModeIndicator.classList.remove('theme-manual');
-        themeModeIndicator.classList.add('theme-auto');
     }
 };
 
