@@ -15,6 +15,7 @@ export class ChangeStatus {
         this.buttons = [...buttons];
         this.drvrToken = drvrToken;
         this.statusDisplay = statusDisplay;
+        this.statusValue = statusDisplay?.querySelector('.driver-status-display__value') ?? statusDisplay;
         this.drvrStatus = '';
         this.isUpdating = false;
     };
@@ -35,12 +36,10 @@ export class ChangeStatus {
             }
 
             this.setConfirmedStatus(statusRecord.driverStatus);
-            console.log(`Attaching status controls: ${this.buttons.length}`);
         });
     };
 
     async updateDrvrStatusControl(e) {
-        console.log('Status button clicked:', e.currentTarget.dataset.statusCode);
         if (this.isUpdating) {
             return;
         }
@@ -100,6 +99,8 @@ export class ChangeStatus {
     setLoading(clickedButton, isLoading) {
         this.isUpdating = isLoading;
 
+        window.dispatchEvent(new CustomEvent('driver-status-loading', { detail: { isLoading }}));
+
         this.buttons.forEach(button => {
             button.disabled = isLoading;
         });
@@ -119,7 +120,7 @@ export class ChangeStatus {
                 button.setAttribute('aria-pressed', 'false');
             });
 
-            this.statusDisplay.textContent = 'Current status: Not set';
+            this.statusValue.textContent = 'Not set';
 
             localStorage.removeItem('status');
             sessionStorage.removeItem('status');
@@ -137,7 +138,7 @@ export class ChangeStatus {
             button.setAttribute('aria-pressed', String(isActive));
         });
 
-        this.statusDisplay.textContent = `Current status: ${driverStatus}`;
+        this.statusValue.textContent = driverStatus;
         localStorage.setItem('status', driverStatus);
     };
 };

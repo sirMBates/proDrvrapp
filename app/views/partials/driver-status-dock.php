@@ -2,9 +2,15 @@
     <div class="container-xl flex-column gap-2 py-2">
 
         <!-- Current driver status and server connectivity -->
-        <div class="d-flex align-items-stretch gap-2 w-100">
+        <div class="driver-status-dock__summary d-flex align-items-stretch gap-2 w-100">
             <div id="statusMessage" class="driver-status-display form-control d-flex align-items-center justify-content-center text-center fw-semibold" role="status" aria-live="polite" aria-atomic="true">
-                Current status: Loading…
+                <span class="driver-status-display__prefix">
+                    Current status:&nbsp;
+                </span>
+
+                <span class="driver-status-display__value">
+                    Loading...
+                </span>
             </div>
 
             <div id="connection-indicator" class="connection-indicator is-reconnecting" role="status" aria-live="polite" aria-atomic="true" aria-label="Server connection: checking">
@@ -14,6 +20,10 @@
                     Checking
                 </span>
             </div>
+
+            <button type="button" id="driver-status-dock-toggle" class="driver-status-dock__toggle btn btn-outline-secondary" aria-controls="driver-status-controls" aria-expanded="true" aria-label="Collapse driver status dock">
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
 
         </div>
 

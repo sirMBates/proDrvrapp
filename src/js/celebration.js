@@ -19,7 +19,7 @@ export function bdayCelebrationHandler() {
                 const celebrateBtn = document.querySelector('#custom-ok');
                 $(celebrateModal).modal('toggle');
                 celebrateModal.addEventListener('shown.bs.modal', () => {
-                    buildModal.custom('On behalf of ProDriver, wishing you a safe & special happy birthday 🎂 enjoy!', 'bg-btd-celebrate-bkgd-clr', 'text-dark', 'fa-cake-candles', 'text-primary', `Hey, ${drvrName}!`, 'btn-primary', 'Thank You');
+                    buildModal.custom('On behalf of ProDriver, wishing you a safe & special happy birthday 🎂 enjoy!', 'bg-prodriver-birthdaybkgd-clr', 'text-dark', 'fa-cake-candles', 'text-primary', `Hey, ${drvrName}!`, 'btn-primary', 'Thank You');
                 })
                 celebrateBtn.addEventListener('click', () => {
                     $(celebrateModal).modal('toggle');

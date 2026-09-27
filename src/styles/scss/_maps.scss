@@ -1,5 +1,5 @@
 $custom-colors: (
-        "prodriverclr": rgba(29, 82, 131, 0.9),
+        "prodriverclr": $prodriver-clr,
         "btd-blue-azure": #007FFF,
         "btd-blue-vivid": #1F75FE,
         "btd-blue-dodger": #1E90FF,
@@ -13,8 +13,8 @@ $custom-colors: (
         "btd-white-off": #FAF9F6,
         "btd-white-floral": #FFFAF0,
         "btd-hardwood-clr": rgba(167, 81, 38, .70),
-        "btd-textarea-clr": rgba(255, 253, 208, .75),
-        "btd-celebrate-bkgd-clr": #ffd700,
+        "prodriver-textarea-clr": $prodriver-textarea-clr,
+        "prodriver-birthdaybkgd-clr": $prodriver-celebrate-bkgd-clr,
 );
 
 $theme-colors: map-merge($theme-colors, $custom-colors);

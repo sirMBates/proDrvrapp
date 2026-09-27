@@ -77,7 +77,7 @@ export class ThemeManager {
         this.driverMenu?.classList.toggle('niteMode', isDark);
 
         textareas.forEach(textarea => {
-            textarea.classList.toggle('bg-btd-textarea-clr', !isDark);
+            textarea.classList.toggle('bg-prodriver-textarea-clr', !isDark);
             textarea.classList.toggle('text-dark', !isDark);
         });
 

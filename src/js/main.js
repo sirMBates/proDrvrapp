@@ -6,6 +6,7 @@ import { ChangeStatus } from './changestatus.js';
 import { syncEmergencyState } from './emergency-state.js';
 import { Validation } from './validation.js';
 import { ConnectionIndicator } from './connectionindicator.js';
+import { StatusDock } from './statusdock.js';
 
 const curView = getCurrentView();
 const menuProfileImage = document.querySelector('#menuProfileImage');
@@ -26,6 +27,7 @@ let connectionIndicator;
 let themeManager;
 let driverStatus;
 let statusMsg;
+let statusDock;
 
 window.addEventListener('load', async () => {
         const emergencyState = await syncEmergencyState();
@@ -102,6 +104,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 currentView: curView
         });
         themeManager.init();
+
+        const statusDockElement = document.querySelector('#driver-status-dock');
+        statusDock = new StatusDock(statusDockElement);
+        statusDock.init();
 
         const statusButtons = document.querySelectorAll('#driver-status-controls .set-status');
         statusMsg = document.querySelector('#driver-status-dock #statusMessage');
@@ -219,32 +225,29 @@ window.addEventListener('driver-status-updated', (e) => {
 );
 
 function applyEmergencyUiState(active) {
-    if (active) {
-        localStorage.setItem('isActiveEmergency', 'true');
+        if (active) {
+                localStorage.setItem('isActiveEmergency', 'true');
+                emergencyBackground.forEach(background => {
+                background.classList.remove('bg-prodriverclr');
+                background.classList.add('bg-danger');
+                });
 
-        emergencyBackground.forEach(background => {
-            background.classList.remove('bg-prodriverclr');
-            background.classList.add('bg-danger');
-        });
+                if (statusMsg) {
+                statusMsg.classList.add('text-danger');
+                }
+        } else {
+                localStorage.removeItem('isActiveEmergency');
+                emergencyBackground.forEach(background => {
+                        background.classList.remove('bg-danger');
+                        background.classList.add('bg-prodriverclr');
+                });
 
-        if (statusMsg) {
-            statusMsg.classList.add('text-danger');
-            statusMsg.textContent = 'Current status: Emergency';
+                if (statusMsg) {
+                        statusMsg.classList.remove('text-danger');
+                }
         }
 
-        return;
-    }
-
-    localStorage.removeItem('isActiveEmergency');
-
-    emergencyBackground.forEach(background => {
-        background.classList.remove('bg-danger');
-        background.classList.add('bg-prodriverclr');
-    });
-
-    if (statusMsg) {
-        statusMsg.classList.remove('text-danger');
-    }
+        window.dispatchEvent(new CustomEvent('emergency-state-changed', { detail: { active }}));
 };
 
 // Highlight the active link of the current page.

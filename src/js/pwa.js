@@ -243,10 +243,12 @@ window.addEventListener('DOMContentLoaded', () => {
     // 🧩 Custom Install Prompt
     let deferredPrompt;
     const installBtn = document.createElement('button');
+    installBtn.id = 'pwa-install-button';
+    installBtn.type = 'button';
     installBtn.innerHTML = '<i class="fa-solid fa-download" style="margin-right: 8px;"></i>Install ProDriver';
     installBtn.style.cssText = `
       position: fixed;
-      bottom: 1.25rem;
+      bottom: var(--pwa-install-bottom, 1.25rem);
       right: 1.25rem;
       background: linear-gradient(135deg, #1d5283, #005fa3);
       color: #fff;
@@ -257,14 +259,15 @@ window.addEventListener('DOMContentLoaded', () => {
       letter-spacing: 0.03em;
       font-family: "Roboto", "Segoe UI", sans-serif;
       box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      transition: 
-          opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1),
-          transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
-          background 0.3s ease;
+      transition:
+        bottom 220ms ease, 
+        opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1),
+        transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
+        background 0.3s ease;
       opacity: 0;
       transform: translateY(20px);
       cursor: pointer;
-      z-index: 9999;
+      z-index: 1025;
       display: none;
     `;
 
