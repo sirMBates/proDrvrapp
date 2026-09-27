@@ -93,6 +93,11 @@ html[data-bs-theme='dark'] header .banner-main-nav.bg-prodriverclr {
     background-color: var(--banner-nav-bg) !important;
 }
 
+html[data-bs-theme='dark']
+.driver-status-dock.bg-btd-gray-platinum {
+    background-color: #363636 !important;
+}
+
 .banner-main-nav.bg-danger {
     background-color: var(--bs-danger) !important;
 }
@@ -320,7 +325,6 @@ body:has(#driver-status-dock.is-collapsed) {
     flex: 1 1 auto;
     min-width: 0;
     min-height: 2.65rem;
-
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -593,10 +597,33 @@ body:has(#driver-status-dock.is-collapsed) {
    Responsive Layout
    ========================================================= */
 
+.driver-status-controls
+.nav-link[data-status-code='working_assignment'] {
+    min-width: 9.5rem;
+    flex-basis: 9.5rem;
+    flex-shrink: 0;
+}
+
+.driver-status-controls
+.nav-link[data-status-code='on_location'] {
+    min-width: 8.25rem;
+    flex-basis: 8.25rem;
+    flex-shrink: 0;
+}
+
 @media (min-width: 992px) {
     .driver-status-controls .nav-link {
         flex: 1 1 0;
-        min-width: 0;
+    }
+
+    .driver-status-controls
+    .nav-link[data-status-code='on_location'] {
+        flex: 1 0 8.25rem;
+    }
+
+    .driver-status-controls
+    .nav-link[data-status-code='working_assignment'] {
+        flex: 1 0 9.5rem;
     }
 }
 
@@ -640,6 +667,16 @@ body:has(#driver-status-dock.is-collapsed) {
         min-height: 3.25rem;
         padding: 0.4rem 0.55rem;
         font-size: 0.75rem;
+    }
+
+    .driver-status-controls .nav-link[data-status-code='working_assignment'] {
+        min-width: 6.75rem;
+        flex-basis: 6.75rem;
+    }
+
+    .driver-status-controls .nav-link[data-status-code='on_location'] {
+        min-width: 6.25rem;
+        flex-basis: 6.25rem;
     }
 }
 

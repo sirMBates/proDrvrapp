@@ -6,8 +6,8 @@
 <!-- Load JQuery Color CDN(Content Delivery Network) -->
 <script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity='sha256-KfnxwOV3FhXN7A/28TCtqslo5fRS23cxO5XcxVO5we8=' crossorigin='anonymous'></script>
 <script src="/dist/js/pwa.js"></script>
-<?php
-        require base_path("app/includes/getscripts.php");
-?>
+<?php foreach ($GLOBALS['page_scripts'] as $script): ?>
+        <script type="module" src="<?= $script ?>"></script>
+<?php endforeach; ?>
 </body>
 </html>

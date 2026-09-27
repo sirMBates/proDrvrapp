@@ -10,11 +10,12 @@ const LEGACY_OVERRIDE_KEY = 'userThemeOverride';
 const LEGACY_DARK_MODE_KEY = 'isDarkMode';
 
 export class ThemeManager {
-    constructor({ themeButton = null, themeButtonText = null, modeIndicator = null, driverMenu = null, currentView = '', autoCheckInterval = 60000 } = {}) {
+    constructor({ themeButton = null, themeButtonText = null, modeIndicator = null, driverMenu = null, statusDock = null, currentView = '', autoCheckInterval = 60000 } = {}) {
         this.themeButton = themeButton;
         this.themeButtonText = themeButtonText;
         this.modeIndicator = modeIndicator;
         this.driverMenu = driverMenu;
+        this.statusDock = statusDock;
         this.currentView = currentView;
         this.autoCheckInterval = autoCheckInterval;
 
@@ -75,6 +76,8 @@ export class ThemeManager {
         body?.classList.toggle('niteMode', isDark);
         header?.classList.toggle('nightMode', isDark);
         this.driverMenu?.classList.toggle('niteMode', isDark);
+        this.statusDock?.classList.toggle('bg-statusdockclr', !isDark);
+        this.statusDock?.classList.toggle('bg-statusdockdarkclr', isDark);
 
         textareas.forEach(textarea => {
             textarea.classList.toggle('bg-prodriver-textarea-clr', !isDark);

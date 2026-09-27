@@ -1,4 +1,4 @@
-<aside id="driver-status-dock" class="driver-status-dock navbar fixed-bottom bg-body-tertiary border-top shadow-lg d-print-none" aria-label="Driver status dock">
+<aside id="driver-status-dock" class="driver-status-dock navbar fixed-bottom bg-statusdockclr border-top shadow-lg d-print-none" aria-label="Driver status dock">
     <div class="container-xl flex-column gap-2 py-2">
 
         <!-- Current driver status and server connectivity -->

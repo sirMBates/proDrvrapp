@@ -12,6 +12,7 @@ require BASE_PATH . 'config.php';
 use App\ImportExport\JobOrderImporter;
 use Core\Logger;
 use App\Validation\ImporterAssignmentValidator;
+use App\Middleware\ScriptsMiddleware;
 
 return new class {
     private Logger $logger;
@@ -56,6 +57,9 @@ return new class {
     public function handleHttps(): void {
         $uri = parse_url($_SERVER['REQUEST_URI'])['path'];
         $method = $_POST['__method'] ?? $_SERVER['REQUEST_METHOD'];
+
+        // Run script middleware BEFORE routing
+        $GLOBALS['page_scripts'] = ScriptsMiddleware::resolve($uri);
 
         if (isset($_SESSION['user_id']) && isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
             // prevent Logged-in users from hitting signup/signin

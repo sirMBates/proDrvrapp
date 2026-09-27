@@ -14,7 +14,8 @@
             "App\\ImportExport\\": "app/ImportExport/",
             "App\\Repositories\\": "app/Repositories/",
             "App\\Services\\": "app/Services/",
-            "App\\Enums\\": "app/Enums/"
+            "App\\Enums\\": "app/Enums/",
+            "App\\Middleware\\": "app/Middleware/"
         }
     }
 }

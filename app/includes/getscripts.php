@@ -1,6 +1,12 @@
 <?php
 
+// Skip scripts on error pages
+if (!empty($_SERVER['IS_ERROR_PAGE'])) {
+    return;
+}
+
 $url = parse_url($_SERVER['REQUEST_URI'])['path'];
+
 function getClockandMainOrNav($value) {
     switch($value) {
         case '/signup': 

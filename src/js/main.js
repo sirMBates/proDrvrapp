@@ -101,6 +101,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 themeButtonText: themeBtnText,
                 modeIndicator: themeModeIndicator,
                 driverMenu,
+                statusDock: document.querySelector('#driver-status-dock'),
                 currentView: curView
         });
         themeManager.init();

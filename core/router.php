@@ -51,6 +51,7 @@ class Router {
 
     protected function abort($code = 404){
         http_response_code($code);
+        $_SERVER['IS_ERROR_PAGE'] = true;
         require base_path("app/views/errors/{$code}.php");
         exit();
     }
