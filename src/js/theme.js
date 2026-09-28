@@ -76,8 +76,6 @@ export class ThemeManager {
         body?.classList.toggle('niteMode', isDark);
         header?.classList.toggle('nightMode', isDark);
         this.driverMenu?.classList.toggle('niteMode', isDark);
-        this.statusDock?.classList.toggle('bg-statusdockclr', !isDark);
-        this.statusDock?.classList.toggle('bg-statusdockdarkclr', isDark);
 
         textareas.forEach(textarea => {
             textarea.classList.toggle('bg-prodriver-textarea-clr', !isDark);
