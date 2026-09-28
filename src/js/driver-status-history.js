@@ -116,8 +116,11 @@ export class DriverStatusHistory {
     }
 
     isToday(statusTimestamp) {
-        const statusDate = statusTimestamp.slice(0, 10);
-        return statusDate === this.getTodayDateKey();
+        if (typeof statusTimestamp !== 'string' || statusTimestamp.length < 10) {
+            return false;
+        }
+
+        return statusTimestamp.slice(0, 10) === this.getTodayDateKey();
     }
 
     formatTime(statusTimestamp) {
