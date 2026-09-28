@@ -357,7 +357,7 @@ function updateAssignmentDraftField(assignment, field, value) {
 
         const originalValues = {
             vehicle_id: assignment.vehicle_id ?? '',
-            actual_drop_time: assignment.actual_drop_time ?? '',
+            actual_drop_time: assignment.actual_drop_time ? assignment.actual_drop_time.replace(' ', 'T').slice(0, 16) : '',
             actual_end_time: assignment.actual_end_time ? assignment.actual_end_time.replace(' ', 'T').slice(0, 16) : '',
             total_hrs: assignment.total_job_time ?? '',
             driving_time: assignment.driving_time ?? '',
@@ -783,8 +783,9 @@ window.addEventListener('DOMContentLoaded', () => {
         secondaryLeaveTime.textContent = dtHelper(assignment['leave_date_time']);
         secondaryReturnTime.textContent = dtHelper(assignment['return_date_drop_time']);
         const rawActualDropTime = String(assignment['actual_drop_time'] ?? '').trim();
-        secondaryDropTime.dataset.raw = rawActualDropTime ? rawActualDropTime.slice(0, 5) : '';
-        secondaryDropTime.textContent = rawActualDropTime ? dtHelper(rawActualDropTime, 'time') : '';
+        const normalizedActualDropTime = rawActualDropTime ? rawActualDropTime.replace(' ', 'T').slice(0, 16) : '';
+        secondaryDropTime.dataset.raw = normalizedActualDropTime;
+        secondaryDropTime.textContent = rawActualDropTime ? dtHelper(rawActualDropTime, 'datetime') : '';
         tertiaryEndTime.textContent = dtHelper(assignment['end_date_time']);
         tertiaryEndTime.dataset.raw = assignment['end_date_time'];
         tertiaryActEndTime.textContent = assignment['actual_end_time'] ? dtHelper(assignment['actual_end_time'], 'datetime') :  '';
@@ -810,12 +811,13 @@ window.addEventListener('DOMContentLoaded', () => {
         };
 
         if (draft.actual_drop_time !== undefined) {
-            secondaryDropTime.textContent = draft.actual_drop_time;
-        };
+            const draftDropTime = String(draft.actual_drop_time ?? '').trim();
+            secondaryDropTime.dataset.raw = draftDropTime ? draftDropTime.replace(' ', 'T').slice(0, 16) : '';
+            secondaryDropTime.textContent = draftDropTime ? dtHelper(draftDropTime, 'datetime') : '';
+        }
 
         if (draft.actual_end_time !== undefined) {
             tertiaryActEndTime.textContent = draft.actual_end_time ? dtHelper(draft.actual_end_time, 'datetime') : '';
-
             tertiaryActEndTime.dataset.raw = draft.actual_end_time || '';
         };
 
@@ -1262,7 +1264,7 @@ function getCompletePayrollData(assignment) {
         vehicle_id: document.querySelector('[data-field="vehicle_id"]')?.textContent.trim() ?? '',
         assignment_date: assignment.start_date_time?.split(' ')[0] ?? '',
         spot_time: assignment.spot_time ?? '',
-        actual_drop_time: document.querySelector('[data-field="actual_drop_time"]')?.textContent.trim() ?? '',
+        actual_drop_time: document.querySelector('[data-field="actual_drop_time"]') ?.dataset.raw ?? '',
         total_job_time: document.querySelector('[data-field="total_hrs"]')?.textContent.trim() ?? ''
     };
 };

@@ -1,197 +1,458 @@
-const clickCells = document.querySelectorAll('.editable-data');
+import { fetchDrvr, viewableDateTimeHelper } from './helpers.js';
 
-window.addEventListener('DOMContentLoaded', () => {
-    clickCells.forEach(cell => {
-        cell.addEventListener('click', () => {
-            if (!cell.querySelector('input') && !cell.querySelector('select')) {
-                const inputConfigs = JSON.parse(cell.dataset.inputs || '[]');
-                cell.textContent = '';
+const timesheetPeriod = document.querySelector('#timesheet-period');
+const timesheetStatus = document.querySelector('#timesheet-status');
+const timesheetNotice = document.querySelector('#timesheet-notice');
+const loadingState = document.querySelector('#timesheet-loading');
+const errorState = document.querySelector('#timesheet-error');
+const emptyState = document.querySelector('#timesheet-empty');
+const timesheetContent = document.querySelector('#timesheet-content');
+const timesheetSummary = document.querySelector('#timesheet-summary');
+const desktopEntries = document.querySelector('#timesheet-entries');
+const mobileEntries = document.querySelector('#timesheet-mobile-entries');
+const assignmentCount = document.querySelector('#timesheet-assignment-count');
+const totalHours = document.querySelector('#timesheet-total-hours');
+const previousButton = document.querySelector('#previous-timesheet');
+const nextButton = document.querySelector('#next-timesheet');
+const saveButton = document.querySelector('#save-timesheet');
+const reviewButton = document.querySelector('#review-timesheet');
+const TIMESHEET_COLUMN_COUNT = 13;
+let currentTimesheet = null;
 
-                const inputElements = [];
+function hideElement(element) {
+    element?.classList.add('d-none');
+};
 
-                inputConfigs.forEach((config, index) => {
-                    let input;
+function showElement(element) {
+    element?.classList.remove('d-none');
+};
 
-                    switch (config.type) {
-                        case 'time':
-                            input = document.createElement('input');
-                            input.type = 'time';
-                            input.classList.add('form-control');
-                            input.value = config.value || '';
-                            break;
+function resetViewStates() {
+    hideElement(errorState);
+    hideElement(emptyState);
+    hideElement(timesheetContent);
+    hideElement(timesheetSummary);
+    hideElement(timesheetNotice);
 
-                        case 'number':
-                            input = document.createElement('input');
-                            input.type = 'number';
-                            input.classList.add('form-control');
-                            input.value = config.value || '';
-                            break;
+    if (errorState) {
+        errorState.textContent = '';
+    }
 
-                        case 'yesno':
-                            const yesLabel = document.createElement('label');
-                            const yesCheckbox = document.createElement('input');
-                            yesCheckbox.type = 'checkbox';
-                            yesCheckbox.checked = config.value === 'Yes';
-                            yesCheckbox.classList.add('form-check-input', 'yes-box', 'me-1');
-                            yesLabel.appendChild(yesCheckbox);
-                            yesLabel.appendChild(document.createTextNode('Yes'));
+    if (desktopEntries) {
+        desktopEntries.replaceChildren();
+    }
 
-                            const noLabel = document.createElement('label');
-                            const noCheckbox = document.createElement('input');
-                            noCheckbox.type = 'checkbox';
-                            noCheckbox.checked = config.value === 'No';
-                            noCheckbox.classList.add('form-check-input', 'no-Box', 'me-1');
-                            noLabel.appendChild(noCheckbox);
-                            noLabel.appendChild(document.createTextNode('No'));
+    if (mobileEntries) {
+        mobileEntries.replaceChildren();
+    }
 
-                            // Ensure only one checkbox is selected
-                            yesCheckbox.addEventListener('change', () => {
-                                if (yesCheckbox.checked) noCheckbox.checked = false;
-                            });
-                            noCheckbox.addEventListener('change', () => {
-                                if (noCheckbox.checked) yesCheckbox.checked = false;
-                            });
+    saveButton?.setAttribute('disabled', '');
+    reviewButton?.setAttribute('disabled', '');
+};
 
-                            input = document.createElement('div');
-                            input.appendChild(yesLabel);
-                            input.appendChild(noLabel);
-                            input.classList.add('d-flex', 'gap-3');
-                            break;
+function showLoadingState() {
+    resetViewStates();
+    showElement(loadingState);
 
-                        case 'date':
-                            input = document.createElement('input');
-                            input.type = 'date';
-                            input.classList.add('form-control');
-                            input.value = config.value || '';
-                            break;
+    if (timesheetStatus) {
+        timesheetStatus.textContent = 'Loading';
+        timesheetStatus.className = 'badge text-bg-secondary';
+    }
+};
 
-                        case 'datetime-local':
-                            input = document.createElement('input');
-                            input.type = 'datetime-local';
-                            input.classList.add('form-control');
-                            input.value = config.value || '';
-                            break;
-                        
-                        case 'textarea':
-                            input = document.createElement('textarea');
-                            input.classList.add('form-control');
-                            input.value = config.value || '';
-                            input.rows = config.rows || 3;
-                            break;
+function showErrorState(message) {
+    hideElement(loadingState);
+    hideElement(emptyState);
+    hideElement(timesheetContent);
+    hideElement(timesheetSummary);
+    hideElement(timesheetNotice);
 
-                        default:
-                            input = document.createElement('input');
-                            input.type = 'text';
-                            input.classList.add('form-control');
-                            input.value = config.value || '';
-                            break;
-                    }
+    if (errorState) {
+        errorState.textContent = message || 'The Timesheet could not be loaded.';
+        showElement(errorState);
+    }
 
-                    input.dataset.index = index;
-                    inputElements.push(input);
-                    cell.appendChild(input);
-                });
+    if (timesheetStatus) {
+        timesheetStatus.textContent = 'Unavailable';
+        timesheetStatus.className = 'badge text-bg-danger';
+    }
+};
 
-                function validateInput(input, config) {
-                    const value = input.value.trim();
+function showEmptyState() {
+    hideElement(loadingState);
+    hideElement(errorState);
+    hideElement(timesheetContent);
+    hideElement(timesheetSummary);
 
-                    switch (config.type) {
-                        case 'text':
-                        case 'textarea':
-                            return value.length > 0;
+    showElement(emptyState);
+};
 
-                        case 'number':
-                            return !isNaN(value) && value !== '';
+function formatPayPeriod(startDate, endDate) {
+    const start = viewableDateTimeHelper(startDate, 'date');
+    const end = viewableDateTimeHelper(endDate, 'date');
+    return `${start} – ${end}`;
+};
 
-                        case 'date':
-                        case 'datetime-local':
-                            return !isNaN(Date.parse(value));
+function renderPeriodHeader(timesheetData) {
+    if (timesheetPeriod) {
+        timesheetPeriod.textContent = formatPayPeriod(timesheetData.period_start, timesheetData.period_end);
+    }
 
-                        case 'time':
-                            return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+    if (!timesheetStatus) {
+        return;
+    }
 
-                        case 'yesno':
-                            const yesChecked = input.querySelector('.yes-checkbox')?.checked;
-                            const noChecked = input.querySelector('.no-checkbox')?.checked;
-                            return yesChecked || noChecked;
+    if (timesheetData.submission_available) {
+        timesheetStatus.textContent = 'Ready for Review';
+        timesheetStatus.className = 'badge text-bg-warning';
 
-                        default:
-                            return true;
-                    }
-                }
+        if (timesheetNotice) {
+            timesheetNotice.textContent = 'This pay period is available for review and submission.';
+            showElement(timesheetNotice);
+        }
 
-                // Focus first input
-                if (inputElements[0]) inputElements[0].focus();
+        return;
+    }
 
-                // Blur handler for all inputs
-                inputElements.forEach(input => {
-                    input.addEventListener('blur', () => {
-                        const isValid = inputElements.every((el, i) => validateInput(el, inputConfigs[i]));
+    timesheetStatus.textContent = 'Open';
+    timesheetStatus.className = 'badge text-bg-success';
+    hideElement(timesheetNotice);
+};
 
-                        if (!isValid) {
-                            cell.textContent = 'Invalid input';
-                            cell.classList.add('text-danger');
-                            return;
-                        }
+function renderSummary(timesheetData) {
+    if (assignmentCount) {
+        assignmentCount.textContent = String(timesheetData.assignment_count);
+    }
 
-                        cell.classList.remove('text-danger');
-                        const newValues = inputElements.map((el, i) => {
-                            const config = inputConfigs[i];
+    /*
+     * The period-wide total will be connected after the
+     * assignment-day renderer is added.
+     */
+    if (totalHours) {
+        totalHours.textContent = timesheetData.period_total_hours ?? '0.00';
+    }
+};
 
-                            if (config.type === 'yesno') {
-                                const yesChecked = el.querySelector('.yes-box')?.checked;
-                                const noChecked = el.querySelector('no-box')?.checked;
-                                return yesChecked ? 'Yes' : noChecked ? 'No' : '';
-                            }
+function createTableCell(value, className = '') {
+    const cell = document.createElement('td');
 
-                            if (el.type === 'checkbox') {
-                                return el.checked ? 'true' : 'false';
-                            }
+    cell.textContent = value === null || value === undefined || value === '' ? '—' : String(value);
 
-                            return el.value.trim();
-                        });
-                        cell.textContent = newValues.join(' | ');
-                        cell.dataset.inputs = JSON.stringify(
-                            inputElements.map((el, i) => {
-                                const config = inputConfigs[i];
-                                let value;
-                                if (config.type === 'yesno') {
-                                    const yesChecked = el.querySelector('yes-box')?.checked;
-                                    const noChecked = el.querySelector('no-box')?.checked;
-                                    value = yesChecked ? 'Yes' : noChecked ? 'No' : '';
-                                } else if (el.type === 'checkbox') {
-                                    value = el.checked;
-                                } else {
-                                    value = el.value.trim();
-                                }
-                                return {
-                                    type: config.type,
-                                    value,
-                                    options: config.options || undefined,
-                                    rows: config.rows || undefined
-                                };
-                            })
-                        );
-                    });
+    if (className) {
+        cell.className = className;
+    }
 
-                    input.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && input.tagName !== 'TEXTAREA') {
-                            input.blur();
-                        }
-                    });
-                });
-            }
+    return cell;
+};
+
+function createOrderCell(entry) {
+    const cell = document.createElement('td');
+
+    const orderId = document.createElement('div');
+    orderId.className = 'fw-semibold';
+    orderId.textContent = String(entry.order_id);
+
+    const assignmentControl = document.createElement('small');
+    assignmentControl.className = 'text-body-secondary';
+    assignmentControl.textContent = entry.assignment_control || '—';
+
+    cell.append(orderId, assignmentControl);
+
+    return cell;
+};
+
+function createDestinationCell(entry) {
+    const cell = document.createElement('td');
+
+    const origin = document.createElement('div');
+    const originLabel = document.createElement('span');
+
+    originLabel.className = 'fw-semibold';
+    originLabel.textContent = 'From: ';
+
+    origin.append(originLabel, document.createTextNode(entry.origin || '—'));
+    const destination = document.createElement('div');
+    const destinationLabel = document.createElement('span');
+
+    destinationLabel.className = 'fw-semibold';
+    destinationLabel.textContent = 'To: ';
+    destination.append(destinationLabel, document.createTextNode(entry.destination || '—'));
+
+    cell.append(origin, destination);
+
+    return cell;
+};
+
+function formatBooleanAnswer(value) {
+    if (value === true) {
+        return 'Yes';
+    }
+
+    if (value === false) {
+        return 'No';
+    }
+
+    return 'Not answered';
+};
+
+function formatMoney(value) {
+    if (value === null || value === undefined || value === '') {
+        return 'Pending';
+    }
+
+    const amount = Number(value);
+
+    if (!Number.isFinite(amount)) {
+        return 'Pending';
+    }
+
+    return amount.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD'
+    });
+};
+
+function renderDesktopEntries(days) {
+    if (!desktopEntries) {
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    days.forEach(day => {
+        const entries = Array.isArray(day.entries) ? day.entries : [];
+        const dayHeadingRow = document.createElement('tr');
+        dayHeadingRow.className = 'table-secondary';
+
+        const dayHeading = document.createElement('th');
+        dayHeading.colSpan = TIMESHEET_COLUMN_COUNT;
+        dayHeading.scope = 'rowgroup';
+        dayHeading.className = 'fw-semibold';
+        dayHeading.textContent = viewableDateTimeHelper(day.assignment_date, 'date');
+
+        dayHeadingRow.appendChild(dayHeading);
+        fragment.appendChild(dayHeadingRow);
+
+        entries.forEach((entry, index) => {
+            const row = document.createElement('tr');
+            const isLastEntry = index === entries.length - 1;
+
+            row.dataset.timesheetId = String(entry.timesheet_id);
+            row.appendChild(createOrderCell(entry));
+            row.appendChild(createDestinationCell(entry));
+            row.appendChild(createTableCell(entry.vehicle_id));
+
+            row.appendChild(createTableCell(viewableDateTimeHelper(entry.assignment_date, 'date')));
+            row.appendChild(createTableCell(viewableDateTimeHelper(entry.spot_time, 'time')));
+            row.appendChild(createTableCell(viewableDateTimeHelper(entry.actual_drop_time, 'time')));
+            row.appendChild(createTableCell(entry.job_details, 'text-wrap'));
+            row.appendChild(createTableCell(isLastEntry && day.end_of_duty ? viewableDateTimeHelper(day.end_of_duty, 'datetime') : '—'));
+
+            row.appendChild(createTableCell(entry.total_job_time));
+            row.appendChild(createTableCell(isLastEntry ? day.total_shift_hours : '—'));
+            row.appendChild(createTableCell(formatBooleanAnswer(entry.tolls_used)));
+            row.appendChild(createTableCell(formatBooleanAnswer(entry.tip)));
+            row.appendChild(createTableCell(formatMoney(entry.job_pay)));
+            fragment.appendChild(row);
         });
     });
-    const screenSize = window.innerWidth;
-    const cardFooter = document.querySelector('.card-footer');
-    const cardFooterChildren = cardFooter.children;
-    if (screenSize <= 630) {
-        for (const child of cardFooterChildren) {
-            if (child.classList.contains('row')) {
-                child.classList.remove('col-lg-10');
-                child.classList.add('col-12');
-            }
-        }
+
+    desktopEntries.replaceChildren(fragment);
+};
+
+function appendMobileDetail(list, label, value, options = {}) {
+    const term = document.createElement('dt');
+    term.className = 'col-5';
+
+    const description = document.createElement('dd');
+    description.className = 'col-7 text-end';
+
+    term.textContent = label;
+
+    description.textContent = value === null || value === undefined || value === '' ? '—' : String(value);
+
+    if (options.preserveLines) {
+        description.style.whiteSpace = 'pre-line';
     }
-});
+
+    list.append(term, description);
+};
+
+function createMobileAssignment(entry, day, dayAccordionId, isLastEntry) {
+    const entryId = String(entry.timesheet_id);
+    const headingId = `timesheet-mobile-heading-${entryId}`;
+    const collapseId = `timesheet-mobile-collapse-${entryId}`;
+    const item = document.createElement('article');
+
+    item.className = 'accordion-item';
+    item.dataset.timesheetId = entryId;
+
+    const heading = document.createElement('h4');
+    heading.className = 'accordion-header';
+    heading.id = headingId;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'accordion-button collapsed';
+    button.dataset.bsToggle = 'collapse';
+    button.dataset.bsTarget = `#${collapseId}`;
+    button.setAttribute('aria-expanded', 'false');
+    button.setAttribute('aria-controls', collapseId);
+
+    const buttonContent = document.createElement('span');
+    buttonContent.className = 'd-flex flex-column flex-grow-1 pe-3';
+
+    const orderLine = document.createElement('span');
+    orderLine.className = 'fw-semibold';
+    orderLine.textContent = `Order #${entry.order_id}`;
+
+    const destinationLine = document.createElement('small');
+    destinationLine.className = 'text-body-secondary';
+
+    destinationLine.textContent = `${entry.origin || '—'} → ` + `${entry.destination || '—'}`;
+
+    const hoursLine = document.createElement('small');
+    hoursLine.className = 'mt-1';
+
+    hoursLine.textContent = `${entry.total_job_time} total hours`;
+
+    buttonContent.append(orderLine, destinationLine, hoursLine);
+
+    if (entry.locked) {
+        const lockedBadge = document.createElement('span');
+        lockedBadge.className = 'badge text-bg-secondary align-self-center me-2';
+        lockedBadge.textContent = 'Locked';
+        button.append(buttonContent, lockedBadge);
+    } else {
+        button.appendChild(buttonContent);
+    }
+
+    heading.appendChild(button);
+
+    const collapse = document.createElement('div');
+    collapse.id = collapseId;
+    collapse.className = 'accordion-collapse collapse';
+    collapse.dataset.bsParent = `#${dayAccordionId}`;
+    collapse.setAttribute('aria-labelledby', headingId);
+
+    const body = document.createElement('div');
+    body.className = 'accordion-body';
+
+    const details = document.createElement('dl');
+    details.className = 'row mb-0';
+
+    appendMobileDetail(details, 'Assignment Control', entry.assignment_control);
+    appendMobileDetail(details, 'Vehicle / Bus #', entry.vehicle_id);
+    appendMobileDetail(details, 'Garage Report Date', viewableDateTimeHelper(entry.assignment_date, 'date'));
+
+    appendMobileDetail(details, 'Spot Time', viewableDateTimeHelper(entry.spot_time, 'time'));
+    appendMobileDetail(details, 'Drop Time', viewableDateTimeHelper(entry.actual_drop_time, 'time'));
+    appendMobileDetail(details, 'Job Details', entry.job_details, { preserveLines: true });
+
+    appendMobileDetail(details, 'Total Hours', entry.total_job_time);
+    appendMobileDetail(details, 'Tolls', formatBooleanAnswer(entry.tolls_used));
+    appendMobileDetail(details, 'Tip', formatBooleanAnswer(entry.tip));
+    appendMobileDetail(details, 'Job Amount Paid', formatMoney(entry.job_pay));
+
+    if (isLastEntry) {
+        appendMobileDetail(details, 'End of Duty', day.end_of_duty ? viewableDateTimeHelper(day.end_of_duty, 'datetime') : '—');
+        appendMobileDetail(details, 'Total Shift Hours', day.total_shift_hours);
+    }
+
+    body.appendChild(details);
+    collapse.appendChild(body);
+    item.append(heading, collapse);
+
+    return item;
+};
+
+function renderMobileEntries(days) {
+    if (!mobileEntries) {
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    days.forEach(day => {
+        const entries = Array.isArray(day.entries) ? day.entries : [];
+
+        const dateKey = String(day.assignment_date).replaceAll('-', '');
+        const dayAccordionId = `timesheet-mobile-day-${dateKey}`;
+        const daySection = document.createElement('section');
+        daySection.className = 'mb-4';
+
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'd-flex flex-column flex-sm-row ' + 'justify-content-between gap-1 mb-2';
+
+        const dayTitle = document.createElement('h3');
+        dayTitle.className = 'h5 mb-0';
+        dayTitle.textContent = viewableDateTimeHelper(day.assignment_date, 'date');
+
+        const daySummary = document.createElement('small');
+        daySummary.className = 'text-body-secondary';
+
+        const endOfDuty = day.end_of_duty ? viewableDateTimeHelper(day.end_of_duty, 'time') : 'Pending';
+        daySummary.textContent = `Shift: ${day.total_shift_hours} hrs` + ` · End: ${endOfDuty}`;
+        dayHeader.append(dayTitle, daySummary);
+
+        const accordion = document.createElement('div');
+        accordion.id = dayAccordionId;
+        accordion.className = 'accordion';
+
+        entries.forEach((entry, index) => {
+            accordion.appendChild(createMobileAssignment(entry, day, dayAccordionId, index === entries.length - 1));
+        });
+
+        daySection.append(dayHeader, accordion);
+        fragment.appendChild(daySection);
+    });
+
+    mobileEntries.replaceChildren(fragment);
+};
+
+function renderTimesheet(timesheetData) {
+    hideElement(loadingState);
+
+    renderPeriodHeader(timesheetData);
+    renderSummary(timesheetData);
+
+    const days = Array.isArray(timesheetData.days) ? timesheetData.days : [];
+
+    if (timesheetData.assignment_count === 0 || days.length === 0) {
+        showEmptyState();
+        return;
+    }
+
+    renderDesktopEntries(days);
+    renderMobileEntries(days);
+
+    showElement(timesheetContent);
+    showElement(timesheetSummary);
+};
+
+async function loadCurrentTimesheet() {
+    showLoadingState();
+
+    try {
+        const response = await fetchDrvr('/get-timesheet', {
+                method: 'GET',
+                cache: 'no-store'
+            }
+        );
+
+        if (!response || response.status !== 'success' || !response.timesheetData) {
+            throw new Error(response?.message || 'Invalid Timesheet response.');
+        }
+
+        currentTimesheet = response.timesheetData;
+        renderTimesheet(currentTimesheet);
+    } catch (error) {
+        console.error('[TIMESHEET] Failed loading Timesheet:', error);
+        showErrorState(error?.message || 'The Timesheet could not be loaded.');
+    }
+};
+
+previousButton?.setAttribute('disabled', '');
+nextButton?.setAttribute('disabled', '');
+
+loadCurrentTimesheet();

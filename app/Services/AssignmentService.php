@@ -111,11 +111,17 @@ class AssignmentService {
         }
 
         $actualDropTimeRaw = trim((string) ($data['actual_drop_time'] ?? ''));
-        if (!Validator::optionalTime($actualDropTimeRaw)) {
-            throw new \InvalidArgumentException('The actual drop time is invalid.');
+        if (!Validator::optionalDateTime($actualDropTimeRaw)) {
+            throw new InvalidArgumentException('The actual drop date and time are invalid.');
         }
 
-        $actualDropTime = $actualDropTimeRaw === '' ? null : $actualDropTimeRaw;
+        $actualDropTime = null;
+
+        if ($actualDropTimeRaw !== '') {
+            $normalizedDropTime = str_replace('T', ' ', $actualDropTimeRaw);
+            $actualDropTime = strlen($normalizedDropTime) === 16 ? $normalizedDropTime . ':00' : $normalizedDropTime;
+        }
+
         $actualEndTimeRaw = trim((string) ($data['actual_end_time'] ?? ''));
         if (!Validator::optionalDateTime($actualEndTimeRaw)) {
             throw new \InvalidArgumentException('The actual end time is invalid.');
@@ -182,13 +188,16 @@ class AssignmentService {
             throw new InvalidArgumentException('Please check your vehicle number and try again.');
         }
 
-        // Actual drop time
+        // Actual drop time - DATE AND TIME
         $actualDropTimeRaw = trim((string) ($data['actual_drop_time'] ?? ''));
-        if ($actualDropTimeRaw === '' || !Validator::time($actualDropTimeRaw)) {
-            throw new InvalidArgumentException('The actual drop time is required and must be valid.');
+        if ($actualDropTimeRaw === '' || !Validator::dateTime($actualDropTimeRaw)) {
+            throw new InvalidArgumentException('The actual drop date and time are required and must be valid.');
         }
 
-        $actualDropTime = strlen($actualDropTimeRaw) === 5 ? $actualDropTimeRaw . ':00' : $actualDropTimeRaw;
+        $actualDropTime = str_replace('T', ' ', $actualDropTimeRaw);
+        if (strlen($actualDropTime) === 16) {
+            $actualDropTime .= ':00';
+        }
 
         // Actual end time
         $actualEndTimeRaw = trim((string) ($data['actual_end_time'] ?? ''));
@@ -483,7 +492,7 @@ class AssignmentService {
         return match ($field) {
             'total_job_time',
             'driving_time' => number_format((float) $value, 2, '.', ''),
-            'actual_drop_time' => strlen($value) === 5 ? $value . ':00' : $value,
+            'actual_drop_time',
             'actual_end_time' => $this->normalizeCompletionDateTime($value),
             default => $value
         };

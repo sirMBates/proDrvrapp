@@ -229,8 +229,8 @@ function applyEmergencyUiState(active) {
         if (active) {
                 localStorage.setItem('isActiveEmergency', 'true');
                 emergencyBackground.forEach(background => {
-                background.classList.remove('bg-prodriverclr');
-                background.classList.add('bg-danger');
+                        background.classList.remove('bg-prodriverclr');
+                        background.classList.add('bg-danger');
                 });
 
                 if (statusMsg) {

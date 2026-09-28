@@ -64,18 +64,15 @@ export function validateCrossFieldRules({ mode = 'complete' } = {}) {
 
     if (endVal && dropVal) {
         const normalizedEndVal = endVal.replace(' ', 'T').slice(0, 16);
+        const normalizedDropVal = dropVal.replace(' ', 'T').slice(0, 16);
+
         const endDate = new Date(normalizedEndVal);
+        const dropDate = new Date(normalizedDropVal);
 
-        if (!Number.isNaN(endDate.getTime())) {
-            const endDateOnly = normalizedEndVal.slice(0, 10);
-            const normalizedDropVal = dropVal.slice(0, 5);
-            const dropDate = new Date(`${endDateOnly}T${normalizedDropVal}`);
-
-            if (!Number.isNaN(dropDate.getTime()) && endDate < dropDate) {
-                setFieldError(endInput || endTimeCell, 'Actual end time cannot be earlier than drop time.');
-                setFieldError(dropInput || dropTimeCell, 'Drop time must be before end time.');
-                errors.push(endInput || endTimeCell);
-            }
+        if (!Number.isNaN(endDate.getTime()) && !Number.isNaN(dropDate.getTime()) && endDate < dropDate) {
+            setFieldError(endInput || endTimeCell, 'Actual end time cannot be earlier than drop time.');
+            setFieldError(dropInput || dropTimeCell, 'Actual drop time must be before end time.');
+            errors.push(endInput || endTimeCell);
         }
     }
 

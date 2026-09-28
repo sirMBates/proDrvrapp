@@ -42,11 +42,11 @@ html[data-bs-theme='dark'] .offcanvas-body {
     );
 }
 
-html[data-bs-theme='dark'] header::before {
+html[data-bs-theme='dark'] header.site-banner::before {
     @include header-before-nitemode();
 }
 
-html[data-bs-theme='dark'] header {
+html[data-bs-theme='dark'] header.site-banner {
     @include header-nitemode();
 
     --banner-nav-bg: rgba(14, 32, 52, 0.82);

@@ -143,15 +143,20 @@ final class AssignmentValidator {
         return (float) $drivingTime <= (float) $totalJobTime;
     }
 
-    public static function dropTimeBeforeEnd(mixed $dropTime, mixed $actualEndTime): bool {
-        if (!Validator::time($dropTime) || !Validator::dateTime($actualEndTime)) {
+    public static function dropTimeBeforeEnd(mixed $actualDropTime, mixed $actualEndTime): bool {
+        if (!Validator::dateTime($actualDropTime) || !Validator::dateTime($actualEndTime)) {
             return false;
         }
 
-        $end = new \DateTimeImmutable(str_replace('T', ' ', (string) $actualEndTime));
-        $drop = new \DateTimeImmutable($end->format('Y-m-d') . ' ' . (string) $dropTime);
+        try {
+            $timezone = new \DateTimeZone('America/New_York');
+            $drop = new \DateTimeImmutable(str_replace('T', ' ', (string) $actualDropTime), $timezone);
+            $end = new \DateTimeImmutable(str_replace('T', ' ', (string) $actualEndTime), $timezone);
 
-        return $drop <= $end;
+            return $drop <= $end;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }
 

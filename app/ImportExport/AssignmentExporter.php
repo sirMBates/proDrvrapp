@@ -94,15 +94,9 @@ class AssignmentExporter {
                 $hasSubmittedValue = $submittedKey !== null && array_key_exists($submittedKey, $data) && $data[$submittedKey] !== null && trim((string) $data[$submittedKey]) !== '';
                 $valueToWrite = $hasSubmittedValue ? $data[$submittedKey] : ($dbValues[$field] ?? '');
 
-                if ($field === 'actual_drop_time' && $valueToWrite !== '') {
-                    $dt = new \DateTime($valueToWrite);
-                    $valueToWrite = $dt->format('h:ia');
-                    $sheet->getStyle("$col$matchRow")->getNumberFormat()->setFormatCode('h:mma');
-                }
-
-                if ($field === 'actual_end_time' && $valueToWrite !== '') {
-                    $dt = new \DateTime($valueToWrite);
-                    $valueToWrite = $dt->format('m/d/Y h:ia');
+                if (in_array($field, ['actual_drop_time', 'actual_end_time'], true) && $valueToWrite !== '') {
+                    $dateTime = new \DateTimeImmutable((string) $valueToWrite);
+                    $valueToWrite = $dateTime->format('m/d/Y h:ia');
                 }
 
                 if (in_array($field, ['total_job_time', 'driving_time'], true) && $valueToWrite !== '') {

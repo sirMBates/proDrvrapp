@@ -100,7 +100,7 @@ include "partials/info-modal.php";
                                 </div>
 
                                 <!-- Phone and narrow-screen presentation -->
-                                <div id="timesheet-mobile-entries" class="accordion d-lg-none"></div>
+                                <div id="timesheet-mobile-entries" class="d-lg-none"></div>
                         </div>
 
                         <section id="timesheet-summary" class="border rounded p-3 mt-4 d-none" aria-labelledby="timesheet-summary-title">

@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core;
-use Dotenv\Dotenv;
-require_once base_path("vendor/autoload.php");
-$dotenv = Dotenv::createImmutable(__DIR__, '../.local.env');
-$dotenv->load();
+
+use PDO;
+use PDOException;
 
 class Database {
     private $type; 
@@ -27,14 +28,15 @@ class Database {
 
         $dsn = "{$this->type}:host={$this->host};dbname={$this->dbname};charset={$this->charset};port={$this->port}";
         $options = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,           //Enable exceptions for errors
-            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,      //Set default fetch mode to associative array
-            \PDO::ATTR_EMULATE_PREPARES => false,                   //Disable emulation of prepared statements
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,           //Enable exceptions for errors
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,      //Set default fetch mode to associative array
+            PDO::ATTR_EMULATE_PREPARES => false,                   //Disable emulation of prepared statements
         ];
+
         try {
-            $this->connection = new \PDO($dsn, $this->username, $this->password, $options);
+            $this->connection = new PDO($dsn, $this->username, $this->password, $options);
         }
-        catch (\PDOException $error) {
+        catch (PDOException $error) {
             print "Error: " . $error->getMessage() . "<br>";
             die();
         }
@@ -44,4 +46,5 @@ class Database {
         return $this->connection;
     }
 }
+
 ?>

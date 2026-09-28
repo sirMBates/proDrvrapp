@@ -44,80 +44,70 @@ export function getCurrentView() {
 };
 
 export async function fetchDrvr(url, options = {}) {
-  const requestUrl = normalizeProDrvrUrl(url);
+    const requestUrl = normalizeProDrvrUrl(url);
 
-  const headers = {
-    "X-Requested-With": "XMLHttpRequest",
-    ...(options.headers || {})
-  };
+    const headers = {
+        "X-Requested-With": "XMLHttpRequest",
+        ...(options.headers || {})
+    };
 
-  if (typeof options.body === "string" && !headers["Content-Type"]) {
-    const trimmedBody = options.body.trim();
+    if (typeof options.body === "string" && !headers["Content-Type"]) {
+        const trimmedBody = options.body.trim();
 
-    if (trimmedBody.startsWith("{") || trimmedBody.startsWith("[")) {
-      headers["Content-Type"] = "application/json";
+        if (trimmedBody.startsWith("{") || trimmedBody.startsWith("[")) {
+            headers["Content-Type"] = "application/json";
+        }
     }
-  }
 
-  const response = await fetch(requestUrl, {
-    ...options,
-    headers,
-    credentials: options.credentials ?? "same-origin"
-  });
-
-  const text = await response.text();
-
-  let data = null;
-
-  if (text.trim()) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = text;
-    }
-  }
-
-  if (!response.ok) {
-    console.error("fetchDrvr failed:", {
-      requestUrl,
-      status: response.status,
-      statusText: response.statusText,
-      response: data
+    const response = await fetch(requestUrl, {
+        ...options,
+        headers,
+        credentials: options.credentials ?? "same-origin"
     });
 
-    const message = data?.message || data?.error || `Network response was not OK: ${response.status}`;
-    const error = new Error(message);
-    error.status = response.status;
-    error.statusText = response.statusText;
-    error.response = data;
-    error.requestUrl = requestUrl;
-    throw error;
-  }
+    const text = await response.text();
+    let data = null;
 
-  if (response.status === 204 || !text.trim()) {
-    return null;
-  }
+    if (text.trim()) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
+    }
 
-  return data;
+    if (!response.ok) {
+        console.error("fetchDrvr failed:", {
+            requestUrl,
+            status: response.status,
+            statusText: response.statusText,
+            response: data
+        });
+
+        const message = data?.message || data?.error || `Network response was not OK: ${response.status}`;
+        const error = new Error(message);
+        error.status = response.status;
+        error.statusText = response.statusText;
+        error.response = data;
+        error.requestUrl = requestUrl;
+        throw error;
+    }
+
+    if (response.status === 204 || !text.trim()) {
+        return null;
+    }
+
+    return data;
 };
 
 function normalizeProDrvrUrl(url) {
-  const parsedUrl = new URL(url, window.location.origin);
+    const parsedUrl = new URL(url, window.location.origin);
 
-  if (
-    parsedUrl.hostname === "prodriver.local" ||
-    parsedUrl.hostname === "localhost" ||
-    parsedUrl.hostname === window.location.hostname
-  ) {
-    return (
-      window.location.origin +
-      parsedUrl.pathname +
-      parsedUrl.search +
-      parsedUrl.hash
-    );
-  }
+    if (parsedUrl.hostname === "prodriver.local" || parsedUrl.hostname === "localhost" || parsedUrl.hostname === window.location.hostname) {
+        return (window.location.origin + parsedUrl.pathname + parsedUrl.search + parsedUrl.hash);
+    }
 
-  return parsedUrl.toString();
+    return parsedUrl.toString();
 };
 
 export function viewableDateTimeHelper(input, format = 'datetime') {
@@ -134,15 +124,14 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
         date = new Date(input);
     } else if (typeof input === 'string') {
         const trimmed = input.trim();
+        const dateOnlyMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
         const timeOnlyMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-        // Only replace space with T for MySql-style dates
-        if (timeOnlyMatch) {
-            const [
-                ,
-                hour = '00',
-                minute = '00',
-                second = '00'
-            ] = timeOnlyMatch;
+
+        if (dateOnlyMatch) {
+            const [, year, month, day] = dateOnlyMatch;
+            date = new Date(Number(year), Number(month) - 1, Number(day));
+        } else if (timeOnlyMatch) {
+            const [, hour = '00', minute = '00', second = '00'] = timeOnlyMatch;
             date = new Date(1970, 0, 1, Number(hour), Number(minute), Number(second));
         } else if (/^\d{4}-\d{2}-\d{2}\s/.test(trimmed)){
             date = new Date(trimmed.replace(' ', 'T'));

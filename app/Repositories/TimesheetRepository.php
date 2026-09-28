@@ -9,6 +9,8 @@ use PDOException;
 use RuntimeException;
 use Core\Logger;
 use Core\Database;
+use App\Validation\Validator;
+use InvalidArgumentException;
 
 class TimesheetRepository {
     private PDO $pdo;
@@ -113,6 +115,47 @@ class TimesheetRepository {
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    public function findForDriverPeriod(int $driverId, string $periodStart, string $periodEnd): array {
+        $periodStart = trim($periodStart);
+        $periodEnd = trim($periodEnd);
+
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        if (!Validator::date($periodStart)) {
+            throw new InvalidArgumentException('Invalid Timesheet period start date.');
+        }
+
+        if (!Validator::date($periodEnd)) {
+            throw new InvalidArgumentException('Invalid Timesheet period end date.');
+        }
+
+        if ($periodStart > $periodEnd) {
+            throw new InvalidArgumentException('The Timesheet period start cannot be after its end.');
+        }
+
+        $sql = "SELECT timesheet_id, assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, spot_time, actual_drop_time, actual_end_time, total_job_time, SUM(total_job_time) OVER (PARTITION BY driver_id, assignment_date) AS total_shift_hours, SUM(total_job_time) OVER () AS period_total_hours, job_details, tolls_used, tip, job_pay, locked_at, completed_at, created_at, updated_at
+                FROM timesheet_entries
+                WHERE driver_id = :driver_id
+                AND assignment_date >= :period_start
+                AND assignment_date <= :period_end
+                ORDER BY assignment_date ASC, actual_end_time ASC, timesheet_id ASC";
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':driver_id' => $driverId,
+                ':period_start' => $periodStart,
+                ':period_end' => $periodEnd,
+            ]);
+
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            $this->logger?->error('[TIMESHEET] Failed loading driver period: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }
 

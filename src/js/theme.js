@@ -69,7 +69,7 @@ export class ThemeManager {
         const isDark = theme === THEME_MODES.DARK;
         const page = document.documentElement;
         const body = document.body;
-        const header = document.querySelector('header');
+        const header = document.querySelector('header.site-banner');
         const textareas = document.querySelectorAll('textarea');
 
         page.dataset.bsTheme = theme;

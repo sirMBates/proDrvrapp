@@ -49,7 +49,7 @@ include "partials/confirm-modal.php";
                                                                 <td></td>
                                                                 <td></td>
                                                                 <td></td>
-                                                                <td class="editable-data" data-type="time" data-field="actual_drop_time"></td>
+                                                                <td class="editable-data" data-type="datetime-local" data-field="actual_drop_time"></td>
                                                         </tr>
                                                 </tbody>
                                         </table>

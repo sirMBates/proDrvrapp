@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Enums\DriverStatus;
+use App\Validation\Validator;
+use InvalidArgumentException;
 use Core\Database;
 use PDO;
 
@@ -14,19 +17,20 @@ class DriverStatusRepository {
         $this->pdo = $pdo ?? (new Database())->connect();
     }
 
-    public function createStatus(int $driverId, string $status): int {
-        $sql = "INSERT INTO driver_status (driver_id, status)
-                VALUES (:driver_id, :status)";
+    public function createStatus(int $driverId, string $status, ?string $operationalDate = null): int {
+        $sql = "INSERT INTO driver_status (driver_id, status, operational_date)
+                VALUES (:driver_id, :status, :operational_date)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':driver_id' => $driverId,
-            ':status' => $status
+            ':status' => $status,
+            ':operational_date' => $operationalDate
         ]);
         return (int) $this->pdo->lastInsertId();
     }
 
     public function findLatestByDriverId(int $driverId): ?array {
-        $sql = "SELECT status_id, driver_id, status, status_timestamp
+        $sql = "SELECT status_id, driver_id, status, operational_date, status_timestamp
                 FROM driver_status
                 WHERE driver_id = :driver_id
                 ORDER BY status_timestamp DESC, status_id DESC
@@ -42,7 +46,7 @@ class DriverStatusRepository {
     }
 
     public function findRecentByDriverId(int $driverId, int $limit = 20): array {
-        $sql = "SELECT status_id, driver_id, status, status_timestamp
+        $sql = "SELECT status_id, driver_id, status, operational_date, status_timestamp
                 FROM driver_status
                 WHERE driver_id = :driver_id
                 ORDER BY status_timestamp DESC, status_id DESC
@@ -51,6 +55,40 @@ class DriverStatusRepository {
         $stmt->bindValue(':driver_id', $driverId, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function findEndOfShiftForPeriod(int $driverId, string $periodStart, string $periodEnd): array {
+        $periodStart = trim($periodStart);
+        $periodEnd = trim($periodEnd);
+
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        if (!Validator::date($periodStart) || !Validator::date($periodEnd)) {
+            throw new InvalidArgumentException('Invalid End-of-Shift period.');
+        }
+
+        if ($periodStart > $periodEnd) {
+            throw new InvalidArgumentException('The status period start cannot be after its end.');
+        }
+
+        $sql = "SELECT status_id, driver_id, status, operational_date, status_timestamp
+                FROM driver_status
+                WHERE driver_id = :driver_id
+                AND status = :status
+                AND operational_date >= :period_start
+                AND operational_date <= :period_end
+                ORDER BY operational_date ASC, status_timestamp ASC, status_id ASC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':driver_id' => $driverId,
+            ':status' => DriverStatus::END_OF_SHIFT->value,
+            ':period_start' => $periodStart,
+            ':period_end' => $periodEnd
+        ]);
 
         return $stmt->fetchAll();
     }

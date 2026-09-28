@@ -39,11 +39,13 @@ class DriverStatusService {
             throw new InvalidArgumentException('Status changes are unavailable while an emergency is active.');
         }
 
-        if ($driverStatus === DriverStatus::END_OF_SHIFT && !$this->isEOSReady($driverId)) {
-            throw new InvalidArgumentException('End of Shift is not available while assignments remain incomplete.');
+        $operationalDate = null;
+
+        if ($driverStatus === DriverStatus::END_OF_SHIFT) {
+            $operationalDate = $this->resolveEOSOperationalDate($driverId);
         }
 
-        $statusId = $this->driverStatusRepository->createStatus($driverId, $driverStatus->value);
+        $statusId = $this->driverStatusRepository->createStatus($driverId, $driverStatus->value, $operationalDate);
         if ($statusId < 1) {
             throw new RuntimeException('Driver status could not be created.');
         }
@@ -88,25 +90,34 @@ class DriverStatusService {
             'statusId' => (int) $statusRecord['status_id'],
             'driverId' => (int) $statusRecord['driver_id'],
             'driverStatus' => (string) $statusRecord['status'],
+            'operationalDate' => $statusRecord['operational_date'] ?? null,
             'statusTimestamp' => (string) $statusRecord['status_timestamp']
         ];
     }
 
-    private function isEOSReady(int $driverId): bool {
+    private function resolveEOSOperationalDate(int $driverId): string {
         if ($driverId < 1) {
             throw new InvalidArgumentException('Invalid driver ID.');
         }
 
         $latestCompletedAssignment = $this->assignmentRepository->findLatestCompletedAssignmentByDriver($driverId);
+
         if ($latestCompletedAssignment === null) {
-            return false;
+            throw new InvalidArgumentException('End of Shift requires a completed assignment.');
         }
 
         $startDateTime = new \DateTimeImmutable($latestCompletedAssignment['start_date_time']);
+
         $dayStart = $startDateTime->setTime(0, 0, 0);
         $nextDayStart = $dayStart->modify('+1 day');
 
-        return !$this->assignmentRepository->hasBlockingAssignmentsForEOS($driverId, $dayStart->format('Y-m-d H:i:s'), $nextDayStart->format('Y-m-d H:i:s'));
+        $hasBlockingAssignments = $this->assignmentRepository->hasBlockingAssignmentsForEOS($driverId, $dayStart->format('Y-m-d H:i:s'), $nextDayStart->format('Y-m-d H:i:s'));
+
+        if ($hasBlockingAssignments) {
+            throw new InvalidArgumentException('End of Shift is not available while assignments remain incomplete.');
+        }
+
+        return $dayStart->format('Y-m-d');
     }
 }
 
