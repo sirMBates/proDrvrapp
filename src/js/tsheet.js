@@ -195,6 +195,84 @@ function formatBooleanAnswer(value) {
     return 'Not answered';
 };
 
+function findTimesheetEntry(timesheetId) {
+    const days = Array.isArray(currentTimesheet?.days) ? currentTimesheet.days : [];
+
+    for (const day of days) {
+        const entries = Array.isArray(day.entries) ? day.entries : [];
+        const entry = entries.find(item => Number(item.timesheet_id) === Number(timesheetId));
+
+        if (entry) {
+            return entry;
+        }
+    }
+
+    return null;
+};
+
+function synchronizeAnswerControls(timesheetId, field, value) {
+    const controls = document.querySelectorAll('.timesheet-answer-control');
+    const controlValue = value === true ? '1' : value === false ? '0' : '';
+
+    controls.forEach(control => {
+        if (Number(control.dataset.timesheetId) === Number(timesheetId) && control.dataset.field === field) {
+            control.value = controlValue;
+        }
+    });
+};
+
+function createAnswerControl(entry, field, label, surface) {
+    if (entry.locked) {
+        const answer = document.createElement('span');
+        answer.textContent = formatBooleanAnswer(entry[field]);
+        return answer;
+    }
+
+    const select = document.createElement('select');
+
+    select.id = `timesheet-${surface}-${field}-${entry.timesheet_id}`;
+    select.className = 'form-select form-select-sm timesheet-answer-control';
+    select.dataset.timesheetId = String(entry.timesheet_id);
+    select.dataset.field = field;
+    select.setAttribute('aria-label', `${label} for order ${entry.order_id}`);
+
+    const options = [
+        ['', 'Not answered'],
+        ['1', 'Yes'],
+        ['0', 'No']
+    ];
+
+    options.forEach(([value, text]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = text;
+        select.appendChild(option);
+    });
+
+    select.value = entry[field] === true ? '1' : entry[field] === false ? '0' : '';
+
+    select.addEventListener('change', () => {
+        const selectedValue = select.value === '' ? null : select.value === '1';
+        const storedEntry = findTimesheetEntry(entry.timesheet_id);
+        if (!storedEntry || storedEntry.locked) {
+            return;
+        }
+
+        storedEntry[field] = selectedValue;
+        synchronizeAnswerControls(entry.timesheet_id, field, selectedValue);
+    });
+
+    return select;
+};
+
+function createAnswerTableCell(entry, field, label) {
+    const cell = document.createElement('td');
+    cell.className = 'timesheet-answer-cell';
+    cell.appendChild(createAnswerControl(entry, field, label, 'desktop'));
+
+    return cell;
+};
+
 function formatMoney(value) {
     if (value === null || value === undefined || value === '') {
         return 'Pending';
@@ -250,8 +328,8 @@ function renderDesktopEntries(days) {
 
             row.appendChild(createTableCell(entry.total_job_time));
             row.appendChild(createTableCell(isLastEntry ? day.total_shift_hours : '—'));
-            row.appendChild(createTableCell(formatBooleanAnswer(entry.tolls_used)));
-            row.appendChild(createTableCell(formatBooleanAnswer(entry.tip)));
+            row.appendChild(createAnswerTableCell(entry, 'tolls_used', 'Tolls'));
+            row.appendChild(createAnswerTableCell(entry, 'tip', 'Tip'));
             row.appendChild(createTableCell(formatMoney(entry.job_pay)));
             fragment.appendChild(row);
         });
@@ -274,6 +352,19 @@ function appendMobileDetail(list, label, value, options = {}) {
     if (options.preserveLines) {
         description.style.whiteSpace = 'pre-line';
     }
+
+    list.append(term, description);
+};
+
+function appendMobileControl(list, label, control) {
+    const term = document.createElement('dt');
+    term.className = 'col-5';
+    term.textContent = label;
+
+    const description = document.createElement('dd');
+    description.className = 'col-7';
+
+    description.appendChild(control);
 
     list.append(term, description);
 };
@@ -350,8 +441,8 @@ function createMobileAssignment(entry, day, dayAccordionId, isLastEntry) {
     appendMobileDetail(details, 'Job Details', entry.job_details, { preserveLines: true });
 
     appendMobileDetail(details, 'Total Hours', entry.total_job_time);
-    appendMobileDetail(details, 'Tolls', formatBooleanAnswer(entry.tolls_used));
-    appendMobileDetail(details, 'Tip', formatBooleanAnswer(entry.tip));
+    appendMobileControl(details, 'Tolls', createAnswerControl(entry, 'tolls_used', 'Tolls', 'mobile'));
+    appendMobileControl(details, 'Tip', createAnswerControl(entry, 'tip', 'Tip', 'mobile'));
     appendMobileDetail(details, 'Job Amount Paid', formatMoney(entry.job_pay));
 
     if (isLastEntry) {
@@ -364,6 +455,21 @@ function createMobileAssignment(entry, day, dayAccordionId, isLastEntry) {
     item.append(heading, collapse);
 
     return item;
+};
+
+function updateSaveButtonState() {
+    const days = Array.isArray(currentTimesheet?.days) ? currentTimesheet.days : [];
+
+    const hasUnlockedEntries = days.some(day => {
+        const entries = Array.isArray(day.entries) ? day.entries : [];
+        return entries.some(entry => !entry.locked);
+    });
+
+    if (hasUnlockedEntries) {
+        saveButton?.removeAttribute('disabled');
+    } else {
+        saveButton?.setAttribute('disabled', '');
+    }
 };
 
 function renderMobileEntries(days) {
@@ -425,6 +531,7 @@ function renderTimesheet(timesheetData) {
 
     renderDesktopEntries(days);
     renderMobileEntries(days);
+    updateSaveButtonState();
 
     showElement(timesheetContent);
     showElement(timesheetSummary);

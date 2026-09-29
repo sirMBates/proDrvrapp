@@ -38,6 +38,7 @@ $router->post('/signature-request', 'app/api/signature-request.php', true);
 $router->post('/signature', 'app/api/signature-submit.php');
 $router->post('/reuse-signature', 'app/api/reuse-signature.php', true);
 $router->post('/driver-signature', 'app/api/driver-signature.php', true);
+$router->post('/save-timesheet', 'app/api/save-timesheet.php', true);
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');

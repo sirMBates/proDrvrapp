@@ -157,6 +157,105 @@ class TimesheetRepository {
             throw $e;
         }
     }
+
+    public function saveAndLockDriverEntries(int $driverId, array $entries): int {
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        if ($entries === []) {
+            throw new InvalidArgumentException('No Timesheet entries were provided.');
+        }
+
+        $selectSql = "SELECT tolls_used, tip, locked_at
+                    FROM timesheet_entries
+                    WHERE timesheet_id = :timesheet_id
+                    AND driver_id = :driver_id
+                    FOR UPDATE";
+
+        $updateSql = "UPDATE timesheet_entries
+                    SET tolls_used = :tolls_used,
+                    tip = :tip,
+                    locked_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP
+                    WHERE timesheet_id = :timesheet_id
+                    AND driver_id = :driver_id
+                    AND locked_at IS NULL";
+
+        $transactionStarted = false;
+
+        try {
+            if (!$this->pdo->inTransaction()) {
+                $this->pdo->beginTransaction();
+                $transactionStarted = true;
+            }
+
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $updateStmt = $this->pdo->prepare($updateSql);
+
+            $lockedCount = 0;
+
+            foreach ($entries as $entry) {
+                $timesheetId = (int) $entry['timesheet_id'];
+                $tollsUsed = $entry['tolls_used'];
+                $tip = $entry['tip'];
+
+                $selectStmt->execute([
+                    ':timesheet_id' => $timesheetId,
+                    ':driver_id' => $driverId,
+                ]);
+
+                $storedEntry = $selectStmt->fetch();
+
+                if ($storedEntry === false) {
+                    throw new RuntimeException('A Timesheet entry could not be found for this driver.');
+                }
+
+                /*
+                * Make retries idempotent. If the original request succeeded but
+                * its response was interrupted, repeating the same values should
+                * not fail or modify the locked entry.
+                */
+                if ($storedEntry['locked_at'] !== null) {
+                    $storedTolls = $storedEntry['tolls_used'] === null ? null : (int) $storedEntry['tolls_used'];
+                    $storedTip = $storedEntry['tip'] === null ? null : (int) $storedEntry['tip'];
+
+                    if ($storedTolls !== $tollsUsed || $storedTip !== $tip) {
+                        throw new RuntimeException('A locked Timesheet entry cannot be changed.');
+                    }
+
+                    continue;
+                }
+
+                $updateStmt->execute([
+                    ':tolls_used' => $tollsUsed,
+                    ':tip' => $tip,
+                    ':timesheet_id' => $timesheetId,
+                    ':driver_id' => $driverId,
+                ]);
+
+                if ($updateStmt->rowCount() !== 1) {
+                    throw new RuntimeException('A Timesheet entry could not be saved and locked.');
+                }
+
+                $lockedCount++;
+            }
+
+            if ($transactionStarted) {
+                $this->pdo->commit();
+            }
+
+            $this->logger?->info("[TIMESHEET] Saved and locked {$lockedCount} entries for driver {$driverId}.");
+            return $lockedCount;
+        } catch (\Throwable $e) {
+            if ($transactionStarted && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            $this->logger?->error('[TIMESHEET] Save and lock failed: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 }
 
 ?>

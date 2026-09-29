@@ -1069,16 +1069,29 @@ window.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
-                    const serviceDate = assignment.start_date_time.split(' ')[0];
-                    const spotStart = `${serviceDate}T${spotTime.slice(0, 5)}`;
-                    const actualEnd = actualEndValue.replace(' ', 'T').slice(0, 16);
+                    const rolloverNotice = document.getElementById('spot-time-rollover-notice');
+                    rolloverNotice?.classList.add('d-none');
 
-                    const startObj = new Date(spotStart);
+                    const reportDateTime = assignment.start_date_time.replace(' ', 'T').slice(0, 19);
+                    const actualEnd = actualEndValue.replace(' ', 'T').slice(0, 19);
+                    const reportObj = new Date(reportDateTime);
+                    const startObj = new Date(reportDateTime);
                     const endObj = new Date(actualEnd);
 
-                    if (Number.isNaN(startObj.getTime()) || Number.isNaN(endObj.getTime())) {
-                        showFlashAlert('warning', 'Invalid spot time or actual end time.');
+                    const [spotHour, spotMinute, spotSecond = 0] = spotTime.split(':').map(Number);
+
+                    if (Number.isNaN(reportObj.getTime()) || Number.isNaN(startObj.getTime()) || Number.isNaN(endObj.getTime()) || !Number.isInteger(spotHour) || !Number.isInteger(spotMinute) || !Number.isInteger(spotSecond)) {
+                        showFlashAlert('warning', 'Invalid report time, spot time, or actual end time.');
                         return;
+                    }
+
+                    startObj.setHours(spotHour, spotMinute, spotSecond, 0);
+
+                    const crossesMidnight = startObj < reportObj;
+
+                    if (crossesMidnight) {
+                        startObj.setDate(startObj.getDate() + 1);
+                        rolloverNotice?.classList.remove('d-none');
                     }
 
                     if (endObj <= startObj) {

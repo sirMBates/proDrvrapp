@@ -53,6 +53,10 @@ include "partials/confirm-modal.php";
                                                         </tr>
                                                 </tbody>
                                         </table>
+                                        <div id="spot-time-rollover-notice" class="alert alert-info py-2 mx-auto my-3 d-none" role="status" aria-live="polite">
+                                                <i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>
+                                                Spot time crosses midnight and will be calculated using the next date.
+                                        </div>
                                         <table id="tableC" class="table m-auto" style="width: 1300px;">
                                                 <thead class="table-info text-capitalize">
                                                         <tr class="text-center">

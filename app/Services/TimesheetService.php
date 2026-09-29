@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Repositories\TimesheetRepository;
 use App\Repositories\DriverStatusRepository;
+use App\Validation\Validator;
 use InvalidArgumentException;
 
 class TimesheetService {
@@ -83,6 +84,54 @@ class TimesheetService {
         ];
     }
 
+    public function saveAndLockDriverEntries(int $driverId, array $entries): array {
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        if ($entries === []) {
+            throw new InvalidArgumentException('No Timesheet entries were provided.');
+        }
+
+        $normalizedEntries = [];
+        $seenTimesheetIds = [];
+
+        foreach ($entries as $entry) {
+            if (!is_array($entry)) {
+                throw new InvalidArgumentException('Invalid Timesheet entry data.');
+            }
+
+            $timesheetId = $entry['timesheet_id'] ?? null;
+            if (!Validator::positiveInteger($timesheetId)) {
+                throw new InvalidArgumentException('Invalid Timesheet entry ID.');
+            }
+
+            $timesheetId = (int) $timesheetId;
+            if (isset($seenTimesheetIds[$timesheetId])) {
+                throw new InvalidArgumentException('Duplicate Timesheet entry IDs are not allowed.');
+            }
+
+            if (!array_key_exists('tolls_used', $entry) || !array_key_exists('tip', $entry)) {
+                throw new InvalidArgumentException('Tolls and tip values must be included.');
+            }
+
+            $normalizedEntries[] = [
+                'timesheet_id' => $timesheetId,
+                'tolls_used' => $this->normalizeOptionalYesNo($entry['tolls_used'], 'tolls'),
+                'tip' => $this->normalizeOptionalYesNo($entry['tip'], 'tip')
+            ];
+
+            $seenTimesheetIds[$timesheetId] = true;
+        }
+
+        $lockedCount = $this->timesheetRepository->saveAndLockDriverEntries($driverId, $normalizedEntries);
+
+        return [
+            'entry_count' => count($normalizedEntries),
+            'locked_count' => $lockedCount
+        ];
+    }
+
     private function formatEntry(array $entry): array {
         return [
             'timesheet_id' => (int) $entry['timesheet_id'],
@@ -112,5 +161,21 @@ class TimesheetService {
         }
 
         return (int) $value === 1;
+    }
+
+    private function normalizeOptionalYesNo(mixed $value, string $field): ?int {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value === true || $value === 1 || $value === '1') {
+            return 1;
+        }
+
+        if ($value === false || $value === 0 || $value === '0') {
+            return 0;
+        }
+
+        throw new InvalidArgumentException("Invalid {$field} selection.");
     }
 }

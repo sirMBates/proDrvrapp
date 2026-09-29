@@ -11,7 +11,7 @@ use Core\Database;
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-//requireLoginAjax();
+requireLoginAjax();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
