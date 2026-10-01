@@ -2,6 +2,7 @@
 require "partials/head.php";
 require "partials/banner.php";
 include "partials/info-modal.php";
+include "partials/confirm-modal.php";
 ?>
 
 <main class="container-fluid p-3">

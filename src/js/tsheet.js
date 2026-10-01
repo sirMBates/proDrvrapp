@@ -1,4 +1,5 @@
-import { fetchDrvr, viewableDateTimeHelper } from './helpers.js';
+import { fetchDrvr, showFlashAlert, viewableDateTimeHelper } from './helpers.js';
+import { buildModal } from './appmodal.js';
 
 const timesheetPeriod = document.querySelector('#timesheet-period');
 const timesheetStatus = document.querySelector('#timesheet-status');
@@ -16,8 +17,10 @@ const previousButton = document.querySelector('#previous-timesheet');
 const nextButton = document.querySelector('#next-timesheet');
 const saveButton = document.querySelector('#save-timesheet');
 const reviewButton = document.querySelector('#review-timesheet');
+const drvrTokenInput = document.querySelector('#drvrToken');
 const TIMESHEET_COLUMN_COUNT = 13;
 let currentTimesheet = null;
+let timesheetSaveInProgress = false;
 
 function hideElement(element) {
     element?.classList.add('d-none');
@@ -465,11 +468,149 @@ function updateSaveButtonState() {
         return entries.some(entry => !entry.locked);
     });
 
-    if (hasUnlockedEntries) {
+    if (hasUnlockedEntries && !timesheetSaveInProgress) {
         saveButton?.removeAttribute('disabled');
     } else {
         saveButton?.setAttribute('disabled', '');
     }
+};
+
+function getUnlockedTimesheetEntries() {
+    const days = Array.isArray(currentTimesheet?.days) ? currentTimesheet.days : [];
+
+    return days.flatMap(day => {
+        const entries = Array.isArray(day.entries) ? day.entries : [];
+
+        return entries.filter(entry => !entry.locked).map(entry => ({
+            timesheet_id: Number(entry.timesheet_id),
+            tolls_used: entry.tolls_used === true ? 1 : entry.tolls_used === false ? 0 : null,
+            tip: entry.tip === true ? 1 : entry.tip === false ? 0 : null
+        }));
+    });
+};
+
+function setSaveButtonLoading(isLoading) {
+    if (!saveButton) {
+        return;
+    }
+
+    saveButton.replaceChildren();
+
+    if (isLoading) {
+        const spinner = document.createElement('span');
+        spinner.className = 'spinner-border spinner-border-sm me-2';
+        spinner.setAttribute('aria-hidden', 'true');
+
+        const label = document.createElement('span');
+        label.textContent = 'Saving & Locking…';
+
+        saveButton.append(spinner, label);
+        saveButton.setAttribute('disabled', '');
+        saveButton.setAttribute('aria-busy', 'true');
+
+        return;
+    }
+
+    saveButton.textContent = 'Save & Lock';
+    saveButton.removeAttribute('aria-busy');
+};
+
+async function performSaveAndLock(entries, csrfToken) {
+    timesheetSaveInProgress = true;
+    setSaveButtonLoading(true);
+
+    try {
+        const response = await fetchDrvr('/save-timesheet', {
+            method: 'POST',
+            cache: 'no-store',
+            headers: {
+                'X-CSRF-Token': csrfToken
+            },
+            body: JSON.stringify({
+                entries
+            })
+        });
+
+        if (!response || response.status !== 'success') {
+            throw new Error(response?.message || 'The Timesheet entries could not be saved.');
+        }
+
+        showFlashAlert('success', response.message || 'Timesheet entries saved and locked.');
+
+        /*
+         * Reload the authoritative database state so locked
+         * selections are rendered as read-only text.
+         */
+        await loadCurrentTimesheet();
+    } catch (error) {
+        console.error('[TIMESHEET] Save and lock failed:', error);
+        showFlashAlert('error', error?.message || 'The Timesheet entries could not be saved.');
+    } finally {
+        timesheetSaveInProgress = false;
+        setSaveButtonLoading(false);
+        updateSaveButtonState();
+    }
+};
+
+function showSaveAndLockConfirmation(entries, csrfToken) {
+    const confirmModalEl = document.querySelector('#confirm-modal');
+    const confirmModalBtn = document.querySelector('#confirm-modal-confirm');
+    const cancelModalBtn = document.querySelector('#confirm-modal-cancel');
+
+    if (!confirmModalEl || !confirmModalBtn || !cancelModalBtn) {
+        showFlashAlert('error', 'The confirmation window is unavailable.');
+
+        return;
+    }
+
+    const confirmModal = new bootstrap.Modal(confirmModalEl);
+
+    buildModal.confirm('Save and permanently lock these Timesheet entries?' + '<br><br>' + 'Toll and tip selections cannot be changed after locking. ' + 'Unanswered selections will remain recorded as not answered.', 'Save & Lock', 'Cancel');
+
+    /*
+     * Remove listeners left by any earlier use of this shared
+     * confirmation modal.
+     */
+    confirmModalBtn.replaceWith(confirmModalBtn.cloneNode(true));
+    cancelModalBtn.replaceWith(cancelModalBtn.cloneNode(true));
+
+    const newConfirmBtn = document.querySelector('#confirm-modal-confirm');
+    const newCancelBtn = document.querySelector('#confirm-modal-cancel');
+
+    newConfirmBtn.addEventListener('click', async () => {
+        newConfirmBtn.setAttribute('disabled', '');
+        bootstrap.Modal.getInstance(confirmModalEl)?.hide();
+
+        await performSaveAndLock(entries, csrfToken);
+    }, { once: true });
+
+    newCancelBtn.addEventListener('click', () => {
+        bootstrap.Modal.getInstance(confirmModalEl)?.hide();
+    }, { once: true });
+
+    confirmModal.show();
+};
+
+function saveAndLockTimesheet() {
+    if (timesheetSaveInProgress) {
+        return;
+    }
+
+    const entries = getUnlockedTimesheetEntries();
+
+    if (!entries.length) {
+        showFlashAlert('warning', 'There are no unlocked Timesheet entries to save.');
+        return;
+    }
+
+    const csrfToken = drvrTokenInput?.value?.trim() ?? '';
+
+    if (!csrfToken) {
+        showFlashAlert('error', 'The security token is unavailable. Please reload the page.');
+        return;
+    }
+
+    showSaveAndLockConfirmation(entries, csrfToken);
 };
 
 function renderMobileEntries(days) {
@@ -561,5 +702,7 @@ async function loadCurrentTimesheet() {
 
 previousButton?.setAttribute('disabled', '');
 nextButton?.setAttribute('disabled', '');
+
+saveButton?.addEventListener('click', saveAndLockTimesheet);
 
 loadCurrentTimesheet();

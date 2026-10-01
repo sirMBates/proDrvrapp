@@ -55,7 +55,7 @@ export const buildModal = {
         const successModal = document.querySelector('#success-modal');
         const successModalBody = successModal.childNodes[1].childNodes[1];
         const successHeadIcon = successModalBody.childNodes[1].childNodes[0];
-        const successHeadLabel = successHead.Icon.parentNode.childNodes[2];
+        const successHeadLabel = successHeadIcon.parentNode.childNodes[2];
         const successMessage = successHeadLabel.parentNode.nextElementSibling.childNodes[1];
         const successModalBtn = successMessage.parentNode.nextElementSibling.childNodes[1];
         successModalBody.classList.add('bg-success-subtle');
