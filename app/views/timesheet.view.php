@@ -129,9 +129,17 @@ include "partials/confirm-modal.php";
                                         Save &amp; Lock
                                 </button>
 
-                                <button id="review-timesheet" type="button" class="btn btn-lg bg-prodriverclr text-light" disabled>
-                                        Review &amp; Submit
-                                </button>
+                                <form id="review-timesheet-form" action="/review-timesheet" class="d-grid" method="POST">
+                                        <input type="hidden" name="drvrToken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+
+                                        <input id="review-period-start" type="hidden" name="period_start" value="">
+
+                                        <input id="review-period-end" type="hidden" name="period-end" value="">
+
+                                        <button id="review-timesheet" type="button" class="btn btn-lg bg-prodriverclr text-light" disabled>
+                                                Review &amp; Submit
+                                        </button>
+                                </form>
                         </div>
 
                         <div id="timesheet-document-actions" class="d-flex flex-column flex-md-row justify-content-end gap-3 d-none">

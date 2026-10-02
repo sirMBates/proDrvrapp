@@ -210,6 +210,30 @@ class AssignmentRepository {
         return $stmt->fetchColumn() !== false;
     }
 
+    public function hasBlockingAssignmentsForTimesheet(int $driverId, string $periodStart, string $nextPeriodStart): bool {
+        $sql = "SELECT 1 FROM work_orders
+                WHERE driver_id = :driver_id
+                AND start_date_time >= :period_start
+                AND start_date_time < :next_period_start
+                AND assignment_status IN ('pending', 'confirmed')
+                AND completed_at IS NULL
+                AND canceled_at IS NULL
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':driver_id' => $driverId,
+            ':period_start' => $periodStart,
+            ':next_period_start' => $nextPeriodStart,
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Timesheet assignment check failed.');
+        }
+
+        return $stmt->fetchColumn() !== false;
+    }
+
     public function findLatestCompletedAssignmentByDriver(int $driverId): ?array {
         $sql = "SELECT order_id, start_date_time, completed_at
                 FROM work_orders

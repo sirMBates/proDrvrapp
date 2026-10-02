@@ -73,7 +73,10 @@ class ScriptsMiddleware {
                 return ['/dist/js/int_messages.js'];
 
             case '/timesheet':
-                return ['/dist/js/tsheet.js'];
+                return ['/dist/js/timesheet.js'];
+            
+            case '/timesheet-review':
+                return ['/dist/js/timesheet-review.js'];
 
             case '/profile':
                 return ['/dist/js/profilehandler.js'];

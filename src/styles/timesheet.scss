@@ -1,0 +1,14 @@
+.editable-data {
+        cursor: pointer;
+}
+
+.timesheet-answer-cell {
+        min-width: 7.5rem;
+}
+
+#timesheet-table-container,
+#timesheet-review-table-container {
+    table {
+        min-width: 1500px;
+    }
+}

@@ -48,7 +48,11 @@ function pageStyle($value) {
                         break;
 
                 case "/timesheet":
-                        echo "<link rel='stylesheet' href='/dist/styles/tsheet.css'>\n";
+                        echo "<link rel='stylesheet' href='/dist/styles/timesheet.css'>\n";
+                        break;
+
+                case "/timesheet-review":
+                        echo "<link rel='stylesheet' href='/dist/styles/timesheet.css'>\n";
                         break;
 
                 case "/profile":
@@ -58,10 +62,6 @@ function pageStyle($value) {
                 case "/signature":
                         return;
                         break;
-
-                case "/views/404.php":
-                        return;
-                        break;
                         
                 default:
                         return;
@@ -69,4 +69,5 @@ function pageStyle($value) {
         }
 };
 pageStyle($url);
+
 ?>

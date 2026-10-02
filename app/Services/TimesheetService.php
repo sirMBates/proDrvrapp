@@ -135,6 +135,7 @@ class TimesheetService {
     private function formatEntry(array $entry): array {
         return [
             'timesheet_id' => (int) $entry['timesheet_id'],
+            'submission_id' => $entry['submission_id'] === null ? null : (int) $entry['submission_id'],
             'assignment_control' => (string) $entry['assignment_control'],
             'order_id' => (int) $entry['order_id'],
             'origin' => $entry['origin'],

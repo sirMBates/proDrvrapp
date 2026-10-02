@@ -8,14 +8,10 @@ use App\Services\PayPeriodService;
 use App\Services\TimesheetService;
 use Core\Database;
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
-// requireLoginAjax();
-
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+
+requireLoginAjax();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

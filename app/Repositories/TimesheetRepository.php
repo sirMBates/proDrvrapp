@@ -137,7 +137,7 @@ class TimesheetRepository {
             throw new InvalidArgumentException('The Timesheet period start cannot be after its end.');
         }
 
-        $sql = "SELECT timesheet_id, assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, spot_time, actual_drop_time, actual_end_time, total_job_time, SUM(total_job_time) OVER (PARTITION BY driver_id, assignment_date) AS total_shift_hours, SUM(total_job_time) OVER () AS period_total_hours, job_details, tolls_used, tip, job_pay, locked_at, completed_at, created_at, updated_at
+        $sql = "SELECT timesheet_id, submission_id, assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, spot_time, actual_drop_time, actual_end_time, total_job_time, SUM(total_job_time) OVER (PARTITION BY driver_id, assignment_date) AS total_shift_hours, SUM(total_job_time) OVER () AS period_total_hours, job_details, tolls_used, tip, job_pay, locked_at, completed_at, created_at, updated_at
                 FROM timesheet_entries
                 WHERE driver_id = :driver_id
                 AND assignment_date >= :period_start

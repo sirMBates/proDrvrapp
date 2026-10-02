@@ -18,6 +18,8 @@ const nextButton = document.querySelector('#next-timesheet');
 const saveButton = document.querySelector('#save-timesheet');
 const reviewButton = document.querySelector('#review-timesheet');
 const drvrTokenInput = document.querySelector('#drvrToken');
+const reviewPeriodStartInput = document.querySelector('#review-period-start');
+const reviewPeriodEndInput = document.querySelector('#review-period-end');
 const TIMESHEET_COLUMN_COUNT = 13;
 let currentTimesheet = null;
 let timesheetSaveInProgress = false;
@@ -36,6 +38,14 @@ function resetViewStates() {
     hideElement(timesheetContent);
     hideElement(timesheetSummary);
     hideElement(timesheetNotice);
+
+    if (reviewPeriodStartInput) {
+        reviewPeriodStartInput.value = '';
+    }
+
+    if (reviewPeriodEndInput) {
+        reviewPeriodEndInput.value = '';
+    }
 
     if (errorState) {
         errorState.textContent = '';
@@ -475,6 +485,20 @@ function updateSaveButtonState() {
     }
 };
 
+function updateReviewButtonState() {
+    const days = Array.isArray(currentTimesheet?.days) ? currentTimesheet.days : [];
+    const entries = days.flatMap(day => Array.isArray(day.entries) ? day.entries : []);
+    const allEntriesLocked = entries.length > 0 && entries.every(entry => entry.locked);
+    const noneSubmitted = entries.every(entry => entry.submission_id === null);
+    const reviewAvailable = currentTimesheet?.submission_available === true && allEntriesLocked && noneSubmitted;
+
+    if (reviewAvailable) {
+        reviewButton?.removeAttribute('disabled');
+    } else {
+        reviewButton?.setAttribute('disabled', '');
+    }
+};
+
 function getUnlockedTimesheetEntries() {
     const days = Array.isArray(currentTimesheet?.days) ? currentTimesheet.days : [];
 
@@ -549,6 +573,7 @@ async function performSaveAndLock(entries, csrfToken) {
         timesheetSaveInProgress = false;
         setSaveButtonLoading(false);
         updateSaveButtonState();
+        updateReviewButtonState();
     }
 };
 
@@ -597,14 +622,12 @@ function saveAndLockTimesheet() {
     }
 
     const entries = getUnlockedTimesheetEntries();
-
     if (!entries.length) {
         showFlashAlert('warning', 'There are no unlocked Timesheet entries to save.');
         return;
     }
 
     const csrfToken = drvrTokenInput?.value?.trim() ?? '';
-
     if (!csrfToken) {
         showFlashAlert('error', 'The security token is unavailable. Please reload the page.');
         return;
@@ -622,7 +645,6 @@ function renderMobileEntries(days) {
 
     days.forEach(day => {
         const entries = Array.isArray(day.entries) ? day.entries : [];
-
         const dateKey = String(day.assignment_date).replaceAll('-', '');
         const dayAccordionId = `timesheet-mobile-day-${dateKey}`;
         const daySection = document.createElement('section');
@@ -670,9 +692,18 @@ function renderTimesheet(timesheetData) {
         return;
     }
 
+    if (reviewPeriodStartInput) {
+        reviewPeriodStartInput.value = timesheetData.period_start ?? '';
+    }
+
+    if (reviewPeriodEndInput) {
+        reviewPeriodEndInput.value = timesheetData.period_end ?? '';
+    }
+
     renderDesktopEntries(days);
     renderMobileEntries(days);
     updateSaveButtonState();
+    updateReviewButtonState();
 
     showElement(timesheetContent);
     showElement(timesheetSummary);
