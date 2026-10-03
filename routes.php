@@ -8,7 +8,7 @@ $router->get('/reset-password', 'app/controllers/Pages/reset-password.php');
 $router->get('/reset', 'app/controllers/Actions/reset.php');
 $router->get('/', 'app/controllers/Pages/index.php', true);
 $router->get('/assignments', 'app/controllers/Pages/assignments.php', true);
-$router->get('/int_messages', 'app/controllers/Pages/int_messages.php', true);
+$router->get('/message-center', 'app/controllers/Pages/message-center.php', true);
 $router->get('/timesheet', 'app/controllers/Pages/timesheet.php', true);
 $router->get('/profile', 'app/controllers/Pages/profile.php', true);
 $router->get('/setprofilepicture', 'app/api/setprofilepicture.php', true);

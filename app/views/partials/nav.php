@@ -14,7 +14,7 @@
                                                 <a class="nav-link" href="/assignments"><i class="px-2 fa-solid fa-file"></i>Assignment(s)</a>
                                         </li>
                                         <li class="nav-item">
-                                                <a class="nav-link" href="/int_messages"><i class="px-2 fa-solid fa-message"></i>Message Center</a>
+                                                <a class="nav-link" href="/message-center"><i class="px-2 fa-solid fa-message"></i>Message Center</a>
                                         </li>
                                         <li class="nav-item">
                                                 <a class="nav-link" href="/timesheet"><i class="px-2 fa-solid fa-file-invoice-dollar"></i>Summary</a>

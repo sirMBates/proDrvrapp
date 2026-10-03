@@ -6,19 +6,16 @@ use App\Repositories\AssignmentRepository;
 use App\Repositories\DriverStatusRepository;
 use App\Repositories\TimesheetRepository;
 use App\Repositories\TimesheetSubmissionRepository;
+use App\Repositories\UserRepository;
 use App\Services\PayPeriodService;
 use App\Services\TimesheetService;
 use App\Services\TimesheetSubmissionService;
 use Core\Database;
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+requireLoginAjax();
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-
-// requireLoginAjax();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
@@ -74,10 +71,11 @@ try {
     $driverStatusRepository = new DriverStatusRepository($pdo);
     $submissionRepository = new TimesheetSubmissionRepository($pdo);
     $assignmentRepository = new AssignmentRepository($pdo);
+    $userRepository = new UserRepository($pdo);
 
     $payPeriodService = new PayPeriodService();
     $timesheetService = new TimesheetService($timesheetRepository, $driverStatusRepository, $payPeriodService);
-    $submissionService = new TimesheetSubmissionService($submissionRepository, $assignmentRepository, $timesheetService, $payPeriodService);
+    $submissionService = new TimesheetSubmissionService($submissionRepository, $assignmentRepository, $timesheetService, $payPeriodService, $userRepository);
 
     $reviewData = $submissionService->prepareCurrentReview($driverId, $periodStart, $periodEnd, 6, 'America/New_York');
 

@@ -6,6 +6,7 @@ use App\Repositories\AssignmentRepository;
 use App\Repositories\DriverStatusRepository;
 use App\Repositories\TimesheetRepository;
 use App\Repositories\TimesheetSubmissionRepository;
+use App\Repositories\UserRepository;
 use App\Services\PayPeriodService;
 use App\Services\TimesheetService;
 use App\Services\TimesheetSubmissionService;
@@ -47,10 +48,11 @@ try {
     $driverStatusRepository = new DriverStatusRepository($pdo);
     $submissionRepository = new TimesheetSubmissionRepository($pdo);
     $assignmentRepository = new AssignmentRepository($pdo);
+    $userRepository = new UserRepository($pdo);
 
     $payPeriodService = new PayPeriodService();
     $timesheetService = new TimesheetService($timesheetRepository, $driverStatusRepository, $payPeriodService);
-    $submissionService = new TimesheetSubmissionService($submissionRepository, $assignmentRepository, $timesheetService, $payPeriodService);
+    $submissionService = new TimesheetSubmissionService($submissionRepository, $assignmentRepository, $timesheetService, $payPeriodService, $userRepository);
 
     /*
      * Validate before creating the review session.

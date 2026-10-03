@@ -130,13 +130,13 @@ include "partials/confirm-modal.php";
                                 </button>
 
                                 <form id="review-timesheet-form" action="/review-timesheet" class="d-grid" method="POST">
-                                        <input type="hidden" name="drvrToken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+                                        <input type="hidden" name="drvrtoken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
 
                                         <input id="review-period-start" type="hidden" name="period_start" value="">
 
-                                        <input id="review-period-end" type="hidden" name="period-end" value="">
+                                        <input id="review-period-end" type="hidden" name="period_end" value="">
 
-                                        <button id="review-timesheet" type="button" class="btn btn-lg bg-prodriverclr text-light" disabled>
+                                        <button id="review-timesheet" type="submit" class="btn btn-lg bg-prodriverclr text-light" disabled>
                                                 Review &amp; Submit
                                         </button>
                                 </form>

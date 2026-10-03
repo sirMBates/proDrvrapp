@@ -6,17 +6,38 @@ namespace App\Services;
 
 use App\Repositories\AssignmentRepository;
 use App\Repositories\TimesheetSubmissionRepository;
+use App\Repositories\UserRepository;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
 use DateTimeImmutable;
 use DateTimeZone;
 use InvalidArgumentException;
 use RuntimeException;
 
 class TimesheetSubmissionService {
-    public function __construct(private TimesheetSubmissionRepository $submissionRepository, private AssignmentRepository $assignmentRepository, private TimesheetService $timesheetService, private PayPeriodService $payPeriodService) {}
+    public function __construct(private TimesheetSubmissionRepository $submissionRepository, private AssignmentRepository $assignmentRepository, private TimesheetService $timesheetService, private PayPeriodService $payPeriodService, private UserRepository $userRepository) {}
 
     public function prepareCurrentReview(int $driverId, string $requestedPeriodStart, string $requestedPeriodEnd, int $weekEndsOn = 6, string $timezone = 'America/New_York', ?DateTimeImmutable $now = null): array {
         if ($driverId < 1) {
             throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $driverIdentity = $this->userRepository->findDriverIdentityById($driverId);
+
+        if ($driverIdentity === null) {
+            throw new RuntimeException('The Timesheet driver could not be found.');
+        }
+
+        try {
+            $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+
+            $driver = [
+                'driver_id' => (int) $driverIdentity['user_id'],
+                'first_name' => Crypto::decrypt((string) $driverIdentity['first_name'], $key),
+                'last_name' => Crypto::decrypt((string) $driverIdentity['last_name'], $key)
+            ];
+        } catch (\Throwable $e) {
+            throw new RuntimeException('The Timesheet driver identity could not be prepared.', 0, $e);
         }
 
         $requestedPeriodStart = trim($requestedPeriodStart);
@@ -70,6 +91,7 @@ class TimesheetSubmissionService {
         }
 
         return [
+            'driver' => $driver,
             'period_start' => $period['period_start'],
             'period_end' => $period['period_end'],
             'week_ends_on' => $period['week_ends_on'],

@@ -166,6 +166,26 @@ class UserRepository {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute($params);
     }
+
+    public function findDriverIdentityById(int $userId): ?array {
+        if ($userId < 1) {
+            throw new \InvalidArgumentException('Invalid user ID.');
+        }
+
+        $sql = "SELECT user_id, first_name, last_name
+                FROM users
+                WHERE user_id = :user_id
+                AND role = 'driver'
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':user_id' => $userId
+        ]);
+
+        $identity = $stmt->fetch();
+        return $identity !== false ? $identity : null;
+    }
 }
 
 ?>

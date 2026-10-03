@@ -8,22 +8,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="close"></button>
         </div>
         <div class="offcanvas-body">
-                <div class="dropdown mt-3">
+                <!--<div class="dropdown mt-3">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"><span class="px-2 fa-solid fa-building"></span>Office</button>
                         <ul class="dropdown-menu">
                                 <li class="dropdown-item"><a href="tel:718-875-1103,2"><i class="px-2 fa-solid fa-phone"></i>Contact Office</a></li>
                                 <li class="dropdown-item"><a href="tel:646-281-0778"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
                                 <li class="dropdown-item"><a href="tel:917-567-8218"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
                                 <li class="dropdown-item"><a href="tel:646-301-5715"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
-                        </ul>
-                </div>
-                <!--<div class="dropdown mt-3 d-none">
-                        <a href="/printable" class="btn btn-secondary d-none" role="button"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</a>
-                                
-                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><span class="px-2 fa-solid fa-file-invoice-dollar"></span>View Paycard</button>
-                        <ul class="dropdown-menu">
-                                <li><a class="dropdown-item text-btd-blue-dodger" href='#'><i class="px-2 fa-solid fa-print"></i>Print</a></li>
-                                <li><a class="dropdown-item text-btd-blue-dodger" href='#'><i class="px-2 fa-solid fa-file-export"></i>Save & Download</a></li>
                         </ul>
                 </div>-->
                 <div class="dropdown mt-3">

@@ -69,8 +69,8 @@ class ScriptsMiddleware {
                 }
                 return $scripts;
 
-            case '/int_messages':
-                return ['/dist/js/int_messages.js'];
+            case '/message-center':
+                return ['/dist/js/messages.js'];
 
             case '/timesheet':
                 return ['/dist/js/timesheet.js'];

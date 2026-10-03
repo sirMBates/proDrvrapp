@@ -43,7 +43,7 @@ function pageStyle($value) {
                         echo "<link rel='stylesheet' href='/dist/styles/jobsview.css'>\n";
                         break;
 
-                case "/int_messages":
+                case "/message-center":
                         echo "<link rel='stylesheet' href='/dist/styles/messages.css'>\n";
                         break;
 

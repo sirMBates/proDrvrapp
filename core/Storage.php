@@ -7,12 +7,14 @@ use RuntimeException;
 class Storage {
     private const SIGNATURE_PREFIX = 'data:image/png;base64,';
     private const MAX_SIGNATURE_SIZE = 1_048_576; // 1 MB
+    private const MAX_TIMESHEET_PDF_SIZE = 10_485_760; // 10MB
 
     private string $signatureRoot;
+    private string $timesheetRoot;
 
-    public function __construct(string $signatureRoot = null) {
-        $signatureRoot ??= base_path('storage/uploads/signatures');
-        $this->signatureRoot = rtrim(str_replace('\\', '/', $signatureRoot), '/');
+    public function __construct(?string $signatureRoot = null, ?string $timesheetRoot = null) {
+        $this->signatureRoot = $this->normalizeStorageRoot($signatureRoot ?? base_path('storage/uploads/signatures'));
+        $this->timesheetRoot = $this->normalizeStorageRoot($timesheetRoot ?? base_path('storage/uploads/timesheets'));
         $this->ensureDirectoryExists($this->signatureRoot);
     }
 
@@ -74,7 +76,8 @@ class Storage {
 
         foreach ($files as $fileName) {
             $absolutePath = "{$directory}/{$fileName}";
-            $backupPath = sprintf('%s.bak.%s', $absolutePath, bin2hex(random_bytes(8)));
+            $backupSuffix = bin2hex(random_bytes(8));
+            $backupPath = "{$absolutePath}.bak.{$backupSuffix}";
 
             if (!is_file($absolutePath)) {
                 $backup[$fileName] = [
@@ -215,6 +218,136 @@ class Storage {
     }
 
     /**
+     * Save one authoritative Timesheet PDF atomically.
+     *
+     * @return array{
+     *      pdf_path: string,
+     *      pdf_sha256: string,
+     *      pdf_generated_at: string,
+     *      created: bool
+     * }
+     */
+    public function saveTimesheetPdf(int $driverId, string $periodStart, string $periodEnd, string $pdfBytes): array {
+        if ($driverId < 1) {
+            throw new RuntimeException('Invalid driver ID for Timesheet PDF storage.');
+        }
+
+        $periodStart = $this->normalizeStorageDate($periodStart, 'period start');
+        $periodEnd = $this->normalizeStorageDate($periodEnd, 'period end');
+
+        if ($periodStart > $periodEnd) {
+            throw new RuntimeException('The Timesheet period start cannot be after its end.');
+        }
+
+        if ($pdfBytes === '' || !str_starts_with($pdfBytes, '%PDF-')) {
+            throw new RuntimeException('The Timesheet document is not a valid PDF.');
+        }
+
+        if (strlen($pdfBytes) > self::MAX_TIMESHEET_PDF_SIZE) {
+            throw new RuntimeException('The Timesheet PDF exceeds the maximum allowed size.');
+        }
+
+        $directory = $this->buildTimesheetDirectory($driverId, $periodStart, $periodEnd);
+        $this->ensureDirectoryExists($directory);
+
+        $absolutePath = "{$directory}/timesheet.pdf";
+        $newHash = hash('sha256', $pdfBytes);
+
+        /*
+        * An identical retry is safe and returns the existing immutable file.
+        * A different PDF for the same driver and period must never overwrite it.
+        */
+        if (is_file($absolutePath)) {
+            $existingHash = hash_file('sha256', $absolutePath);
+
+            if (is_string($existingHash) && hash_equals($existingHash, $newHash)) {
+                return [
+                    'pdf_path' => $this->relativePathFromRoot($absolutePath, $this->timesheetRoot, 'Timesheet'),
+                    'pdf_sha256' => $existingHash,
+                    'pdf_generated_at' => date('Y-m-d H:i:s', filemtime($absolutePath) ?: time()),
+                    'created' => false
+                ];
+            }
+
+            throw new RuntimeException('A different Timesheet PDF already exists for this pay period.');
+        }
+
+        $temporarySuffix = bin2hex(random_bytes(8));
+        $temporaryPath = "{$absolutePath}.tmp.{$temporarySuffix}";
+        $bytesWritten = file_put_contents($temporaryPath, $pdfBytes, LOCK_EX);
+
+        if ($bytesWritten === false || $bytesWritten !== strlen($pdfBytes)) {
+            @unlink($temporaryPath);
+            throw new RuntimeException('Unable to write the Timesheet PDF.');
+        }
+
+        if (!@rename($temporaryPath, $absolutePath)) {
+            @unlink($temporaryPath);
+            throw new RuntimeException('Unable to finalize the Timesheet PDF.');
+        }
+
+        return [
+            'pdf_path' => $this->relativePathFromRoot($absolutePath, $this->timesheetRoot, 'Timesheet'),
+            'pdf_sha256' => $newHash,
+            'pdf_generated_at' => date('Y-m-d H:i:s'),
+            'created' => true
+        ];
+    }
+
+    /**
+     * Read an internally stored Timesheet PDF after verifying its integrity.
+     */
+    public function readTimesheetPdf(string $storedPath, string $expectedHash): string {
+        $absolutePath = $this->absoluteTimesheetPathFromStoredPath($storedPath);
+        if (!is_file($absolutePath)) {
+            throw new RuntimeException('The stored Timesheet PDF is missing.');
+        }
+
+        $expectedHash = strtolower(trim($expectedHash));
+        if (!preg_match('/^[a-f0-9]{64}$/', $expectedHash)) {
+            throw new RuntimeException('The stored Timesheet PDF hash is invalid.');
+        }
+
+        $actualHash = hash_file('sha256', $absolutePath);
+        if (!is_string($actualHash) || !hash_equals($expectedHash, $actualHash)) {
+            throw new RuntimeException('The stored Timesheet PDF failed its integrity check.');
+        }
+
+        $fileSize = filesize($absolutePath);
+        if ($fileSize === false || $fileSize > self::MAX_TIMESHEET_PDF_SIZE) {
+            throw new RuntimeException('The stored Timesheet PDF size is invalid.');
+        }
+
+        $pdfBytes = file_get_contents($absolutePath);
+        if ($pdfBytes === false || !str_starts_with($pdfBytes, '%PDF-')) {
+            throw new RuntimeException('The stored Timesheet document is not a valid PDF.');
+        }
+
+        return $pdfBytes;
+    }
+
+    /**
+     * Remove a newly created Timesheet PDF when submission persistence fails.
+     */
+    public function deleteTimesheetPdf(string $storedPath, string $expectedHash): void {
+        $absolutePath = $this->absoluteTimesheetPathFromStoredPath($storedPath);
+        if (!is_file($absolutePath)) {
+            return;
+        }
+
+        $expectedHash = strtolower(trim($expectedHash));
+        $actualHash = hash_file('sha256', $absolutePath);
+
+        if (!preg_match('/^[a-f0-9]{64}$/', $expectedHash) || !is_string($actualHash) || !hash_equals($expectedHash, $actualHash)) {
+            throw new RuntimeException('The Timesheet PDF could not be removed because its integrity check failed.');
+        }
+
+        if (!unlink($absolutePath)) {
+            throw new RuntimeException('Unable to remove the Timesheet PDF.');
+        }
+    }
+
+    /**
      * Decode and save one PNG signature atomically.
      *
      * @return array{
@@ -225,10 +358,8 @@ class Storage {
      */
     private function savePngSignature(string $dataUri, string $directory, string $fileName): array {
         $decodedImage = $this->decodePngDataUri($dataUri);
-
         $absolutePath = "{$directory}/{$fileName}";
         $temporaryPath = "{$absolutePath}.tmp";
-
         $newHash = hash('sha256', $decodedImage);
 
         /*
@@ -246,12 +377,7 @@ class Storage {
             }
         }
 
-        $bytesWritten = file_put_contents(
-            $temporaryPath,
-            $decodedImage,
-            LOCK_EX
-        );
-
+        $bytesWritten = file_put_contents($temporaryPath, $decodedImage, LOCK_EX);
         if ($bytesWritten === false || $bytesWritten !== strlen($decodedImage)) {
             @unlink($temporaryPath);
             throw new RuntimeException("Unable to write signature file: {$fileName}");
@@ -305,17 +431,27 @@ class Storage {
         }
 
         $actualHash = hash_file('sha256', $absolutePath);
-
-        return is_string($actualHash)
-            && hash_equals($storedHash, $actualHash);
+        return is_string($actualHash) && hash_equals($storedHash, $actualHash);
     }
 
     private function buildAssignmentDirectory(string $orderId): string {
-        return sprintf(
-            '%s/order-%s',
-            $this->signatureRoot,
-            $orderId
-        );
+        return "{$this->signatureRoot}/order-{$orderId}";
+    }
+
+    private function buildTimesheetDirectory(int $driverId, string $periodStart, string $periodEnd): string {
+        return "{$this->timesheetRoot}/driver-{$driverId}/{$periodStart}_to_{$periodEnd}";
+    }
+
+    private function normalizeStorageDate(string $value, string $label): string {
+        $value = trim($value);
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        $errors = \DateTimeImmutable::getLastErrors();
+
+        if ($date === false || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) || $date->format('Y-m-d') !== $value) {
+            throw new RuntimeException("Invalid Timesheet {$label}.");
+        }
+
+        return $value;
     }
 
     private function normalizeIdentifier(mixed $value, string $label): string {
@@ -336,6 +472,16 @@ class Storage {
         return $identifier;
     }
 
+    private function normalizeStorageRoot(string $root): string {
+        $root = rtrim(str_replace('\\', '/', trim($root)), '/');
+
+        if ($root === '') {
+            throw new RuntimeException('The storage root cannot be empty.');
+        }
+
+        return $root;
+    }
+
     private function ensureDirectoryExists(string $directory): void {
         if (is_dir($directory)) {
             return;
@@ -344,6 +490,17 @@ class Storage {
         if (!mkdir($directory, 0750, true) && !is_dir($directory)) {
             throw new RuntimeException("Unable to create storage directory: {$directory}");
         }
+    }
+
+    private function relativePathFromRoot(string $absolutePath, string $root, string $label): string {
+        $normalizedPath = str_replace('\\', '/', $absolutePath);
+        $normalizedRoot = rtrim(str_replace('\\', '/', $root), '/') . '/';
+
+        if (!str_starts_with($normalizedPath, $normalizedRoot)) {
+            throw new RuntimeException("{$label} path is outside its configured storage directory.");
+        }
+
+        return substr($normalizedPath, strlen($normalizedRoot));
     }
 
     private function relativePathFromAbsolute(string $absolutePath): string {
@@ -355,6 +512,23 @@ class Storage {
         }
 
         return substr($normalizedPath, strlen($normalizedRoot));
+    }
+
+    private function absoluteTimesheetPathFromStoredPath(string $storedPath): string {
+        $storedPath = ltrim(str_replace('\\', '/', trim($storedPath)), '/');
+        if ($storedPath === '' || str_contains($storedPath, "\0") || str_contains($storedPath, '../')) {
+            throw new RuntimeException('Invalid stored Timesheet PDF path.');
+        }
+
+        $absolutePath = "{$this->timesheetRoot}/{$storedPath}";
+        $normalizedPath = str_replace('\\', '/', $absolutePath);
+        $normalizedRoot = "{$this->timesheetRoot}/";
+
+        if (!str_starts_with($normalizedPath, $normalizedRoot)) {
+            throw new RuntimeException('Stored Timesheet PDF path is outside the storage directory.');
+        }
+
+        return $normalizedPath;
     }
 
     private function absolutePathFromStoredPath(string $storedPath): string {
