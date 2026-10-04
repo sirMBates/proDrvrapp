@@ -7,17 +7,18 @@ namespace App\Services;
 use App\Repositories\TimesheetRepository;
 use App\Repositories\DriverStatusRepository;
 use App\Validation\Validator;
+use DateTimeImmutable;
 use InvalidArgumentException;
 
 class TimesheetService {
     public function __construct(private TimesheetRepository $timesheetRepository, private DriverStatusRepository $driverStatusRepository, private PayPeriodService $payPeriodService) {}
 
-    public function getCurrentDriverPeriod(int $driverId, int $weekEndsOn = 6, string $timezone = 'America/New_York'): array {
+    public function getCurrentDriverPeriod(int $driverId, int $weekEndsOn = 6, string $timezone = 'America/New_York', ?DateTimeImmutable $now = null): array {
         if ($driverId < 1) {
             throw new InvalidArgumentException('Invalid driver ID.');
         }
 
-        $period = $this->payPeriodService->getCurrentPeriod($weekEndsOn, $timezone);
+        $period = $this->payPeriodService->getCurrentPeriod($weekEndsOn, $timezone, $now);
         $timesheet = $this->getDriverPeriod($driverId, $period['period_start'], $period['period_end']);
 
         return [
@@ -29,8 +30,88 @@ class TimesheetService {
             'submission_available' => $period['submission_available'],
             'assignment_count' => $timesheet['assignment_count'],
             'period_total_hours' => $timesheet['period_total_hours'],
-            'days' => $timesheet['days']
+            'days' => $timesheet['days'],
+            'period_state' => 'current',
+            'is_current_period' => true,
+            'current_period_start' => $period['period_start'],
+            'current_period_end' => $period['period_end']
         ];
+    }
+
+    public function getDriverLandingPeriod(int $driverId, int $weekEndsOn = 6, string $timezone = 'America/New_York', ?DateTimeImmutable $now = null): array {
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $currentPeriod = $this->payPeriodService->getCurrentPeriod($weekEndsOn, $timezone, $now);
+        $previousPeriod = $this->payPeriodService->getPreviousPeriod($weekEndsOn, $timezone, $now);
+
+        $previousTimesheet = $this->getDriverPeriod($driverId, $previousPeriod['period_start'], $previousPeriod['period_end']);
+        if ($this->hasUnsubmittedEntries($previousTimesheet)) {
+            return [
+                'period_start' => $previousTimesheet['period_start'],
+                'period_end' => $previousTimesheet['period_end'],
+                'week_ends_on' => $previousPeriod['week_ends_on'],
+                'timezone' => $previousPeriod['timezone'],
+                'submission_opens_at' => $previousPeriod['submission_opens_at'],
+                'submission_available' => true,
+                'assignment_count' => $previousTimesheet['assignment_count'],
+                'period_total_hours' => $previousTimesheet['period_total_hours'],
+                'days' => $previousTimesheet['days'],
+                'period_state' => 'outstanding',
+                'is_current_period' => false,
+                'current_period_start' => $currentPeriod['period_start'],
+                'current_period_end' => $currentPeriod['period_end']
+            ];
+        }
+
+        $currentTimesheet = $this->getDriverPeriod($driverId, $currentPeriod['period_start'], $currentPeriod['period_end']);
+
+        return [
+            'period_start' => $currentTimesheet['period_start'],
+            'period_end' => $currentTimesheet['period_end'],
+            'week_ends_on' => $currentPeriod['week_ends_on'],
+            'timezone' => $currentPeriod['timezone'],
+            'submission_opens_at' => $currentPeriod['submission_opens_at'],
+            'submission_available' => $currentPeriod['submission_available'],
+            'assignment_count' => $currentTimesheet['assignment_count'],
+            'period_total_hours' => $currentTimesheet['period_total_hours'],
+            'days' => $currentTimesheet['days'],
+            'period_state' => 'current',
+            'is_current_period' => true,
+            'current_period_start' => $currentPeriod['period_start'],
+            'current_period_end' => $currentPeriod['period_end']
+        ];
+    }
+
+    public function getDriverPeriodView(int $driverId, string $view = 'landing', int $weekEndsOn = 6, string $timezone = 'America/New_York', ?DateTimeImmutable $now = null): array {
+        $view = strtolower(trim($view));
+
+        if (!in_array($view, ['landing', 'current', 'outstanding'], true)) {
+            throw new InvalidArgumentException('The requested Timesheet view is invalid.');
+        }
+
+        $landingPeriod = $this->getDriverLandingPeriod($driverId, $weekEndsOn, $timezone, $now);
+        $hasOutstandingPrevious = (($landingPeriod['period_state'] ?? '') === 'outstanding');
+
+        if ($view === 'landing') {
+            $landingPeriod['has_outstanding_previous'] = $hasOutstandingPrevious;
+            return $landingPeriod;
+        }
+
+        if ($view === 'outstanding') {
+            if (!$hasOutstandingPrevious) {
+                throw new InvalidArgumentException('There is no outstanding Timesheet available.');
+            }
+
+            $landingPeriod['has_outstanding_previous'] = true;
+            return $landingPeriod;
+        }
+
+        $currentPeriod = $this->getCurrentDriverPeriod($driverId, $weekEndsOn, $timezone, $now);
+        $currentPeriod['has_outstanding_previous'] = $hasOutstandingPrevious;
+
+        return $currentPeriod;
     }
 
     public function getDriverPeriod(int $driverId, string $periodStart, string $periodEnd): array {
@@ -142,6 +223,7 @@ class TimesheetService {
             'destination' => $entry['destination'],
             'vehicle_id' => (string) $entry['vehicle_id'],
             'assignment_date' => (string) $entry['assignment_date'],
+            'garage_report_at' => (string) $entry['garage_report_at'],
             'spot_time' => $entry['spot_time'],
             'actual_drop_time' => $entry['actual_drop_time'],
             'actual_end_time' => $entry['actual_end_time'],
@@ -179,4 +261,30 @@ class TimesheetService {
 
         throw new InvalidArgumentException("Invalid {$field} selection.");
     }
+
+    private function hasUnsubmittedEntries(array $timesheet): bool {
+        $days = $timesheet['days'] ?? [];
+
+        if (!is_array($days)) {
+            return false;
+        }
+
+        foreach ($days as $day) {
+            $entries = $day['entries'] ?? [];
+
+            if (!is_array($entries)) {
+                continue;
+            }
+
+            foreach ($entries as $entry) {
+                if (($entry['submission_id'] ?? null) === null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
+
+?>

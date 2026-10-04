@@ -8,10 +8,10 @@ use App\Services\PayPeriodService;
 use App\Services\TimesheetService;
 use Core\Database;
 
+requireLoginAjax();
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-
-requireLoginAjax();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
@@ -40,7 +40,8 @@ try {
     $payPeriodService = new PayPeriodService();
 
     $timesheetService = new TimesheetService($timesheetRepository, $driverStatusRepository, $payPeriodService);
-    $timesheetData = $timesheetService->getCurrentDriverPeriod($driverId, 6, 'America/New_York');
+    $periodView = trim((string) ($_GET['period'] ?? 'landing'));
+    $timesheetData = $timesheetService->getDriverPeriodView($driverId, $periodView, 6, 'America/New_York');
 
     http_response_code(200);
     echo json_encode([

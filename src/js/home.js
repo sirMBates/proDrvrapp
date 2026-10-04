@@ -74,6 +74,7 @@ function renderHomeTable(assignments, fromSync = false) {
                         <td>${assignment.operator_id ?? ''}</td>
                         <td>${dtHelper(assignment.start_date_time, 'date')}</td>
                         <td>${dtHelper(assignment.start_date_time, 'time')}</td>
+                        <td>${assignment.vehicle_id ?? ''}</td>
                         <td>${dtHelper(assignment.spot_time, 'time')}</td>
                         <td class="text-capitalize">${assignment.assignment_status ?? 'pending'}</td>
                 `;

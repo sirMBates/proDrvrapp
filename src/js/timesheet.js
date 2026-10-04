@@ -23,6 +23,7 @@ const reviewPeriodEndInput = document.querySelector('#review-period-end');
 const TIMESHEET_COLUMN_COUNT = 13;
 let currentTimesheet = null;
 let timesheetSaveInProgress = false;
+let activePeriodView = 'landing';
 
 function hideElement(element) {
     element?.classList.add('d-none');
@@ -59,6 +60,8 @@ function resetViewStates() {
         mobileEntries.replaceChildren();
     }
 
+    previousButton?.setAttribute('disabled', '');
+    nextButton?.setAttribute('disabled', '');
     saveButton?.setAttribute('disabled', '');
     reviewButton?.setAttribute('disabled', '');
 };
@@ -115,11 +118,25 @@ function renderPeriodHeader(timesheetData) {
         return;
     }
 
+    if (timesheetData.period_state === 'outstanding') {
+        timesheetStatus.textContent = 'Outstanding — Submit Required';
+        timesheetStatus.className = 'badge text-bg-danger';
+
+        if (timesheetNotice) {
+            timesheetNotice.className = 'alert alert-danger mt-3 mb-0';
+            timesheetNotice.textContent = 'Your previous pay-period Timesheet remains open. ' + 'Complete all remaining assignments, then save and ' + 'submit it to payroll.';
+            showElement(timesheetNotice);
+        }
+
+        return;
+    }
+
     if (timesheetData.submission_available) {
         timesheetStatus.textContent = 'Ready for Review';
         timesheetStatus.className = 'badge text-bg-warning';
 
         if (timesheetNotice) {
+            timesheetNotice.className = 'alert alert-warning mt-3 mb-0';
             timesheetNotice.textContent = 'This pay period is available for review and submission.';
             showElement(timesheetNotice);
         }
@@ -333,7 +350,7 @@ function renderDesktopEntries(days) {
             row.appendChild(createDestinationCell(entry));
             row.appendChild(createTableCell(entry.vehicle_id));
 
-            row.appendChild(createTableCell(viewableDateTimeHelper(entry.assignment_date, 'date')));
+            row.appendChild(createTableCell(viewableDateTimeHelper(entry.garage_report_at, 'datetime')));
             row.appendChild(createTableCell(viewableDateTimeHelper(entry.spot_time, 'time')));
             row.appendChild(createTableCell(viewableDateTimeHelper(entry.actual_drop_time, 'time')));
             row.appendChild(createTableCell(entry.job_details, 'text-wrap'));
@@ -447,7 +464,7 @@ function createMobileAssignment(entry, day, dayAccordionId, isLastEntry) {
 
     appendMobileDetail(details, 'Assignment Control', entry.assignment_control);
     appendMobileDetail(details, 'Vehicle / Bus #', entry.vehicle_id);
-    appendMobileDetail(details, 'Garage Report Date', viewableDateTimeHelper(entry.assignment_date, 'date'));
+    appendMobileDetail(details, 'Garage Report Date/Time', viewableDateTimeHelper(entry.garage_report_at, 'datetime'));
 
     appendMobileDetail(details, 'Spot Time', viewableDateTimeHelper(entry.spot_time, 'time'));
     appendMobileDetail(details, 'Drop Time', viewableDateTimeHelper(entry.actual_drop_time, 'time'));
@@ -497,6 +514,32 @@ function updateReviewButtonState() {
     } else {
         reviewButton?.setAttribute('disabled', '');
     }
+};
+
+function updatePeriodNavigation(timesheetData) {
+    const periodState = timesheetData?.period_state;
+    const hasOutstandingPrevious = timesheetData?.has_outstanding_previous === true;
+
+    if (periodState === 'outstanding') {
+        previousButton?.setAttribute('disabled', '');
+        nextButton?.removeAttribute('disabled');
+        return;
+    }
+
+    if (periodState === 'current') {
+        nextButton?.setAttribute('disabled', '');
+
+        if (hasOutstandingPrevious) {
+            previousButton?.removeAttribute('disabled');
+        } else {
+            previousButton?.setAttribute('disabled', '');
+        }
+
+        return;
+    }
+
+    previousButton?.setAttribute('disabled', '');
+    nextButton?.setAttribute('disabled', '');
 };
 
 function getUnlockedTimesheetEntries() {
@@ -684,6 +727,7 @@ function renderTimesheet(timesheetData) {
 
     renderPeriodHeader(timesheetData);
     renderSummary(timesheetData);
+    updatePeriodNavigation(timesheetData);
 
     const days = Array.isArray(timesheetData.days) ? timesheetData.days : [];
 
@@ -709,21 +753,22 @@ function renderTimesheet(timesheetData) {
     showElement(timesheetSummary);
 };
 
-async function loadCurrentTimesheet() {
+async function loadCurrentTimesheet(periodView = activePeriodView) {
     showLoadingState();
+    const endpoint = periodView === 'landing' ? '/get-timesheet' : `/get-timesheet?period=${encodeURIComponent(periodView)}`;
 
     try {
-        const response = await fetchDrvr('/get-timesheet', {
-                method: 'GET',
-                cache: 'no-store'
-            }
-        );
+        const response = await fetchDrvr(endpoint, {
+            method: 'GET',
+            cache: 'no-store'
+        });
 
         if (!response || response.status !== 'success' || !response.timesheetData) {
             throw new Error(response?.message || 'Invalid Timesheet response.');
         }
 
         currentTimesheet = response.timesheetData;
+        activePeriodView = currentTimesheet.period_state === 'outstanding' ? 'outstanding' : 'current';
         renderTimesheet(currentTimesheet);
     } catch (error) {
         console.error('[TIMESHEET] Failed loading Timesheet:', error);
@@ -731,8 +776,13 @@ async function loadCurrentTimesheet() {
     }
 };
 
-previousButton?.setAttribute('disabled', '');
-nextButton?.setAttribute('disabled', '');
+previousButton?.addEventListener('click', () => {
+    loadCurrentTimesheet('outstanding');
+});
+
+nextButton?.addEventListener('click', () => {
+    loadCurrentTimesheet('current');
+});
 
 saveButton?.addEventListener('click', saveAndLockTimesheet);
 

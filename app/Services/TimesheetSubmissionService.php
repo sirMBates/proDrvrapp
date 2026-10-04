@@ -43,16 +43,23 @@ class TimesheetSubmissionService {
         $requestedPeriodStart = trim($requestedPeriodStart);
         $requestedPeriodEnd = trim($requestedPeriodEnd);
 
-        $period = $this->payPeriodService->getCurrentPeriod($weekEndsOn, $timezone, $now);
+        $currentPeriod = $this->payPeriodService->getCurrentPeriod($weekEndsOn, $timezone, $now);
+        $previousPeriod = $this->payPeriodService->getPreviousPeriod($weekEndsOn, $timezone, $now);
+
+        $isCurrentPeriod = ($requestedPeriodStart === $currentPeriod['period_start'] && $requestedPeriodEnd === $currentPeriod['period_end']);
+
+        $isPreviousPeriod = ($requestedPeriodStart === $previousPeriod['period_start'] && $requestedPeriodEnd === $previousPeriod['period_end']);
 
         /*
-         * Do not trust hidden form dates. They must match the
-         * authoritative pay period calculated by the server.
-         */
-        if ($requestedPeriodStart !== $period['period_start'] || $requestedPeriodEnd !== $period['period_end']) {
+        * Never trust arbitrary hidden form dates. The requested period
+        * must match either the server-calculated current period or its
+        * immediately preceding authoritative period.
+        */
+        if (!$isCurrentPeriod && !$isPreviousPeriod) {
             throw new InvalidArgumentException('The requested Timesheet period is invalid.');
         }
 
+        $period = $isCurrentPeriod ? $currentPeriod : $previousPeriod;
         if (!$period['submission_available']) {
             throw new RuntimeException('This Timesheet is not yet available for review and submission.');
         }

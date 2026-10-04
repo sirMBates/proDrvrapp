@@ -16,8 +16,14 @@
                                         <li class="nav-item">
                                                 <a class="nav-link" href="/message-center"><i class="px-2 fa-solid fa-message"></i>Message Center</a>
                                         </li>
-                                        <li class="nav-item">
-                                                <a class="nav-link" href="/timesheet"><i class="px-2 fa-solid fa-file-invoice-dollar"></i>Summary</a>
+                                        <li class="nav-item dropdown">
+                                                <button type="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" data-active-paths="/timesheet,/timesheet-review,/submitted-timesheets" aria-expanded="false">
+                                                        <i class="px-2 fa-solid fa-file-invoice-dollar"></i>Timesheets
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="/timesheet">Current Timesheet</a></li>
+                                                        <li><a class="dropdown-item" href="/submitted-timesheets">Timesheet History</a></li>
+                                                </ul>
                                         </li>                                                                
                                 </ul>
                         </div>

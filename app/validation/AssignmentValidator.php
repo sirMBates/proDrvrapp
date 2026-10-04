@@ -158,6 +158,21 @@ final class AssignmentValidator {
             return false;
         }
     }
+
+    public static function actualEndIsNotFuture(mixed $actualEndTime, int $toleranceMinutes = 5): bool {
+        if (!Validator::dateTime($actualEndTime) || $toleranceMinutes < 0) {
+            return false;
+        }
+
+        try {
+            $timezone = new \DateTimeZone('America/New_York');
+            $end = new \DateTimeImmutable(str_replace('T', ' ', (string) $actualEndTime), $timezone);
+            $latestAllowedEnd = (new \DateTimeImmutable('now', $timezone))->modify('+' . $toleranceMinutes . ' minutes');
+            return $end <= $latestAllowedEnd;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
 }
 
 ?>

@@ -269,6 +269,10 @@ class AssignmentService {
             throw new InvalidArgumentException('The actual drop time must occur before the actual end time.');
         }
 
+        if (!AssignmentValidator::actualEndIsNotFuture($finalAssignment['actual_end_time'])) {
+            throw new InvalidArgumentException('The actual end time cannot be in the future.');
+        }
+
         /*
         * Signatures are intentionally NOT persisted here.
         * Complete may receive a newly captured signature that has not yet

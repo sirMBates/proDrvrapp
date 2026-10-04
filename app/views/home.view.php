@@ -11,13 +11,14 @@ include "partials/custom-modal.php";
                         <h3 class='text-center text-capitalize'><button type="button" id="notifyinfo" class="z-3 btn btn-light" aria-label="Left Align" style="background: none; border: none;"><i class="fa-solid fa-circle-info fs-3 text-light"></i></button>driver information</h3>
                 </div>
                 <div class="card-body overflow-x-auto">
-                        <table id="dashboard-info" class="table m-auto" style="width: 1200px;">
+                        <table id="dashboard-info" class="table m-auto" style="width: 1250px;">
                                 <thead class="table-info text-capitalize">
                                         <tr>
                                                 <th scope="col">order id</th>
                                                 <th scope="col">operator id</th>
                                                 <th scope="col">garage report date</th>
                                                 <th scope="col">garage report time</th>
+                                                <th scope="col">vehicle id</th>
                                                 <th scope="col">loc. spot time</th>
                                                 <th scope="col">status</th>
                                         </tr>
@@ -25,6 +26,7 @@ include "partials/custom-modal.php";
                                 <tbody class="table-group-divider">
                                         <tr>
                                                 <td scope="row"></td>
+                                                <td></td>
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>

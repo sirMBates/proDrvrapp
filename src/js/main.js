@@ -20,7 +20,7 @@ const themeModeIndicator = document.querySelector('#themeModeIndicator');
 const logoutLink = driverMenu.querySelector('#logout-link');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = fetchDrvr;
-const drvrToken = document.getElementById('drvrToken').value;
+const drvrToken = document.querySelector('#drvrToken').value;
 const drvrAlert = showFlashAlert;
 const connectionIndicatorElement = document.querySelector('#connection-indicator');
 let connectionIndicator;
@@ -40,7 +40,7 @@ window.addEventListener('load', async () => {
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq
-        if (curView === '/faqs' || curView === '/counter' || curView === '/int_messages' || curView === '/signature') {
+        if (curView === '/faqs' || curView === '/counter' || curView === '/message-center' || curView === '/signature' || curView === '/timesheet-review') {
                 return;
         }
 
@@ -252,17 +252,40 @@ function applyEmergencyUiState(active) {
 };
 
 // Highlight the active link of the current page.
-function activeLink () {
-        mainMenuItems.forEach(link => {
-                let linkLocation = link.pathname;
-                if (curView === linkLocation) {
-                        link.setAttribute('aria-current', 'page'); //aria-current, page
-                        link.classList.add('active'); //active                      
-                } else {
-                        link.removeAttribute('aria-current'); //aria-current
-                        link.classList.remove('active'); //active 
-                }
-        })
+function activeLink() {
+    mainMenuItems.forEach(link => {
+        const href = link.getAttribute('href');
+        const activePaths = (link.dataset.activePaths || '').split(',').map(path => path.trim()).filter(Boolean);
+        let isActive = false;
+
+        if (activePaths.length) {
+            isActive = activePaths.includes(curView);
+        } else if (href && href !== '#') {
+            const linkLocation = new URL(href, window.location.origin).pathname;
+            isActive = curView === linkLocation;
+        }
+
+        link.classList.toggle('active', isActive);
+
+        if (isActive && href && href !== '#') {
+            link.setAttribute('aria-current', 'page');
+        } else {
+            link.removeAttribute('aria-current');
+        }
+    });
+
+    document.querySelectorAll('.dropdown-item[href]').forEach(link => {
+        const linkLocation = new URL(link.getAttribute('href'), window.location.origin).pathname;
+        const isActive = curView === linkLocation;
+
+        link.classList.toggle('active', isActive);
+
+        if (isActive) {
+            link.setAttribute('aria-current', 'page');
+        } else {
+            link.removeAttribute('aria-current');
+        }
+    });
 };
 activeLink();
 

@@ -1,4 +1,5 @@
 import { fetchDrvr, viewableDateTimeHelper } from './helpers.js';
+import { buildModal } from './appmodal.js';
 
 const periodHeading = document.querySelector('#timesheet-review-period');
 const statusBadge = document.querySelector('#timesheet-review-status');
@@ -11,6 +12,9 @@ const assignmentCount = document.querySelector('#timesheet-review-assignment-cou
 const totalHours = document.querySelector('#timesheet-review-total-hours');
 const submitButton = document.querySelector('#submit-timesheet');
 const TIMESHEET_COLUMN_COUNT = 13;
+const submitForm = document.querySelector('#submit-timesheet-form');
+const submitPeriodStart = document.querySelector('#submit-period-start');
+const submitPeriodEnd = document.querySelector('#submit-period-end');
 
 function hideElement(element) {
     element?.classList.add('d-none');
@@ -135,7 +139,7 @@ function renderDesktopEntries(days) {
             row.appendChild(createOrderCell(entry));
             row.appendChild(createDestinationCell(entry));
             row.appendChild(createTableCell(entry.vehicle_id));
-            row.appendChild(createTableCell(viewableDateTimeHelper(entry.assignment_date, 'date')));
+            row.appendChild(createTableCell(viewableDateTimeHelper(entry.garage_report_at, 'datetime')));
             row.appendChild(createTableCell(viewableDateTimeHelper(entry.spot_time, 'time')));
             row.appendChild(createTableCell(viewableDateTimeHelper(entry.actual_drop_time, 'time')));
             row.appendChild(createTableCell(entry.job_details, 'text-wrap'));
@@ -230,7 +234,7 @@ function createMobileAssignment(entry, day, accordionId, isLastEntry) {
 
     appendMobileDetail(details, 'Assignment Control', entry.assignment_control);
     appendMobileDetail(details, 'Vehicle / Bus #', entry.vehicle_id);
-    appendMobileDetail(details, 'Garage Report Date', viewableDateTimeHelper(entry.assignment_date, 'date'));
+    appendMobileDetail(details, 'Garage Report Date/Time', viewableDateTimeHelper(entry.garage_report_at, 'datetime'));
     appendMobileDetail(details, 'Spot Time', viewableDateTimeHelper(entry.spot_time, 'time'));
     appendMobileDetail(details, 'Drop Time', viewableDateTimeHelper(entry.actual_drop_time, 'time'));
     appendMobileDetail(details, 'Job Details', entry.job_details, { preserveLines: true });
@@ -324,7 +328,21 @@ function renderReview(reviewData) {
     hideElement(loadingState);
     showElement(reviewContent);
 
-    //submitButton?.removeAttribute('disabled');
+    if (submitPeriodStart) {
+        submitPeriodStart.value = reviewData.period_start ?? '';
+    }
+
+    if (submitPeriodEnd) {
+        submitPeriodEnd.value = reviewData.period_end ?? '';
+    }
+
+    const submissionReady = Boolean(submitForm && reviewData.assignment_count > 0 && submitPeriodStart?.value && submitPeriodEnd?.value);
+
+    if (submissionReady) {
+        submitButton?.removeAttribute('disabled');
+    } else {
+        submitButton?.setAttribute('disabled', '');
+    }
 };
 
 function showReviewError(message) {
@@ -361,6 +379,50 @@ async function loadTimesheetReview() {
         showReviewError(error?.message || 'The Timesheet review could not be loaded.');
     }
 };
+
+let finalSubmissionConfirmed = false;
+
+submitForm?.addEventListener('submit', (event) => {
+    if (finalSubmissionConfirmed) {
+        finalSubmissionConfirmed = false;
+        return;
+    }
+
+    event.preventDefault();
+
+    if (submitButton?.disabled) {
+        return;
+    }
+
+    const confirmModalElement = document.querySelector('#confirm-modal');
+    const confirmButton = document.querySelector('#confirm-modal-confirm');
+    const cancelButton = document.querySelector('#confirm-modal-cancel');
+
+    if (!confirmModalElement || !confirmButton || !cancelButton) {
+        console.error('[TIMESHEET REVIEW] Confirmation modal is unavailable.');
+        return;
+    }
+
+    buildModal.confirm('Submit this Timesheet to payroll? Once submitted, it cannot be changed.', 'Submit Timesheet', 'Return to Review');
+
+    const confirmModal = bootstrap.Modal.getOrCreateInstance(confirmModalElement);
+
+    confirmButton.onclick = () => {
+        finalSubmissionConfirmed = true;
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting…';
+
+        confirmModal.hide();
+        submitForm.requestSubmit();
+    };
+
+    cancelButton.onclick = () => {
+        confirmModal.hide();
+    };
+
+    confirmModal.show();
+});
 
 submitButton?.setAttribute('disabled', '');
 

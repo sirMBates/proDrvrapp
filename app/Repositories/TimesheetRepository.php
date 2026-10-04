@@ -45,8 +45,8 @@ class TimesheetRepository {
         $jobDetails = $this->buildJobDetails($assignment['pickup_details'] ?? null, $assignment['destination_details'] ?? null);
 
         $sql = "INSERT INTO timesheet_entries (
-                assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, spot_time, actual_drop_time, actual_end_time, total_job_time, job_details, completed_at) 
-                VALUES (:assignment_control, :order_id, :driver_id, :origin, :destination, :vehicle_id, :assignment_date, :spot_time, :actual_drop_time, :actual_end_time, :total_job_time, :job_details, :completed_at)";
+                assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, garage_report_at, spot_time, actual_drop_time, actual_end_time, total_job_time, job_details, completed_at) 
+                VALUES (:assignment_control, :order_id, :driver_id, :origin, :destination, :vehicle_id, :assignment_date, :garage_report_at :spot_time, :actual_drop_time, :actual_end_time, :total_job_time, :job_details, :completed_at)";
         try {
             $stmt = $this->pdo->prepare($sql);
 
@@ -58,6 +58,7 @@ class TimesheetRepository {
                 ':destination' => $this->nullableString($assignment['destination'] ?? null),
                 ':vehicle_id' => (string) $assignment['vehicle_id'],
                 ':assignment_date' => $assignmentDate,
+                ':garage_report_at' => (string) $assignment['start_date_time'],
                 ':spot_time' => $this->nullableString($assignment['spot_time'] ?? null),
                 ':actual_drop_time' => (string) $assignment['actual_drop_time'],
                 ':actual_end_time' => (string) $assignment['actual_end_time'],
@@ -137,7 +138,7 @@ class TimesheetRepository {
             throw new InvalidArgumentException('The Timesheet period start cannot be after its end.');
         }
 
-        $sql = "SELECT timesheet_id, submission_id, assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, spot_time, actual_drop_time, actual_end_time, total_job_time, SUM(total_job_time) OVER (PARTITION BY driver_id, assignment_date) AS total_shift_hours, SUM(total_job_time) OVER () AS period_total_hours, job_details, tolls_used, tip, job_pay, locked_at, completed_at, created_at, updated_at
+        $sql = "SELECT timesheet_id, submission_id, assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, garage_report_at, spot_time, actual_drop_time, actual_end_time, total_job_time, SUM(total_job_time) OVER (PARTITION BY driver_id, assignment_date) AS total_shift_hours, SUM(total_job_time) OVER () AS period_total_hours, job_details, tolls_used, tip, job_pay, locked_at, completed_at, created_at, updated_at
                 FROM timesheet_entries
                 WHERE driver_id = :driver_id
                 AND assignment_date >= :period_start
@@ -154,6 +155,57 @@ class TimesheetRepository {
             return $stmt->fetchAll();
         } catch (PDOException $e) {
             $this->logger?->error('[TIMESHEET] Failed loading driver period: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function attachLockedEntriesToSubmission(int $driverId, int $submissionId, string $periodStart, string $periodEnd, int $expectedCount): int {
+        $periodStart = trim($periodStart);
+        $periodEnd = trim($periodEnd);
+
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        if ($submissionId < 1) {
+            throw new InvalidArgumentException('Invalid Timesheet submission ID.');
+        }
+
+        if (!Validator::date($periodStart) || !Validator::date($periodEnd) || $periodStart > $periodEnd) {
+            throw new InvalidArgumentException('Invalid Timesheet submission period.');
+        }
+
+        if ($expectedCount < 1) {
+            throw new InvalidArgumentException('Invalid expected Timesheet entry count.');
+        }
+
+        $sql = "UPDATE timesheet_entries
+                SET submission_id = :submission_id,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE driver_id = :driver_id
+                AND assignment_date >= :period_start
+                AND assignment_date <= :period_end
+                AND locked_at IS NOT NULL
+                AND submission_id IS NULL";
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+
+            $success = $stmt->execute([
+                ':submission_id' => $submissionId,
+                ':driver_id' => $driverId,
+                ':period_start' => $periodStart,
+                ':period_end' => $periodEnd,
+            ]);
+
+            $attachedCount = $stmt->rowCount();
+            if (!$success || $attachedCount !== $expectedCount) {
+                throw new RuntimeException('Not all Timesheet entries could be attached to the submission.');
+            }
+
+            return $attachedCount;
+        } catch (PDOException $e) {
+            $this->logger?->error('[TIMESHEET] Failed attaching entries to submission: ' . $e->getMessage());
             throw $e;
         }
     }

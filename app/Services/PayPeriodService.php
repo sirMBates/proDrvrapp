@@ -37,4 +37,18 @@ class PayPeriodService {
             'timezone' => $timezone
         ];
     }
+
+    public function getPreviousPeriod(int $weekEndsOn, string $timezone = 'America/New_York', ?DateTimeImmutable $now = null): array {
+        $currentPeriod = $this->getCurrentPeriod($weekEndsOn, $timezone, $now);
+        $companyTimezone = new DateTimeZone($timezone);
+        $currentPeriodStart = new DateTimeImmutable($currentPeriod['period_start'] . ' 00:00:00', $companyTimezone);
+        /*
+        * One second before the current period began belongs to the
+        * immediately preceding authoritative pay period.
+        */
+        $previousPeriodReference = $currentPeriodStart->modify('-1 second');
+        return $this->getCurrentPeriod($weekEndsOn, $timezone, $previousPeriodReference);
+    }
 }
+
+?>

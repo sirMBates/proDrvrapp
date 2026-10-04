@@ -27,7 +27,7 @@ class TimesheetPdfRenderer {
         $options = new Options();
         $options->setDefaultFont('DejaVu Sans');
         $options->setIsRemoteEnabled(false);
-        $options->setChroot(base_path());
+        $options->setChroot(base_path(''));
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html, 'UTF-8');

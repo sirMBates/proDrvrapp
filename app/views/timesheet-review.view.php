@@ -111,7 +111,11 @@ include "partials/confirm-modal.php";
                 </a>
 
                 <form id="submit-timesheet-form" action="/submit-timesheet" method="POST" class="d-grid">
-                    <input type="hidden" name="drvrtoken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+                    <input id="drvrToken" type="hidden" name="drvrtoken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+
+                    <input id="submit-period-start" type="hidden" name="period_start" value="">
+
+                    <input id="submit-period-end" type="hidden" name="period_end" value="">
 
                     <button id="submit-timesheet" type="submit" class="btn btn-lg bg-prodriverclr text-light" disabled>
                         Submit to Payroll

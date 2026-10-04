@@ -10,6 +10,8 @@ $router->get('/', 'app/controllers/Pages/index.php', true);
 $router->get('/assignments', 'app/controllers/Pages/assignments.php', true);
 $router->get('/message-center', 'app/controllers/Pages/message-center.php', true);
 $router->get('/timesheet', 'app/controllers/Pages/timesheet.php', true);
+$router->get('/timesheet-review', 'app/controllers/Pages/timesheet-review.php', true);
+$router->get('/submitted-timesheets', 'app/controllers/Pages/submitted-timesheets.php', true);
 $router->get('/profile', 'app/controllers/Pages/profile.php', true);
 $router->get('/setprofilepicture', 'app/api/setprofilepicture.php', true);
 $router->get('/contact', 'app/controllers/Pages/contact.php', true);
@@ -25,7 +27,6 @@ $router->get('/signature-access', 'app/api/signature-access.php');
 $router->get('/signature-image', 'app/api/signature-image.php', true);
 $router->get('/signature-status', 'app/api/signature-status.php', true);
 $router->get('/connection-check', 'app/api/connection-check.php');
-$router->get('/timesheet-review', 'app/controllers/Pages/timesheet-review.php', true);
 $router->get('/get-timesheet', 'app/api/get-timesheet.php', true);
 $router->get('/get-timesheet-review', 'app/api/get-timesheet-review.php', true);
 
@@ -42,6 +43,7 @@ $router->post('/reuse-signature', 'app/api/reuse-signature.php', true);
 $router->post('/driver-signature', 'app/api/driver-signature.php', true);
 $router->post('/save-timesheet', 'app/api/save-timesheet.php', true);
 $router->post('/review-timesheet', 'app/controllers/Actions/review-timesheet.php', true);
+$router->post('/submit-timesheet', 'app/controllers/Actions/submit-timesheet.php', true);
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');
