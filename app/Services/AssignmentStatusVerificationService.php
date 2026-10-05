@@ -55,7 +55,7 @@ final class AssignmentStatusVerificationService {
         $arrivedStatusId = (int) $statusPair['arrived']['status_id'];
         $onAssignmentStatusId = (int) $statusPair['onAssignment']['status_id'];
 
-        $recorded = $this->assignmentRepository ->recordStatusVerification($orderId, $driverId, $assignmentControl, $proposedVehicleId, $arrivedStatusId, $onAssignmentStatusId);
+        $recorded = $this->assignmentRepository->recordStatusVerification($orderId, $driverId, $assignmentControl, $proposedVehicleId, $arrivedStatusId, $onAssignmentStatusId);
 
         if (!$recorded) {
             throw new RuntimeException('Assignment status verification could not be recorded.');
