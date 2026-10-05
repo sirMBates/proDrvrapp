@@ -46,7 +46,7 @@ class TimesheetRepository {
 
         $sql = "INSERT INTO timesheet_entries (
                 assignment_control, order_id, driver_id, origin, destination, vehicle_id, assignment_date, garage_report_at, spot_time, actual_drop_time, actual_end_time, total_job_time, job_details, completed_at) 
-                VALUES (:assignment_control, :order_id, :driver_id, :origin, :destination, :vehicle_id, :assignment_date, :garage_report_at :spot_time, :actual_drop_time, :actual_end_time, :total_job_time, :job_details, :completed_at)";
+                VALUES (:assignment_control, :order_id, :driver_id, :origin, :destination, :vehicle_id, :assignment_date, :garage_report_at, :spot_time, :actual_drop_time, :actual_end_time, :total_job_time, :job_details, :completed_at)";
         try {
             $stmt = $this->pdo->prepare($sql);
 

@@ -10,6 +10,7 @@ use App\Repositories\DriverStatusRepository;
 use App\Repositories\TimesheetRepository;
 use App\Services\AssignmentService;
 use App\Services\EmergencyService;
+use App\Services\AssignmentStatusVerificationService;
 use App\Validation\AssignmentValidator;
 use App\ImportExport\AssignmentExporter;
 use Core\Flash;
@@ -61,6 +62,7 @@ if ($method === 'PATCH') {
         $orderRef = '';
         $storage = null;
         $signatureBackup = null;
+        $pdo = null;
 
         try {
             $pdo = (new Database())->connect();
@@ -71,8 +73,9 @@ if ($method === 'PATCH') {
             $driverStatusRepository = new DriverStatusRepository($pdo);
             $timesheetRepository = new TimesheetRepository($pdo);
 
+            $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
             $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository);
+            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService);
 
             $prepared = $assignmentService->prepareUpdate((int) $orderId, $driverId, $assignmentControl, $data);
 
@@ -111,7 +114,13 @@ if ($method === 'PATCH') {
                 $preparedData['signature_status'] = 'not-required';
             }
 
+            if (!$pdo->beginTransaction()) {
+                throw new RuntimeException('Unable to begin assignment update transaction.');
+            }
+
             $result = $assignmentService->updatePrepared((int) $orderId, $driverId, $assignmentControl, $preparedData);
+
+            $pdo->commit();
 
             if ($storage !== null && $signatureBackup !== null) {
                 $storage->discardSignatureBackup($signatureBackup);
@@ -133,6 +142,10 @@ if ($method === 'PATCH') {
             header("Location: /assignments?{$query}", true, 303);
             exit();
         } catch (InvalidArgumentException $e) {
+            if ($pdo instanceof PDO && $pdo->inTransaction()) {
+                $pdo->rollback();
+            }
+
             if ($storage !== null && $signatureBackup !== null) {
                 try {
                     $storage->rollbackSignatureBackup($signatureBackup);
@@ -153,6 +166,10 @@ if ($method === 'PATCH') {
             header("Location: /assignments?{$query}", true, 303);
             exit();
         } catch (RuntimeException $e) {
+            if ($pdo instanceof PDO && $pdo->inTransaction()) {
+                $pdo->rollback();
+            }
+
             if ($storage !== null && $signatureBackup !== null) {
                 try {
                     $storage->rollbackSignatureBackup($signatureBackup);
@@ -174,6 +191,10 @@ if ($method === 'PATCH') {
             exit();
 
         } catch (Throwable $e) {
+            if ($pdo instanceof PDO && $pdo->inTransaction()) {
+                $pdo->rollback();
+            }
+
             if ($storage !== null && $signatureBackup !== null) {
                 try {
                     $storage->rollbackSignatureBackup($signatureBackup);
@@ -231,8 +252,9 @@ if ($method === 'PATCH') {
             $emergencyRepository = new EmergencyRepository($pdo);
             $driverStatusRepository = new DriverStatusRepository($pdo);
 
+            $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
             $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository);
+            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService);
 
             // PREPARE / VALIDATE
             // No database or filesystem mutations happen here.

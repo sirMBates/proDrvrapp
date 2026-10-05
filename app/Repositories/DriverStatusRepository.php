@@ -59,6 +59,46 @@ class DriverStatusRepository {
         return $stmt->fetchAll();
     }
 
+    public function findAvailableAssignmentStatuses(int $driverId, string $verificationAnchor): array {
+        $verificationAnchor = trim($verificationAnchor);
+
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $anchorDateTime = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $verificationAnchor);
+        $dateErrors = \DateTimeImmutable::getLastErrors();
+
+        if ($anchorDateTime === false || $anchorDateTime->format('Y-m-d H:i:s') !== $verificationAnchor || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
+            throw new InvalidArgumentException('Invalid assignment status verification anchor.');
+        }
+
+        $sql = "SELECT ds.status_id, ds.driver_id, ds.status, ds.operational_date, ds.status_timestamp
+                FROM driver_status AS ds
+                WHERE ds.driver_id = :driver_id
+                AND ds.status_timestamp >= :verification_anchor
+                AND ds.status_timestamp <= CURRENT_TIMESTAMP
+                AND ds.status IN (:arrived_at_location, :on_assignment)
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM work_orders AS wo
+                    WHERE wo.arrived_location_status_id = ds.status_id
+                        OR wo.on_assignment_status_id = ds.status_id)
+                ORDER BY
+                    ds.status_timestamp ASC,
+                    ds.status_id ASC";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':driver_id' => $driverId,
+            ':verification_anchor' => $verificationAnchor,
+            ':arrived_at_location' => DriverStatus::ARRIVED_AT_LOCATION->value,
+            ':on_assignment' => DriverStatus::ON_ASSIGNMENT->value
+        ]);
+
+        return $stmt->fetchAll();
+    }
+
     public function findEndOfShiftForPeriod(int $driverId, string $periodStart, string $periodEnd): array {
         $periodStart = trim($periodStart);
         $periodEnd = trim($periodEnd);

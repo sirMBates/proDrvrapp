@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use App\Repositories\AssignmentRepository;
+use App\Repositories\DriverStatusRepository;
+use App\Services\AssignmentStatusVerificationService;
 use App\Services\SignatureService;
 use Core\Database;
 use Core\Storage;
 
-header('Content-Type: application/json');
+requireLoginAjax();
+
+header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -51,18 +55,14 @@ try {
     $pdo = (new Database())->connect();
 
     $assignmentRepository = new AssignmentRepository($pdo);
+    $driverStatusRepository = new DriverStatusRepository($pdo);
+
+    $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
 
     $storage = new Storage();
 
-    $signatureService = new SignatureService($assignmentRepository, $storage);
+    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage);
 
-    /*
-     * Build the same trusted request structure expected by
-     * SignatureService::saveSignature().
-     *
-     * driver_id comes from the authenticated session,
-     * never from JavaScript.
-     */
     $request = [
         'order_id' => (int) $orderId,
         'driver_id' => $driverId,
@@ -77,6 +77,13 @@ try {
         'status' => 'success',
         'message' => ucfirst($signatureType) . '-inspection signature saved successfully.',
         'signatureData' => $signatureData
+    ]);
+    exit();
+} catch (InvalidArgumentException $e) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
     ]);
     exit();
 } catch (\Throwable $e) {

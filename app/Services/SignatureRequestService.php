@@ -18,28 +18,36 @@ class SignatureRequestService {
         'post',
     ];
 
-    public function __construct(private PDO $pdo, private SignatureRequestRepository $signatureRequestRepository, private AssignmentRepository $assignmentRepository) {}
+    public function __construct(private PDO $pdo, private SignatureRequestRepository $signatureRequestRepository, private AssignmentRepository $assignmentRepository, private AssignmentStatusVerificationService $assignmentStatusVerificationService) {}
 
     public function createRequest(int $orderId, int $driverId, string $assignmentControl, string $signatureType): array {
+        $assignmentControl = trim($assignmentControl);
+        $signatureType = trim($signatureType);
+
         $this->validateIdentity($orderId, $driverId, $assignmentControl);
 
         $this->validateSignatureType($signatureType);
 
         $assignment = $this->assignmentRepository->findByIdentity($orderId, $driverId, $assignmentControl);
         if ($assignment === null) {
-            throw new \RuntimeException('Assignment could not be found.');
+            throw new RuntimeException('Assignment could not be found.');
         }
 
         if ((int) ($assignment['signature_required'] ?? 0) !== 1) {
-            throw new \RuntimeException('This assignment does not require a signature.');
+            throw new RuntimeException('This assignment does not require a signature.');
         }
 
-        $rawToken = bin2hex(random_bytes(32));
-        $tokenHash = hash('sha256', $rawToken);
-        $expiresAt = (new DateTimeImmutable())->modify('+' . self::TOKEN_LIFETIME_MINUTES . ' minutes')->format('Y-m-d H:i:s');
-
         try {
-            $this->pdo->beginTransaction();
+            if (!$this->pdo->beginTransaction()) {
+                throw new RuntimeException('Unable to begin signature request transaction.');
+            }
+
+            $this->assignmentStatusVerificationService->verifyOrFail($assignment, $driverId, trim((string) ($assignment['vehicle_id'] ?? '')));
+
+            $rawToken = bin2hex(random_bytes(32));
+            $tokenHash = hash('sha256', $rawToken);
+
+            $expiresAt = (new DateTimeImmutable())->modify('+' . self::TOKEN_LIFETIME_MINUTES . ' minutes')->format('Y-m-d H:i:s');
 
             $this->signatureRequestRepository->revokeActiveRequest($orderId, $driverId, $assignmentControl, $signatureType);
 

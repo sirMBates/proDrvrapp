@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+requireLoginAjax();
+
 header('Content-Type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: https://prodriver.local");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-With");
-
-requireLoginAjax();
 
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
 $sessionToken = $_SESSION['drvr_token'] ?? null;

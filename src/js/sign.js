@@ -140,17 +140,24 @@ function showPersistedSignature(signatureType) {
 async function createSignatureRequest(signatureType) {
     if (!currentSignatureOrderId) {
         console.error('[SIGNATURE REQUEST] No active order ID.');
+        showFlashAlert('error', 'No active assignment is available.');
+
         return null;
     }
 
     if (!currentSignatureAssignmentControl) {
         console.error('[SIGNATURE REQUEST] No active assignment control.');
+        showFlashAlert('error', 'The assignment information is unavailable.');
+
         return null;
     }
 
     const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
+
     if (!drvrtokenInput?.value) {
         console.error('[SIGNATURE REQUEST] CSRF token unavailable.');
+        showFlashAlert('error', 'The signature request could not be authorized.');
+
         return null;
     }
 
@@ -160,7 +167,6 @@ async function createSignatureRequest(signatureType) {
             headers: {
                 'X-CSRF-Token': drvrtokenInput.value
             },
-
             body: JSON.stringify({
                 order_id: currentSignatureOrderId,
                 assignment_control: currentSignatureAssignmentControl,
@@ -168,12 +174,24 @@ async function createSignatureRequest(signatureType) {
             })
         });
 
+        if (data?.status !== 'success') {
+            showFlashAlert('error', data?.message || 'The signature request could not be created.');
+            return null;
+        }
+
+        if (!data?.signatureData) {
+            showFlashAlert('error', 'The signature request response was incomplete.');
+            return null;
+        }
+
         return data.signatureData;
     } catch (error) {
         console.error('[SIGNATURE REQUEST ERROR]', error);
+        showFlashAlert('error', error?.message || 'The signature request could not be created.');
+
         return null;
     }
-};
+}
 
 function addLogoToQr(qrDataUrl) {
     return new Promise((resolve, reject) => {
@@ -655,7 +673,8 @@ $(signBtn).on('click', async () => {
             })
         });
 
-        if (data.status !== 'success') {
+        if (data?.status !== 'success') {
+            showFlashAlert('error', data?.message || 'The signature could not be saved.');
             return;
         }
 
@@ -689,5 +708,6 @@ $(signBtn).on('click', async () => {
         }
     } catch (error) {
         console.error('[DRIVER PRE SIGNATURE ERROR]', error);
+        showFlashAlert('error', error?.message || 'The signature could not be saved.');
     }
 });

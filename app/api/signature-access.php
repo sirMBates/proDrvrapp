@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Core\Database;
 use App\Repositories\AssignmentRepository;
 use App\Repositories\SignatureRequestRepository;
+use App\Repositories\DriverStatusRepository;
+use App\Services\AssignmentStatusVerificationService;
 use App\Services\SignatureRequestService;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -33,7 +35,10 @@ try {
 
     $assignmentRepository = new AssignmentRepository($pdo);
     $signatureRequestRepository = new SignatureRequestRepository($pdo);
-    $signatureRequestService = new SignatureRequestService($pdo, $signatureRequestRepository, $assignmentRepository);
+    $driverStatusRepository = new DriverStatusRepository($pdo);
+
+    $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+    $signatureRequestService = new SignatureRequestService($pdo, $signatureRequestRepository, $assignmentRepository, $assignmentStatusVerificationService);
 
     $request = $signatureRequestService->getActiveRequestByToken($rawToken);
 

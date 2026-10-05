@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-use Core\Database;
-use Core\Storage;
 use App\Repositories\AssignmentRepository;
 use App\Repositories\SignatureRequestRepository;
+use App\Repositories\DriverStatusRepository;
+use App\Services\AssignmentStatusVerificationService;
 use App\Services\SignatureRequestService;
 use App\Services\SignatureService;
+use Core\Database;
+use Core\Storage;
 
 header('Content-Type: application/json');
 
@@ -38,10 +40,12 @@ try {
     $storage = new Storage();
 
     $assignmentRepository = new AssignmentRepository($pdo);
+    $driverStatusRepository = new DriverStatusRepository($pdo);
     $signatureRequestRepository = new SignatureRequestRepository($pdo);
 
-    $signatureRequestService = new SignatureRequestService($pdo, $signatureRequestRepository, $assignmentRepository);
-    $signatureService = new SignatureService($assignmentRepository, $storage);
+    $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+    $signatureRequestService = new SignatureRequestService($pdo, $signatureRequestRepository, $assignmentRepository, $assignmentStatusVerificationService);
+    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage);
 
     $request = $signatureRequestService->getActiveRequestByToken($token);
     if ($request === null) {
@@ -62,6 +66,13 @@ try {
         'status' => 'success',
         'message' => 'Signature saved successfully.',
         'signatureData' => $signatureData
+    ]);
+    exit();
+} catch (InvalidArgumentException $e) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
     ]);
     exit();
 } catch (Throwable $e) {

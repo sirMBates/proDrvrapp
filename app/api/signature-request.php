@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Core\Database;
 use App\Repositories\AssignmentRepository;
 use App\Repositories\SignatureRequestRepository;
+use App\Repositories\DriverStatusRepository;
 use App\Services\SignatureRequestService;
+use App\Services\AssignmentStatusVerificationService;
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -72,9 +74,12 @@ try {
     $pdo = (new Database())->connect();
 
     $assignmentRepository = new AssignmentRepository($pdo);
+    $driverStatusRepository = new DriverStatusRepository($pdo);
     $signatureRequestRepository = new SignatureRequestRepository($pdo);
 
-    $signatureRequestService = new SignatureRequestService($pdo, $signatureRequestRepository, $assignmentRepository);
+    $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+    $signatureRequestService = new SignatureRequestService($pdo, $signatureRequestRepository, $assignmentRepository, $assignmentStatusVerificationService);
+
     $request = $signatureRequestService->createRequest((int) $orderId, $driverId, $assignmentControl, $signatureType);
 
     $signingPath = '/signature?token=' . rawurlencode($request['token']);
@@ -90,6 +95,13 @@ try {
             'expires_at' => $request['expires_at'],
             'expires_in_seconds' => $request['expires_in_seconds'],
         ]
+    ]);
+    exit();
+} catch (InvalidArgumentException $e) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
     ]);
     exit();
 } catch (RuntimeException $e) {

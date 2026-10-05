@@ -139,7 +139,7 @@ class AssignmentRepository {
     }
 
     public function findByIdentity(int $orderId, int $driverId, string $assignmentControl): ?array {
-        $sql = "SELECT order_id, assignment_control, order_ref, driver_id, start_date_time, signature_required, pre_signature_path, pre_signature_hash, pre_signature_at, post_signature_path, post_signature_hash, post_signature_at, signature_status, assignment_status, confirmed_at, canceled_at, completed_at
+        $sql = "SELECT order_id, assignment_control, order_ref, vehicle_id, driver_id, start_date_time, status_verified_at, status_verified_vehicle_id, arrived_location_status_id, on_assignment_status_id, signature_required, pre_signature_path, pre_signature_hash, pre_signature_at, post_signature_path, post_signature_hash, post_signature_at, signature_status, assignment_status, confirmed_at, canceled_at, completed_at
                 FROM work_orders
                 WHERE order_id = :order_id
                 AND driver_id = :driver_id
@@ -255,6 +255,112 @@ class AssignmentRepository {
         $assignment = $stmt->fetch();
 
         return $assignment !== false ? $assignment : null;
+    }
+
+    public function findPreviousTerminalAssignment(int $driverId, int $currentOrderId, string $currentStartDateTime): ?array {
+        if ($driverId < 1 || $currentOrderId < 1) {
+            throw new \InvalidArgumentException('Invalid assignment identity.');
+        }
+
+        $currentStartDateTime = trim($currentStartDateTime);
+        if ($currentStartDateTime === '') {
+            throw new \InvalidArgumentException('Current assignment start time is required.');
+        }
+
+        try {
+            $currentStart = new \DateTimeImmutable($currentStartDateTime);
+        } catch (\Exception) {
+            throw new \InvalidArgumentException('Current assignment start time is invalid.');
+        }
+
+        $dayStart = $currentStart->setTime(0, 0, 0)->format('Y-m-d H:i:s');
+        $nextDayStart = $currentStart->setTime(0, 0, 0)->modify('+1 day')->format('Y-m-d H:i:s');
+
+        $sql = "SELECT order_id, assignment_control, driver_id, vehicle_id, start_date_time, assignment_status, completed_at, canceled_at
+                FROM work_orders
+                WHERE driver_id = :driver_id
+                AND start_date_time >= :day_start
+                AND start_date_time < :next_day_start
+                AND (start_date_time < :current_start_before
+                    OR (start_date_time = :current_start_equal
+                        AND order_id < :current_order_id)
+                    )
+                AND (
+                        (assignment_status = 'completed'
+                        AND completed_at IS NOT NULL
+                    )
+                OR (assignment_status = 'canceled'
+                    AND canceled_at IS NOT NULL)
+                )
+                ORDER BY start_date_time DESC, order_id DESC
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':driver_id' => $driverId,
+            ':day_start' => $dayStart,
+            ':next_day_start' => $nextDayStart,
+            ':current_start_before' => $currentStartDateTime,
+            ':current_start_equal' => $currentStartDateTime,
+            ':current_order_id' => $currentOrderId
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Previous terminal assignment query failed.');
+        }
+
+        $assignment = $stmt->fetch();
+        return $assignment !== false ? $assignment : null;
+    }
+
+    public function recordStatusVerification(int $orderId, int $driverId, string $assignmentControl, string $vehicleId, int $arrivedLocationStatusId, int $onAssignmentStatusId): bool {
+        $assignmentControl = trim($assignmentControl);
+        $vehicleId = trim($vehicleId);
+
+        if ($orderId < 1 || $driverId < 1 || $assignmentControl === '' || $vehicleId === '' || $arrivedLocationStatusId < 1 || $onAssignmentStatusId < 1) {
+            throw new \InvalidArgumentException('Invalid assignment status verification data.');
+        }
+
+        if ($arrivedLocationStatusId === $onAssignmentStatusId) {
+            throw new \InvalidArgumentException('Assignment verification requires two distinct status records.');
+        }
+
+        $sql = "UPDATE work_orders
+                SET status_verified_at = CURRENT_TIMESTAMP,
+                    status_verified_vehicle_id = :vehicle_id,
+                    arrived_location_status_id = :arrived_status_id,
+                    on_assignment_status_id = :on_assignment_status_id
+                WHERE order_id = :order_id
+                    AND driver_id = :driver_id
+                    AND assignment_control = :assignment_control
+                    AND assignment_status = 'confirmed'
+                    AND completed_at IS NULL
+                    AND canceled_at IS NULL
+                    AND status_verified_at IS NULL
+                    AND status_verified_vehicle_id IS NULL
+                    AND arrived_location_status_id IS NULL
+                    AND on_assignment_status_id IS NULL";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':vehicle_id' => $vehicleId,
+            ':arrived_status_id' => $arrivedLocationStatusId,
+            ':on_assignment_status_id' => $onAssignmentStatusId,
+            ':order_id' => $orderId,
+            ':driver_id' => $driverId,
+            ':assignment_control' => $assignmentControl
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Assignment status verification could not be recorded.');
+        }
+
+        if ($stmt->rowCount() !== 1) {
+            throw new \RuntimeException('Assignment is no longer eligible for status verification.');
+        }
+
+        return true;
     }
 
     public function confirmAssignment(int $orderId, int $driverId): bool {

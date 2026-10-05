@@ -1,6 +1,6 @@
 <?php
 
-requireLoginAjax();
+declare(strict_types=1);
 
 use Core\Database;
 use App\Repositories\AssignmentRepository;
@@ -10,6 +10,9 @@ use App\Repositories\DriverSharedNoteRepository;
 use App\Repositories\TimesheetRepository;
 use App\Services\AssignmentService;
 use App\Services\EmergencyService;
+use App\Services\AssignmentStatusVerificationService;
+
+requireLoginAjax();
 
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: https://prodriver.local");
@@ -83,8 +86,9 @@ $assignmentRepository = new AssignmentRepository($pdo);
 $driverSharedNoteRepository = new DriverSharedNoteRepository($pdo);
 $timesheetRepository = new TimesheetRepository($pdo);
 
+$assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
 $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-$assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository);
+$assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService);
 
 $confirmRequested = isset($_POST['confirm']);
 $cancelRequested = isset($_POST['cancel']);

@@ -3,8 +3,10 @@ $alert = new Core\Flash();
 ?>
 <header class="site-banner mb-2 bg-btd-gray-silver border-bottom border-1 border-black">
 <?php
-        require "driver-menu.php";
-        require "nav.php";
+        if (!urlIs('/signature')) {
+                require "driver-menu.php";
+                require "nav.php";
+        }
 ?>
         <div class="banner-top">
                 <div class="flex-shrink-0 d-flex align-items-center banner-logo">                                
@@ -16,6 +18,8 @@ $alert = new Core\Flash();
                 </div>
         </div>
 <?php
-        require "info-nav.php";
+        if (!urlIs('/signature')) {
+                require "info-nav.php";
+        }
 ?>
 </header>

@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Repositories\AssignmentRepository;
+use App\Repositories\DriverStatusRepository;
+use App\Services\SignatureService;
+use App\Services\AssignmentStatusVerificationService;
 use Core\Database;
 use Core\Storage;
-use App\Repositories\AssignmentRepository;
-use App\Services\SignatureService;
+
+requireLoginAjax();
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -66,11 +70,15 @@ try {
     $pdo = (new Database())->connect();
 
     $assignmentRepository = new AssignmentRepository($pdo);
+    $driverStatusRepository = new DriverStatusRepository($pdo);
+
+    $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+
     $storage = new Storage();
 
-    $signatureService = new SignatureService( $assignmentRepository, $storage);
+    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage);
 
-    $signatureData = $signatureService->reusePreSignatureAsPost($orderId, $driverId, $assignmentControl);
+    $signatureData = $signatureService->reusePreSignatureAsPost((int) $orderId, $driverId, $assignentControl);
 
     http_response_code(200);
     echo json_encode([
@@ -79,7 +87,14 @@ try {
         'signatureData' => $signatureData
     ]);
     exit();
-} catch (\Throwable $e) {
+} catch (InvalidArgumentException $e) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
+    exit();
+} catch (Throwable $e) {
     error_log('[SIGNATURE REUSE ERROR] ' . $e::class . ': ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
