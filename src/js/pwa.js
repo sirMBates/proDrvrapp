@@ -1,6 +1,6 @@
 // src/js/pwa.js
 import { queueRequest, getAllQueued, clearQueued } from "./dbQueue.js";
-import { fetchDrvr, showFlashAlert } from "./helpers.js";
+import { proDriverRequest, showFlashAlert } from "./helpers.js";
 
 const isBrowserSync = window.location.port === '3000';
 
@@ -436,7 +436,7 @@ function serializeFormData(formData) {
 
 export async function handleAssignmentFetch(options) {
   try {
-    return await fetchDrvr('https://prodriver.local/assignmentstatushandler', options);
+    return await proDriverRequest('https://prodriver.local/assignmentstatushandler', options);
   } catch (err) {
     // The server responded with an HTTP error.
     // This is NOT an offline/network failure.
@@ -483,7 +483,7 @@ window.addEventListener('online', async () => {
         headers.set('Content-Type', 'application/json');
       }
 
-      const data = await fetchDrvr(req.url, {
+      const data = await proDriverRequest(req.url, {
         method: req.options.method,
         headers,
         body: bodyToSend,
@@ -509,7 +509,7 @@ export async function handleStatusFetch(options) {
   }
 
   try {
-      return await fetchDrvr('https://prodriver.local/setstatus', options);
+      return await proDriverRequest('https://prodriver.local/setstatus', options);
   } catch (err) {
       // The server responded, so this is NOT an offline failure.
       if (err?.status >= 400 && err?.response) {
@@ -522,7 +522,7 @@ export async function handleStatusFetch(options) {
 };
 
 export async function handleStatusHistoryFetch(options) {
-  return await fetchDrvr('https://prodriver.local/getstatus', options);
+  return await proDriverRequest('https://prodriver.local/getstatus', options);
 };
 
 async function queueStatusRequest(options) {

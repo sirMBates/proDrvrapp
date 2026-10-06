@@ -1,4 +1,4 @@
-import { fetchDrvr, viewableDateTimeHelper } from './helpers.js';
+import { proDriverRequest, viewableDateTimeHelper } from './helpers.js';
 import { buildModal } from './appmodal.js';
 
 const periodHeading = document.querySelector('#timesheet-review-period');
@@ -364,7 +364,7 @@ function showReviewError(message) {
 
 async function loadTimesheetReview() {
     try {
-        const response = await fetchDrvr('/get-timesheet-review', {
+        const response = await proDriverRequest('/get-timesheet-review', {
                 method: 'GET',
                 cache: 'no-store'
         });

@@ -2,7 +2,7 @@ import { buildModal } from './appmodal.js';
 import 'jSignature';
 import QRCode from 'qrcode';
 import { syncEmergencyState } from './emergency-state.js';
-import { showFlashAlert, fetchDrvr } from './helpers.js';
+import { showFlashAlert, proDriverRequest } from './helpers.js';
 
 const signatureBoxBtn = document.querySelector('#signature-widget-buttons')
 const openSignBoxBtn = document.querySelector('#open-sign-box');
@@ -162,7 +162,7 @@ async function createSignatureRequest(signatureType) {
     }
 
     try {
-        const data = await fetchDrvr('/signature-request', {
+        const data = await proDriverRequest('/signature-request', {
             method: 'POST',
             headers: {
                 'X-CSRF-Token': drvrtokenInput.value
@@ -341,7 +341,7 @@ function startSignatureStatusPolling(signatureType) {
         });
 
         try {
-            const data = await fetchDrvr(`/signature-status?${params.toString()}`);
+            const data = await proDriverRequest(`/signature-status?${params.toString()}`);
             if (data.status !== 'success') {
                 return;
             }
@@ -505,7 +505,7 @@ async function unConfirmPostSignHandler() {
     }
 
     try {
-        const data = await fetchDrvr('/reuse-signature', {
+        const data = await proDriverRequest('/reuse-signature', {
             method: 'POST',
             headers: {
                 'X-CSRF-Token': drvrtokenInput.value
@@ -660,7 +660,7 @@ $(signBtn).on('click', async () => {
     }
 
     try {
-        const data = await fetchDrvr('/driver-signature', {
+        const data = await proDriverRequest('/driver-signature', {
             method: 'POST',
             headers: {
                 'X-CSRF-Token': drvrtokenInput.value

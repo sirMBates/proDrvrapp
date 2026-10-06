@@ -1,4 +1,4 @@
-import { fetchDrvr } from './helpers.js';
+import { proDriverRequest } from './helpers.js';
 
 const LOGOUT_ACTIONS = Object.freeze({
     END_SHIFT: 'end_shift_and_logout',
@@ -63,7 +63,7 @@ export class LogoutManager {
         this.setLoading(clickedButton, true);
 
         try {
-            const data = await fetchDrvr('/logout', {
+            const data = await proDriverRequest('/logout', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

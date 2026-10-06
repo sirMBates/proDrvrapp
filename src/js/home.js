@@ -1,12 +1,12 @@
 import { bdayCelebrationHandler } from "./celebration.js";
-import { fetchDrvr, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
+import { proDriverRequest, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
 import { DriverStatusHistory } from './driver-status-history.js';
 
 const drvrBirthDate = document.querySelector('#drvrbday')?.value ?? '';
 const mainContent = document.querySelector('main');
 const statusHistoryContainer = document.getElementById('driver-status-history');
 const driverStatusHistory = new DriverStatusHistory(statusHistoryContainer);
-const getAssignment = fetchDrvr;
+const getAssignment = proDriverRequest;
 const dtHelper = viewableDateTimeHelper;
 const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];

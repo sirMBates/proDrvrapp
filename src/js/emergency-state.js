@@ -1,10 +1,10 @@
-import { fetchDrvr } from './helpers.js';
+import { proDriverRequest } from './helpers.js';
 
 let emergencyActive = null;
 
 export async function syncEmergencyState() {
     try {
-        const result = await fetchDrvr('/emergencystatus', {
+        const result = await proDriverRequest('/emergencystatus', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'

@@ -1,4 +1,4 @@
-import { fetchDrvr, showFlashAlert, viewableDateTimeHelper } from './helpers.js';
+import { proDriverRequest, showFlashAlert, viewableDateTimeHelper } from './helpers.js';
 import { buildModal } from './appmodal.js';
 
 const timesheetPeriod = document.querySelector('#timesheet-period');
@@ -587,7 +587,7 @@ async function performSaveAndLock(entries, csrfToken) {
     setSaveButtonLoading(true);
 
     try {
-        const response = await fetchDrvr('/save-timesheet', {
+        const response = await proDriverRequest('/save-timesheet', {
             method: 'POST',
             cache: 'no-store',
             headers: {
@@ -758,7 +758,7 @@ async function loadCurrentTimesheet(periodView = activePeriodView) {
     const endpoint = periodView === 'landing' ? '/get-timesheet' : `/get-timesheet?period=${encodeURIComponent(periodView)}`;
 
     try {
-        const response = await fetchDrvr(endpoint, {
+        const response = await proDriverRequest(endpoint, {
             method: 'GET',
             cache: 'no-store'
         });

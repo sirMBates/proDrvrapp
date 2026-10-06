@@ -1,5 +1,5 @@
 import { Validation } from "./validation.js";
-import { fetchDrvr, showFlashAlert, submitFormPayload } from "./helpers.js";
+import { proDriverRequest, showFlashAlert, submitFormPayload } from "./helpers.js";
 import { initProfilePictureHandler } from "./profile.js";
 
 // Elements
@@ -20,7 +20,7 @@ const updatePswdBtn = document.querySelector('#updatePswdBtn');
 
 // Fetch driver profile
 window.addEventListener('DOMContentLoaded', () => {
-    fetchDrvr("https://prodriver.local/getprofile", {
+    proDriverRequest("https://prodriver.local/getprofile", {
         mode: 'cors',
         credentials: 'include',
         headers: {
@@ -52,7 +52,7 @@ if (profilePageInput && profilePageImage) {
         profileInput: profilePageInput,
         profileImage: profilePageImage,
         drvrToken,
-        getDriver: fetchDrvr,
+        getDriver: proDriverRequest,
         defaultProfileImage: defaultProfileImage,
         Validation,
         drvrAlert

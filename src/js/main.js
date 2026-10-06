@@ -1,7 +1,7 @@
 import { ThemeManager } from './theme.js';
 import { initProfilePictureHandler } from './profile.js';
 import { buildModal } from './appmodal.js';
-import { fetchDrvr, showFlashAlert, getCurrentView } from './helpers.js';
+import { proDriverRequest, showFlashAlert, getCurrentView } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
 import { syncEmergencyState } from './emergency-state.js';
 import { Validation } from './validation.js';
@@ -19,7 +19,7 @@ const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn?.nextElementSibling ?? null;
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
-const getDriver = fetchDrvr;
+const getDriver = proDriverRequest;
 const drvrToken = document.querySelector('#drvrToken').value;
 const drvrAlert = showFlashAlert;
 const connectionIndicatorElement = document.querySelector('#connection-indicator');
@@ -230,7 +230,7 @@ if (menuProfileInput && menuProfileImage) {
         profileInput: menuProfileInput,
         profileImage: menuProfileImage,
         drvrToken,
-        getDriver: fetchDrvr,
+        getDriver: proDriverRequest,
         defaultProfileImage: defaultProfileImage,
         Validation,
         drvrAlert

@@ -1,6 +1,6 @@
 import { Validation } from "./validation.js";
 import { formValidation } from "./helpers.js";
-import { fetchDrvr } from "./helpers.js";
+import { proDriverRequest } from "./helpers.js";
 const driverToken = document.querySelector('#drvrToken')?.value ?? '';
 const driverName = document.querySelector('#drvr-name');
 const operatorId = document.querySelector('#operatorid');
@@ -12,7 +12,7 @@ const sendBtn = document.querySelector('#send-msg');
 const counter = document.querySelector("#charCounter");
 const emailForm = document.querySelector("#email-form");
 const maxLength = 300;
-const getDriver = fetchDrvr;
+const getDriver = proDriverRequest;
 
 window.addEventListener('DOMContentLoaded', () => {
     helpDeskEmail.value = "help-desk@prodriver.local";

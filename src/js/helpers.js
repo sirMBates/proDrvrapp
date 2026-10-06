@@ -43,7 +43,7 @@ export function getCurrentView() {
     return window.location.pathname;
 };
 
-export async function fetchDrvr(url, options = {}) {
+export async function proDriverRequest(url, options = {}) {
     const requestUrl = normalizeProDrvrUrl(url);
 
     const headers = {
@@ -77,7 +77,7 @@ export async function fetchDrvr(url, options = {}) {
     }
 
     if (!response.ok) {
-        console.error("fetchDrvr failed:", {
+        console.error("proDriverRequest failed:", {
             requestUrl,
             status: response.status,
             statusText: response.statusText,

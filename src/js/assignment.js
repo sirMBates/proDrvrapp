@@ -1,4 +1,4 @@
-import { fetchDrvr, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, focusFirstInvalid, setSubmittingState } from "./helpers.js";
+import { proDriverRequest, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, focusFirstInvalid, setSubmittingState } from "./helpers.js";
 import { buildModal } from "./appmodal.js";
 import { normalizeDecimalValue, validateEditableElement, validateAssignmentTextarea, validateCurrentAssignmentFields, appendHiddenFields, toInputDateTime, toDisplayDateTime, appendEditableFields } from "./assignment-form.js";
 import { handleAssignmentFetch } from "./pwa.js";
@@ -16,7 +16,7 @@ const cancelBtn = document.querySelector('#cancel-job');
 const saveBtn = document.querySelector('#save-assignment');
 const completeBtn = document.querySelector('#submit-assignment');
 const drvrToken = document.querySelector('#drvrToken').value;
-const getAssignment = fetchDrvr;
+const getAssignment = proDriverRequest;
 const dtHelper = viewableDateTimeHelper;
 const drvrAlert = showFlashAlert;
 const COMPLETED_ASSIGNMENTS_KEY = 'completedAssignmentData';
