@@ -17,7 +17,6 @@ $router->get('/setprofilepicture', 'app/api/setprofilepicture.php', true);
 $router->get('/contact', 'app/controllers/Pages/contact.php', true);
 $router->get('/faqs', 'app/controllers/Pages/faqs.php', true);
 $router->get('/counter', 'app/controllers/Pages/counter.php', true);
-$router->get('/logout', 'app/controllers/Actions/logout.php');
 $router->get('/getprofile', 'app/api/getprofile.php');
 $router->get('/getassignments', 'app/api/getassignments.php');
 $router->get('/getstatus', 'app/api/getstatus.php', true);
@@ -32,6 +31,7 @@ $router->get('/get-timesheet-review', 'app/api/get-timesheet-review.php', true);
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
+$router->post('/logout', 'app/controllers/Actions/logout.php');
 $router->post('/forget', 'app/controllers/Actions/forgetpw.php');
 $router->post('/reset-password', 'app/controllers/Actions/finishpwdprocess.php');
 $router->post('/reset', 'app/controllers/Actions/reset.php');

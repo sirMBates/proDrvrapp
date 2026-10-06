@@ -210,6 +210,38 @@ class AssignmentRepository {
         return $stmt->fetchColumn() !== false;
     }
 
+    public function findOperationalAssignmentForEOS(int $driverId, string $currentDateTime): ?array {
+        $currentDateTime = trim($currentDateTime);
+
+        if ($driverId < 1 || $currentDateTime === '') {
+            throw new \InvalidArgumentException('Invalid End-of-Shift assignment time.');
+        }
+
+        $sql = "SELECT order_id, assignment_control, driver_id, start_date_time, assignment_status, completed_at, canceled_at
+                FROM work_orders
+                WHERE driver_id = :driver_id
+                AND start_date_time <= :current_date_time
+                AND assignment_status IN ('pending', 'confirmed', 'completed', 'canceled')
+                ORDER BY
+                    start_date_time DESC,
+                    order_id DESC
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':driver_id' => $driverId,
+            ':current_date_time' => $currentDateTime
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('End-of-Shift operational assignment query failed.');
+        }
+
+        $assignment = $stmt->fetch();
+        return $assignment !== false ? $assignment : null;
+    }
+
     public function hasBlockingAssignmentsForTimesheet(int $driverId, string $periodStart, string $nextPeriodStart): bool {
         $sql = "SELECT 1 FROM work_orders
                 WHERE driver_id = :driver_id

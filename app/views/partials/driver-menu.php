@@ -8,15 +8,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="close"></button>
         </div>
         <div class="offcanvas-body">
-                <!--<div class="dropdown mt-3">
-                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"><span class="px-2 fa-solid fa-building"></span>Office</button>
-                        <ul class="dropdown-menu">
-                                <li class="dropdown-item"><a href="tel:718-875-1103,2"><i class="px-2 fa-solid fa-phone"></i>Contact Office</a></li>
-                                <li class="dropdown-item"><a href="tel:646-281-0778"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
-                                <li class="dropdown-item"><a href="tel:917-567-8218"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
-                                <li class="dropdown-item"><a href="tel:646-301-5715"><i class="px-2 fa-solid fa-mobile"></i>Dispatcher</a></li>
-                        </ul>
-                </div>-->
                 <div class="dropdown mt-3">
                         <a href="/faqs" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-circle-info"></span>Faqs</a>
                 </div>
@@ -33,7 +24,10 @@
                         <a href="/preferences" class="btn btn-secondary" role="button"><i class="px-2 fa-solid fa-gear"></i>Preferences</a>
                 </div>
                 <div class="dropdown mt-3">
-                        <a id="logout-link" href="/logout" class="btn btn-secondary" role="button"><span class="px-2 fa-solid fa-right-from-bracket"></span>Log Out</a>
+                        <button id="logout-link" type="button" class="btn btn-secondary">
+                                <span class="px-2 fa-solid fa-right-from-bracket" aria-hidden="true"></span>
+                                Sign Out
+                        </button>
                 </div>
                 <div class="d-inline-flex fixed-bottom">
                         <button type="button" id="themeBtn" class="btn btn-light" aria-label="Left Align" style="background: none; border: none; width: 50px; height: 50px;">
@@ -44,3 +38,6 @@
                 </div>
         </div>
 </div>
+<?php
+require base_path('app/views/partials/logout-modal.php');
+?>

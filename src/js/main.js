@@ -7,6 +7,7 @@ import { syncEmergencyState } from './emergency-state.js';
 import { Validation } from './validation.js';
 import { ConnectionIndicator } from './connectionindicator.js';
 import { StatusDock } from './statusdock.js';
+import { LogoutManager } from './logout.js';
 
 const curView = getCurrentView();
 const menuProfileImage = document.querySelector('#menuProfileImage');
@@ -17,17 +18,25 @@ const driverMenu = document.querySelector(".offcanvas-body");
 const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = themeBtn?.nextElementSibling ?? null;
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
-const logoutLink = driverMenu.querySelector('#logout-link');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = fetchDrvr;
 const drvrToken = document.querySelector('#drvrToken').value;
 const drvrAlert = showFlashAlert;
 const connectionIndicatorElement = document.querySelector('#connection-indicator');
+const logoutModal = document.querySelector('#logout-modal');
+const logoutCsrfToken = document.querySelector('#logout-csrf-token');
+const endShiftLogoutButton = document.querySelector('#end-shift-logout-button');
+const logoutOnlyButton = document.querySelector('#logout-only-button');
+const returnToServiceButton = document.querySelector('#return-to-service-button');
+const logoutModalError = document.querySelector('#logout-modal-error');
+const logoutTrigger = document.querySelector('#logout-link');
+const driverOffcanvas = document.querySelector('#drivermenu');
 let connectionIndicator;
 let themeManager;
 let driverStatus;
 let statusMsg;
 let statusDock;
+let logoutManager;
 
 window.addEventListener('load', async () => {
         const emergencyState = await syncEmergencyState();
@@ -96,6 +105,18 @@ $(document).ready(() => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+        logoutManager = new LogoutManager({
+                logoutTrigger,
+                driverOffcanvas,
+                csrfToken: logoutCsrfToken?.value ?? '',
+                modal: logoutModal,
+                endShiftButton: endShiftLogoutButton,
+                logoutOnlyButton: logoutOnlyButton,
+                returnToServiceButton: returnToServiceButton,
+                errorDisplay: logoutModalError
+        });
+        logoutManager.init();
+
         themeManager = new ThemeManager({
                 themeButton: themeBtn,
                 themeButtonText: themeBtnText,
@@ -288,22 +309,3 @@ function activeLink() {
     });
 };
 activeLink();
-
-$(logoutLink).on('click', () => {
-        localStorage.removeItem('status');
-        localStorage.removeItem('driverStatusHistoryCache');
-
-        // Emergency State
-        localStorage.removeItem('isActiveEmergency');
-
-        // Legacy/session status state
-        sessionStorage.removeItem('status');
-
-        // Clear user override so auto theme resumes
-        localStorage.removeItem('userThemeOverride');
-
-        // Immediately apply auto theme
-        autoThemeSwitcher();
-        updateThemeIndicator();
-        localStorage.removeItem('warnModalShownFor');
-});
