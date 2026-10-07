@@ -78,6 +78,9 @@ class ScriptsMiddleware {
             case '/timesheet-review':
                 return ['/dist/js/timesheet-review.js'];
 
+            case '/submitted-timesheets':
+                return ['/dist/js/timesheet-history.js'];
+
             case '/profile':
                 return ['/dist/js/profilehandler.js'];
 

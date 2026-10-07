@@ -49,7 +49,7 @@ window.addEventListener('load', async () => {
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq
-        if (curView === '/faqs' || curView === '/counter' || curView === '/message-center' || curView === '/signature' || curView === '/timesheet-review') {
+        if (curView === '/faqs' || curView === '/counter' || curView === '/message-center' || curView === '/signature' || curView === '/timesheet-review' || curView === '/submitted-timesheets') {
                 return;
         }
 

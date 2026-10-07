@@ -65,6 +65,66 @@ class TimesheetSubmissionRepository {
         }
     }
 
+    public function findRecentByDriverId(int $driverId, int $limit = 25): array {
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        if ($limit < 1 || $limit > 100) {
+            throw new InvalidArgumentException('Invalid Timesheet history limit.');
+        }
+
+        $sql = "SELECT submission_id, driver_id, period_start, period_end, week_ends_on, timezone, assignment_count, total_hours, pdf_path, pdf_sha256, pdf_generated_at, submitted_at, created_at, updated_at
+                FROM timesheet_submissions
+                WHERE driver_id = :driver_id
+                ORDER BY period_end DESC, submission_id DESC
+                LIMIT :limit";
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+
+            $stmt->bindValue(':driver_id', $driverId, PDO::PARAM_INT);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            $this->logger?->error('[TIMESHEET SUBMISSION] Failed loading driver history: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function findByIdAndDriverId(int $submissionId, int $driverId): ?array {
+        if ($submissionId < 1) {
+            throw new InvalidArgumentException('Invalid Timesheet submission ID.');
+        }
+
+        if ($driverId < 1) {
+            throw new InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $sql = "SELECT submission_id, driver_id, period_start, period_end, week_ends_on, timezone, assignment_count, total_hours, pdf_path, pdf_sha256, pdf_generated_at, submitted_at, created_at, updated_at
+                FROM timesheet_submissions
+                WHERE submission_id = :submission_id
+                AND driver_id = :driver_id
+                LIMIT 1";
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+
+            $stmt->execute([
+                ':submission_id' => $submissionId,
+                ':driver_id' => $driverId,
+            ]);
+
+            $submission = $stmt->fetch();
+            return $submission !== false ? $submission : null;
+        } catch (PDOException $e) {
+            $this->logger?->error('[TIMESHEET SUBMISSION] Failed loading submission: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
     public function create(array $submission): int {
         $driverId = (int) ($submission['driver_id'] ?? 0);
         $periodStart = trim((string) ($submission['period_start'] ?? ''));

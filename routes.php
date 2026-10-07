@@ -27,6 +27,8 @@ $router->get('/signature-image', 'app/api/signature-image.php', true);
 $router->get('/signature-status', 'app/api/signature-status.php', true);
 $router->get('/connection-check', 'app/api/connection-check.php');
 $router->get('/get-timesheet', 'app/api/get-timesheet.php', true);
+$router->get('/get-timesheet-history', 'app/api/get-timesheet-history.php', true);
+$router->get('/timesheet-pdf', 'app/api/timesheet-pdf.php', true);
 $router->get('/get-timesheet-review', 'app/api/get-timesheet-review.php', true);
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
