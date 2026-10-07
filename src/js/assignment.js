@@ -656,21 +656,31 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // Build pill buttons
         function renderPills() {
-            const stepIndicator = document.querySelector('#step-indicator');
-            stepIndicator.innerHTML = ''; // Clear previous pills
+            stepIndicator.replaceChildren();
 
-            assignments.forEach((_, i) => {
+            const visibleCount = Math.min(3, assignments.length);
+            const startIndex = Math.max(0, Math.min(currentIndex - 1, assignments.length - visibleCount));
+            const endIndex = startIndex + visibleCount;
+
+            for (let i = startIndex; i < endIndex; i++) {
+                const isCurrent = i === currentIndex;
+
                 const pill = document.createElement('button');
                 pill.type = 'button';
-                pill.classList.add('btn', i === currentIndex ? 'btn-primary' : 'btn-outline-secondary');
-                pill.textContent = i + 1;
+                pill.classList.add('btn', isCurrent ? 'btn-primary' : 'btn-outline-secondary');
+                pill.textContent = String(i + 1);
+                pill.setAttribute('aria-label', `View assignment ${i + 1}`);
+
+                if (isCurrent) {
+                    pill.setAttribute('aria-current', 'true');
+                }
+
                 pill.addEventListener('click', () => {
                     showAssignment(i);
-                    renderPills();
-                    updateButtons();
                 });
+
                 stepIndicator.appendChild(pill);
-            });
+            }
         };
 
         // Update Previous / Next buttons state
