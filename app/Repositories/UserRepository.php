@@ -186,6 +186,26 @@ class UserRepository {
         $identity = $stmt->fetch();
         return $identity !== false ? $identity : null;
     }
+
+    public function findMessengerContactsForDriver(int $driverId): array {
+        if ($driverId < 1) {
+            throw new \InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $sql = "SELECT user_id, first_name, last_name, role
+                FROM users
+                WHERE user_id <> :driver_id
+                AND account_status = 'active'
+                AND role IN ('driver', 'dispatch')
+                ORDER BY user_id ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':driver_id' => $driverId
+        ]);
+
+        return $stmt->fetchAll();
+    }
 }
 
 ?>
