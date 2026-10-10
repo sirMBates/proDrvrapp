@@ -31,6 +31,7 @@ $router->get('/get-timesheet-history', 'app/api/get-timesheet-history.php', true
 $router->get('/timesheet-pdf', 'app/api/timesheet-pdf.php', true);
 $router->get('/get-timesheet-review', 'app/api/get-timesheet-review.php', true);
 $router->get('/messenger-contacts', 'app/api/messenger-contacts.php', false);
+$router->get('/messenger-retrieve-messages', 'app/api/messenger-retrieve-messages.php', true);
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
@@ -48,6 +49,7 @@ $router->post('/save-timesheet', 'app/api/save-timesheet.php', true);
 $router->post('/review-timesheet', 'app/controllers/Actions/review-timesheet.php', true);
 $router->post('/submit-timesheet', 'app/controllers/Actions/submit-timesheet.php', true);
 $router->post('/messenger-conversation', 'app/api/messenger-conversation.php', false);
+$router->post('/messenger-send-message', 'app/api/messenger-send-message.php', true);
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');

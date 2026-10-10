@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Core\Database;
+use App\Repositories\MessageRepository;
 use App\Repositories\UserRepository;
-use App\Repositories\ConversationRepository;
-use App\Services\MessengerConversationService;
+use App\Services\MessengerMessageService;
+use Core\Database;
 
 requireLoginAjax();
 
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $driverId = (int) ($_SESSION['user_id'] ?? 0);
-if ($driverId <= 0 || ($_SESSION['logged_in'] ?? false) !== true) {
+if ($driverId < 1 || ($_SESSION['logged_in'] ?? false) !== true) {
     http_response_code(401);
     echo json_encode([
         'status' => 'error',
@@ -32,8 +32,8 @@ if ($driverId <= 0 || ($_SESSION['logged_in'] ?? false) !== true) {
     exit();
 }
 
-$headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-$sessionToken = $_SESSION['drvr_token'] ?? '';
+$headerToken = (string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
 
 if ($headerToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $headerToken)) {
     http_response_code(403);
@@ -43,7 +43,10 @@ if ($headerToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $
     ]);
     exit();
 }
-
+/*
+ * Release the session lock before database work so Messenger
+ * polling requests are not blocked by message submission.
+ */
 session_write_close();
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -57,44 +60,24 @@ if (!is_array($input)) {
     exit();
 }
 
-$recipientId = filter_var($input['recipient_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-if ($recipientId === false) {
-    http_response_code(422);
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'A valid recipient is required.'
-    ]);
-    exit();
-}
-
 try {
     $pdo = (new Database())->connect();
 
     $userRepository = new UserRepository($pdo);
-    $conversationRepository = new ConversationRepository($pdo);
+    $messageRepository = new MessageRepository($pdo);
 
-    // Check existence here so a missing account returns 404.
-    $sql = "SELECT user_id FROM users WHERE user_id = :user_id";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':user_id' => $recipientId]);
+    $service = new MessengerMessageService($userRepository, $messageRepository);
 
-    if ($stmt->fetchColumn() === false) {
-        http_response_code(404);
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Recipient not found.'
-        ]);
-        exit();
-    }
-
-    $service = new MessengerConversationService($userRepository, $conversationRepository);
-
-    $conversation = $service->openForDriver($driverId, (int) $recipientId);
-
+    $message = $service->sendForDriver($driverId, $input);
+    /*
+     * Use 200 for both a new message and an idempotent retry.
+     * The same client UUID always resolves to the same message.
+     */
     http_response_code(200);
     echo json_encode([
         'status' => 'success',
-        'conversation' => $conversation
+        'message' => 'Message sent successfully.',
+        'messageData' => $message
     ]);
     exit();
 } catch (DomainException $e) {
@@ -104,7 +87,7 @@ try {
         'message' => $e->getMessage()
     ]);
     exit();
-} catch (InvalidArgumentException $e) {;
+} catch (InvalidArgumentException $e) {
     http_response_code(422);
     echo json_encode([
         'status' => 'error',
@@ -112,11 +95,11 @@ try {
     ]);
     exit();
 } catch (Throwable $e) {
-    error_log('Messenger conversation failed: ' . get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    error_log('[MESSENGER MESSAGE] Send failed: ' . get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
-        'message' => 'The conversation could not be opened.'
+        'message' => 'The message could not be sent.'
     ]);
     exit();
 }

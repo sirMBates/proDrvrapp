@@ -31,6 +31,17 @@ include "partials/info-modal.php";
 
                         <!-- Sidebar -->
                         <aside class="col-12 col-lg-4 col-xl-3 messenger-sidebar border-end">
+                            <div id="messenger-contacts-loading" class="p-3 text-center">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading contacts...</span>
+                                </div>
+
+                                <span class="ms-2 small text-body-secondary">
+                                    Loading contacts...
+                                </span>
+                            </div>
+
+                            <div id="messenger-contacts-error" class="alert alert-danger m-3 d-none" role="alert"></div>
 
                             <!-- Dispatch Section -->
                             <div class="messenger-section dispatch-section border-bottom">
@@ -38,22 +49,7 @@ include "partials/info-modal.php";
                                     <span class="fw-bold text-uppercase small">Dispatch Channel</span>
                                 </div>
 
-                                <div class="list-group list-group-flush">
-                                    <button type="button" class="list-group-item list-group-item-action dispatch-thread active">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="me-2">
-                                                <div class="fw-bold">Dispatch</div>
-                                                <small class="text-body-secondary d-block text-truncate">
-                                                    Pickup changed to 4:30 PM
-                                                </small>
-                                            </div>
-                                            <div class="text-end">
-                                                <small class="d-block">10:42 AM</small>
-                                                <span class="badge rounded-pill text-bg-danger mt-1">2</span>
-                                            </div>
-                                        </div>
-                                    </button>
-                                </div>
+                                <div id="messenger-dispatch-contacts" class="list-group list-group-flush"></div>
                             </div>
 
                             <!-- Driver Section -->
@@ -63,46 +59,14 @@ include "partials/info-modal.php";
                                 </div>
 
                                 <div class="px-3 pb-3">
-                                    <input type="text" class="form-control form-control-sm" placeholder="Search drivers or groups">
+                                    <input id="messenger-contact-search" type="search" class="form-control form-control-sm" placeholder="Search drivers" autocomplete="off">
                                 </div>
 
-                                <div class="list-group list-group-flush messenger-thread-list">
-                                    <button type="button" class="list-group-item list-group-item-action">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="me-2">
-                                                <div class="fw-semibold">Mike</div>
-                                                <small class="text-body-secondary d-block text-truncate">
-                                                    I’m at the lot now
-                                                </small>
-                                            </div>
-                                            <small>9:15 AM</small>
-                                        </div>
-                                    </button>
+                                <div id="messenger-driver-contacts" class="list-group list-group-flush messenger-thread-list"></div>
 
-                                    <button type="button" class="list-group-item list-group-item-action">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="me-2">
-                                                <div class="fw-semibold">John</div>
-                                                <small class="text-body-secondary d-block text-truncate">
-                                                    On my way
-                                                </small>
-                                            </div>
-                                            <small>Yesterday</small>
-                                        </div>
-                                    </button>
-
-                                    <button type="button" class="list-group-item list-group-item-action">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="me-2">
-                                                <div class="fw-semibold">Route A Team</div>
-                                                <small class="text-body-secondary d-block text-truncate">
-                                                    Mike: Check the updated route
-                                                </small>
-                                            </div>
-                                            <span class="badge rounded-pill text-bg-danger">1</span>
-                                        </div>
-                                    </button>
-                                </div>
+                                <p id="messenger-contacts-empty" class="small text-body-secondary text-center p-3 mb-0 d-none">
+                                    No matching contacts were found.
+                                </p>
                             </div>
                         </aside>
 

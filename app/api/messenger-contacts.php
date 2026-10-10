@@ -6,10 +6,7 @@ use Core\Database;
 use App\Repositories\UserRepository;
 use App\Services\MessengerContactService;
 
-//requireLoginAjax();
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+requireLoginAjax();
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');

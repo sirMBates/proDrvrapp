@@ -247,6 +247,14 @@ final class Validator {
 
         return $date->format($format) === $value;
     }
+
+    public static function uuid(mixed $value): bool {
+        if (!is_string($value)) {
+            return false;
+        }
+
+        return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', trim($value)) === 1;
+    }
 }
 
 ?>
