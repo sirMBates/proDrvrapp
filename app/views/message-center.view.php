@@ -10,9 +10,9 @@ include "partials/info-modal.php";
             <div class="card messenger-card shadow-sm border-0 overflow-hidden">
 
                 <!-- Page Header -->
-                <div class="card-header messenger-header d-flex justify-content-between align-items-center">
+                <div class="card-header messenger-header d-flex justify-content-between align-items-center bg-prodriverclr">
                     <div>
-                        <h2 class="h5 mb-1">Messenger</h2>
+                        <h2 class="h5 mb-1 text-light">Messenger</h2>
                         <p class="mb-0 small text-body-secondary">
                             Internal communication center
                         </p>
@@ -77,75 +77,56 @@ include "partials/info-modal.php";
                                 <!-- Active Conversation Header -->
                                 <div class="messenger-chat-header border-bottom p-3 d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h3 class="h6 mb-1">Dispatch</h3>
-                                        <small class="text-body-secondary">Primary communication channel</small>
-                                    </div>
+                                        <h3 id="messenger-conversation-name" class="h6 mb-1">
+                                            Select a contact
+                                        </h3>
 
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="badge text-bg-secondary">2 unread</span>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary">Details</button>
+                                        <small id="messenger-conversation-description" class="text-body-secondary">
+                                            Choose someone from the contact list.
+                                        </small>
                                     </div>
                                 </div>
 
+                                <!-- Conversation Error -->
+                                <div id="messenger-conversation-error"
+                                    class="alert alert-danger m-3 d-none"
+                                    role="alert"></div>
+
                                 <!-- Message Area -->
-                                <div class="messenger-message-area flex-grow-1 p-3">
+                                <div id="messenger-message-area"
+                                    class="messenger-message-area flex-grow-1 p-3"
+                                    aria-busy="false">
 
-                                    <div class="text-center mb-3">
-                                        <span class="badge text-bg-light border">Today</span>
+                                    <div id="messenger-conversation-loading"
+                                        class="text-center py-4 d-none"
+                                        role="status">
+                                        <span class="spinner-border spinner-border-sm text-primary"
+                                            aria-hidden="true"></span>
+                                        <span class="ms-2">Opening conversation...</span>
                                     </div>
 
-                                    <!-- Dispatch incoming -->
-                                    <div class="message-row message-row-received mb-3">
-                                        <div class="message-meta small mb-1 dispatch-label">
-                                            Dispatch · 10:02 AM
-                                        </div>
-                                        <div class="message-bubble dispatch-bubble">
-                                            Pickup delayed about 15 minutes.
-                                        </div>
-                                    </div>
+                                    <p id="messenger-conversation-placeholder"
+                                    class="text-body-secondary text-center py-4 mb-0"
+                                    role="status">
+                                        Select a contact to open a conversation.
+                                    </p>
 
-                                    <!-- Driver sent -->
-                                    <div class="message-row message-row-sent mb-3 text-end">
-                                        <div class="message-meta small text-body-secondary mb-1">
-                                            You · 10:04 AM
-                                        </div>
-                                        <div class="message-bubble sent-bubble d-inline-block">
-                                            Copy that. I’m on standby.
-                                        </div>
-                                    </div>
-
-                                    <!-- Dispatch incoming -->
-                                    <div class="message-row message-row-received mb-3">
-                                        <div class="message-meta small text-body-secondary mb-1">
-                                            Dispatch · 10:06 AM
-                                        </div>
-                                        <div class="message-bubble dispatch-bubble">
-                                            Thanks. I’ll update you once the client confirms.
-                                        </div>
-                                    </div>
-
-                                    <div class="text-end">
-                                        <small class="text-body-secondary">Seen 10:07 AM</small>
-                                    </div>
+                                    <div id="messenger-message-list"></div>
                                 </div>
 
                                 <!-- Composer -->
                                 <div class="messenger-composer border-top p-3">
-                                    <form>
+                                    <form id="messenger-message-form">
                                         <div class="row g-2 align-items-end">
                                             <div class="col">
                                                 <label for="messengerMessage" class="visually-hidden">Message</label>
-                                                <textarea
-                                                    id="messengerMessage"
-                                                    class="form-control"
-                                                    rows="2"
-                                                    placeholder="Type your message..."></textarea>
+                                                <textarea id="messengerMessage" class="form-control" rows="2" placeholder="Type your message..." disabled></textarea>
                                             </div>
 
                                             <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                             
                                             <div class="col-12 col-md-auto">
-                                                <button type="submit" class="btn btn-primary w-100">
+                                                <button id="messenger-send-button" type="submit" class="btn btn-primary w-100" disabled>
                                                     Send
                                                 </button>
                                             </div>

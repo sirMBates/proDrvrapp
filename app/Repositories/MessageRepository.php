@@ -39,6 +39,20 @@ class MessageRepository {
         $this->pdo->beginTransaction();
 
         try {
+            $conversationSql = "SELECT conversation_id
+                                FROM conversations
+                                WHERE conversation_id = :conversation_id
+                                FOR UPDATE";
+            $stmt = $this->pdo->prepare($conversationSql);
+
+            $stmt->execute([
+                ':conversation_id' => $conversationId
+            ]);
+
+            if ($stmt->fetchColumn() === false) {
+                throw new \DomainException('The conversation is unavailable.');
+            }
+
             $membershipSql = "SELECT conversation_id
                             FROM conversation_members
                             WHERE conversation_id = :conversation_id

@@ -148,32 +148,28 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
     }
 
     // Choose formatting options based on desired output
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const hour = String(hours % 12 || 12).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    const period = hours >= 12 ? 'pm' : 'am';
+
+    const formattedDate = `${month}-${day}-${year}`;
+    const formattedTime = `${hour}:${minute}${period}`;
+
     switch (format) {
         case 'date':
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
+            return formattedDate;
 
         case 'time':
-            return date.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            });
+            return formattedTime;
 
         case 'datetime':
         default:
-            return date.toLocaleString('en-US', {
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                hour12: true
-            });
-    }
+            return `${formattedDate} ${formattedTime}`;
+    };
 };
 
 export function showFlashAlert(type = 'info', message = '', timeout = 4000, useBanner = false) {

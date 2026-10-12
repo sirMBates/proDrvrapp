@@ -55,7 +55,19 @@ class MessengerMessageService {
             throw new \InvalidArgumentException('Invalid message cursor.');
         }
 
+        $driver = $this->userRepository->findById($driverId);
+        if ($driver['role'] !== 'driver' || $driver['account_status'] !== 'active') {
+            throw new \DomainException('Messenger requires an active driver account.');
+        }
+
         $messages = $this->messageRepository->findForMember($conversationId, $driverId, $afterMessageId, $limit);
+
+        forEach ($messages as &$message) {
+            $message['is_own'] = $message['sender_id'] === $driverId;
+        }
+
+        unset($message);
+        
         $latestMessageId = $afterMessageId;
 
         if ($messages !== []) {
