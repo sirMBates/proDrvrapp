@@ -19,7 +19,7 @@ include "partials/info-modal.php";
                     </div>
 
                     <div>
-                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                        <button id="messenger-new-message" type="button" class="btn btn-sm btn-outline-secondary" disabled>
                             New Message
                         </button>
                     </div>
@@ -58,7 +58,7 @@ include "partials/info-modal.php";
                                     </span>
                                 </summary>
 
-                                <div id="messenger-dispatch-contacts" class="list-group list-group-flush messenger-section-list"></div>
+                                <div id="messenger-dispatch-conversations" class="list-group list-group-flush messenger-section-list"></div>
                             </details>
 
                             <!-- Driver Section -->
@@ -77,17 +77,17 @@ include "partials/info-modal.php";
                                 </summary>
 
                                 <div class="px-3 pb-3">
-                                    <label for="messenger-contact-search" class="visually-hidden">
-                                        Search drivers
+                                    <label for="messenger-conversation-search" class="visually-hidden">
+                                        Search driver conversations
                                     </label>
 
-                                    <input id="messenger-contact-search" type="search" class="form-control form-control-sm" placeholder="Search drivers" autocomplete="off">
+                                    <input id="messenger-conversation-search" type="search" class="form-control form-control-sm" placeholder="Search conversations" autocomplete="off">
                                 </div>
 
-                                <div id="messenger-driver-contacts" class="list-group list-group-flush messenger-thread-list messenger-section-list"></div>
+                                <div id="messenger-driver-conversations" class="list-group list-group-flush messenger-thread-list messenger-section-list"></div>
 
-                                <p id="messenger-contacts-empty" class="small text-body-secondary text-center p-3 mb-0 d-none">
-                                    No matching contacts were found.
+                                <p id="messenger-conversations-empty" class="small text-body-secondary text-center p-3 mb-0 d-none">
+                                    No matching conversations. Choose New Message to start one.
                                 </p>
                             </details>
                         </aside>
@@ -165,6 +165,30 @@ include "partials/info-modal.php";
         </div>
     </div>
 </main>
+
+<dialog id="messenger-contact-picker" class="messenger-contact-picker" aria-labelledby="messenger-picker-title">
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <h3 id="messenger-picker-title" class="h5 mb-0">
+            New Message
+        </h3>
+
+        <button id="messenger-picker-close" type="button" class="btn-close" aria-label="Close contact picker"></button>
+    </div>
+
+    <div class="p-3">
+        <label for="messenger-picker-search" class="form-label">
+            Find a driver or dispatcher
+        </label>
+
+        <input id="messenger-picker-search" type="search" class="form-control" placeholder="Search contacts" autocomplete="off">
+    </div>
+
+    <div id="messenger-picker-contacts" class="list-group list-group-flush messenger-picker-list"></div>
+
+    <p id="messenger-picker-empty" class="text-body-secondary text-center p-3 mb-0 d-none">
+        No matching contacts were found.
+    </p>
+</dialog>
 
 <?php
         require "partials/footer.php";

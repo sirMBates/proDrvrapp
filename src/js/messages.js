@@ -3,10 +3,10 @@ import { proDriverRequest, viewableDateTimeHelper } from './helpers.js';
 const MESSAGE_POLL_INTERVAL = 3000;
 const contactsLoading = document.querySelector('#messenger-contacts-loading');
 const contactsError = document.querySelector('#messenger-contacts-error');
-const contactsEmpty = document.querySelector('#messenger-contacts-empty');
-const dispatchContacts = document.querySelector('#messenger-dispatch-contacts');
-const driverContacts = document.querySelector('#messenger-driver-contacts');
-const contactSearch = document.querySelector('#messenger-contact-search');
+const conversationsEmpty = document.querySelector('#messenger-conversations-empty');
+const dispatchConversations = document.querySelector('#messenger-dispatch-conversations');
+const driverConversations = document.querySelector('#messenger-driver-conversations');
+const conversationSearch = document.querySelector('#messenger-conversation-search');
 const driverToken = document.querySelector('#drvrToken')?.value;
 const conversationName = document.querySelector('#messenger-conversation-name');
 const conversationDescription = document.querySelector('#messenger-conversation-description');
@@ -21,6 +21,12 @@ const messageInput = document.querySelector('#messengerMessage');
 const sendButton = document.querySelector('#messenger-send-button');
 const confirmedReadPositions = new Map();
 const readRequestsInFlight = new Set();
+const newMessageButton = document.querySelector('#messenger-new-message');
+const contactPicker = document.querySelector('#messenger-contact-picker');
+const pickerClose = document.querySelector('#messenger-picker-close');
+const pickerSearch = document.querySelector('#messenger-picker-search');
+const pickerContacts = document.querySelector('#messenger-picker-contacts');
+const pickerEmpty = document.querySelector('#messenger-picker-empty');
 
 let latestRetrievedMessageId = 0;
 let messagePollTimer = null;
@@ -51,11 +57,12 @@ function showElement(element) {
     element?.classList.remove('d-none');
 };
 
-function createContactButton(contact) {
+function createConversationButton(contact) {
     const button = document.createElement('button');
 
     button.type = 'button';
     button.className = 'list-group-item list-group-item-action';
+    button.classList.toggle('dispatch-thread', contact.role === 'dispatch');
     button.dataset.recipientId = String(contact.userId);
     button.dataset.contactRole = contact.role;
 
@@ -67,13 +74,11 @@ function createContactButton(contact) {
 
     const displayName = document.createElement('div');
     displayName.className = contact.role === 'dispatch' ? 'fw-bold' : 'fw-semibold';
-
     displayName.textContent = contact.displayName;
 
     const description = document.createElement('small');
     description.className = 'text-body-secondary d-block text-truncate';
     description.textContent = contact.role === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
-
     contactDetails.append(displayName, description);
 
     const icon = document.createElement('i');
@@ -120,12 +125,12 @@ function createContactButton(contact) {
     return button;
 };
 
-function renderContacts(contacts) {
+function renderConversations(contacts) {
     const dispatchFragment = document.createDocumentFragment();
     const driverFragment = document.createDocumentFragment();
 
     contacts.forEach(contact => {
-        const contactButton = createContactButton(contact);
+        const contactButton = createConversationButton(contact);
 
         if (contact.role === 'dispatch') {
             dispatchFragment.appendChild(contactButton);
@@ -137,32 +142,54 @@ function renderContacts(contacts) {
         }
     });
 
-    dispatchContacts?.replaceChildren(dispatchFragment);
-    driverContacts?.replaceChildren(driverFragment);
+    dispatchConversations?.replaceChildren(dispatchFragment);
+    driverConversations?.replaceChildren(driverFragment);
 
-    const visibleContactCount = (dispatchContacts?.children.length ?? 0) + (driverContacts?.children.length ?? 0);
+    const visibleDriverConversationCount = driverConversations?.children.length ?? 0;
 
-    if (visibleContactCount === 0) {
-        showElement(contactsEmpty);
+    if (visibleDriverConversationCount === 0) {
+        showElement(conversationsEmpty);
     } else {
-        hideElement(contactsEmpty);
+        hideElement(conversationsEmpty);
     }
 
     updateConversationRows();
 };
 
-function filterDriverContacts() {
-    const searchValue = contactSearch?.value.trim().toLowerCase() ?? '';
+function refreshConversationSidebar(forceRender = false) {
+    const searchValue = conversationSearch?.value.trim().toLowerCase() ?? '';
 
-    const filteredContacts = messengerContacts.filter(contact => {
-        if (contact.role === 'dispatch') {
-            return true;
+    const visibleConversationContacts = messengerContacts.filter(contact => {
+        const recipientId = Number(contact.userId);
+        const summary = conversationSummariesByRecipient.get(recipientId);
+        const isSelected = recipientId === Number(openingRecipientId ?? activeContact?.userId);
+        const hasMessages = summary?.latest_message_id != null;
+
+        if (!hasMessages && !isSelected) {
+            return false;
         }
 
-        return contact.displayName.toLowerCase().includes(searchValue);
+        return contact.role === 'dispatch' || contact.displayName.toLowerCase().includes(searchValue);
     });
 
-    renderContacts(filteredContacts);
+    const existingButtons = [
+        ...(dispatchConversations?.querySelectorAll('button[data-recipient-id]') ?? []),
+        ...(driverConversations?.querySelectorAll('button[data-recipient-id]') ?? [])
+    ];
+
+    const existingIds = new Set(existingButtons.map(button => Number(button.dataset.recipientId)));
+
+    const membershipChanged = existingIds.size !== visibleConversationContacts.length || visibleConversationContacts.some(contact => !existingIds.has(Number(contact.userId)));
+
+    if (forceRender || membershipChanged) {
+        renderConversations(visibleConversationContacts);
+    } else {
+        updateConversationRows();
+    }
+};
+
+function filterDriverConversations() {
+    refreshConversationSidebar(true);
 };
 
 function showContactsError(message) {
@@ -174,9 +201,74 @@ function showContactsError(message) {
     }
 };
 
+function renderContactPicker() {
+    const searchValue = pickerSearch?.value.trim().toLowerCase() ?? '';
+    const fragment = document.createDocumentFragment();
+    const contacts = messengerContacts.filter(contact => contact.displayName.toLowerCase().includes(searchValue));
+
+    contacts.forEach(contact => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'list-group-item list-group-item-action';
+
+        const name = document.createElement('div');
+        name.className = 'fw-semibold';
+        name.textContent = contact.displayName;
+
+        const role = document.createElement('small');
+        role.className = 'text-body-secondary';
+        role.textContent = contact.role === 'dispatch' ? 'Dispatch' : 'Driver';
+
+        button.append(name, role);
+
+        button.addEventListener('click', async () => {
+            if (isSendingMessage) {
+                return;
+            }
+
+            // Clear the sidebar filter so the selected contact is visible.
+            if (conversationSearch) {
+                conversationSearch.value = '';
+            }
+
+            refreshConversationSidebar(true);
+            contactPicker.close();
+
+            await openMessengerConversation(contact);
+
+            if (activeContact?.userId === contact.userId && !messageInput?.disabled) {
+                messageInput?.focus();
+            }
+        });
+
+        fragment.appendChild(button);
+    });
+
+    pickerContacts?.replaceChildren(fragment);
+    pickerEmpty?.classList.toggle('d-none', contacts.length !== 0);
+};
+
+function openContactPicker() {
+    if (!contactPicker || isSendingMessage) {
+        return;
+    }
+
+    if (pickerSearch) {
+        pickerSearch.value = '';
+    }
+
+    renderContactPicker();
+
+    if (!contactPicker.open) {
+        contactPicker.showModal();
+    }
+
+    pickerSearch?.focus();
+};
+
 async function loadMessengerContacts() {
     hideElement(contactsError);
-    hideElement(contactsEmpty);
+    hideElement(conversationsEmpty);
     showElement(contactsLoading);
 
     try {
@@ -193,9 +285,13 @@ async function loadMessengerContacts() {
         }
 
         messengerContacts = response.contacts;
-        renderContacts(messengerContacts);
+        refreshConversationSidebar(true);
         updateSectionUnreadTotals();
         hideElement(contactsLoading);
+
+        if (newMessageButton) {
+            newMessageButton.disabled = isSendingMessage;
+        }
     } catch (error) {
         console.error('[MESSENGER] Failed loading contacts:', error);
         showContactsError(error?.message || 'Messenger contacts could not be loaded.');
@@ -206,8 +302,8 @@ function updateSelectedContact() {
     const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
 
     const buttons = [
-        ...(dispatchContacts?.querySelectorAll('button[data-recipient-id]') ?? []),
-        ...(driverContacts?.querySelectorAll('button[data-recipient-id]') ?? [])
+        ...(dispatchConversations?.querySelectorAll('button[data-recipient-id]') ?? []),
+        ...(driverConversations?.querySelectorAll('button[data-recipient-id]') ?? [])
     ];
 
     buttons.forEach(button => {
@@ -307,6 +403,10 @@ function updateMessengerComposer() {
     if (sendButton) {
         sendButton.disabled = !canCompose || !messageInput?.value.trim();
         sendButton.textContent = isSendingMessage ? 'Sending...' : 'Send';
+    }
+
+    if (newMessageButton) {
+        newMessageButton.disabled = !messengerContacts.length || isSendingMessage;
     }
 };
 
@@ -424,8 +524,8 @@ async function pollMessengerMessages() {
 
 function updateUnreadBadges() {
     const buttons = [
-        ...(dispatchContacts?.querySelectorAll('button[data-recipient-id]') ?? []),
-        ...(driverContacts?.querySelectorAll('button[data-recipient-id]') ?? [])
+        ...(dispatchConversations?.querySelectorAll('button[data-recipient-id]') ?? []),
+        ...(driverConversations?.querySelectorAll('button[data-recipient-id]') ?? [])
     ];
 
     buttons.forEach(button => {
@@ -517,7 +617,7 @@ async function refreshMessengerUnread() {
         });
 
         conversationSummariesByRecipient = summaries;
-        updateConversationRows();
+        refreshConversationSidebar();
         unreadPollFailures = 0;
         updateUnreadBadges();
     } catch (error) {
@@ -636,7 +736,7 @@ function updateContactPreview(button) {
 };
 
 function updateConversationRows() {
-    [dispatchContacts, driverContacts].forEach(list => {
+    [dispatchConversations, driverConversations].forEach(list => {
         if (!list) {
             return;
         }
@@ -721,6 +821,7 @@ async function openMessengerConversation(contact) {
     activeConversationId = null;
     activeContact = null;
     conversationMessages = [];
+    refreshConversationSidebar();
 
     updateMessengerComposer();
 
@@ -796,6 +897,7 @@ async function openMessengerConversation(contact) {
 
             hideElement(conversationLoading);
             messageArea?.setAttribute('aria-busy', 'false');
+            refreshConversationSidebar();
             updateSelectedContact();
             updateMessengerComposer();
             scheduleMessengerPoll();
@@ -961,6 +1063,14 @@ function updateSectionUnreadTotals() {
     });
 };
 
+newMessageButton?.addEventListener('click', openContactPicker);
+
+pickerClose?.addEventListener('click', () => {
+    contactPicker?.close();
+});
+
+pickerSearch?.addEventListener('input', renderContactPicker);
+
 document.addEventListener('visibilitychange', () => {
     stopMessengerPolling();
     stopUnreadPolling();
@@ -1003,7 +1113,7 @@ messageForm?.addEventListener('submit', sendMessengerMessage);
 
 messageInput?.addEventListener('input', updateMessengerComposer);
 
-contactSearch?.addEventListener('input', filterDriverContacts);
+conversationSearch?.addEventListener('input', filterDriverConversations);
 
 updateMessengerComposer();
 initializeMessengerSections();
