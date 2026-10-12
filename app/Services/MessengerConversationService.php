@@ -33,6 +33,62 @@ class MessengerConversationService {
 
         return $this->conversationRepository->findOrCreateDirect($driverId, $recipientId);
     }
+
+    public function unreadForDriver(int $driverId): array {
+        if ($driverId < 1) {
+            throw new \InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $driver = $this->userRepository->findById($driverId);
+        if ($driver['role'] !== 'driver' || $driver['account_status'] !== 'active') {
+            throw new \DomainException('Messenger requires an active driver account.');
+        }
+
+        $summaries = $this->conversationRepository->findUnreadSummariesForMember($driverId);
+        $otherMembers = $this->conversationRepository->findOtherMembersForMember($driverId);
+        $recipientsByConversation = [];
+
+        foreach ($otherMembers as $member) {
+            $conversationId = (int) $member['conversation_id'];
+            $recipientsByConversation[$conversationId][] = (int) $member['user_id'];
+        }
+
+        $totalUnread = 0;
+
+        foreach ($summaries as &$summary) {
+            $conversationId = $summary['conversation_id'];
+            $recipientIds = $recipientsByConversation[$conversationId] ?? [];
+
+            // Only a two-member direct conversation maps to one contact.
+            $summary['recipient_id'] = $summary['conversation_type'] === 'direct' && count($recipientIds) === 1 ? $recipientIds[0] : null;
+            $totalUnread += $summary['unread_count'];
+        }
+
+        unset($summary);
+
+        return [
+            'total_unread' => $totalUnread,
+            'conversations' => $summaries
+        ];
+    }
+
+    public function markReadForDriver(int $driverId, int $conversationId, int $messageId): array {
+        if ($driverId < 1 || $conversationId < 1 || $messageId < 1) {
+            throw new \InvalidArgumentException('Invalid read position.');
+        }
+
+        $driver = $this->userRepository->findById($driverId);
+        if ($driver['role'] !== 'driver' || $driver['account_status'] !== 'active') {
+            throw new \DomainException('Messenger requires an active driver account.');
+        }
+
+        $readPosition = $this->conversationRepository->markReadForMember($conversationId, $driverId, $messageId);
+
+        return [
+            'conversation_id' => $conversationId,
+            'last_read_message_id' => $readPosition
+        ];
+    }
 }
 
 ?>

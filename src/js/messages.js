@@ -19,21 +19,28 @@ const messageList = document.querySelector('#messenger-message-list');
 const messageForm = document.querySelector('#messenger-message-form');
 const messageInput = document.querySelector('#messengerMessage');
 const sendButton = document.querySelector('#messenger-send-button');
+const confirmedReadPositions = new Map();
+const readRequestsInFlight = new Set();
+
 let latestRetrievedMessageId = 0;
 let messagePollTimer = null;
 let messagePollInFlight = false;
 let messagePollFailures = 0;
-
 let conversationMessages = [];
 let isSendingMessage = false;
 let pendingSend = null;
-
 let activeConversationId = null;
 let activeContact = null;
 let openingRecipientId = null;
 let conversationRequestVersion = 0;
-
 let messengerContacts = [];
+let unreadCountsByRecipient = new Map();
+let unreadPollTimer = null;
+let unreadRequestInFlight = false;
+let unreadRefreshRequested = false;
+let unreadPollFailures = 0;
+let unreadStateVersion = 0;
+let readCheckTimer = null;
 
 function hideElement(element) {
     element?.classList.add('d-none');
@@ -72,7 +79,21 @@ function createContactButton(contact) {
     icon.className = 'fa-solid fa-chevron-right text-body-secondary';
     icon.setAttribute('aria-hidden', 'true');
 
-    layout.append(contactDetails, icon);
+    const badge = document.createElement('span');
+    badge.className = 'badge rounded-pill text-bg-danger d-none';
+    badge.dataset.unreadBadge = 'true';
+
+    const count = unreadCountsByRecipient.get(Number(contact.userId)) ?? 0;
+
+    badge.textContent = String(count);
+    badge.setAttribute('aria-label', `${count} unread messages`);
+    badge.classList.toggle('d-none', count === 0);
+
+    const indicators = document.createElement('div');
+    indicators.className = 'd-flex align-items-center gap-2 flex-shrink-0';
+    indicators.append(badge, icon);
+
+    layout.append(contactDetails, indicators);
     button.appendChild(layout);
 
     const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
@@ -358,6 +379,7 @@ async function pollMessengerMessages() {
 
         latestRetrievedMessageId = returnedCursor;
         messagePollFailures = 0;
+        scheduleReadCheck();
 
         if (conversationDescription) {
             conversationDescription.textContent = contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
@@ -382,6 +404,189 @@ async function pollMessengerMessages() {
         if (messagePollTimer === null && canPollMessenger()) {
             const delay = Math.min(MESSAGE_POLL_INTERVAL * (2 ** Math.min(messagePollFailures, 4)), 30000);
             scheduleMessengerPoll(delay);
+        }
+    }
+};
+
+function updateUnreadBadges() {
+    const buttons = [
+        ...(dispatchContacts?.querySelectorAll('button[data-recipient-id]') ?? []),
+        ...(driverContacts?.querySelectorAll('button[data-recipient-id]') ?? [])
+    ];
+
+    buttons.forEach(button => {
+        const badge = button.querySelector('[data-unread-badge]');
+        const count = unreadCountsByRecipient.get(
+            Number(button.dataset.recipientId)
+        ) ?? 0;
+
+        if (badge) {
+            badge.textContent = String(count);
+            badge.setAttribute('aria-label', `${count} unread messages`);
+            badge.classList.toggle('d-none', count === 0);
+        }
+    });
+};
+
+function stopUnreadPolling() {
+    if (unreadPollTimer !== null) {
+        clearTimeout(unreadPollTimer);
+        unreadPollTimer = null;
+    }
+};
+
+function scheduleUnreadPoll(delay = MESSAGE_POLL_INTERVAL) {
+    stopUnreadPolling();
+
+    if (document.hidden || !navigator.onLine) {
+        return;
+    }
+
+    unreadPollTimer = setTimeout(() => {
+        unreadPollTimer = null;
+        refreshMessengerUnread();
+    }, delay);
+};
+
+async function refreshMessengerUnread() {
+    if (document.hidden || !navigator.onLine) {
+        return;
+    }
+
+    if (unreadRequestInFlight) {
+        unreadRefreshRequested = true;
+        return;
+    }
+
+    stopUnreadPolling();
+    unreadRequestInFlight = true;
+    unreadRefreshRequested = false;
+
+    const stateVersion = unreadStateVersion;
+
+    try {
+        const response = await proDriverRequest('/messenger-unread', {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'X-CSRF-Token': driverToken
+            }
+        });
+
+        if (response?.status !== 'success' || !Array.isArray(response.unreadData?.conversations)) {
+            throw new Error(response?.message || 'Unread counts could not be loaded.');
+        }
+
+        // A read update completed while this summary was loading.
+        if (stateVersion !== unreadStateVersion) {
+            unreadRefreshRequested = true;
+            return;
+        }
+
+        const counts = new Map();
+
+        response.unreadData.conversations.forEach(summary => {
+            if (summary.recipient_id !== null) {
+                const recipientId = Number(summary.recipient_id);
+                counts.set(recipientId, (counts.get(recipientId) ?? 0) + Number(summary.unread_count));
+            }
+        });
+
+        unreadCountsByRecipient = counts;
+        unreadPollFailures = 0;
+        updateUnreadBadges();
+    } catch (error) {
+        unreadPollFailures++;
+        console.error('[MESSENGER] Unread refresh failed:', error);
+    } finally {
+        unreadRequestInFlight = false;
+        const delay = unreadRefreshRequested ? 0 : Math.min(MESSAGE_POLL_INTERVAL * (2 ** Math.min(unreadPollFailures, 4)), 30000);
+
+        scheduleUnreadPoll(delay);
+    }
+};
+
+function newestRetrievedMessagesAreVisible() {
+    if (document.hidden || !navigator.onLine || openingRecipientId !== null || activeConversationId === null || latestRetrievedMessageId < 1 || !messageArea) {
+        return false;
+    }
+
+    const distanceFromBottom = messageArea.scrollHeight - messageArea.scrollTop - messageArea.clientHeight;
+    if (distanceFromBottom > 2) {
+        return false;
+    }
+
+    const lastMessage = messageList?.lastElementChild;
+    if (!lastMessage) {
+        return false;
+    }
+
+    // Also account for the whole page being scrolled on mobile.
+    const bounds = lastMessage.getBoundingClientRect();
+    return (bounds.bottom > 0 && bounds.bottom <= window.innerHeight && bounds.right > 0 && bounds.left < window.innerWidth);
+};
+
+function scheduleReadCheck() {
+    if (readCheckTimer !== null) {
+        clearTimeout(readCheckTimer);
+    }
+
+    readCheckTimer = setTimeout(() => {
+        readCheckTimer = null;
+        markVisibleMessagesRead();
+    }, 200);
+};
+
+async function markVisibleMessagesRead() {
+    if (!newestRetrievedMessagesAreVisible()) {
+        return;
+    }
+
+    const conversationId = activeConversationId;
+
+    // Use the retrieval cursor, never a higher sent-message ID.
+    const messageId = latestRetrievedMessageId;
+    const confirmedPosition = confirmedReadPositions.get(conversationId) ?? 0;
+
+    if (messageId <= confirmedPosition || readRequestsInFlight.has(conversationId)) {
+        return;
+    }
+
+    readRequestsInFlight.add(conversationId);
+    let savedSuccessfully = false;
+
+    try {
+        const response = await proDriverRequest('/messenger-mark-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': driverToken
+            },
+            body: JSON.stringify({
+                conversation_id: conversationId,
+                message_id: messageId
+            })
+        });
+
+        const readData = response?.readData;
+        const savedPosition = Number(readData?.last_read_message_id);
+
+        if (response?.status !== 'success' || Number(readData?.conversation_id) !== conversationId || !Number.isSafeInteger(savedPosition) || savedPosition < messageId) {
+            throw new Error(response?.message || 'The read position could not be saved.');
+        }
+
+        confirmedReadPositions.set(conversationId, Math.max(confirmedReadPositions.get(conversationId) ?? 0, savedPosition));
+        savedSuccessfully = true;
+        unreadStateVersion++;
+
+        // Fetch authoritative counts rather than assuming zero.
+        refreshMessengerUnread();
+    } catch (error) {
+        console.error('[MESSENGER] Read update failed:', error);
+    } finally {
+        readRequestsInFlight.delete(conversationId);
+        if (savedSuccessfully && activeConversationId === conversationId && latestRetrievedMessageId > messageId) {
+            scheduleReadCheck();
         }
     }
 };
@@ -487,6 +692,7 @@ async function openMessengerConversation(contact) {
             updateSelectedContact();
             updateMessengerComposer();
             scheduleMessengerPoll();
+            scheduleReadCheck();
         }
     }
 };
@@ -570,6 +776,7 @@ async function sendMessengerMessage(event) {
             messageArea.scrollTop = messageArea.scrollHeight;
         }
 
+        scheduleReadCheck();
     } catch (error) {
         console.error('[MESSENGER] Failed sending message:', error);
 
@@ -586,21 +793,41 @@ async function sendMessengerMessage(event) {
 
 document.addEventListener('visibilitychange', () => {
     stopMessengerPolling();
+    stopUnreadPolling();
 
     if (!document.hidden) {
         messagePollFailures = 0;
+        unreadPollFailures = 0;
+
         scheduleMessengerPoll(0);
+        scheduleUnreadPoll(0);
+        scheduleReadCheck();
     }
 });
 
 window.addEventListener('offline', () => {
     stopMessengerPolling();
+    stopUnreadPolling();
 });
 
 window.addEventListener('online', () => {
     messagePollFailures = 0;
+    unreadPollFailures = 0;
+
     scheduleMessengerPoll(0);
+    scheduleUnreadPoll(0);
+    scheduleReadCheck();
 });
+
+messageArea?.addEventListener('scroll', scheduleReadCheck, {
+    passive: true
+});
+
+window.addEventListener('scroll', scheduleReadCheck, {
+    passive: true
+});
+
+window.addEventListener('resize', scheduleReadCheck);
 
 messageForm?.addEventListener('submit', sendMessengerMessage);
 
@@ -610,3 +837,4 @@ contactSearch?.addEventListener('input', filterDriverContacts);
 
 updateMessengerComposer();
 loadMessengerContacts();
+scheduleUnreadPoll(0);
