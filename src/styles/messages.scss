@@ -44,7 +44,6 @@
 }
 
 .messenger-thread-list {
-  max-height: calc(72vh - 165px);
   padding-bottom: 0.5rem;
 }
 
@@ -231,5 +230,88 @@
 @media (max-width: 576px) {
   .message-bubble {
     padding: 0.55rem 0.8rem;
+  }
+}
+
+.messenger-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  color: var(--bs-body-color);
+}
+
+.messenger-section-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.messenger-section-toggle::marker {
+  content: "";
+}
+
+.messenger-section-toggle:hover {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.messenger-section-toggle:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
+
+.messenger-section-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.messenger-section:not([open]) > .messenger-section-toggle
+  .messenger-section-chevron {
+  transform: rotate(-90deg);
+}
+
+.messenger-section-list {
+  // Approximately 8–10 two-line contacts; scroll beyond this height.
+  max-height: 34rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--bs-secondary-color) transparent;
+}
+
+.messenger-section-list::-webkit-scrollbar,
+.messenger-section-list:hover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messenger-section-list::-webkit-scrollbar-thumb,
+.messenger-section-list:hover::-webkit-scrollbar-thumb {
+  background-color: var(--bs-secondary-color);
+  border-radius: 10px;
+}
+
+.messenger-section-list .list-group-item {
+  min-width: 0;
+}
+
+.messenger-section-list .list-group-item .me-2 {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+// Allow for the horizontal margins already applied on desktop.
+@media (min-width: 992px) {
+  .messenger-section-list .list-group-item {
+    width: calc(100% - 1rem);
+    max-width: calc(100% - 1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .messenger-section-chevron {
+    transition: none;
   }
 }

@@ -35,6 +35,7 @@ let openingRecipientId = null;
 let conversationRequestVersion = 0;
 let messengerContacts = [];
 let unreadCountsByRecipient = new Map();
+let conversationSummariesByRecipient = new Map();
 let unreadPollTimer = null;
 let unreadRequestInFlight = false;
 let unreadRefreshRequested = false;
@@ -106,6 +107,16 @@ function createContactButton(contact) {
         openMessengerConversation(contact);
     });
 
+    description.dataset.conversationPreview = 'true';
+
+    const timestamp = document.createElement('small');
+    timestamp.className = 'text-body-secondary d-block mt-1 d-none';
+    timestamp.dataset.conversationTimestamp = 'true';
+
+    contactDetails.appendChild(timestamp);
+
+    updateContactPreview(button);
+
     return button;
 };
 
@@ -136,6 +147,8 @@ function renderContacts(contacts) {
     } else {
         hideElement(contactsEmpty);
     }
+
+    updateConversationRows();
 };
 
 function filterDriverContacts() {
@@ -181,6 +194,7 @@ async function loadMessengerContacts() {
 
         messengerContacts = response.contacts;
         renderContacts(messengerContacts);
+        updateSectionUnreadTotals();
         hideElement(contactsLoading);
     } catch (error) {
         console.error('[MESSENGER] Failed loading contacts:', error);
@@ -426,6 +440,7 @@ function updateUnreadBadges() {
             badge.classList.toggle('d-none', count === 0);
         }
     });
+    updateSectionUnreadTotals();
 };
 
 function stopUnreadPolling() {
@@ -493,6 +508,16 @@ async function refreshMessengerUnread() {
         });
 
         unreadCountsByRecipient = counts;
+        const summaries = new Map();
+
+        response.unreadData.conversations.forEach(summary => {
+            if (summary.conversation_type === 'direct' && summary.recipient_id !== null) {
+                summaries.set(Number(summary.recipient_id), summary);
+            }
+        });
+
+        conversationSummariesByRecipient = summaries;
+        updateConversationRows();
         unreadPollFailures = 0;
         updateUnreadBadges();
     } catch (error) {
@@ -590,6 +615,88 @@ async function markVisibleMessagesRead() {
         }
     }
 };
+
+function updateContactPreview(button) {
+    const recipientId = Number(button.dataset.recipientId);
+    const summary = conversationSummariesByRecipient.get(recipientId);
+
+    const preview = button.querySelector('[data-conversation-preview]');
+    const timestamp = button.querySelector('[data-conversation-timestamp]');
+
+    const hasMessage = summary?.latest_message_id != null;
+
+    if (preview) {
+        preview.textContent = hasMessage ? `${summary.latest_is_own ? 'You: ' : ''}${String(summary.latest_message_body ?? '').replace(/\s+/g, ' ').trim()}` : button.dataset.contactRole === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
+    }
+
+    if (timestamp) {
+        timestamp.textContent = hasMessage ? dtHelper(summary.latest_message_created_at, 'datetime') : '';
+        timestamp.classList.toggle('d-none', !hasMessage);
+    }
+};
+
+function updateConversationRows() {
+    [dispatchContacts, driverContacts].forEach(list => {
+        if (!list) {
+            return;
+        }
+
+        const buttons = Array.from(list.querySelectorAll('button[data-recipient-id]'));
+        buttons.forEach(updateContactPreview);
+
+        const sortedButtons = [...buttons].sort((a, b) => {
+            const aSummary = conversationSummariesByRecipient.get(Number(a.dataset.recipientId));
+            const bSummary = conversationSummariesByRecipient.get(Number(b.dataset.recipientId));
+            const aHasMessage = aSummary?.latest_message_id != null;
+            const bHasMessage = bSummary?.latest_message_id != null;
+
+            if (aHasMessage !== bHasMessage) {
+                return aHasMessage ? -1 : 1;
+            }
+
+            if (aHasMessage && bHasMessage) {
+                const timestampOrder = String(bSummary.latest_message_created_at).localeCompare(String(aSummary.latest_message_created_at));
+
+                if (timestampOrder !== 0) {
+                    return timestampOrder;
+                }
+
+                const messageOrder = Number(bSummary.latest_message_id) - Number(aSummary.latest_message_id);
+
+                if (messageOrder !== 0) {
+                    return messageOrder;
+                }
+            }
+
+            // Contacts without messages remain alphabetically ordered.
+            const aName = messengerContacts.find(contact => Number(contact.userId) === Number(a.dataset.recipientId))?.displayName ?? '';
+
+            const bName = messengerContacts.find(contact => Number(contact.userId) === Number(b.dataset.recipientId))?.displayName ?? '';
+
+            return aName.localeCompare(bName, 'en', {
+                sensitivity: 'base',
+                numeric: true
+            }) || Number(a.dataset.recipientId) - Number(b.dataset.recipientId);
+        });
+
+        const orderChanged = sortedButtons.some((button, index) => button !== buttons[index]);
+
+        if (orderChanged) {
+            const previousScrollTop = list.scrollTop;
+            const focusedElement = document.activeElement;
+            const restoreFocus = list.contains(focusedElement);
+
+            // Move existing buttons, preserving handlers and active styling.
+            sortedButtons.forEach(button => list.appendChild(button));
+
+            if (restoreFocus) {
+                focusedElement.focus({ preventScroll: true });
+            }
+
+            list.scrollTop = previousScrollTop;
+        }
+    });
+}; 
 
 async function openMessengerConversation(contact) {
     if (isSendingMessage) {
@@ -771,6 +878,7 @@ async function sendMessengerMessage(event) {
         }
 
         pendingSend = null;
+        refreshMessengerUnread(); 
 
         if (messageArea) {
             messageArea.scrollTop = messageArea.scrollHeight;
@@ -789,6 +897,68 @@ async function sendMessengerMessage(event) {
         isSendingMessage = false;
         updateMessengerComposer();
     }
+};
+
+function initializeMessengerSections() {
+    const sidebar = document.querySelector('.messenger-sidebar[data-messenger-user-id]');
+    const userId = sidebar?.dataset.messengerUserId;
+
+    if (!sidebar || !userId) {
+        return;
+    }
+
+    sidebar.querySelectorAll('details[data-messenger-section]').forEach(section => {
+        const storageKey = `messenger:${userId}:section:${section.dataset.messengerSection}`;
+
+        try {
+            const savedState = localStorage.getItem(storageKey);
+
+            if (savedState !== null) {
+                section.open = savedState === 'open';
+            }
+        } catch (error) {
+            console.warn('[MESSENGER] Section preference unavailable:', error);
+        }
+
+        section.addEventListener('toggle', () => {
+            try {
+                localStorage.setItem(storageKey, section.open ? 'open' : 'closed');
+            } catch (error) {
+                console.warn('[MESSENGER] Section preference not saved:', error);
+            }
+
+            // Collapsing the sidebar can bring the chat into view.
+            scheduleReadCheck();
+        });
+    });
+};
+
+function updateSectionUnreadTotals() {
+    const totals = {
+        driver: 0,
+        dispatch: 0
+    };
+
+    messengerContacts.forEach(contact => {
+        if (Object.hasOwn(totals, contact.role)) {
+            totals[contact.role] += unreadCountsByRecipient.get(Number(contact.userId)) ?? 0;
+        }
+    });
+
+    const badges = [
+        [document.querySelector('#messenger-driver-unread-total'), totals.driver],
+        [document.querySelector('#messenger-dispatch-unread-total'), totals.dispatch]
+    ];
+
+    badges.forEach(([badge, count]) => {
+        if (!badge) {
+            return;
+        }
+
+        badge.textContent = String(count);
+        badge.setAttribute('aria-label', `${count} unread messages`);
+        badge.classList.toggle('d-none', count === 0);
+    });
 };
 
 document.addEventListener('visibilitychange', () => {
@@ -836,5 +1006,6 @@ messageInput?.addEventListener('input', updateMessengerComposer);
 contactSearch?.addEventListener('input', filterDriverContacts);
 
 updateMessengerComposer();
+initializeMessengerSections();
 loadMessengerContacts();
 scheduleUnreadPoll(0);

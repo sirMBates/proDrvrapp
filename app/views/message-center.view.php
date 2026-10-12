@@ -30,7 +30,7 @@ include "partials/info-modal.php";
                     <div class="row g-0 messenger-layout">
 
                         <!-- Sidebar -->
-                        <aside class="col-12 col-lg-4 col-xl-3 messenger-sidebar border-end">
+                        <aside class="col-12 col-lg-4 col-xl-3 messenger-sidebar border-end" data-messenger-user-id="<?= (int) $_SESSION['user_id'] ?>">
                             <div id="messenger-contacts-loading" class="p-3 text-center">
                                 <div class="spinner-border spinner-border-sm text-primary" role="status">
                                     <span class="visually-hidden">Loading contacts...</span>
@@ -44,30 +44,52 @@ include "partials/info-modal.php";
                             <div id="messenger-contacts-error" class="alert alert-danger m-3 d-none" role="alert"></div>
 
                             <!-- Dispatch Section -->
-                            <div class="messenger-section dispatch-section border-bottom">
-                                <div class="messenger-section-label px-3 pt-3 pb-2">
-                                    <span class="fw-bold text-uppercase small">Dispatch Channel</span>
-                                </div>
+                            <details class="messenger-section dispatch-section border-bottom" data-messenger-section="dispatch" open>
 
-                                <div id="messenger-dispatch-contacts" class="list-group list-group-flush"></div>
-                            </div>
+                                <summary class="messenger-section-label messenger-section-toggle px-3 py-3">
+                                    <span class="fw-bold text-uppercase small">
+                                        Dispatch Channel
+                                    </span>
+
+                                    <span class="d-flex align-items-center gap-2">
+                                        <span id="messenger-dispatch-unread-total" class="badge rounded-pill text-bg-danger d-none"></span>
+
+                                        <i class="fa-solid fa-chevron-down messenger-section-chevron" aria-hidden="true"></i>
+                                    </span>
+                                </summary>
+
+                                <div id="messenger-dispatch-contacts" class="list-group list-group-flush messenger-section-list"></div>
+                            </details>
 
                             <!-- Driver Section -->
-                            <div class="messenger-section driver-section">
-                                <div class="messenger-section-label px-3 pt-3 pb-2">
-                                    <span class="fw-bold text-uppercase small">Driver Conversations</span>
-                                </div>
+                            <details class="messenger-section driver-section" data-messenger-section="drivers" open>
+
+                                <summary class="messenger-section-label messenger-section-toggle px-3 py-3">
+                                    <span class="fw-bold text-uppercase small">
+                                        Driver Conversations
+                                    </span>
+
+                                    <span class="d-flex align-items-center gap-2">
+                                        <span id="messenger-driver-unread-total" class="badge rounded-pill text-bg-danger d-none"></span>
+
+                                        <i class="fa-solid fa-chevron-down messenger-section-chevron" aria-hidden="true"></i>
+                                    </span>
+                                </summary>
 
                                 <div class="px-3 pb-3">
+                                    <label for="messenger-contact-search" class="visually-hidden">
+                                        Search drivers
+                                    </label>
+
                                     <input id="messenger-contact-search" type="search" class="form-control form-control-sm" placeholder="Search drivers" autocomplete="off">
                                 </div>
 
-                                <div id="messenger-driver-contacts" class="list-group list-group-flush messenger-thread-list"></div>
+                                <div id="messenger-driver-contacts" class="list-group list-group-flush messenger-thread-list messenger-section-list"></div>
 
                                 <p id="messenger-contacts-empty" class="small text-body-secondary text-center p-3 mb-0 d-none">
                                     No matching contacts were found.
                                 </p>
-                            </div>
+                            </details>
                         </aside>
 
                         <!-- Chat Panel -->

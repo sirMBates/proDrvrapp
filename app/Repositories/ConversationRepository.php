@@ -117,19 +117,25 @@ class ConversationRepository {
             throw new \InvalidArgumentException('Invalid Messenger member ID.');
         }
 
-        $sql = "SELECT c.conversation_id, c.conversation_type, c.last_message_at, cm.last_read_message_id,
+        $sql = "SELECT c.conversation_id, c.conversation_type, c.last_message_at, cm.last_read_message_id, latest.message_id AS latest_message_id, latest.sender_id AS latest_sender_id, latest.message_body AS latest_message_body, latest.created_at AS latest_message_created_at,
                 (
-                SELECT COUNT(*)
-                FROM messages AS m
+                SELECT COUNT(*) FROM messages AS m
                 WHERE m.conversation_id = c.conversation_id
                 AND m.sender_id <> cm.user_id
                 AND m.message_id > COALESCE(cm.last_read_message_id, 0)
-                ) AS unread_count
-                FROM conversation_members AS cm
+                ) AS unread_count FROM conversation_members AS cm
                 INNER JOIN conversations AS c
-                    ON c.conversation_id = cm.conversation_id
+                ON c.conversation_id = cm.conversation_id
+                LEFT JOIN messages AS latest
+                ON latest.message_id = (
+                    SELECT newest.message_id
+                    FROM messages AS newest
+                    WHERE newest.conversation_id = c.conversation_id
+                    ORDER BY newest.message_id DESC
+                    LIMIT 1
+                )
                 WHERE cm.user_id = :member_id
-                ORDER BY c.last_message_at DESC, c.conversation_id DESC";
+                ORDER BY latest.created_at DESC, latest.message_id DESC, c.conversation_id DESC";
         $stmt = $this->pdo->prepare($sql);
 
         $stmt->execute([
@@ -141,6 +147,8 @@ class ConversationRepository {
             $summary['conversation_id'] = (int) $summary['conversation_id'];
             $summary['unread_count'] = (int) $summary['unread_count'];
             $summary['last_read_message_id'] = $summary['last_read_message_id'] !== null ? (int) $summary['last_read_message_id'] : null;
+            $summary['latest_message_id'] = $summary['latest_message_id'] !== null ? (int) $summary['latest_message_id'] : null;
+            $summary['latest_sender_id'] = $summary['latest_sender_id'] !== null ? (int) $summary['latest_sender_id'] : null;
         }
 
         unset($summary);

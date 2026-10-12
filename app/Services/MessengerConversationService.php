@@ -61,6 +61,7 @@ class MessengerConversationService {
 
             // Only a two-member direct conversation maps to one contact.
             $summary['recipient_id'] = $summary['conversation_type'] === 'direct' && count($recipientIds) === 1 ? $recipientIds[0] : null;
+            $summary['latest_is_own'] = $summary['latest_sender_id'] !== null && $summary['latest_sender_id'] === $driverId;
             $totalUnread += $summary['unread_count'];
         }
 
