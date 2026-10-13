@@ -8,6 +8,7 @@ import { Validation } from './validation.js';
 import { ConnectionIndicator } from './connectionindicator.js';
 import { StatusDock } from './statusdock.js';
 import { LogoutManager } from './logout.js';
+import { initializeMessageNotifications } from './message-notifications.js';
 
 const curView = getCurrentView();
 const menuProfileImage = document.querySelector('#menuProfileImage');
@@ -116,6 +117,12 @@ window.addEventListener('DOMContentLoaded', () => {
                 errorDisplay: logoutModalError
         });
         logoutManager.init();
+
+        if (logoutTrigger) {
+                initializeMessageNotifications({
+                        csrfToken: logoutCsrfToken?.value || drvrToken
+                });
+        }
 
         themeManager = new ThemeManager({
                 themeButton: themeBtn,

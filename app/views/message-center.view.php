@@ -26,6 +26,17 @@ include "partials/confirm-modal.php";
                     </div>
                 </div>
 
+                <div id="messenger-push-controls" class="px-3 py-2 border-bottom" data-public-key="<?= htmlspecialchars($_ENV['WEB_PUSH_PUBLIC_KEY'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+
+                    <button id="messenger-enable-notifications" type="button" class="btn btn-sm btn-outline-primary">
+                        Enable notifications
+                    </button>
+
+                    <p id="messenger-push-status" class="small text-body-secondary mt-2 mb-0" role="status">
+                        Enable message notifications for this browser.
+                    </p>
+                </div>
+
                 <!-- Main Messenger Body -->
                 <div class="card-body p-0">
                     <div class="row g-0 messenger-layout">

@@ -53,6 +53,7 @@ $router->post('/messenger-conversation', 'app/api/messenger-conversation.php', f
 $router->post('/messenger-send-message', 'app/api/messenger-send-message.php', true);
 $router->post('/messenger-mark-read', 'app/api/messenger-mark-read.php', false);
 $router->post('/messenger-delete-conversations', 'app/api/messenger-delete-conversations.php', false);
+$router->post('/push-subscription', 'app/api/push-subscription.php', false);
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');

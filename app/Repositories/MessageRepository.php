@@ -71,6 +71,20 @@ class MessageRepository {
                 throw new \DomainException('You are not a member of this conversation.');
             }
 
+            $existingSql = "SELECT message_id
+                            FROM messages
+                            WHERE sender_id = :sender_id
+                            AND client_message_id = :client_message_id
+                            LIMIT 1";
+            $stmt = $this->pdo->prepare($existingSql);
+
+            $stmt->execute([
+                ':sender_id' => $senderId,
+                ':client_message_id' => $clientMessageId
+            ]);
+
+            $isNewMessage = $stmt->fetchColumn() === false;
+
             $insertSql = "INSERT INTO messages (conversation_id, sender_id, client_message_id, message_body)
                         VALUES (:conversation_id, :sender_id, :client_message_id, :message_body)
                         ON DUPLICATE KEY UPDATE
@@ -132,6 +146,7 @@ class MessageRepository {
             $message['message_id'] = (int) $message['message_id'];
             $message['conversation_id'] = (int) $message['conversation_id'];
             $message['sender_id'] = (int) $message['sender_id'];
+            $message['is_new'] = $isNewMessage;
 
             $this->pdo->commit();
 
@@ -264,6 +279,31 @@ class MessageRepository {
         ]);
 
         return $stmt->fetchColumn() !== false;
+    }
+
+    public function findRecipientIdsForMessage(int $messageId): array {
+        if ($messageId < 1) {
+            throw new \InvalidArgumentException('Invalid message ID.');
+        }
+
+        $sql = "SELECT cm.user_id
+                FROM messages AS m
+                INNER JOIN conversation_members AS cm
+                ON cm.conversation_id = m.conversation_id
+                INNER JOIN users AS u
+                ON u.user_id = cm.user_id
+                WHERE m.message_id = :message_id
+                AND cm.user_id <> m.sender_id
+                AND m.message_id > cm.cleared_through_message_id
+                AND u.role = 'driver'
+                AND u.account_status = 'active'";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':message_id' => $messageId
+        ]);
+
+        return array_map(static fn ($id): int => (int) $id, $stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 }
 

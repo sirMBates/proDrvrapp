@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Repositories\MessageRepository;
 use App\Repositories\UserRepository;
+use App\Repositories\PushSubscriptionRepository;
 use App\Services\MessengerMessageService;
+use App\Services\WebPushService;
 use Core\Database;
 
 requireLoginAjax();
@@ -65,8 +67,10 @@ try {
 
     $userRepository = new UserRepository($pdo);
     $messageRepository = new MessageRepository($pdo);
+    $subscriptionRepository = new PushSubscriptionRepository($pdo);
 
-    $service = new MessengerMessageService($userRepository, $messageRepository);
+    $webPushService = new WebPushService($userRepository, $subscriptionRepository);
+    $service = new MessengerMessageService($userRepository, $messageRepository, $webPushService);
 
     $message = $service->sendForDriver($driverId, $input);
     /*

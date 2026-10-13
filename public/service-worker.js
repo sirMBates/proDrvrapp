@@ -658,4 +658,79 @@ async function processStatusQueue() {
             }
         });
     }
-}
+};
+
+self.addEventListener('push', event => {
+    console.log('[SW PUSH] Push event received.');
+    event.waitUntil(
+        (async () => {
+            let payload = {};
+
+            try {
+                payload = event.data?.json() ?? {};
+            } catch (error) {
+                console.error('[SW PUSH] Invalid notification payload:', error);
+            }
+
+            /*
+             * Keep the lock-screen notification generic.
+             * Message content is retrieved after authentication.
+             */
+            await self.registration.showNotification('ProDriver', {
+                body: 'You have a new message in ProDriver.',
+                icon: '/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png',
+                badge: '/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png',
+                tag: 'prodriver-message',
+                data: {
+                    recipientId: Number.isSafeInteger(payload.sender_id)
+                        && payload.sender_id > 0
+                            ? payload.sender_id
+                            : null
+                }
+            });
+        })()
+    );
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+
+    event.waitUntil(
+        (async () => {
+            const recipientId = event.notification.data?.recipientId;
+
+            const path = Number.isSafeInteger(recipientId) && recipientId > 0
+                ? `/message-center?recipient=${recipientId}`
+                : '/message-center';
+
+            const targetUrl = new URL(path, self.location.origin).href;
+
+            const windowClients = await self.clients.matchAll({
+                type: 'window',
+                includeUncontrolled: true
+            });
+
+            for (const client of windowClients) {
+                if (new URL(client.url).origin !== self.location.origin) {
+                    continue;
+                }
+
+                // Prefer reusing a Messenger window.
+                if (new URL(client.url).pathname === '/message-center') {
+                    try {
+                        const navigatedClient = await client.navigate(targetUrl);
+
+                        if (navigatedClient) {
+                            await navigatedClient.focus();
+                            return;
+                        }
+                    } catch (error) {
+                        console.warn('[SW PUSH] Could not reuse Messenger window:', error);
+                    }
+                }
+            }
+
+            await self.clients.openWindow(targetUrl);
+        })()
+    );
+});

@@ -12,7 +12,7 @@ use App\Validation\Validator;
 class MessengerMessageService {
     private const MAX_MESSAGE_LENGTH = 2000;
 
-    public function __construct(private UserRepository $userRepository, private MessageRepository $messageRepository) {}
+    public function __construct(private UserRepository $userRepository, private MessageRepository $messageRepository, private ?WebPushService $webPushService = null) {}
 
     public function sendForDriver(int $driverId, array $data): array {
         if ($driverId < 1) {
@@ -39,7 +39,27 @@ class MessengerMessageService {
             throw new \InvalidArgumentException('Your message must contain between 1 and 2,000 characters.');
         }
 
-        return $this->messageRepository->send((int) $conversationId, $driverId, strtolower($clientMessageId), $messageBody);
+        $message = $this->messageRepository->send((int) $conversationId, $driverId, strtolower($clientMessageId), $messageBody);
+
+        // The repository has committed successfully before reaching this point.
+        if ($message['is_new'] && $this->webPushService !== null) {
+            try {
+                $recipientIds = $this->messageRepository->findRecipientIdsForMessage($message['message_id']);
+
+                foreach ($recipientIds as $recipientId) {
+                    try {
+                        $this->webPushService->notifyDriver($recipientId, $driverId);
+                    } catch (\Throwable $e) {
+                        error_log('[MESSENGER PUSH] Message ' . $message['message_id'] . ', recipient ' . $recipientId . ': ' . get_class($e));
+                    }
+                }
+            } catch (\Throwable $e) {
+                error_log('[MESSENGER PUSH] Recipient lookup failed for message ' . $message['message_id'] . ': ' . get_class($e));
+            }
+        }
+
+        unset($message['is_new']);
+        return $message;
     }
 
     public function getForDriver(int $driverId, int $conversationId, int $afterMessageId = 0, int $limit = 50, int $beforeMessageId = 0): array {
