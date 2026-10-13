@@ -1,4 +1,5 @@
 import { proDriverRequest, viewableDateTimeHelper } from './helpers.js';
+import { buildModal } from './appmodal.js';
 
 const MESSAGE_POLL_INTERVAL = 3000;
 const contactsLoading = document.querySelector('#messenger-contacts-loading');
@@ -27,12 +28,26 @@ const pickerClose = document.querySelector('#messenger-picker-close');
 const pickerSearch = document.querySelector('#messenger-picker-search');
 const pickerContacts = document.querySelector('#messenger-picker-contacts');
 const pickerEmpty = document.querySelector('#messenger-picker-empty');
+const olderControls = document.querySelector('#messenger-older-controls');
+const loadOlderButton = document.querySelector('#messenger-load-older');
+const olderError = document.querySelector('#messenger-older-error');
+const deleteConversationButton = document.querySelector('#messenger-delete-conversation');
+const selectConversationsButton = document.querySelector('#messenger-select-conversations');
+const bulkControls = document.querySelector('#messenger-bulk-controls');
+const selectionCount = document.querySelector('#messenger-selection-count');
+const deleteSelectedButton = document.querySelector('#messenger-delete-selected');
+const selectionCancelButton = document.querySelector('#messenger-selection-cancel');
+const deleteError = document.querySelector('#messenger-delete-error');
+// Store recipient IDs; summaries resolve them to conversation IDs.
+const selectedConversationRecipients = new Set();
+const confirmDeletion = buildModal;
 
 let latestRetrievedMessageId = 0;
 let messagePollTimer = null;
 let messagePollInFlight = false;
 let messagePollFailures = 0;
 let conversationMessages = [];
+let isSelectingConversations = false;
 let isSendingMessage = false;
 let pendingSend = null;
 let activeConversationId = null;
@@ -48,6 +63,10 @@ let unreadRefreshRequested = false;
 let unreadPollFailures = 0;
 let unreadStateVersion = 0;
 let readCheckTimer = null;
+let oldestLoadedMessageId = null;
+let hasOlderMessages = false;
+let isLoadingOlderMessages = false;
+let isDeletingConversations = false;
 
 function hideElement(element) {
     element?.classList.add('d-none');
@@ -99,6 +118,12 @@ function createConversationButton(contact) {
     indicators.className = 'd-flex align-items-center gap-2 flex-shrink-0';
     indicators.append(badge, icon);
 
+    const selectionMarker = document.createElement('span');
+    selectionMarker.className = 'badge text-bg-primary d-none';
+    selectionMarker.dataset.selectionMarker = 'true';
+    selectionMarker.textContent = 'Selected';
+
+    indicators.prepend(selectionMarker);
     layout.append(contactDetails, indicators);
     button.appendChild(layout);
 
@@ -109,6 +134,10 @@ function createConversationButton(contact) {
     button.setAttribute('aria-pressed', String(isSelected));
 
     button.addEventListener('click', () => {
+        if (isSelectingConversations) {
+            toggleConversationSelection(contact);
+            return;
+        }
         openMessengerConversation(contact);
     });
 
@@ -154,6 +183,7 @@ function renderConversations(contacts) {
     }
 
     updateConversationRows();
+    updateConversationSelectionControls();
 };
 
 function refreshConversationSidebar(forceRender = false) {
@@ -249,7 +279,7 @@ function renderContactPicker() {
 };
 
 function openContactPicker() {
-    if (!contactPicker || isSendingMessage) {
+    if (!contactPicker || isSendingMessage || isDeletingConversations) {
         return;
     }
 
@@ -257,6 +287,7 @@ function openContactPicker() {
         pickerSearch.value = '';
     }
 
+    finishConversationSelection();
     renderContactPicker();
 
     if (!contactPicker.open) {
@@ -312,6 +343,7 @@ function updateSelectedContact() {
         button.classList.toggle('active', isSelected);
         button.setAttribute('aria-pressed', String(isSelected));
     });
+    updateConversationSelectionControls();
 };
 
 function renderMessengerMessages(messages, contact) {
@@ -319,6 +351,7 @@ function renderMessengerMessages(messages, contact) {
 
     messages.forEach(message => {
         const row = document.createElement('div');
+        row.dataset.messageId = String(message.message_id);
         row.className = message.is_own ? 'message-row message-row-sent mb-3 text-end' : 'message-row message-row-received mb-3';
 
         const meta = document.createElement('div');
@@ -382,6 +415,12 @@ async function loadMessengerHistory(conversationId, contact, requestVersion) {
         throw new Error('Invalid Messenger message cursor.');
     }
 
+    oldestLoadedMessageId = conversationMessages.length > 0 ? conversationMessages[0].message_id : null;
+    hasOlderMessages = messageData.has_older_messages === true;
+
+    hideElement(olderError);
+    updateOlderMessageControls();
+
     renderMessengerMessages(conversationMessages, contact);
 
     if (conversationDescription) {
@@ -394,7 +433,7 @@ async function loadMessengerHistory(conversationId, contact, requestVersion) {
 };
 
 function updateMessengerComposer() {
-    const canCompose = activeConversationId !== null && activeContact !== null && openingRecipientId === null && !isSendingMessage;
+    const canCompose = activeConversationId !== null && activeContact !== null && openingRecipientId === null && !isSendingMessage && !isLoadingOlderMessages && !isDeletingConversations;
 
     if (messageInput) {
         messageInput.disabled = !canCompose;
@@ -406,8 +445,16 @@ function updateMessengerComposer() {
     }
 
     if (newMessageButton) {
-        newMessageButton.disabled = !messengerContacts.length || isSendingMessage;
+        newMessageButton.disabled = !messengerContacts.length || isSendingMessage || isDeletingConversations;
     }
+
+    if (deleteConversationButton) {
+        deleteConversationButton.disabled = activeConversationId === null || openingRecipientId !== null || isSendingMessage || isLoadingOlderMessages || isDeletingConversations;
+
+        deleteConversationButton.textContent = isDeletingConversations ? 'Deleting...' : 'Delete conversation';
+    }
+    updateOlderMessageControls();
+    updateConversationSelectionControls();
 };
 
 function stopMessengerPolling() {
@@ -418,7 +465,7 @@ function stopMessengerPolling() {
 };
 
 function canPollMessenger() {
-    return (!document.hidden && navigator.onLine && openingRecipientId === null && activeConversationId !== null && activeContact !== null);
+    return (!document.hidden && navigator.onLine && !isDeletingConversations && openingRecipientId === null && activeConversationId !== null && activeContact !== null);
 };
 
 function scheduleMessengerPoll(delay = MESSAGE_POLL_INTERVAL) {
@@ -663,7 +710,7 @@ function scheduleReadCheck() {
 };
 
 async function markVisibleMessagesRead() {
-    if (!newestRetrievedMessagesAreVisible()) {
+    if (isDeletingConversations || !newestRetrievedMessagesAreVisible()) {
         return;
     }
 
@@ -796,10 +843,105 @@ function updateConversationRows() {
             list.scrollTop = previousScrollTop;
         }
     });
-}; 
+};
+
+function updateOlderMessageControls() {
+    olderControls?.classList.toggle('d-none', !hasOlderMessages);
+
+    if (loadOlderButton) {
+        loadOlderButton.disabled = isLoadingOlderMessages || isSendingMessage || isDeletingConversations || openingRecipientId !== null || activeConversationId === null;
+
+        loadOlderButton.textContent = isLoadingOlderMessages ? 'Loading...' : 'Load older messages';
+    }
+};
+
+async function loadOlderMessengerMessages() {
+    if (isLoadingOlderMessages || isSendingMessage || !hasOlderMessages || isDeletingConversations || oldestLoadedMessageId === null || openingRecipientId !== null || activeConversationId === null || activeContact === null) {
+        return;
+    }
+
+    const conversationId = activeConversationId;
+    const contact = activeContact;
+    const requestVersion = conversationRequestVersion;
+    const beforeMessageId = oldestLoadedMessageId;
+
+    isLoadingOlderMessages = true;
+    hideElement(olderError);
+    updateMessengerComposer();
+
+    try {
+        const response = await proDriverRequest(`/messenger-retrieve-messages?conversation_id=${encodeURIComponent(conversationId)}&before_message_id=${beforeMessageId}`, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'X-CSRF-Token': driverToken
+            }
+        });
+
+        if (requestVersion !== conversationRequestVersion || conversationId !== activeConversationId) {
+            return;
+        }
+
+        const messageData = response?.messageData;
+
+        if (response?.status !== 'success' || Number(messageData?.conversation_id) !== conversationId || !Array.isArray(messageData?.messages) || typeof messageData.has_older_messages !== 'boolean' || messageData.messages.some(message => !Number.isSafeInteger(message.message_id) || message.message_id < 1 || message.message_id >= beforeMessageId)) {
+            throw new Error(response?.message || 'Older messages could not be loaded.');
+        }
+
+        /*
+         * Capture the current reading position after the request finishes,
+         * so scrolling during the request is respected.
+         */
+        const areaBounds = messageArea?.getBoundingClientRect();
+        const anchor = areaBounds ? Array.from(messageList?.children ?? []).find(row => row.getBoundingClientRect().bottom > areaBounds.top) : null;
+
+        const anchorId = anchor?.dataset.messageId;
+        const anchorTop = anchor?.getBoundingClientRect().top;
+        const previousScrollTop = messageArea?.scrollTop ?? 0;
+        const knownIds = new Set(conversationMessages.map(message => message.message_id));
+        const olderMessages = messageData.messages.filter(message => !knownIds.has(message.message_id));
+
+        conversationMessages.push(...olderMessages);
+        conversationMessages.sort((a, b) => a.message_id - b.message_id);
+
+        if (conversationMessages.length > 0) {
+            oldestLoadedMessageId = conversationMessages[0].message_id;
+        }
+
+        hasOlderMessages = messageData.has_older_messages;
+        renderMessengerMessages(conversationMessages, contact);
+        updateOlderMessageControls();
+
+        if (messageArea) {
+            const restoredAnchor = anchorId ? messageList?.querySelector(`[data-message-id="${anchorId}"]`) : null;
+            if (restoredAnchor && anchorTop !== undefined) {
+                messageArea.scrollTop += restoredAnchor.getBoundingClientRect().top - anchorTop;
+            } else {
+                messageArea.scrollTop = previousScrollTop;
+            }
+        }
+        // Keep latestRetrievedMessageId unchanged.
+    } catch (error) {
+        if (requestVersion !== conversationRequestVersion) {
+            return;
+        }
+
+        console.error('[MESSENGER] Older history failed:', error);
+
+        if (olderError) {
+            olderError.textContent = error?.message || 'Older messages could not be loaded.';
+            showElement(olderError);
+        }
+    } finally {
+        if (requestVersion === conversationRequestVersion) {
+            isLoadingOlderMessages = false;
+            updateMessengerComposer();
+        }
+    }
+};
 
 async function openMessengerConversation(contact) {
-    if (isSendingMessage) {
+    if (isSendingMessage || isDeletingConversations) {
         return;
     }
 
@@ -821,6 +963,12 @@ async function openMessengerConversation(contact) {
     activeConversationId = null;
     activeContact = null;
     conversationMessages = [];
+    oldestLoadedMessageId = null;
+    hasOlderMessages = false;
+    isLoadingOlderMessages = false;
+
+    hideElement(olderError);
+    updateOlderMessageControls();
     refreshConversationSidebar();
 
     updateMessengerComposer();
@@ -909,7 +1057,7 @@ async function openMessengerConversation(contact) {
 async function sendMessengerMessage(event) {
     event.preventDefault();
 
-    if (isSendingMessage || openingRecipientId !== null || activeConversationId === null || activeContact === null) {
+    if (isSendingMessage || isLoadingOlderMessages || isDeletingConversations || openingRecipientId !== null || activeConversationId === null || activeContact === null) {
         return;
     }
 
@@ -1063,11 +1211,302 @@ function updateSectionUnreadTotals() {
     });
 };
 
+function clearActiveMessengerConversation() {
+    stopMessengerPolling();
+
+    // Invalidate responses belonging to the previous conversation.
+    conversationRequestVersion++;
+
+    activeConversationId = null;
+    activeContact = null;
+    openingRecipientId = null;
+
+    conversationMessages = [];
+    latestRetrievedMessageId = 0;
+    oldestLoadedMessageId = null;
+    hasOlderMessages = false;
+    isLoadingOlderMessages = false;
+    pendingSend = null;
+
+    messageList?.replaceChildren();
+
+    if (messageInput) {
+        messageInput.value = '';
+    }
+
+    if (conversationName) {
+        conversationName.textContent = 'Select a contact';
+    }
+
+    if (conversationDescription) {
+        conversationDescription.textContent = 'Choose someone from the conversation list or New Message.';
+    }
+
+    if (conversationPlaceholder) {
+        conversationPlaceholder.textContent = 'Select a contact to open a conversation.';
+    }
+
+    showElement(conversationPlaceholder);
+    hideElement(conversationLoading);
+    hideElement(conversationError);
+    hideElement(olderError);
+
+    messageArea?.setAttribute('aria-busy', 'false');
+    updateOlderMessageControls();
+};
+
+function confirmDeleteConversations(conversationIds) {
+    if (isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null) {
+        return;
+    }
+
+    // Capture the exact selection being confirmed.
+    const selectedIds = [...new Set(conversationIds)];
+
+    if (selectedIds.length === 0) {
+        return;
+    }
+
+    const confirmModalEl = document.querySelector('#confirm-modal');
+    const confirmModalBtn = document.querySelector('#confirm-modal-confirm');
+    const cancelModalBtn = document.querySelector('#confirm-modal-cancel');
+
+    if (!confirmModalEl || !confirmModalBtn || !cancelModalBtn) {
+        console.error('[MESSENGER] Confirmation modal elements are missing.');
+        return;
+    }
+
+    const confirmModal = bootstrap.Modal.getOrCreateInstance(confirmModalEl);
+
+    const message = selectedIds.length === 1 ? 'Delete this conversation and clear its history from your view?' : `Delete these ${selectedIds.length} conversations and clear their history from your view?`;
+
+    confirmDeletion.confirm(message + ' Starting again will show only new messages.' + ' Other participants keep their copies.', selectedIds.length === 1 ? 'Delete conversation' : 'Delete selected', 'Cancel');
+
+    confirmModalBtn.replaceWith(confirmModalBtn.cloneNode(true));
+    cancelModalBtn.replaceWith(cancelModalBtn.cloneNode(true));
+
+    const newConfirmBtn = document.querySelector('#confirm-modal-confirm');
+    const newCancelBtn = document.querySelector('#confirm-modal-cancel');
+
+    newConfirmBtn.disabled = false;
+    newCancelBtn.disabled = false;
+
+    newConfirmBtn.addEventListener('click', () => {
+        newConfirmBtn.disabled = true;
+        confirmModal.hide();
+        deleteMessengerConversations(selectedIds);
+    }, { once: true });
+
+    newCancelBtn.addEventListener('click', () => {
+        confirmModal.hide();
+    }, { once: true });
+
+    confirmModal.show();
+};
+
+function confirmDeleteActiveConversation() {
+    if (activeConversationId !== null) {
+        confirmDeleteConversations([activeConversationId]);
+    }
+};
+
+function confirmDeleteSelectedConversations() {
+    const conversationIds = [];
+
+    selectedConversationRecipients.forEach(recipientId => {
+        const summary = conversationSummariesByRecipient.get(recipientId);
+
+        const conversationId = summary?.conversation_id ?? (Number(activeContact?.userId) === recipientId ? activeConversationId : null);
+
+        if (conversationId !== null && conversationId !== undefined) {
+            conversationIds.push(Number(conversationId));
+        }
+    });
+
+    confirmDeleteConversations(conversationIds);
+};
+
+async function deleteMessengerConversations(conversationIds) {
+    if (conversationIds.length === 0 || openingRecipientId !== null || isSendingMessage || isLoadingOlderMessages || isDeletingConversations) {
+        return;
+    }
+
+    isDeletingConversations = true;
+
+    stopMessengerPolling();
+    stopUnreadPolling();
+
+    conversationRequestVersion++;
+    unreadStateVersion++;
+
+    hideElement(deleteError);
+    updateMessengerComposer();
+
+    try {
+        const response = await proDriverRequest('/messenger-delete-conversations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': driverToken
+            },
+            body: JSON.stringify({
+                conversation_ids: conversationIds
+            })
+        });
+
+        const deleted = response?.deletionData?.deleted_conversations;
+        const deletedIds = new Set(Array.isArray(deleted) ? deleted.map(item => Number(item.conversation_id)) : []);
+
+        if (response?.status !== 'success' || !Array.isArray(deleted) || !conversationIds.every(id => deletedIds.has(id))) {
+            throw new Error(response?.message || 'The conversations could not be deleted.');
+        }
+
+        unreadStateVersion++;
+
+        for (const [recipientId, summary] of conversationSummariesByRecipient) {
+            if (deletedIds.has(Number(summary.conversation_id))) {
+                conversationSummariesByRecipient.delete(recipientId);
+                unreadCountsByRecipient.delete(recipientId);
+            }
+        }
+
+        deletedIds.forEach(id => confirmedReadPositions.delete(id));
+
+        if (deletedIds.has(activeConversationId)) {
+            clearActiveMessengerConversation();
+        }
+
+        finishConversationSelection();
+        refreshConversationSidebar(true);
+        updateUnreadBadges();
+        updateSelectedContact();
+
+    } catch (error) {
+        console.error('[MESSENGER] Conversation deletion failed:', error);
+
+        if (deleteError) {
+            deleteError.textContent = error?.message || 'The conversations could not be deleted.';
+            showElement(deleteError);
+        }
+    } finally {
+        isDeletingConversations = false;
+
+        updateMessengerComposer();
+        scheduleMessengerPoll();
+        scheduleUnreadPoll(0);
+    }
+};
+
+function updateConversationSelectionControls() {
+    bulkControls?.classList.toggle('d-none', !isSelectingConversations);
+
+    if (selectConversationsButton) {
+        selectConversationsButton.setAttribute('aria-pressed', String(isSelectingConversations));
+
+        selectConversationsButton.disabled = isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null;
+
+        selectConversationsButton.textContent = isSelectingConversations ? 'Selection mode' : 'Select conversations';
+    }
+
+    if (selectionCount) {
+        selectionCount.textContent = `${selectedConversationRecipients.size} selected`;
+    }
+
+    if (deleteSelectedButton) {
+        deleteSelectedButton.disabled = selectedConversationRecipients.size === 0 || isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null;
+
+        deleteSelectedButton.textContent = isDeletingConversations ? 'Deleting...' : 'Delete selected';
+    }
+
+    if (selectionCancelButton) {
+        selectionCancelButton.disabled = isDeletingConversations;
+    }
+
+    const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
+
+    [dispatchConversations, driverConversations].forEach(list => {
+        list?.querySelectorAll('button[data-recipient-id]').forEach(button => {
+            const recipientId = Number(button.dataset.recipientId);
+            const selected = selectedConversationRecipients.has(recipientId);
+            const pressed = isSelectingConversations ? selected : String(recipientId) === String(selectedRecipientId);
+
+            button.classList.toggle('active', pressed);
+            button.setAttribute('aria-pressed', String(pressed));
+
+            const marker = button.querySelector('[data-selection-marker]');
+            marker?.classList.toggle('d-none', !isSelectingConversations || !selected);
+        });
+    });
+};
+
+function finishConversationSelection() {
+    isSelectingConversations = false;
+    selectedConversationRecipients.clear();
+    updateConversationSelectionControls();
+};
+
+function toggleConversationSelection(contact) {
+    if (isDeletingConversations) {
+        return;
+    }
+
+    const recipientId = Number(contact.userId);
+    const summary = conversationSummariesByRecipient.get(recipientId);
+
+    // A selected empty chat may not yet have a summary.
+    const conversationId = summary?.conversation_id ?? (Number(activeContact?.userId) === recipientId ? activeConversationId : null);
+
+    if (conversationId === null || conversationId === undefined) {
+        return;
+    }
+
+    if (selectedConversationRecipients.has(recipientId)) {
+        selectedConversationRecipients.delete(recipientId);
+    } else {
+        if (selectedConversationRecipients.size >= 100) {
+            if (deleteError) {
+                deleteError.textContent = 'Select no more than 100 conversations at a time.';
+                showElement(deleteError);
+            }
+
+            return;
+        }
+
+        selectedConversationRecipients.add(recipientId);
+    }
+
+    updateConversationSelectionControls();
+};
+
 newMessageButton?.addEventListener('click', openContactPicker);
+
+deleteConversationButton?.addEventListener('click', confirmDeleteActiveConversation);
+
+selectConversationsButton?.addEventListener('click', () => {
+    if (isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null) {
+        return;
+    }
+
+    isSelectingConversations = !isSelectingConversations;
+    selectedConversationRecipients.clear();
+
+    hideElement(deleteError);
+    updateConversationSelectionControls();
+});
+
+selectionCancelButton?.addEventListener('click', () => {
+    if (!isDeletingConversations) {
+        finishConversationSelection();
+    }
+});
+
+deleteSelectedButton?.addEventListener('click', confirmDeleteSelectedConversations);
 
 pickerClose?.addEventListener('click', () => {
     contactPicker?.close();
 });
+
+loadOlderButton?.addEventListener('click', loadOlderMessengerMessages);
 
 pickerSearch?.addEventListener('input', renderContactPicker);
 
@@ -1118,4 +1557,5 @@ conversationSearch?.addEventListener('input', filterDriverConversations);
 updateMessengerComposer();
 initializeMessengerSections();
 loadMessengerContacts();
+updateConversationSelectionControls();
 scheduleUnreadPoll(0);

@@ -2,6 +2,7 @@
 require "partials/head.php";
 require "partials/banner.php";
 include "partials/info-modal.php";
+include "partials/confirm-modal.php";
 ?>
 
 <main class="container-fluid my-3 py-4 messenger-page">
@@ -42,6 +43,30 @@ include "partials/info-modal.php";
                             </div>
 
                             <div id="messenger-contacts-error" class="alert alert-danger m-3 d-none" role="alert"></div>
+
+                            <div class="p-3 border-bottom">
+                                <button id="messenger-select-conversations" type="button" class="btn btn-sm btn-outline-secondary" aria-pressed="false">
+                                    Select conversations
+                                </button>
+
+                                <div id="messenger-bulk-controls" class="mt-2 d-none">
+                                    <p id="messenger-selection-count" class="small mb-2" role="status">
+                                        0 selected
+                                    </p>
+
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button id="messenger-delete-selected" type="button" class="btn btn-sm btn-outline-danger" disabled>
+                                            Delete selected
+                                        </button>
+
+                                        <button id="messenger-selection-cancel" type="button" class="btn btn-sm btn-outline-secondary">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <p id="messenger-delete-error" class="small text-danger mt-2 mb-0 d-none" role="alert"></p>
+                            </div>
 
                             <!-- Dispatch Section -->
                             <details class="messenger-section dispatch-section border-bottom" data-messenger-section="dispatch" open>
@@ -107,31 +132,33 @@ include "partials/info-modal.php";
                                             Choose someone from the contact list.
                                         </small>
                                     </div>
+                                    <button id="messenger-delete-conversation" type="button" class="btn btn-sm btn-outline-danger ms-2 flex-shrink-0" disabled>
+                                        Delete conversation
+                                    </button>
                                 </div>
 
                                 <!-- Conversation Error -->
-                                <div id="messenger-conversation-error"
-                                    class="alert alert-danger m-3 d-none"
-                                    role="alert"></div>
+                                <div id="messenger-conversation-error" class="alert alert-danger m-3 d-none" role="alert"></div>
 
                                 <!-- Message Area -->
-                                <div id="messenger-message-area"
-                                    class="messenger-message-area flex-grow-1 p-3"
-                                    aria-busy="false">
+                                <div id="messenger-message-area" class="messenger-message-area flex-grow-1 p-3" aria-busy="false">
 
-                                    <div id="messenger-conversation-loading"
-                                        class="text-center py-4 d-none"
-                                        role="status">
-                                        <span class="spinner-border spinner-border-sm text-primary"
-                                            aria-hidden="true"></span>
+                                    <div id="messenger-conversation-loading" class="text-center py-4 d-none" role="status">
+                                        <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
                                         <span class="ms-2">Opening conversation...</span>
                                     </div>
 
-                                    <p id="messenger-conversation-placeholder"
-                                    class="text-body-secondary text-center py-4 mb-0"
-                                    role="status">
+                                    <p id="messenger-conversation-placeholder" class="text-body-secondary text-center py-4 mb-0" role="status">
                                         Select a contact to open a conversation.
                                     </p>
+
+                                    <div id="messenger-older-controls" class="text-center mb-3 d-none">
+                                        <button id="messenger-load-older" type="button" class="btn btn-sm btn-outline-secondary">
+                                            Load older messages
+                                        </button>
+
+                                        <p id="messenger-older-error" class="small text-danger mt-2 mb-0 d-none" role="alert"></p>
+                                    </div>
 
                                     <div id="messenger-message-list"></div>
                                 </div>

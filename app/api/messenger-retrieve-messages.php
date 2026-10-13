@@ -48,6 +48,7 @@ session_write_close();
 
 $conversationId = filter_var($_GET['conversation_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 $afterMessageId = filter_var($_GET['after_message_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+$beforeMessageId = filter_var($_GET['before_message_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
 
 if ($conversationId === false) {
     http_response_code(422);
@@ -58,11 +59,20 @@ if ($conversationId === false) {
     exit();
 }
 
-if ($afterMessageId === false) {
+if ($afterMessageId === false || $beforeMessageId === false) {
     http_response_code(422);
     echo json_encode([
         'status' => 'error',
         'message' => 'The message cursor is invalid.'
+    ]);
+    exit();
+}
+
+if ($afterMessageId > 0 && $beforeMessageId > 0) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Use either an after cursor or a before cursor.'
     ]);
     exit();
 }
@@ -75,7 +85,7 @@ try {
 
     $service = new MessengerMessageService($userRepository, $messageRepository);
 
-    $messageData = $service->getForDriver($driverId, (int) $conversationId, (int) $afterMessageId, 50);
+    $messageData = $service->getForDriver($driverId, (int) $conversationId, (int) $afterMessageId, 50, (int) $beforeMessageId);
 
     http_response_code(200);
     echo json_encode([

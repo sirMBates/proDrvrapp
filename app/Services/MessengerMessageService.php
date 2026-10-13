@@ -42,7 +42,7 @@ class MessengerMessageService {
         return $this->messageRepository->send((int) $conversationId, $driverId, strtolower($clientMessageId), $messageBody);
     }
 
-    public function getForDriver(int $driverId, int $conversationId, int $afterMessageId = 0, int $limit = 50): array {
+    public function getForDriver(int $driverId, int $conversationId, int $afterMessageId = 0, int $limit = 50, int $beforeMessageId = 0): array {
         if ($driverId < 1) {
             throw new \InvalidArgumentException('Invalid driver ID.');
         }
@@ -51,8 +51,12 @@ class MessengerMessageService {
             throw new \InvalidArgumentException('Invalid conversation.');
         }
 
-        if ($afterMessageId < 0) {
+        if ($afterMessageId < 0 || $beforeMessageId < 0) {
             throw new \InvalidArgumentException('Invalid message cursor.');
+        }
+
+        if ($afterMessageId > 0 && $beforeMessageId > 0) {
+            throw new \InvalidArgumentException('Use either an after cursor or a before cursor.');
         }
 
         $driver = $this->userRepository->findById($driverId);
@@ -60,27 +64,34 @@ class MessengerMessageService {
             throw new \DomainException('Messenger requires an active driver account.');
         }
 
-        $messages = $this->messageRepository->findForMember($conversationId, $driverId, $afterMessageId, $limit);
+        $messages = $this->messageRepository->findForMember($conversationId, $driverId, $afterMessageId, $limit, $beforeMessageId);
 
-        forEach ($messages as &$message) {
+        foreach ($messages as &$message) {
             $message['is_own'] = $message['sender_id'] === $driverId;
         }
 
         unset($message);
-        
+
         $latestMessageId = $afterMessageId;
+        $oldestMessageId = null;
+        $hasOlderMessages = false;
 
         if ($messages !== []) {
-            $lastMessage = $messages[
-                array_key_last($messages)
-            ];
+            $oldestMessageId = (int) $messages[0]['message_id'];
 
-            $latestMessageId = (int) $lastMessage['message_id'];
+            $latestMessageId = (int) $messages[array_key_last($messages)]['message_id'];
+
+            // Polling does not need an older-history existence check.
+            if ($afterMessageId === 0) {
+                $hasOlderMessages = $this->messageRepository->hasMessagesBefore($conversationId, $oldestMessageId, $driverId);
+            }
         }
 
         return [
             'conversation_id' => $conversationId,
             'latest_message_id' => $latestMessageId,
+            'oldest_message_id' => $oldestMessageId,
+            'has_older_messages' => $hasOlderMessages,
             'message_count' => count($messages),
             'messages' => $messages
         ];

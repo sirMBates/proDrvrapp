@@ -90,6 +90,21 @@ class MessengerConversationService {
             'last_read_message_id' => $readPosition
         ];
     }
+
+    public function deleteForDriver(int $driverId, array $conversationIds): array {
+        if ($driverId < 1) {
+            throw new \InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $driver = $this->userRepository->findById($driverId);
+        if ($driver['role'] !== 'driver' || $driver['account_status'] !== 'active') {
+            throw new \DomainException('Messenger requires an active driver account.');
+        }
+
+        return [
+            'deleted_conversations' =>  $this->conversationRepository->deleteForMember($driverId, $conversationIds)
+        ];
+    }
 }
 
 ?>
