@@ -6,4 +6,3 @@
     <div id="driver-status-history" class="driver-status-history__body card-body" aria-label="Today's driver status history">
     </div>
 </section>
-

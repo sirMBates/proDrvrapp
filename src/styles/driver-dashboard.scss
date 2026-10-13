@@ -15,3 +15,12 @@
         }
     }
 }
+
+.dashboard-preview-grid > * {
+    min-width: 0;
+}
+
+.dashboard-message-row {
+    min-width: 0;
+    padding: 0.85rem 1rem;
+}

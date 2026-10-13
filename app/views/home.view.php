@@ -49,7 +49,8 @@ include "partials/custom-modal.php";
         </div>
         <section class="dashboard-preview-grid">
                 <?php
-                        require "partials/status-history.php"
+                        require "partials/status-history.php";
+                        require "partials/message-preview.php";
                 ?>
         </section>
 </main>

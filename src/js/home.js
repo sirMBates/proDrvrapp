@@ -1,6 +1,7 @@
 import { bdayCelebrationHandler } from "./celebration.js";
 import { proDriverRequest, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
 import { DriverStatusHistory } from './driver-status-history.js';
+import { MessagePreview } from './message-preview.js';
 
 const drvrBirthDate = document.querySelector('#drvrbday')?.value ?? '';
 const mainContent = document.querySelector('main');
@@ -12,6 +13,8 @@ const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const birthdayThemeBtn = document.querySelector('#birthday-theme-btn');
 const todayDate = dtHelper(new Date(), 'date');
+const messagePreviewContainer = document.getElementById('dashboard-message-preview');
+const messagePreview = new MessagePreview(messagePreviewContainer);
 let lastAssignmentsUpdate = 0;
 
 function resetDailyFlags () {
@@ -89,6 +92,7 @@ function renderHomeTable(assignments, fromSync = false) {
 };
 
 driverStatusHistory.init();
+messagePreview.init();
 
 // --- BroadcastChannel + Fallback Setup ---
 let bcSupported = false;

@@ -323,6 +323,17 @@ async function loadMessengerContacts() {
         if (newMessageButton) {
             newMessageButton.disabled = isSendingMessage;
         }
+
+        const requestedRecipient = new URLSearchParams(window.location.search).get('recipient');
+
+        if (requestedRecipient !== null) {
+            const recipientId = Number(requestedRecipient);
+            const contact = Number.isSafeInteger(recipientId) && recipientId > 0 ? messengerContacts.find(item => Number(item.userId) === recipientId) : null;
+
+            if (contact) {
+                await openMessengerConversation(contact);
+            }
+        }
     } catch (error) {
         console.error('[MESSENGER] Failed loading contacts:', error);
         showContactsError(error?.message || 'Messenger contacts could not be loaded.');
