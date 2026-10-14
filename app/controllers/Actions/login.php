@@ -27,6 +27,7 @@ if (isset($_POST['loginAcct'])) {
     // Instantiate the sign in user controller class. ↓
     include_once base_path("app/SubmissionHandlers/login_drvr.php");
     $signin = new LoginContr($username, $password);
+    $messengerDestination = $_SESSION['messenger_login_destination'] ?? null;
     // Running error handlers and user signin.
     $signin->loginUser();
     if (!isset($_COOKIE['driver_registered'])) {
@@ -42,7 +43,17 @@ if (isset($_POST['loginAcct'])) {
     }
     // Redirect to home page upon successful login with valid message.
     Flash::setMsg('success', $_SESSION['first_name'], ['greet' => true]);
-    header("Location: /");
+    $redirect = '/';
+    /*
+    * Only accept the exact Messenger destination format
+    * that the Router creates.
+    */
+    if (is_string($messengerDestination) && preg_match('~\A/message-center(?:\?recipient=[1-9][0-9]*)?\z~', $messengerDestination)) {
+        $redirect = $messengerDestination;
+    }
+
+    unset($_SESSION['messenger_login_destination']);
+    header("Location: " . $redirect);
     exit();
 }
 

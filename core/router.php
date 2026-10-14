@@ -40,6 +40,21 @@ class Router {
             if($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
                 // Check if route is protected
                 if ($route['protected'] && (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
+                    /*
+                    * Preserve only a Messenger page destination.
+                    * Do not save POST requests or arbitrary URLs.
+                    */
+                    if (strtoupper($method) === 'GET' && $route['uri'] === '/message-center') {
+                        $destination = '/message-center';
+                        $recipientId = filter_var($_GET['recipient'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+                        if ($recipientId !== false) {
+                            $destination .= '?recipient=' . (int) $recipientId;
+                        }
+
+                        $_SESSION['messenger_login_destination'] = $destination;
+                    }
+
                     header("Location: /signin");
                     exit();
                 }
