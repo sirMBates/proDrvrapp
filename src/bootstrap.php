@@ -69,7 +69,7 @@ return new class {
             }
 
             $router = new \Core\Router;
-            $routes = require base_path("routes.php");
+            $routes = require base_path("app/routes/routes.php");
             $router->route($uri, $method);
             return;
         }
@@ -85,7 +85,7 @@ return new class {
         }
 
         $router = new \Core\Router;
-        $routes = require base_path("routes.php");
+        $routes = require base_path("app/routes/routes.php");
         $router->route($uri, $method);
     }
 }
