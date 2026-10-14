@@ -26,30 +26,10 @@ class MessengerContactService {
         }
 
         $users = $this->userRepository->findMessengerContactsForDriver($driverId);
-        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
         $contacts = [];
 
         foreach ($users as $user) {
-            $userId = (int) $user['user_id'];
-            $role = $user['role'];
-
-            if ($role === 'driver') {
-                $firstName = $user['first_name'] !== '' ? Crypto::decrypt($user['first_name'], $key) : '';
-                $lastName = $user['last_name'] !== '' ? Crypto::decrypt($user['last_name'], $key) : '';
-                $displayName = trim($firstName . ' ' . $lastName);
-
-                if ($displayName === '') {
-                    $displayName = 'Driver ' . $userId;
-                }
-            } else {
-                $displayName = 'Dispatch ' . $userId;
-            }
-
-            $contacts[] = [
-                'userId' => $userId,
-                'displayName' => $displayName,
-                'role' => $role
-            ];
+            $contacts[] = $this->formatIdentity($user);
         }
 
         usort($contacts, static function (array $a, array $b): int {
@@ -65,6 +45,38 @@ class MessengerContactService {
         });
 
         return $contacts;
+    }
+
+    public function formatIdentity(array $user): array {
+        $userId = (int) $user['user_id'];
+        $role = $user['role'];
+
+        if ($role === 'driver') {
+            $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+
+            $firstName = $user['first_name'] !== '' ? Crypto::decrypt($user['first_name'], $key) : '';
+            $lastName = $user['last_name'] !== '' ? Crypto::decrypt($user['last_name'], $key) : '';
+
+            $displayName = trim($firstName . ' ' . $lastName);
+            if ($displayName === '') {
+                $displayName = 'Driver ' . $userId;
+            }
+
+        } elseif ($role === 'dispatch') {
+            $displayName = 'Dispatch ' . $userId;
+
+        } elseif ($role === 'admin') {
+            $displayName = 'Administration ' . $userId;
+
+        } else {
+            throw new \RuntimeException('Unsupported Messenger role.');
+        }
+
+        return [
+            'userId' => $userId,
+            'displayName' => $displayName,
+            'role' => $role
+        ];
     }
 }
 

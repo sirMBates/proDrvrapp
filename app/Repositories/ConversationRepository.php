@@ -171,13 +171,15 @@ class ConversationRepository {
             throw new \InvalidArgumentException('Invalid Messenger member ID.');
         }
 
-        $sql = "SELECT other_member.conversation_id, other_member.user_id
+        $sql = "SELECT other_member.conversation_id, other_member.user_id, u.first_name, u.last_name, u.role
                 FROM conversation_members AS own_member
                 INNER JOIN conversations AS c
-                    ON c.conversation_id = own_member.conversation_id
+                ON c.conversation_id = own_member.conversation_id
                 INNER JOIN conversation_members AS other_member
-                    ON other_member.conversation_id = own_member.conversation_id
+                ON other_member.conversation_id = own_member.conversation_id
                 AND other_member.user_id <> own_member.user_id
+                INNER JOIN users AS u
+                ON u.user_id = other_member.user_id
                 WHERE own_member.user_id = :member_id
                 AND c.conversation_type = 'direct'";
         $stmt = $this->pdo->prepare($sql);
@@ -370,6 +372,56 @@ class ConversationRepository {
 
             throw $e;
         }
+    }
+
+    public function findAdminConversationForDriver(int $driverId, int $adminId): ?array {
+        if ($driverId < 1 || $adminId < 1 || $driverId === $adminId) {
+            throw new \InvalidArgumentException('Invalid Messenger identity.');
+        }
+
+        $directKey = min($driverId, $adminId) . ':' . max($driverId, $adminId);
+
+        $sql = "SELECT c.conversation_id, c.conversation_type, c.created_by, c.created_at, c.last_message_at
+                FROM conversations AS c
+                INNER JOIN conversation_members AS driver_member
+                ON driver_member.conversation_id = c.conversation_id
+                AND driver_member.user_id = :driver_id
+                INNER JOIN conversation_members AS admin_member
+                ON admin_member.conversation_id = c.conversation_id
+                AND admin_member.user_id = :admin_id
+                WHERE c.direct_key = :direct_key
+                AND c.conversation_type = 'direct'
+                AND c.created_by = admin_member.user_id
+                AND (
+                    SELECT COUNT(*)
+                    FROM conversation_members AS members
+                    WHERE members.conversation_id = c.conversation_id
+                ) = 2
+                AND EXISTS (
+                    SELECT 1 FROM messages AS m
+                    WHERE m.conversation_id = c.conversation_id
+                    AND m.sender_id = admin_member.user_id
+                    AND m.message_id > driver_member.cleared_through_message_id
+                )
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':driver_id' => $driverId,
+            ':admin_id' => $adminId,
+            ':direct_key' => $directKey
+        ]);
+
+        $conversation = $stmt->fetch();
+
+        if ($conversation === false) {
+            return null;
+        }
+
+        $conversation['conversation_id'] = (int) $conversation['conversation_id'];
+        $conversation['created_by'] = (int) $conversation['created_by'];
+
+        return $conversation;
     }
 }
 

@@ -28,9 +28,15 @@ include "partials/info-modal.php";
                                         <div class="invalid-feedback">Re-type password exactly.</div>
                                 </div>
 
+                                <div class="input-group my-1">
+                                        <span class="input-group-text" aria-describedby="accessAccountKey"><i class="fa-solid fa-key" id="key-icon"></i></span>
+                                        <input type="text" id="access-account-key" class="form-control fs-5 rounded-end" name="accessAccountKey" placeholder="Please enter access key" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Access Account Key" data-bs-content="Enter the key you were given" data-bs-placement="bottom" data-bs-trigger="focus" disabled>
+                                        <div class="invalid-feedback">Please enter you account access key.</div>
+                                </div>
+
                                 <p id="password-does-not-match-text" class="text-danger" hidden>Your password does not match</p>
                                 <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
-                                <div class="d-flex justify-content-center mb-3">
+                                <div class="d-flex justify-content-center my-2">
                                         <button id="signup" type="submit" name="createAccount" class="btn btn-lg btn-primary" disabled>Create Account</button>
                                 </div>
 

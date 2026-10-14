@@ -10,9 +10,11 @@ const usernameInput = checkInputs[0];
 const emailInput = checkInputs[1]; 
 const passwordInput = checkInputs[2];
 const confPasswordInput = checkInputs[3];
+const accountAccessKey = checkInputs[4];
 const pwdIcon = document.querySelector('#pwd-icon');
 const confPwdIcon = document.querySelector('#con-pwd-icon');
 const signUpBtn = document.querySelector('#signup');
+const keyIcon = document.querySelector('#key-icon');
 /*
 ** Validate and secure the inputs after each one has a value before submission 
 ** following this! ↓
@@ -107,7 +109,8 @@ if (!drvrAgreed) {
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
 const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, {
-    container: 'body'
+    container: 'body',
+    trigger: 'focus hover'
 }));
 //popover = new bootstrap.Popover('.popover-dismiss', {trigger: 'focus'});
 

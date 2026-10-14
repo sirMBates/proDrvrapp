@@ -10,9 +10,6 @@ export class MessagePreview {
         this.empty = container?.querySelector('[data-message-preview-empty]');
         this.total = container?.querySelector('[data-message-preview-total]');
 
-        this.contacts = new Map();
-        this.contactsLoaded = false;
-
         this.timer = null;
         this.inFlight = false;
         this.failures = 0;
@@ -95,17 +92,6 @@ export class MessagePreview {
                 }
             };
 
-            if (!this.contactsLoaded) {
-                const response = await proDriverRequest('/messenger-contacts', options);
-
-                if (response?.status !== 'success' || !Array.isArray(response.contacts)) {
-                    throw new Error(response?.message || 'Message contacts could not be loaded.');
-                }
-
-                this.contacts = new Map(response.contacts.map(contact => [Number(contact.userId), contact]));
-                this.contactsLoaded = true;
-            }
-
             const response = await proDriverRequest('/messenger-unread', options);
 
             if (response?.status !== 'success' || !Array.isArray(response.unreadData?.conversations)) {
@@ -135,7 +121,10 @@ export class MessagePreview {
     }
 
     render(unreadData) {
-        const conversations = unreadData.conversations.filter(summary => summary.conversation_type === 'direct' && summary.latest_message_id !== null && this.contacts.has(Number(summary.recipient_id)));
+        const conversations = unreadData.conversations.filter(summary => {
+            const recipient = summary.recipient;
+            return (summary.conversation_type === 'direct' && summary.latest_message_id != null && recipient && Number.isSafeInteger(recipient.userId) && recipient.userId > 0 && typeof recipient.displayName === 'string');
+        });
 
         conversations.sort((a, b) => String(b.latest_message_created_at).localeCompare(String(a.latest_message_created_at)) || Number(b.latest_message_id) - Number(a.latest_message_id));
 
@@ -157,18 +146,18 @@ export class MessagePreview {
         const fragment = document.createDocumentFragment();
 
         recent.forEach(summary => {
-            const contact = this.contacts.get(Number(summary.recipient_id));
+            const recipient = summary.recipient;
 
             const link = document.createElement('a');
             link.className = 'list-group-item list-group-item-action dashboard-message-row';
-            link.href = `/message-center?recipient=${encodeURIComponent(contact.userId)}`;
+            link.href = `/message-center?recipient=${encodeURIComponent(recipient.userId)}`;
 
             const heading = document.createElement('div');
             heading.className = 'd-flex justify-content-between align-items-center gap-2';
 
             const name = document.createElement('strong');
             name.className = 'text-truncate';
-            name.textContent = contact.displayName;
+            name.textContent = recipient.displayName;
 
             heading.appendChild(name);
 

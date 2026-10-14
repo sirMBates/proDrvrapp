@@ -5,6 +5,7 @@ const MESSAGE_POLL_INTERVAL = 3000;
 const contactsLoading = document.querySelector('#messenger-contacts-loading');
 const contactsError = document.querySelector('#messenger-contacts-error');
 const conversationsEmpty = document.querySelector('#messenger-conversations-empty');
+const adminConversations = document.querySelector('#messenger-admin-conversations');
 const dispatchConversations = document.querySelector('#messenger-dispatch-conversations');
 const driverConversations = document.querySelector('#messenger-driver-conversations');
 const conversationSearch = document.querySelector('#messenger-conversation-search');
@@ -67,6 +68,7 @@ let oldestLoadedMessageId = null;
 let hasOlderMessages = false;
 let isLoadingOlderMessages = false;
 let isDeletingConversations = false;
+let notificationDestinationOpened = false;
 
 function hideElement(element) {
     element?.classList.add('d-none');
@@ -74,6 +76,24 @@ function hideElement(element) {
 
 function showElement(element) {
     element?.classList.remove('d-none');
+};
+
+function getConversationLists() {
+    return [
+        dispatchConversations,
+        adminConversations,
+        driverConversations
+    ].filter(Boolean);
+};
+
+function getConversationButtons() {
+    return getConversationLists().flatMap(list => Array.from(list.querySelectorAll('button[data-recipient-id]')));
+};
+
+function getConversationContact(recipientId) {
+    const id = Number(recipientId);
+
+    return conversationSummariesByRecipient.get(id)?.recipient ?? messengerContacts.find(contact => Number(contact.userId) === id) ?? (Number(activeContact?.userId) === id ? activeContact : null);
 };
 
 function createConversationButton(contact) {
@@ -92,12 +112,12 @@ function createConversationButton(contact) {
     contactDetails.className = 'me-2 overflow-hidden';
 
     const displayName = document.createElement('div');
-    displayName.className = contact.role === 'dispatch' ? 'fw-bold' : 'fw-semibold';
+    displayName.className = contact.role === 'driver' ? 'fw-semibold' : 'fw-bold';
     displayName.textContent = contact.displayName;
 
     const description = document.createElement('small');
     description.className = 'text-body-secondary d-block text-truncate';
-    description.textContent = contact.role === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
+    description.textContent = contact.role === 'admin' ? 'Administration conversation' : contact.role === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
     contactDetails.append(displayName, description);
 
     const icon = document.createElement('i');
@@ -156,31 +176,26 @@ function createConversationButton(contact) {
 
 function renderConversations(contacts) {
     const dispatchFragment = document.createDocumentFragment();
+    const adminFragment = document.createDocumentFragment();
     const driverFragment = document.createDocumentFragment();
 
     contacts.forEach(contact => {
-        const contactButton = createConversationButton(contact);
+        const button = createConversationButton(contact);
 
-        if (contact.role === 'dispatch') {
-            dispatchFragment.appendChild(contactButton);
-            return;
-        }
-
-        if (contact.role === 'driver') {
-            driverFragment.appendChild(contactButton);
+        if (contact.role === 'admin') {
+            adminFragment.appendChild(button);
+        } else if (contact.role === 'dispatch') {
+            dispatchFragment.appendChild(button);
+        } else if (contact.role === 'driver') {
+            driverFragment.appendChild(button);
         }
     });
 
+    adminConversations?.replaceChildren(adminFragment);
     dispatchConversations?.replaceChildren(dispatchFragment);
     driverConversations?.replaceChildren(driverFragment);
 
-    const visibleDriverConversationCount = driverConversations?.children.length ?? 0;
-
-    if (visibleDriverConversationCount === 0) {
-        showElement(conversationsEmpty);
-    } else {
-        hideElement(conversationsEmpty);
-    }
+    conversationsEmpty?.classList.toggle('d-none', (driverConversations?.children.length ?? 0) !== 0);
 
     updateConversationRows();
     updateConversationSelectionControls();
@@ -188,25 +203,38 @@ function renderConversations(contacts) {
 
 function refreshConversationSidebar(forceRender = false) {
     const searchValue = conversationSearch?.value.trim().toLowerCase() ?? '';
+    const contactsById = new Map();
 
-    const visibleConversationContacts = messengerContacts.filter(contact => {
+    conversationSummariesByRecipient.forEach(summary => {
+        if (summary.recipient) {
+            contactsById.set(Number(summary.recipient.userId), summary.recipient);
+        }
+    });
+
+    // Retain a newly selected empty driver/dispatch conversation.
+    const selectedId = openingRecipientId ?? activeContact?.userId;
+    const selectedContact = getConversationContact(selectedId);
+
+    if (selectedContact) {
+        contactsById.set(Number(selectedContact.userId), selectedContact);
+    }
+
+    const visibleConversationContacts = Array.from(contactsById.values()).filter(contact => {
         const recipientId = Number(contact.userId);
         const summary = conversationSummariesByRecipient.get(recipientId);
-        const isSelected = recipientId === Number(openingRecipientId ?? activeContact?.userId);
+
+        const isSelected = recipientId === Number(selectedId);
         const hasMessages = summary?.latest_message_id != null;
 
         if (!hasMessages && !isSelected) {
             return false;
         }
 
-        return contact.role === 'dispatch' || contact.displayName.toLowerCase().includes(searchValue);
+        // The existing search is specifically for Driver Conversations.
+        return contact.role !== 'driver' || contact.displayName.toLowerCase().includes(searchValue);
     });
 
-    const existingButtons = [
-        ...(dispatchConversations?.querySelectorAll('button[data-recipient-id]') ?? []),
-        ...(driverConversations?.querySelectorAll('button[data-recipient-id]') ?? [])
-    ];
-
+    const existingButtons = getConversationButtons();
     const existingIds = new Set(existingButtons.map(button => Number(button.dataset.recipientId)));
 
     const membershipChanged = existingIds.size !== visibleConversationContacts.length || visibleConversationContacts.some(contact => !existingIds.has(Number(contact.userId)));
@@ -252,7 +280,7 @@ function renderContactPicker() {
         button.append(name, role);
 
         button.addEventListener('click', async () => {
-            if (isSendingMessage) {
+            if (isSendingMessage || isDeletingConversations) {
                 return;
             }
 
@@ -324,29 +352,41 @@ async function loadMessengerContacts() {
             newMessageButton.disabled = isSendingMessage;
         }
 
-        const requestedRecipient = new URLSearchParams(window.location.search).get('recipient');
-
-        if (requestedRecipient !== null) {
-            const recipientId = Number(requestedRecipient);
-            const contact = Number.isSafeInteger(recipientId) && recipientId > 0 ? messengerContacts.find(item => Number(item.userId) === recipientId) : null;
-
-            if (contact) {
-                await openMessengerConversation(contact);
-            }
-        }
+        await openRequestedMessengerConversation();
     } catch (error) {
         console.error('[MESSENGER] Failed loading contacts:', error);
         showContactsError(error?.message || 'Messenger contacts could not be loaded.');
     }
 };
 
+async function openRequestedMessengerConversation() {
+    if (notificationDestinationOpened) {
+        return;
+    }
+
+    const requestedRecipient = new URLSearchParams(window.location.search).get('recipient');
+    if (requestedRecipient === null) {
+        return;
+    }
+
+    const recipientId = Number(requestedRecipient);
+    if (!Number.isSafeInteger(recipientId) || recipientId < 1) {
+        return;
+    }
+
+    const contact = getConversationContact(recipientId);
+    if (!contact) {
+        return;
+    }
+
+    notificationDestinationOpened = true;
+    await openMessengerConversation(contact);
+};
+
 function updateSelectedContact() {
     const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
 
-    const buttons = [
-        ...(dispatchConversations?.querySelectorAll('button[data-recipient-id]') ?? []),
-        ...(driverConversations?.querySelectorAll('button[data-recipient-id]') ?? [])
-    ];
+    const buttons = getConversationButtons();
 
     buttons.forEach(button => {
         const isSelected = button.dataset.recipientId === String(selectedRecipientId);
@@ -435,7 +475,7 @@ async function loadMessengerHistory(conversationId, contact, requestVersion) {
     renderMessengerMessages(conversationMessages, contact);
 
     if (conversationDescription) {
-        conversationDescription.textContent = contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
+        conversationDescription.textContent = contact.role === 'admin' ? 'Administration conversation' : contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
     }
 
     if (messageArea) {
@@ -554,7 +594,7 @@ async function pollMessengerMessages() {
         scheduleReadCheck();
 
         if (conversationDescription) {
-            conversationDescription.textContent = contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
+            conversationDescription.textContent = contact.role === 'admin' ? 'Administration conversation' : contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
         }
 
     } catch (error) {
@@ -581,10 +621,7 @@ async function pollMessengerMessages() {
 };
 
 function updateUnreadBadges() {
-    const buttons = [
-        ...(dispatchConversations?.querySelectorAll('button[data-recipient-id]') ?? []),
-        ...(driverConversations?.querySelectorAll('button[data-recipient-id]') ?? [])
-    ];
+    const buttons = getConversationButtons();
 
     buttons.forEach(button => {
         const badge = button.querySelector('[data-unread-badge]');
@@ -678,6 +715,7 @@ async function refreshMessengerUnread() {
         refreshConversationSidebar();
         unreadPollFailures = 0;
         updateUnreadBadges();
+        await openRequestedMessengerConversation();
     } catch (error) {
         unreadPollFailures++;
         console.error('[MESSENGER] Unread refresh failed:', error);
@@ -784,7 +822,7 @@ function updateContactPreview(button) {
     const hasMessage = summary?.latest_message_id != null;
 
     if (preview) {
-        preview.textContent = hasMessage ? `${summary.latest_is_own ? 'You: ' : ''}${String(summary.latest_message_body ?? '').replace(/\s+/g, ' ').trim()}` : button.dataset.contactRole === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
+        preview.textContent = hasMessage ? `${summary.latest_is_own ? 'You: ' : ''}${String(summary.latest_message_body ?? '').replace(/\s+/g, ' ').trim()}` : button.dataset.contactRole === 'admin' ? 'Administration conversation' : button.dataset.contactRole === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
     }
 
     if (timestamp) {
@@ -794,7 +832,7 @@ function updateContactPreview(button) {
 };
 
 function updateConversationRows() {
-    [dispatchConversations, driverConversations].forEach(list => {
+    getConversationLists().forEach(list => {
         if (!list) {
             return;
         }
@@ -827,9 +865,8 @@ function updateConversationRows() {
             }
 
             // Contacts without messages remain alphabetically ordered.
-            const aName = messengerContacts.find(contact => Number(contact.userId) === Number(a.dataset.recipientId))?.displayName ?? '';
-
-            const bName = messengerContacts.find(contact => Number(contact.userId) === Number(b.dataset.recipientId))?.displayName ?? '';
+            const aName = getConversationContact(a.dataset.recipientId)?.displayName ?? '';
+            const bName = getConversationContact(b.dataset.recipientId)?.displayName ?? '';
 
             return aName.localeCompare(bName, 'en', {
                 sensitivity: 'base',
@@ -1197,18 +1234,22 @@ function initializeMessengerSections() {
 function updateSectionUnreadTotals() {
     const totals = {
         driver: 0,
-        dispatch: 0
+        dispatch: 0,
+        admin: 0
     };
 
-    messengerContacts.forEach(contact => {
-        if (Object.hasOwn(totals, contact.role)) {
-            totals[contact.role] += unreadCountsByRecipient.get(Number(contact.userId)) ?? 0;
+    conversationSummariesByRecipient.forEach(summary => {
+        const role = summary.recipient?.role;
+
+        if (Object.hasOwn(totals, role)) {
+            totals[role] += Number(summary.unread_count);
         }
     });
 
     const badges = [
         [document.querySelector('#messenger-driver-unread-total'), totals.driver],
-        [document.querySelector('#messenger-dispatch-unread-total'), totals.dispatch]
+        [document.querySelector('#messenger-dispatch-unread-total'), totals.dispatch],
+        [document.querySelector('#messenger-admin-unread-total'), totals.admin]
     ];
 
     badges.forEach(([badge, count]) => {
@@ -1435,7 +1476,7 @@ function updateConversationSelectionControls() {
 
     const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
 
-    [dispatchConversations, driverConversations].forEach(list => {
+    getConversationLists().forEach(list => {
         list?.querySelectorAll('button[data-recipient-id]').forEach(button => {
             const recipientId = Number(button.dataset.recipientId);
             const selected = selectedConversationRecipients.has(recipientId);

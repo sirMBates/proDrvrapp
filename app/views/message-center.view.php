@@ -79,6 +79,24 @@ include "partials/confirm-modal.php";
                                 <p id="messenger-delete-error" class="small text-danger mt-2 mb-0 d-none" role="alert"></p>
                             </div>
 
+                            <!-- Administration Section -->
+                            <details class="messenger-section admin-section border-bottom" data-messenger-section="administration" open>
+
+                                <summary class="messenger-section-label messenger-section-toggle px-3 py-3">
+                                    <span class="fw-bold text-uppercase small">
+                                        Administration
+                                    </span>
+
+                                    <span class="d-flex align-items-center gap-2">
+                                        <span id="messenger-admin-unread-total" class="badge rounded-pill text-bg-danger d-none"></span>
+
+                                        <i class="fa-solid fa-chevron-down messenger-section-chevron" aria-hidden="true"></i>
+                                    </span>
+                                </summary>
+
+                                <div id="messenger-admin-conversations" class="list-group list-group-flush messenger-thread-list messenger-section-list"></div>
+                            </details>
+
                             <!-- Dispatch Section -->
                             <details class="messenger-section dispatch-section border-bottom" data-messenger-section="dispatch" open>
 

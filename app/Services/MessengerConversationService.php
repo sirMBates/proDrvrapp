@@ -27,7 +27,21 @@ class MessengerConversationService {
         }
 
         $recipient = $this->userRepository->findById($recipientId);
-        if ($recipient['account_status'] !== 'active' || !in_array($recipient['role'], ['driver', 'dispatch'], true)) {
+
+        if ($recipient['account_status'] !== 'active') {
+            throw new \DomainException('This account is unavailable for messaging.');
+        }
+
+        if ($recipient['role'] === 'admin') {
+            $conversation = $this->conversationRepository->findAdminConversationForDriver($driverId, $recipientId);
+            if ($conversation === null) {
+                throw new \DomainException('Administration must contact you before you can reply.');
+            }
+
+            return $conversation;
+        }
+
+        if (!in_array($recipient['role'], ['driver', 'dispatch'], true)) {
             throw new \DomainException('You cannot start a conversation with this account.');
         }
 
@@ -48,9 +62,13 @@ class MessengerConversationService {
         $otherMembers = $this->conversationRepository->findOtherMembersForMember($driverId);
         $recipientsByConversation = [];
 
+        $identitiesByConversation = [];
+        $contactService = new MessengerContactService($this->userRepository);
+
         foreach ($otherMembers as $member) {
             $conversationId = (int) $member['conversation_id'];
             $recipientsByConversation[$conversationId][] = (int) $member['user_id'];
+            $identitiesByConversation[$conversationId][] = $contactService->formatIdentity($member);
         }
 
         $totalUnread = 0;
@@ -61,6 +79,7 @@ class MessengerConversationService {
 
             // Only a two-member direct conversation maps to one contact.
             $summary['recipient_id'] = $summary['conversation_type'] === 'direct' && count($recipientIds) === 1 ? $recipientIds[0] : null;
+            $summary['recipient'] = $summary['recipient_id'] !== null ? $identitiesByConversation[$conversationId][0] : null;
             $summary['latest_is_own'] = $summary['latest_sender_id'] !== null && $summary['latest_sender_id'] === $driverId;
             $totalUnread += $summary['unread_count'];
         }
