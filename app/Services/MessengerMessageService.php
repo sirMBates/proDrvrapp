@@ -86,8 +86,24 @@ class MessengerMessageService {
 
         $messages = $this->messageRepository->findForMember($conversationId, $driverId, $afterMessageId, $limit, $beforeMessageId);
 
+        $contactService = new MessengerContactService($this->userRepository);
+        $senderIdentities = [];
+
         foreach ($messages as &$message) {
-            $message['is_own'] = $message['sender_id'] === $driverId;
+            $senderId = (int) $message['sender_id'];
+
+            if (!isset($senderIdentities[$senderId])) {
+                $sender = $senderId === $driverId ? $driver : $this->userRepository->findById($senderId);
+
+                if (!$sender) {
+                    throw new \RuntimeException('The message sender could not be loaded.');
+                }
+
+                $senderIdentities[$senderId] = $contactService->formatIdentity($sender);
+            }
+
+            $message['is_own'] = $senderId === $driverId;
+            $message['sender'] = $senderIdentities[$senderId];
         }
 
         unset($message);

@@ -112,12 +112,133 @@ class ConversationRepository {
         }
     }
 
+    public function createGroup(int $creatorId, string $title, array $recipientIds): array {
+        $title = trim($title);
+
+        if ($creatorId < 1) {
+            throw new \InvalidArgumentException('Invalid group creator.');
+        }
+
+        if ($title === '' || mb_strlen($title, 'UTF-8') > 150) {
+            throw new \InvalidArgumentException('Enter a group name between 1 and 150 characters.');
+        }
+
+        foreach ($recipientIds as $recipientId) {
+            if (!is_int($recipientId) || $recipientId < 1) {
+                throw new \InvalidArgumentException('Invalid group member.');
+            }
+        }
+
+        $memberIds = array_values(array_unique([
+            $creatorId,
+            ...$recipientIds
+        ]));
+
+        sort($memberIds, SORT_NUMERIC);
+
+        if (count($memberIds) < 3 || count($memberIds) > 50) {
+            throw new \InvalidArgumentException('A group requires between 3 and 50 members, including you.');
+        }
+
+        if ($this->pdo->inTransaction()) {
+            throw new \LogicException('Group creation requires its own transaction.');
+        }
+
+        $this->pdo->beginTransaction();
+
+        try {
+            /*
+            * Check and lock users in a consistent order.
+            * No conversation is created unless every member is eligible.
+            */
+            $sql = "SELECT user_id, role, account_status
+                    FROM users
+                    WHERE user_id = :user_id
+                    FOR UPDATE";
+            $stmt = $this->pdo->prepare($sql);
+
+            foreach ($memberIds as $memberId) {
+                $stmt->execute([
+                    ':user_id' => $memberId
+                ]);
+
+                $user = $stmt->fetch();
+
+                if ($user === false || $user['account_status'] !== 'active') {
+                    throw new \DomainException('Every group member must have an active account.');
+                }
+
+                if ($memberId === $creatorId) {
+                    if ($user['role'] !== 'driver') {
+                        throw new \DomainException('Messenger requires an active driver account.');
+                    }
+                } elseif (!in_array($user['role'], ['driver', 'dispatch'], true)) {
+                    throw new \DomainException('Choose drivers or dispatch contacts for this group.');
+                }
+            }
+
+            $sql = "INSERT INTO conversations (conversation_type, title, direct_key, created_by)
+                    VALUES ('group', :title, NULL, :created_by)";
+            $stmt = $this->pdo->prepare($sql);
+
+            $stmt->execute([
+                ':title' => $title,
+                ':created_by' => $creatorId
+            ]);
+
+            $conversationId = (int) $this->pdo->lastInsertId();
+
+            if ($conversationId < 1) {
+                throw new \RuntimeException('The group could not be created.');
+            }
+
+            $sql = "INSERT INTO conversation_members (conversation_id, user_id)
+                    VALUES (:conversation_id, :user_id)";
+            $stmt = $this->pdo->prepare($sql);
+
+            foreach ($memberIds as $memberId) {
+                $stmt->execute([
+                    ':conversation_id' => $conversationId,
+                    ':user_id' => $memberId
+                ]);
+            }
+
+            $sql = "SELECT conversation_id, conversation_type, title, created_by, created_at, last_message_at
+                    FROM conversations
+                    WHERE conversation_id = :conversation_id";
+            $stmt = $this->pdo->prepare($sql);
+
+            $stmt->execute([
+                ':conversation_id' => $conversationId
+            ]);
+
+            $conversation = $stmt->fetch();
+
+            if ($conversation === false) {
+                throw new \RuntimeException('The group could not be loaded.');
+            }
+
+            $conversation['conversation_id'] = (int) $conversation['conversation_id'];
+            $conversation['created_by'] = (int) $conversation['created_by'];
+            $conversation['member_count'] = count($memberIds);
+
+            $this->pdo->commit();
+            return $conversation;
+        } catch (Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
     public function findUnreadSummariesForMember(int $memberId): array {
         if ($memberId < 1) {
             throw new \InvalidArgumentException('Invalid Messenger member ID.');
         }
 
-        $sql = "SELECT c.conversation_id, c.conversation_type, latest.created_at AS last_message_at, cm.last_read_message_id, cm.cleared_through_message_id, cm.deleted_at, latest.message_id AS latest_message_id, latest.sender_id AS latest_sender_id, latest.message_body AS latest_message_body, latest.created_at AS latest_message_created_at,
+        $sql = "SELECT c.conversation_id, c.conversation_type, c.title, latest.created_at AS last_message_at, cm.last_read_message_id, cm.cleared_through_message_id, cm.deleted_at, latest.message_id AS latest_message_id, latest.sender_id AS latest_sender_id, latest.message_body AS latest_message_body, latest.created_at AS latest_message_created_at,
                 (
                 SELECT COUNT(*) FROM messages AS m
                 WHERE m.conversation_id = c.conversation_id
@@ -181,7 +302,7 @@ class ConversationRepository {
                 INNER JOIN users AS u
                 ON u.user_id = other_member.user_id
                 WHERE own_member.user_id = :member_id
-                AND c.conversation_type = 'direct'";
+                AND c.conversation_type IN ('direct', 'group')";
         $stmt = $this->pdo->prepare($sql);
 
         $stmt->execute([
@@ -422,6 +543,46 @@ class ConversationRepository {
         $conversation['created_by'] = (int) $conversation['created_by'];
 
         return $conversation;
+    }
+
+    public function findGroupMembersForMember(int $conversationId, int $memberId): array {
+        if ($conversationId < 1 || $memberId < 1) {
+            throw new \InvalidArgumentException('Invalid Messenger identity.');
+        }
+
+        $sql = "SELECT u.user_id, u.first_name, u.last_name, u.role, cm.joined_at, c.created_by
+                FROM conversations AS c
+                INNER JOIN conversation_members AS own_member
+                ON own_member.conversation_id = c.conversation_id
+                AND own_member.user_id = :member_id
+                INNER JOIN conversation_members AS cm
+                ON cm.conversation_id = c.conversation_id
+                INNER JOIN users AS u
+                ON u.user_id = cm.user_id
+                WHERE c.conversation_id = :conversation_id
+                AND c.conversation_type = 'group'
+                ORDER BY u.user_id ASC";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':member_id' => $memberId,
+            ':conversation_id' => $conversationId
+        ]);
+
+        $members = $stmt->fetchAll();
+
+        if ($members === []) {
+            throw new \DomainException('The group is unavailable or you are not a member.');
+        }
+
+        foreach ($members as &$member) {
+            $member['user_id'] = (int) $member['user_id'];
+            $member['created_by'] = (int) $member['created_by'];
+        }
+
+        unset($member);
+
+        return $members;
     }
 }
 

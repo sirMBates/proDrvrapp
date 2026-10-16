@@ -70,6 +70,10 @@ return new class {
 
             $router = new \Core\Router;
             $routes = require base_path("app/routes/routes.php");
+            // require base_path('app/routes/public.php');
+            // require base_path('app/routes/driver.php');
+            // require base_path('app/routes/dispatch.php');
+            // require base_path('app/routes/admin.php');
             $router->route($uri, $method);
             return;
         }
@@ -79,6 +83,13 @@ return new class {
                 header("Location: /signup");
                 exit();
             }
+
+            /*if (!isset($_SESSION['logged_in'])) {
+                header("Location: /signin");
+                exit();
+            }*/
+
+            // routeSwitcher($_SESSION['role']);
 
             header("Location: /signin");
             exit();

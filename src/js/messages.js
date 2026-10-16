@@ -1,12 +1,15 @@
 import { proDriverRequest, viewableDateTimeHelper } from './helpers.js';
 import { buildModal } from './appmodal.js';
+import { Validation } from './validation.js';
 
 const MESSAGE_POLL_INTERVAL = 3000;
 const contactsLoading = document.querySelector('#messenger-contacts-loading');
 const contactsError = document.querySelector('#messenger-contacts-error');
 const conversationsEmpty = document.querySelector('#messenger-conversations-empty');
+const groupsEmpty = document.querySelector('#messenger-groups-empty');
 const adminConversations = document.querySelector('#messenger-admin-conversations');
 const dispatchConversations = document.querySelector('#messenger-dispatch-conversations');
+const groupConversations = document.querySelector('#messenger-group-conversations');
 const driverConversations = document.querySelector('#messenger-driver-conversations');
 const conversationSearch = document.querySelector('#messenger-conversation-search');
 const driverToken = document.querySelector('#drvrToken')?.value;
@@ -39,8 +42,29 @@ const selectionCount = document.querySelector('#messenger-selection-count');
 const deleteSelectedButton = document.querySelector('#messenger-delete-selected');
 const selectionCancelButton = document.querySelector('#messenger-selection-cancel');
 const deleteError = document.querySelector('#messenger-delete-error');
-// Store recipient IDs; summaries resolve them to conversation IDs.
-const selectedConversationRecipients = new Set();
+const viewMembersButton = document.querySelector('#messenger-view-members');
+const groupMembersDialog = document.querySelector('#messenger-group-members');
+const groupMembersTitle = document.querySelector('#messenger-group-members-title');
+const groupMembersClose = document.querySelector('#messenger-group-members-close');
+const groupMembersLoading = document.querySelector('#messenger-group-members-loading');
+const groupMembersError = document.querySelector('#messenger-group-members-error');
+const groupMembersList = document.querySelector('#messenger-group-members-list');
+const newGroupButton = document.querySelector('#messenger-new-group');
+const groupPicker = document.querySelector('#messenger-group-picker');
+const groupForm = document.querySelector('#messenger-group-form');
+const groupPickerClose = document.querySelector('#messenger-group-picker-close');
+const groupCreateCancel = document.querySelector('#messenger-group-create-cancel');
+const groupTitleInput = document.querySelector('#messenger-group-title');
+const groupSearch = document.querySelector('#messenger-group-search');
+const groupPickerContacts = document.querySelector('#messenger-group-picker-contacts');
+const groupPickerEmpty = document.querySelector('#messenger-group-picker-empty');
+const groupSelectionCount = document.querySelector('#messenger-group-selection-count');
+const groupContactFields = document.querySelector('#messenger-group-contact-fields');
+const groupCreateError = document.querySelector('#messenger-group-create-error');
+const groupCreateSubmit = document.querySelector('#messenger-group-create-submit');
+const selectedGroupRecipientIds = new Set();
+// Store conversation IDs for both direct chats and groups.
+const selectedConversationIds = new Set();
 const confirmDeletion = buildModal;
 
 let latestRetrievedMessageId = 0;
@@ -53,11 +77,12 @@ let isSendingMessage = false;
 let pendingSend = null;
 let activeConversationId = null;
 let activeContact = null;
-let openingRecipientId = null;
+let openingConversationKey = null;
 let conversationRequestVersion = 0;
 let messengerContacts = [];
 let unreadCountsByRecipient = new Map();
 let conversationSummariesByRecipient = new Map();
+let conversationSummariesById = new Map();
 let unreadPollTimer = null;
 let unreadRequestInFlight = false;
 let unreadRefreshRequested = false;
@@ -69,6 +94,8 @@ let hasOlderMessages = false;
 let isLoadingOlderMessages = false;
 let isDeletingConversations = false;
 let notificationDestinationOpened = false;
+let groupMembersRequestVersion = 0;
+let isCreatingGroup = false;
 
 function hideElement(element) {
     element?.classList.add('d-none');
@@ -82,12 +109,13 @@ function getConversationLists() {
     return [
         dispatchConversations,
         adminConversations,
+        groupConversations,
         driverConversations
     ].filter(Boolean);
 };
 
 function getConversationButtons() {
-    return getConversationLists().flatMap(list => Array.from(list.querySelectorAll('button[data-recipient-id]')));
+    return getConversationLists().flatMap(list => Array.from(list.querySelectorAll('button[data-recipient-id], button[data-conversation-id]')));
 };
 
 function getConversationContact(recipientId) {
@@ -96,14 +124,64 @@ function getConversationContact(recipientId) {
     return conversationSummariesByRecipient.get(id)?.recipient ?? messengerContacts.find(contact => Number(contact.userId) === id) ?? (Number(activeContact?.userId) === id ? activeContact : null);
 };
 
-function createConversationButton(contact) {
-    const button = document.createElement('button');
+function getContactConversationId(contact) {
+    const conversationId = contact?.conversationId ?? conversationSummariesByRecipient.get(Number(contact?.userId)) ?.conversation_id ?? (activeContact?.role !== 'group' && Number(activeContact?.userId) === Number(contact?.userId) ? activeConversationId : null);
 
+    const id = Number(conversationId);
+
+    return Number.isSafeInteger(id) && id > 0 ? id : null;
+};
+
+function getButtonConversationId(button) {
+    const storedId = Number(button.dataset.conversationId);
+
+    if (Number.isSafeInteger(storedId) && storedId > 0) {
+        return storedId;
+    }
+
+    return getContactConversationId({
+        userId: button.dataset.recipientId
+    });
+};
+
+function getButtonConversationSummary(button) {
+    const conversationId = getButtonConversationId(button);
+
+    return conversationSummariesById.get(conversationId) ??
+        conversationSummariesByRecipient.get(
+            Number(button.dataset.recipientId)
+        );
+};
+
+function getMessengerConversationDescription(contact) {
+    if (contact.role === 'group') {
+        return `${contact.memberCount} members`;
+    }
+
+    if (contact.role === 'admin') {
+        return 'Administration conversation';
+    }
+
+    return contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
+};
+
+function createConversationButton(contact) {
+    const isGroup = contact.role === 'group';
+    const conversationId = getContactConversationId(contact);
+
+    const button = document.createElement('button');
     button.type = 'button';
     button.className = 'list-group-item list-group-item-action';
     button.classList.toggle('dispatch-thread', contact.role === 'dispatch');
-    button.dataset.recipientId = String(contact.userId);
+
     button.dataset.contactRole = contact.role;
+    button.dataset.displayName = contact.displayName;
+
+    if (isGroup) {
+        button.dataset.conversationId = String(conversationId);
+    } else {
+        button.dataset.recipientId = String(contact.userId);
+    }
 
     const layout = document.createElement('div');
     layout.className = 'd-flex justify-content-between align-items-center';
@@ -113,61 +191,56 @@ function createConversationButton(contact) {
 
     const displayName = document.createElement('div');
     displayName.className = contact.role === 'driver' ? 'fw-semibold' : 'fw-bold';
+    displayName.dataset.conversationName = 'true';
     displayName.textContent = contact.displayName;
 
     const description = document.createElement('small');
     description.className = 'text-body-secondary d-block text-truncate';
-    description.textContent = contact.role === 'admin' ? 'Administration conversation' : contact.role === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
-    contactDetails.append(displayName, description);
-
-    const icon = document.createElement('i');
-    icon.className = 'fa-solid fa-chevron-right text-body-secondary';
-    icon.setAttribute('aria-hidden', 'true');
-
-    const badge = document.createElement('span');
-    badge.className = 'badge rounded-pill text-bg-danger d-none';
-    badge.dataset.unreadBadge = 'true';
-
-    const count = unreadCountsByRecipient.get(Number(contact.userId)) ?? 0;
-
-    badge.textContent = String(count);
-    badge.setAttribute('aria-label', `${count} unread messages`);
-    badge.classList.toggle('d-none', count === 0);
-
-    const indicators = document.createElement('div');
-    indicators.className = 'd-flex align-items-center gap-2 flex-shrink-0';
-    indicators.append(badge, icon);
-
-    const selectionMarker = document.createElement('span');
-    selectionMarker.className = 'badge text-bg-primary d-none';
-    selectionMarker.dataset.selectionMarker = 'true';
-    selectionMarker.textContent = 'Selected';
-
-    indicators.prepend(selectionMarker);
-    layout.append(contactDetails, indicators);
-    button.appendChild(layout);
-
-    const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
-    const isSelected = String(contact.userId) === String(selectedRecipientId);
-
-    button.classList.toggle('active', isSelected);
-    button.setAttribute('aria-pressed', String(isSelected));
-
-    button.addEventListener('click', () => {
-        if (isSelectingConversations) {
-            toggleConversationSelection(contact);
-            return;
-        }
-        openMessengerConversation(contact);
-    });
-
     description.dataset.conversationPreview = 'true';
 
     const timestamp = document.createElement('small');
     timestamp.className = 'text-body-secondary d-block mt-1 d-none';
     timestamp.dataset.conversationTimestamp = 'true';
 
-    contactDetails.appendChild(timestamp);
+    contactDetails.append(displayName, description, timestamp);
+
+    const selectionMarker = document.createElement('span');
+    selectionMarker.className = 'badge text-bg-primary d-none';
+    selectionMarker.dataset.selectionMarker = 'true';
+    selectionMarker.textContent = 'Selected';
+
+    const badge = document.createElement('span');
+    badge.className = 'badge rounded-pill text-bg-danger d-none';
+    badge.dataset.unreadBadge = 'true';
+
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid fa-chevron-right text-body-secondary';
+    icon.setAttribute('aria-hidden', 'true');
+
+    const indicators = document.createElement('div');
+    indicators.className = 'd-flex align-items-center gap-2 flex-shrink-0';
+    indicators.append(selectionMarker, badge, icon);
+
+    layout.append(contactDetails, indicators);
+    button.appendChild(layout);
+
+    button.addEventListener('click', () => {
+        // Resolve groups again so their current title/member count is used.
+        const currentSummary = isGroup ? conversationSummariesById.get(conversationId) : null;
+
+        const target = isGroup && currentSummary ? groupSummaryToContact(currentSummary) : contact;
+
+        if (isSelectingConversations) {
+            toggleConversationSelection(target);
+            return;
+        }
+
+        if (isGroup) {
+            openMessengerGroupConversation(target);
+        } else {
+            openMessengerConversation(target);
+        }
+    });
 
     updateContactPreview(button);
 
@@ -201,6 +274,64 @@ function renderConversations(contacts) {
     updateConversationSelectionControls();
 };
 
+function groupSummaryToContact(summary) {
+    return {
+        conversationId: Number(summary.conversation_id),
+        displayName: summary.display_name || summary.title || 'Group conversation',
+        memberCount: Number(summary.member_count),
+        role: 'group'
+    };
+};
+
+function renderGroupConversations() {
+    if (!groupConversations) {
+        return;
+    }
+
+    const summaries = Array.from(conversationSummariesById.values()).filter(summary => summary.conversation_type === 'group');
+    const wantedIds = new Set(summaries.map(summary => Number(summary.conversation_id)));
+
+    const existingButtons = new Map(Array.from(groupConversations.querySelectorAll('button[data-conversation-id]')).map(button => [
+            Number(button.dataset.conversationId),
+            button
+        ])
+    );
+
+    existingButtons.forEach((button, conversationId) => {
+        if (!wantedIds.has(conversationId)) {
+            button.remove();
+        }
+    });
+
+    summaries.forEach(summary => {
+        const conversationId = Number(summary.conversation_id);
+        const contact = groupSummaryToContact(summary);
+
+        let button = existingButtons.get(conversationId);
+
+        if (!button) {
+            button = createConversationButton(contact);
+            groupConversations.appendChild(button);
+        }
+
+        button.dataset.displayName = contact.displayName;
+
+        const name = button.querySelector('[data-conversation-name]');
+
+        if (name) {
+            name.textContent = contact.displayName;
+        }
+
+        updateContactPreview(button);
+    });
+
+    groupsEmpty?.classList.toggle('d-none', summaries.length !== 0);
+
+    updateConversationRows();
+    updateUnreadBadges();
+    updateConversationSelectionControls();
+};
+
 function refreshConversationSidebar(forceRender = false) {
     const searchValue = conversationSearch?.value.trim().toLowerCase() ?? '';
     const contactsById = new Map();
@@ -212,7 +343,7 @@ function refreshConversationSidebar(forceRender = false) {
     });
 
     // Retain a newly selected empty driver/dispatch conversation.
-    const selectedId = openingRecipientId ?? activeContact?.userId;
+    const selectedId = openingConversationKey ?? activeContact?.userId;
     const selectedContact = getConversationContact(selectedId);
 
     if (selectedContact) {
@@ -234,7 +365,7 @@ function refreshConversationSidebar(forceRender = false) {
         return contact.role !== 'driver' || contact.displayName.toLowerCase().includes(searchValue);
     });
 
-    const existingButtons = getConversationButtons();
+    const existingButtons = getConversationButtons().filter(button => button.hasAttribute('data-recipient-id'));
     const existingIds = new Set(existingButtons.map(button => Number(button.dataset.recipientId)));
 
     const membershipChanged = existingIds.size !== visibleConversationContacts.length || visibleConversationContacts.some(contact => !existingIds.has(Number(contact.userId)));
@@ -244,6 +375,8 @@ function refreshConversationSidebar(forceRender = false) {
     } else {
         updateConversationRows();
     }
+
+    renderGroupConversations();
 };
 
 function filterDriverConversations() {
@@ -348,9 +481,7 @@ async function loadMessengerContacts() {
         updateSectionUnreadTotals();
         hideElement(contactsLoading);
 
-        if (newMessageButton) {
-            newMessageButton.disabled = isSendingMessage;
-        }
+        updateMessengerComposer();
 
         await openRequestedMessengerConversation();
     } catch (error) {
@@ -384,7 +515,7 @@ async function openRequestedMessengerConversation() {
 };
 
 function updateSelectedContact() {
-    const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
+    const selectedRecipientId = openingConversationKey ?? activeContact?.userId;
 
     const buttons = getConversationButtons();
 
@@ -408,11 +539,12 @@ function renderMessengerMessages(messages, contact) {
         const meta = document.createElement('div');
         meta.className = 'message-meta small text-body-secondary mb-1';
 
-        const senderName = message.is_own ? 'You' : contact.displayName;
+        const senderName = message.is_own ? 'You' : message.sender?.displayName ?? (contact.role === 'group' ? `Member ${message.sender_id}` : contact.displayName);
         meta.textContent = `${senderName} · ${dtHelper(message.created_at, 'datetime')}`;
 
         const bubble = document.createElement('div');
-        bubble.className = message.is_own ? 'message-bubble sent-bubble d-inline-block' : contact.role === 'dispatch' ? 'message-bubble dispatch-bubble' : 'message-bubble received-bubble';
+        const senderRole = message.sender?.role ?? contact.role;
+        bubble.className = message.is_own ? 'message-bubble sent-bubble d-inline-block' : senderRole === 'dispatch' ? 'message-bubble dispatch-bubble' : 'message-bubble received-bubble';
 
         bubble.style.whiteSpace = 'pre-wrap';
         bubble.style.overflowWrap = 'anywhere';
@@ -475,7 +607,7 @@ async function loadMessengerHistory(conversationId, contact, requestVersion) {
     renderMessengerMessages(conversationMessages, contact);
 
     if (conversationDescription) {
-        conversationDescription.textContent = contact.role === 'admin' ? 'Administration conversation' : contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
+        conversationDescription.textContent = getMessengerConversationDescription(contact);
     }
 
     if (messageArea) {
@@ -484,7 +616,7 @@ async function loadMessengerHistory(conversationId, contact, requestVersion) {
 };
 
 function updateMessengerComposer() {
-    const canCompose = activeConversationId !== null && activeContact !== null && openingRecipientId === null && !isSendingMessage && !isLoadingOlderMessages && !isDeletingConversations;
+    const canCompose = activeConversationId !== null && activeContact !== null && openingConversationKey === null && !isSendingMessage && !isLoadingOlderMessages && !isDeletingConversations;
 
     if (messageInput) {
         messageInput.disabled = !canCompose;
@@ -500,10 +632,22 @@ function updateMessengerComposer() {
     }
 
     if (deleteConversationButton) {
-        deleteConversationButton.disabled = activeConversationId === null || openingRecipientId !== null || isSendingMessage || isLoadingOlderMessages || isDeletingConversations;
+        deleteConversationButton.disabled = activeConversationId === null || openingConversationKey !== null || isSendingMessage || isLoadingOlderMessages || isDeletingConversations;
 
         deleteConversationButton.textContent = isDeletingConversations ? 'Deleting...' : 'Delete conversation';
     }
+
+    if (viewMembersButton) {
+        const isGroup = activeContact?.role === 'group';
+        viewMembersButton.classList.toggle('d-none', !isGroup);
+
+        viewMembersButton.disabled = !isGroup || activeConversationId === null || openingConversationKey !== null || isDeletingConversations;
+    }
+
+    if (newGroupButton) {
+        newGroupButton.disabled = messengerContacts.length < 2 || isSendingMessage || isDeletingConversations || isCreatingGroup || openingConversationKey !== null;
+    }
+
     updateOlderMessageControls();
     updateConversationSelectionControls();
 };
@@ -516,7 +660,7 @@ function stopMessengerPolling() {
 };
 
 function canPollMessenger() {
-    return (!document.hidden && navigator.onLine && !isDeletingConversations && openingRecipientId === null && activeConversationId !== null && activeContact !== null);
+    return (!document.hidden && navigator.onLine && !isDeletingConversations && openingConversationKey === null && activeConversationId !== null && activeContact !== null);
 };
 
 function scheduleMessengerPoll(delay = MESSAGE_POLL_INTERVAL) {
@@ -594,7 +738,7 @@ async function pollMessengerMessages() {
         scheduleReadCheck();
 
         if (conversationDescription) {
-            conversationDescription.textContent = contact.role === 'admin' ? 'Administration conversation' : contact.role === 'dispatch' ? 'Dispatch communications' : 'Driver conversation';
+            conversationDescription.textContent = getMessengerConversationDescription(contact);
         }
 
     } catch (error) {
@@ -621,20 +765,20 @@ async function pollMessengerMessages() {
 };
 
 function updateUnreadBadges() {
-    const buttons = getConversationButtons();
-
-    buttons.forEach(button => {
+    getConversationButtons().forEach(button => {
+        const summary = getButtonConversationSummary(button);
+        const count = Number(summary?.unread_count) || 0;
         const badge = button.querySelector('[data-unread-badge]');
-        const count = unreadCountsByRecipient.get(
-            Number(button.dataset.recipientId)
-        ) ?? 0;
 
-        if (badge) {
-            badge.textContent = String(count);
-            badge.setAttribute('aria-label', `${count} unread messages`);
-            badge.classList.toggle('d-none', count === 0);
+        if (!badge) {
+            return;
         }
+
+        badge.textContent = String(count);
+        badge.setAttribute('aria-label', `${count} unread messages`);
+        badge.classList.toggle('d-none', count === 0);
     });
+
     updateSectionUnreadTotals();
 };
 
@@ -694,24 +838,35 @@ async function refreshMessengerUnread() {
         }
 
         const counts = new Map();
+        const summariesByRecipient = new Map();
+        const summariesById = new Map();
 
         response.unreadData.conversations.forEach(summary => {
-            if (summary.recipient_id !== null) {
+            const conversationId = Number(summary.conversation_id);
+
+            if (!Number.isSafeInteger(conversationId) || conversationId < 1) {
+                throw new Error('Invalid Messenger conversation ID.');
+            }
+
+            // Includes direct conversations and groups.
+            summariesById.set(conversationId, summary);
+
+            // Recipient-based lookups apply only to direct conversations.
+            if (summary.conversation_type === 'direct' && summary.recipient_id != null) {
                 const recipientId = Number(summary.recipient_id);
+
+                if (!Number.isSafeInteger(recipientId) || recipientId < 1) {
+                    throw new Error('Invalid Messenger recipient ID.');
+                }
+
+                summariesByRecipient.set(recipientId, summary);
                 counts.set(recipientId, (counts.get(recipientId) ?? 0) + Number(summary.unread_count));
             }
         });
 
         unreadCountsByRecipient = counts;
-        const summaries = new Map();
-
-        response.unreadData.conversations.forEach(summary => {
-            if (summary.conversation_type === 'direct' && summary.recipient_id !== null) {
-                summaries.set(Number(summary.recipient_id), summary);
-            }
-        });
-
-        conversationSummariesByRecipient = summaries;
+        conversationSummariesByRecipient = summariesByRecipient;
+        conversationSummariesById = summariesById;
         refreshConversationSidebar();
         unreadPollFailures = 0;
         updateUnreadBadges();
@@ -728,7 +883,7 @@ async function refreshMessengerUnread() {
 };
 
 function newestRetrievedMessagesAreVisible() {
-    if (document.hidden || !navigator.onLine || openingRecipientId !== null || activeConversationId === null || latestRetrievedMessageId < 1 || !messageArea) {
+    if (document.hidden || !navigator.onLine || openingConversationKey !== null || activeConversationId === null || latestRetrievedMessageId < 1 || !messageArea) {
         return false;
     }
 
@@ -813,16 +968,19 @@ async function markVisibleMessagesRead() {
 };
 
 function updateContactPreview(button) {
-    const recipientId = Number(button.dataset.recipientId);
-    const summary = conversationSummariesByRecipient.get(recipientId);
+    const summary = getButtonConversationSummary(button);
+    const role = button.dataset.contactRole;
 
     const preview = button.querySelector('[data-conversation-preview]');
     const timestamp = button.querySelector('[data-conversation-timestamp]');
-
     const hasMessage = summary?.latest_message_id != null;
 
     if (preview) {
-        preview.textContent = hasMessage ? `${summary.latest_is_own ? 'You: ' : ''}${String(summary.latest_message_body ?? '').replace(/\s+/g, ' ').trim()}` : button.dataset.contactRole === 'admin' ? 'Administration conversation' : button.dataset.contactRole === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
+        if (hasMessage) {
+            preview.textContent = `${summary.latest_is_own ? 'You: ' : ''}` + String(summary.latest_message_body ?? '').replace(/\s+/g, ' ').trim();
+        } else {
+            preview.textContent = role === 'group' ? `${Number(summary?.member_count) || 0} members` : role === 'admin' ? 'Administration conversation' : role === 'dispatch' ? 'Dispatch communications' : 'Start or open conversation';
+        }
     }
 
     if (timestamp) {
@@ -837,12 +995,12 @@ function updateConversationRows() {
             return;
         }
 
-        const buttons = Array.from(list.querySelectorAll('button[data-recipient-id]'));
+        const buttons = Array.from(list.querySelectorAll('button[data-recipient-id], button[data-conversation-id]'));
         buttons.forEach(updateContactPreview);
 
         const sortedButtons = [...buttons].sort((a, b) => {
-            const aSummary = conversationSummariesByRecipient.get(Number(a.dataset.recipientId));
-            const bSummary = conversationSummariesByRecipient.get(Number(b.dataset.recipientId));
+            const aSummary = getButtonConversationSummary(a);
+            const bSummary = getButtonConversationSummary(b);
             const aHasMessage = aSummary?.latest_message_id != null;
             const bHasMessage = bSummary?.latest_message_id != null;
 
@@ -865,13 +1023,13 @@ function updateConversationRows() {
             }
 
             // Contacts without messages remain alphabetically ordered.
-            const aName = getConversationContact(a.dataset.recipientId)?.displayName ?? '';
-            const bName = getConversationContact(b.dataset.recipientId)?.displayName ?? '';
+            const aName = a.dataset.displayName ?? '';
+            const bName = b.dataset.displayName ?? '';
 
             return aName.localeCompare(bName, 'en', {
                 sensitivity: 'base',
                 numeric: true
-            }) || Number(a.dataset.recipientId) - Number(b.dataset.recipientId);
+            }) || (getButtonConversationId(a) ?? 0) - (getButtonConversationId(b) ?? 0);
         });
 
         const orderChanged = sortedButtons.some((button, index) => button !== buttons[index]);
@@ -897,14 +1055,14 @@ function updateOlderMessageControls() {
     olderControls?.classList.toggle('d-none', !hasOlderMessages);
 
     if (loadOlderButton) {
-        loadOlderButton.disabled = isLoadingOlderMessages || isSendingMessage || isDeletingConversations || openingRecipientId !== null || activeConversationId === null;
+        loadOlderButton.disabled = isLoadingOlderMessages || isSendingMessage || isDeletingConversations || openingConversationKey !== null || activeConversationId === null;
 
         loadOlderButton.textContent = isLoadingOlderMessages ? 'Loading...' : 'Load older messages';
     }
 };
 
 async function loadOlderMessengerMessages() {
-    if (isLoadingOlderMessages || isSendingMessage || !hasOlderMessages || isDeletingConversations || oldestLoadedMessageId === null || openingRecipientId !== null || activeConversationId === null || activeContact === null) {
+    if (isLoadingOlderMessages || isSendingMessage || !hasOlderMessages || isDeletingConversations || oldestLoadedMessageId === null || openingConversationKey !== null || activeConversationId === null || activeContact === null) {
         return;
     }
 
@@ -993,11 +1151,11 @@ async function openMessengerConversation(contact) {
         return;
     }
 
-    if (openingRecipientId === contact.userId) {
+    if (openingConversationKey === contact.userId) {
         return;
     }
 
-    if (openingRecipientId === null && activeContact?.userId === contact.userId && activeConversationId !== null) {
+    if (openingConversationKey === null && activeContact?.userId === contact.userId && activeConversationId !== null) {
         return;
     }
 
@@ -1007,7 +1165,7 @@ async function openMessengerConversation(contact) {
 
     const requestVersion = ++conversationRequestVersion;
 
-    openingRecipientId = contact.userId;
+    openingConversationKey = contact.userId;
     activeConversationId = null;
     activeContact = null;
     conversationMessages = [];
@@ -1089,7 +1247,7 @@ async function openMessengerConversation(contact) {
 
     } finally {
         if (requestVersion === conversationRequestVersion) {
-            openingRecipientId = null;
+            openingConversationKey = null;
 
             hideElement(conversationLoading);
             messageArea?.setAttribute('aria-busy', 'false');
@@ -1102,10 +1260,107 @@ async function openMessengerConversation(contact) {
     }
 };
 
+async function openMessengerGroupConversation(contact) {
+    if (isSendingMessage || isDeletingConversations) {
+        return;
+    }
+
+    const conversationId = Number(contact.conversationId);
+
+    if (!Number.isSafeInteger(conversationId) || conversationId < 1) {
+        return;
+    }
+
+    const openingKey = `group:${conversationId}`;
+
+    if (openingConversationKey === openingKey || (openingConversationKey === null && activeConversationId === conversationId)) {
+        return;
+    }
+
+    stopMessengerPolling();
+
+    const requestVersion = ++conversationRequestVersion;
+
+    openingConversationKey = openingKey;
+    activeConversationId = null;
+    activeContact = null;
+    conversationMessages = [];
+    latestRetrievedMessageId = 0;
+    messagePollFailures = 0;
+    oldestLoadedMessageId = null;
+    hasOlderMessages = false;
+    isLoadingOlderMessages = false;
+
+    hideElement(olderError);
+    hideElement(conversationError);
+    hideElement(conversationPlaceholder);
+    showElement(conversationLoading);
+
+    messageList?.replaceChildren();
+    messageArea?.setAttribute('aria-busy', 'true');
+
+    if (conversationName) {
+        conversationName.textContent = contact.displayName;
+    }
+
+    if (conversationDescription) {
+        conversationDescription.textContent = 'Opening group...';
+    }
+
+    updateMessengerComposer();
+
+    try {
+        if (!driverToken) {
+            throw new Error('Your session token is missing. Please reload the page.');
+        }
+
+        /*
+         * Existing groups open by conversation ID.
+         * The retrieval endpoint checks membership on the server.
+         */
+        await loadMessengerHistory(conversationId, contact, requestVersion);
+
+        if (requestVersion !== conversationRequestVersion) {
+            return;
+        }
+
+        activeConversationId = conversationId;
+        activeContact = contact;
+    } catch (error) {
+        if (requestVersion !== conversationRequestVersion) {
+            return;
+        }
+
+        console.error('[MESSENGER] Failed opening group:', error);
+
+        if (conversationError) {
+            conversationError.textContent = error?.message || 'The group could not be opened.';
+            showElement(conversationError);
+        }
+
+        if (conversationDescription) {
+            conversationDescription.textContent = 'Select the group again to retry.';
+        }
+    } finally {
+        if (requestVersion === conversationRequestVersion) {
+            openingConversationKey = null;
+
+            hideElement(conversationLoading);
+            messageArea?.setAttribute('aria-busy', 'false');
+
+            refreshConversationSidebar();
+            updateSelectedContact();
+            updateMessengerComposer();
+            scheduleMessengerPoll();
+            scheduleReadCheck();
+        }
+    }
+};
+
 async function sendMessengerMessage(event) {
     event.preventDefault();
 
-    if (isSendingMessage || isLoadingOlderMessages || isDeletingConversations || openingRecipientId !== null || activeConversationId === null || activeContact === null) {
+    if (isSendingMessage || isLoadingOlderMessages || isDeletingConversations || openingConversationKey !== null || activeConversationId === null || activeContact === null) {
         return;
     }
 
@@ -1235,24 +1490,28 @@ function updateSectionUnreadTotals() {
     const totals = {
         driver: 0,
         dispatch: 0,
-        admin: 0
+        admin: 0,
+        group: 0
     };
 
-    conversationSummariesByRecipient.forEach(summary => {
-        const role = summary.recipient?.role;
+    conversationSummariesById.forEach(summary => {
+        const section = summary.conversation_type === 'group' ? 'group' : summary.recipient?.role;
 
-        if (Object.hasOwn(totals, role)) {
-            totals[role] += Number(summary.unread_count);
+        if (Object.hasOwn(totals, section)) {
+            totals[section] += Number(summary.unread_count) || 0;
         }
     });
 
     const badges = [
-        [document.querySelector('#messenger-driver-unread-total'), totals.driver],
-        [document.querySelector('#messenger-dispatch-unread-total'), totals.dispatch],
-        [document.querySelector('#messenger-admin-unread-total'), totals.admin]
+        ['#messenger-driver-unread-total', totals.driver],
+        ['#messenger-dispatch-unread-total', totals.dispatch],
+        ['#messenger-admin-unread-total', totals.admin],
+        ['#messenger-group-unread-total', totals.group]
     ];
 
-    badges.forEach(([badge, count]) => {
+    badges.forEach(([selector, count]) => {
+        const badge = document.querySelector(selector);
+
         if (!badge) {
             return;
         }
@@ -1271,7 +1530,7 @@ function clearActiveMessengerConversation() {
 
     activeConversationId = null;
     activeContact = null;
-    openingRecipientId = null;
+    openingConversationKey = null;
 
     conversationMessages = [];
     latestRetrievedMessageId = 0;
@@ -1308,7 +1567,7 @@ function clearActiveMessengerConversation() {
 };
 
 function confirmDeleteConversations(conversationIds) {
-    if (isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null) {
+    if (isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingConversationKey !== null) {
         return;
     }
 
@@ -1363,23 +1622,11 @@ function confirmDeleteActiveConversation() {
 };
 
 function confirmDeleteSelectedConversations() {
-    const conversationIds = [];
-
-    selectedConversationRecipients.forEach(recipientId => {
-        const summary = conversationSummariesByRecipient.get(recipientId);
-
-        const conversationId = summary?.conversation_id ?? (Number(activeContact?.userId) === recipientId ? activeConversationId : null);
-
-        if (conversationId !== null && conversationId !== undefined) {
-            conversationIds.push(Number(conversationId));
-        }
-    });
-
-    confirmDeleteConversations(conversationIds);
+    confirmDeleteConversations([...selectedConversationIds]);
 };
 
 async function deleteMessengerConversations(conversationIds) {
-    if (conversationIds.length === 0 || openingRecipientId !== null || isSendingMessage || isLoadingOlderMessages || isDeletingConversations) {
+    if (conversationIds.length === 0 || openingConversationKey !== null || isSendingMessage || isLoadingOlderMessages || isDeletingConversations) {
         return;
     }
 
@@ -1422,7 +1669,11 @@ async function deleteMessengerConversations(conversationIds) {
             }
         }
 
-        deletedIds.forEach(id => confirmedReadPositions.delete(id));
+        deletedIds.forEach(id => {
+            confirmedReadPositions.delete(id);
+            conversationSummariesById.delete(id);
+            selectedConversationIds.delete(id);
+        });
 
         if (deletedIds.has(activeConversationId)) {
             clearActiveMessengerConversation();
@@ -1451,22 +1702,21 @@ async function deleteMessengerConversations(conversationIds) {
 
 function updateConversationSelectionControls() {
     bulkControls?.classList.toggle('d-none', !isSelectingConversations);
+    const isBusy = isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingConversationKey !== null;
 
     if (selectConversationsButton) {
         selectConversationsButton.setAttribute('aria-pressed', String(isSelectingConversations));
 
-        selectConversationsButton.disabled = isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null;
-
+        selectConversationsButton.disabled = isBusy;
         selectConversationsButton.textContent = isSelectingConversations ? 'Selection mode' : 'Select conversations';
     }
 
     if (selectionCount) {
-        selectionCount.textContent = `${selectedConversationRecipients.size} selected`;
+        selectionCount.textContent = `${selectedConversationIds.size} selected`;
     }
 
     if (deleteSelectedButton) {
-        deleteSelectedButton.disabled = selectedConversationRecipients.size === 0 || isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null;
-
+        deleteSelectedButton.disabled = selectedConversationIds.size === 0 || isBusy;
         deleteSelectedButton.textContent = isDeletingConversations ? 'Deleting...' : 'Delete selected';
     }
 
@@ -1474,48 +1724,45 @@ function updateConversationSelectionControls() {
         selectionCancelButton.disabled = isDeletingConversations;
     }
 
-    const selectedRecipientId = openingRecipientId ?? activeContact?.userId;
+    const selectedRecipientId = openingConversationKey ?? activeContact?.userId;
 
     getConversationLists().forEach(list => {
-        list?.querySelectorAll('button[data-recipient-id]').forEach(button => {
-            const recipientId = Number(button.dataset.recipientId);
-            const selected = selectedConversationRecipients.has(recipientId);
-            const pressed = isSelectingConversations ? selected : String(recipientId) === String(selectedRecipientId);
+        list.querySelectorAll('button[data-recipient-id], button[data-conversation-id]').forEach(button => {
+            const conversationId = getButtonConversationId(button);
+            const selected = conversationId !== null && selectedConversationIds.has(conversationId);
+            const isOpeningDirect = openingConversationKey !== null && button.dataset.recipientId === String(selectedRecipientId);
+            const isActive = openingConversationKey === null && conversationId !== null && conversationId === activeConversationId;
+            const pressed = isSelectingConversations ? selected : isOpeningDirect || isActive;
 
             button.classList.toggle('active', pressed);
             button.setAttribute('aria-pressed', String(pressed));
 
-            const marker = button.querySelector('[data-selection-marker]');
-            marker?.classList.toggle('d-none', !isSelectingConversations || !selected);
+            button.querySelector('[data-selection-marker]')?.classList.toggle('d-none', !isSelectingConversations || !selected);
         });
     });
 };
 
 function finishConversationSelection() {
     isSelectingConversations = false;
-    selectedConversationRecipients.clear();
+    selectedConversationIds.clear();
     updateConversationSelectionControls();
 };
 
 function toggleConversationSelection(contact) {
-    if (isDeletingConversations) {
+    if (isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingConversationKey !== null) {
         return;
     }
 
-    const recipientId = Number(contact.userId);
-    const summary = conversationSummariesByRecipient.get(recipientId);
+    const conversationId = getContactConversationId(contact);
 
-    // A selected empty chat may not yet have a summary.
-    const conversationId = summary?.conversation_id ?? (Number(activeContact?.userId) === recipientId ? activeConversationId : null);
-
-    if (conversationId === null || conversationId === undefined) {
+    if (conversationId === null) {
         return;
     }
 
-    if (selectedConversationRecipients.has(recipientId)) {
-        selectedConversationRecipients.delete(recipientId);
+    if (selectedConversationIds.has(conversationId)) {
+        selectedConversationIds.delete(conversationId);
     } else {
-        if (selectedConversationRecipients.size >= 100) {
+        if (selectedConversationIds.size >= 100) {
             if (deleteError) {
                 deleteError.textContent = 'Select no more than 100 conversations at a time.';
                 showElement(deleteError);
@@ -1524,23 +1771,388 @@ function toggleConversationSelection(contact) {
             return;
         }
 
-        selectedConversationRecipients.add(recipientId);
+        selectedConversationIds.add(conversationId);
     }
 
     updateConversationSelectionControls();
 };
+
+async function openGroupMembers() {
+    if (!groupMembersDialog || activeContact?.role !== 'group' || activeConversationId === null || openingConversationKey !== null || isDeletingConversations) {
+        return;
+    }
+
+    const conversationId = activeConversationId;
+    const requestVersion = ++groupMembersRequestVersion;
+    const groupName = activeContact.displayName;
+
+    groupMembersList?.replaceChildren();
+    hideElement(groupMembersError);
+    showElement(groupMembersLoading);
+    groupMembersList?.setAttribute('aria-busy', 'true');
+
+    if (groupMembersTitle) {
+        groupMembersTitle.textContent = `${groupName} — Members`;
+    }
+
+    if (!groupMembersDialog.open) {
+        groupMembersDialog.showModal();
+    }
+
+    try {
+        const response = await proDriverRequest(`/messenger-group-members?conversation_id=${encodeURIComponent(conversationId)}`, {
+                method: 'GET',
+                cache: 'no-store',
+                headers: {
+                    'X-CSRF-Token': driverToken
+                }
+            }
+        );
+
+        if (requestVersion !== groupMembersRequestVersion || !groupMembersDialog.open || conversationId !== activeConversationId) {
+            return;
+        }
+
+        const memberData = response?.memberData;
+
+        if (response?.status !== 'success' || Number(memberData?.conversation_id) !== conversationId || !Array.isArray(memberData?.members)) {
+            throw new Error(response?.message || 'Group members could not be loaded.');
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        memberData.members.forEach(member => {
+            const row = document.createElement('li');
+            row.className = 'list-group-item d-flex justify-content-between align-items-center gap-3';
+
+            const details = document.createElement('div');
+            details.className = 'overflow-hidden';
+
+            const name = document.createElement('div');
+            name.className = 'fw-semibold text-break';
+            name.textContent = `${member.displayName}${member.is_self ? ' (You)' : ''}`;
+
+            const role = document.createElement('small');
+            role.className = 'text-body-secondary';
+            role.textContent = member.role === 'dispatch' ? 'Dispatch' : member.role === 'admin' ? 'Administration' : 'Driver';
+
+            details.append(name, role);
+            row.appendChild(details);
+
+            if (member.is_creator) {
+                const badge = document.createElement('span');
+                badge.className = 'badge text-bg-secondary flex-shrink-0';
+                badge.textContent = 'Creator';
+
+                row.appendChild(badge);
+            }
+
+            fragment.appendChild(row);
+        });
+
+        groupMembersList?.replaceChildren(fragment);
+    } catch (error) {
+        if (requestVersion !== groupMembersRequestVersion || !groupMembersDialog.open || conversationId !== activeConversationId) {
+            return;
+        }
+
+        console.error('[MESSENGER] Group members failed:', error);
+
+        if (groupMembersError) {
+            groupMembersError.textContent = error?.message || 'Group members could not be loaded.';
+            showElement(groupMembersError);
+        }
+    } finally {
+        if (requestVersion === groupMembersRequestVersion) {
+            hideElement(groupMembersLoading);
+            groupMembersList?.setAttribute('aria-busy', 'false');
+        }
+    }
+};
+
+function updateGroupCreationControls() {
+    const validTitle = Validation.validateMessage(groupTitleInput?.value ?? '', 'group-title');
+    const count = selectedGroupRecipientIds.size;
+
+    if (groupSelectionCount) {
+        groupSelectionCount.textContent = `${count} selected`;
+    }
+
+    if (groupCreateSubmit) {
+        groupCreateSubmit.disabled = isCreatingGroup || !validTitle || count < 2 || count > 49;
+        groupCreateSubmit.textContent = isCreatingGroup ? 'Creating...' : 'Create group';
+        groupCreateSubmit.setAttribute('aria-busy', String(isCreatingGroup));
+    }
+
+    if (groupTitleInput) {
+        groupTitleInput.disabled = isCreatingGroup;
+    }
+
+    if (groupSearch) {
+        groupSearch.disabled = isCreatingGroup;
+    }
+
+    if (groupContactFields) {
+        groupContactFields.disabled = isCreatingGroup;
+    }
+
+    if (groupPickerClose) {
+        groupPickerClose.disabled = isCreatingGroup;
+    }
+
+    if (groupCreateCancel) {
+        groupCreateCancel.disabled = isCreatingGroup;
+    }
+
+    groupPickerContacts?.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.disabled = isCreatingGroup || (count >= 49 && !selectedGroupRecipientIds.has(Number(checkbox.value)));
+    });
+};
+
+function renderGroupContactPicker() {
+    const searchValue = groupSearch?.value.trim().toLowerCase() ?? '';
+
+    const contacts = messengerContacts.filter(contact => ['driver', 'dispatch'].includes(contact.role) && contact.displayName.toLowerCase().includes(searchValue));
+
+    const fragment = document.createDocumentFragment();
+
+    contacts.forEach(contact => {
+        const recipientId = Number(contact.userId);
+
+        const label = document.createElement('label');
+        label.className = 'list-group-item list-group-item-action d-flex align-items-center gap-3';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'form-check-input flex-shrink-0 m-0';
+        checkbox.value = String(recipientId);
+        checkbox.checked = selectedGroupRecipientIds.has(recipientId);
+
+        const details = document.createElement('span');
+        details.className = 'overflow-hidden';
+
+        const name = document.createElement('span');
+        name.className = 'fw-semibold d-block text-break';
+        name.textContent = contact.displayName;
+
+        const role = document.createElement('small');
+        role.className = 'text-body-secondary d-block';
+        role.textContent = contact.role === 'dispatch' ? 'Dispatch' : 'Driver';
+
+        details.append(name, role);
+        label.append(checkbox, details);
+
+        checkbox.addEventListener('change', () => {
+            if (isCreatingGroup) {
+                checkbox.checked = selectedGroupRecipientIds.has(recipientId);
+                return;
+            }
+
+            if (checkbox.checked) {
+                if (selectedGroupRecipientIds.size >= 49) {
+                    checkbox.checked = false;
+                    return;
+                }
+
+                selectedGroupRecipientIds.add(recipientId);
+            } else {
+                selectedGroupRecipientIds.delete(recipientId);
+            }
+
+            hideElement(groupCreateError);
+            updateGroupCreationControls();
+        });
+
+        fragment.appendChild(label);
+    });
+
+    groupPickerContacts?.replaceChildren(fragment);
+    groupPickerEmpty?.classList.toggle('d-none', contacts.length !== 0);
+
+    updateGroupCreationControls();
+};
+
+function openGroupPicker() {
+    if (!groupPicker || isCreatingGroup || isSendingMessage || isDeletingConversations || openingConversationKey !== null) {
+        return;
+    }
+
+    finishConversationSelection();
+
+    selectedGroupRecipientIds.clear();
+    groupForm?.reset();
+
+    groupTitleInput?.classList.remove('is-invalid');
+    groupTitleInput?.removeAttribute('aria-invalid');
+    hideElement(groupCreateError);
+
+    renderGroupContactPicker();
+
+    if (!groupPicker.open) {
+        groupPicker.showModal();
+    }
+
+    groupTitleInput?.focus();
+};
+
+function closeGroupPicker() {
+    if (!isCreatingGroup) {
+        groupPicker?.close();
+    }
+};
+
+async function createMessengerGroup(event) {
+    event.preventDefault();
+
+    if (isCreatingGroup) {
+        return;
+    }
+
+    hideElement(groupCreateError);
+
+    const title = groupTitleInput?.value.trim() ?? '';
+    const validTitle = Validation.validateMessage(title, 'group-title');
+
+    groupTitleInput?.classList.toggle('is-invalid', !validTitle);
+    groupTitleInput?.setAttribute('aria-invalid', String(!validTitle));
+
+    if (!validTitle) {
+        groupTitleInput?.focus();
+        return;
+    }
+
+    if (selectedGroupRecipientIds.size < 2 || selectedGroupRecipientIds.size > 49) {
+        if (groupCreateError) {
+            groupCreateError.textContent = 'Choose between 2 and 49 other contacts.';
+            showElement(groupCreateError);
+        }
+
+        return;
+    }
+
+    let createdContact = null;
+
+    isCreatingGroup = true;
+    updateGroupCreationControls();
+    updateMessengerComposer();
+
+    try {
+        if (!driverToken) {
+            throw new Error('Your session token is missing. Please reload the page.');
+        }
+
+        const response = await proDriverRequest('/messenger-create-group', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': driverToken
+            },
+            body: JSON.stringify({
+                title,
+                recipient_ids: [...selectedGroupRecipientIds]
+            })
+        });
+
+        const conversation = response?.conversation;
+        const conversationId = Number(conversation?.conversation_id);
+
+        if (response?.status !== 'success' || conversation?.conversation_type !== 'group' || !Number.isSafeInteger(conversationId) || conversationId < 1) {
+            throw new Error(response?.message || 'The group could not be created.');
+        }
+
+        /*
+         * Invalidate an older summary request so it cannot remove
+         * this newly created group from local state.
+         */
+        unreadStateVersion++;
+
+        const summary = {
+            ...conversation,
+            conversation_id: conversationId,
+            display_name: conversation.title,
+            member_count: Number(conversation.member_count),
+            recipient_id: null,
+            recipient: null,
+            latest_message_id: null,
+            latest_sender_id: null,
+            latest_message_body: null,
+            latest_message_created_at: null,
+            latest_is_own: false,
+            unread_count: 0
+        };
+
+        conversationSummariesById.set(conversationId, summary);
+        createdContact = groupSummaryToContact(summary);
+
+        refreshConversationSidebar();
+
+        // Make the new group visible if its section was collapsed.
+        const section = groupConversations?.closest('details');
+
+        if (section) {
+            section.open = true;
+        }
+
+        groupPicker.close();
+    } catch (error) {
+        console.error('[MESSENGER] Group creation failed:', error);
+
+        if (groupCreateError) {
+            groupCreateError.textContent = error?.message || 'The group could not be created.';
+            showElement(groupCreateError);
+        }
+    } finally {
+        isCreatingGroup = false;
+        updateGroupCreationControls();
+        updateMessengerComposer();
+    }
+
+    if (createdContact) {
+        await openMessengerGroupConversation(createdContact);
+        refreshMessengerUnread();
+
+        if (activeConversationId === createdContact.conversationId && !messageInput?.disabled) {
+            messageInput?.focus();
+        }
+    }
+};
+
+newGroupButton?.addEventListener('click', openGroupPicker);
+
+groupPickerClose?.addEventListener('click', closeGroupPicker);
+
+groupCreateCancel?.addEventListener('click', closeGroupPicker);
+
+groupSearch?.addEventListener('input', renderGroupContactPicker);
+
+groupTitleInput?.addEventListener('input', () => {
+    groupTitleInput.classList.remove('is-invalid');
+    groupTitleInput.removeAttribute('aria-invalid');
+
+    hideElement(groupCreateError);
+    updateGroupCreationControls();
+});
+
+groupForm?.addEventListener('submit', createMessengerGroup);
+
+groupPicker?.addEventListener('cancel', event => {
+    // Keep the dialog open while the creation request is running.
+    if (isCreatingGroup) {
+        event.preventDefault();
+    }
+});
 
 newMessageButton?.addEventListener('click', openContactPicker);
 
 deleteConversationButton?.addEventListener('click', confirmDeleteActiveConversation);
 
 selectConversationsButton?.addEventListener('click', () => {
-    if (isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingRecipientId !== null) {
+    if (isDeletingConversations || isSendingMessage || isLoadingOlderMessages || openingConversationKey !== null) {
         return;
     }
 
     isSelectingConversations = !isSelectingConversations;
-    selectedConversationRecipients.clear();
+    selectedConversationIds.clear();
 
     hideElement(deleteError);
     updateConversationSelectionControls();
@@ -1550,6 +2162,20 @@ selectionCancelButton?.addEventListener('click', () => {
     if (!isDeletingConversations) {
         finishConversationSelection();
     }
+});
+
+viewMembersButton?.addEventListener('click', openGroupMembers);
+
+groupMembersClose?.addEventListener('click', () => {
+    groupMembersDialog?.close();
+});
+
+groupMembersDialog?.addEventListener('close', () => {
+    // Ignore any response still loading from the closed dialog.
+    groupMembersRequestVersion++;
+
+    hideElement(groupMembersLoading);
+    groupMembersList?.setAttribute('aria-busy', 'false');
 });
 
 deleteSelectedButton?.addEventListener('click', confirmDeleteSelectedConversations);

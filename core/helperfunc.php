@@ -42,3 +42,19 @@ function requireLoginAjax() {
         exit();
     }
 }
+
+function routeSwitcher($role) {
+    switch($role) {
+        case 'driver':
+            header("Location: /driver");
+            exit();
+
+        case 'dispatch':
+            header("Location: /dispatch");
+            exit();
+
+        case 'admin':
+            header("Location: /admin");
+            exit();
+    }
+}

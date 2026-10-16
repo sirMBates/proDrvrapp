@@ -33,6 +33,7 @@ $router->get('/get-timesheet-review', 'app/api/get-timesheet-review.php', true);
 $router->get('/messenger-contacts', 'app/api/messenger-contacts.php', false);
 $router->get('/messenger-retrieve-messages', 'app/api/messenger-retrieve-messages.php', true);
 $router->get('/messenger-unread', 'app/api/messenger-unread.php', false);
+$router->get('/messenger-group-members', 'app/api/messenger-group-members.php', false);
 
 $router->post('/signup', 'app/controllers/Actions/adduser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
@@ -53,6 +54,7 @@ $router->post('/messenger-conversation', 'app/api/messenger-conversation.php', f
 $router->post('/messenger-send-message', 'app/api/messenger-send-message.php', true);
 $router->post('/messenger-mark-read', 'app/api/messenger-mark-read.php', false);
 $router->post('/messenger-delete-conversations', 'app/api/messenger-delete-conversations.php', false);
+$router->post('/messenger-create-group', 'app/api/messenger-create-group.php', false);
 $router->post('/push-subscription', 'app/api/push-subscription.php', false);
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');

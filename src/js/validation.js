@@ -94,6 +94,9 @@ export class Validation {
             case 'assignment-textarea':
                 return this.validateAssignmentTextarea(input);
 
+            case 'group-title':
+                return this.validateGroupTitle(input);
+
             default:
                 throw new Error('Invalid validation type');
         }
@@ -177,5 +180,14 @@ export class Validation {
 
     static validateAssignmentTextarea(input) {
         return assignmentTextareaPattern.test(input);
+    }
+
+    static validateGroupTitle(input) {
+        if (typeof input !== 'string') {
+            return false;
+        }
+
+        const length = Array.from(input.trim()).length;
+        return length >= 1 && length <= 150;
     }
 };
