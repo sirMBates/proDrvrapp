@@ -20,7 +20,28 @@
     min-width: 0;
 }
 
-.dashboard-message-row {
+.dashboard-message-preview {
     min-width: 0;
-    padding: 0.85rem 1rem;
+    overflow: hidden;
+
+    > .card-body {
+        min-height: 0;
+    }
+
+    [data-message-preview-list] {
+        // Approximately two previews; additional threads scroll.
+        max-height: 14rem;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        scrollbar-width: thin;
+    }
+
+    .dashboard-message-row {
+        min-width: 0;
+        padding: 0.85rem 1rem;
+    }
+
+    > .card-footer {
+        margin-top: auto;
+    }
 }

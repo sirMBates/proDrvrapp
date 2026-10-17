@@ -1,4 +1,4 @@
-<div id="dashboard-message-preview" class="card shadow-sm h-100">
+<div id="dashboard-message-preview" class="card dashboard-message-preview shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center gap-2 bg-prodriverclr">
         <h2 class="h5 mb-0">Messages</h2>
 

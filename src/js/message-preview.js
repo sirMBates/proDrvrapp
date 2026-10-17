@@ -122,8 +122,19 @@ export class MessagePreview {
 
     render(unreadData) {
         const conversations = unreadData.conversations.filter(summary => {
+            const conversationId = Number(summary.conversation_id);
+
+            if (!Number.isSafeInteger(conversationId) || conversationId < 1 || summary.latest_message_id == null) {
+                return false;
+            }
+
+            if (summary.conversation_type === 'group') {
+                return true;
+            }
+
             const recipient = summary.recipient;
-            return (summary.conversation_type === 'direct' && summary.latest_message_id != null && recipient && Number.isSafeInteger(recipient.userId) && recipient.userId > 0 && typeof recipient.displayName === 'string');
+
+            return (summary.conversation_type === 'direct' && recipient && Number.isSafeInteger(recipient.userId) && recipient.userId > 0 && typeof recipient.displayName === 'string');
         });
 
         conversations.sort((a, b) => String(b.latest_message_created_at).localeCompare(String(a.latest_message_created_at)) || Number(b.latest_message_id) - Number(a.latest_message_id));
@@ -146,36 +157,55 @@ export class MessagePreview {
         const fragment = document.createDocumentFragment();
 
         recent.forEach(summary => {
-            const recipient = summary.recipient;
+            const isGroup = summary.conversation_type === 'group';
+            const displayName = isGroup ? (String(summary.display_name ?? summary.title ?? '').trim() || 'Group conversation') : summary.recipient.displayName;
 
             const link = document.createElement('a');
             link.className = 'list-group-item list-group-item-action dashboard-message-row';
-            link.href = `/message-center?recipient=${encodeURIComponent(recipient.userId)}`;
+            link.href = `/message-center?conversation=${encodeURIComponent(summary.conversation_id)}`;
 
             const heading = document.createElement('div');
             heading.className = 'd-flex justify-content-between align-items-center gap-2';
 
             const name = document.createElement('strong');
             name.className = 'text-truncate';
-            name.textContent = recipient.displayName;
+            name.style.minWidth = '0';
+            name.textContent = displayName;
 
             heading.appendChild(name);
 
-            if (summary.unread_count > 0) {
-                const badge = document.createElement('span');
-                badge.className = 'badge rounded-pill text-bg-danger flex-shrink-0';
-                badge.textContent = String(summary.unread_count);
-                badge.setAttribute('aria-label', `${summary.unread_count} unread messages`);
+            const indicators = document.createElement('span');
+            indicators.className = 'd-flex align-items-center gap-2 flex-shrink-0';
 
-                heading.appendChild(badge);
+            if (isGroup) {
+                const groupLabel = document.createElement('span');
+                groupLabel.className = 'badge text-bg-secondary';
+                groupLabel.textContent = 'Group';
+
+                indicators.appendChild(groupLabel);
             }
+
+            const unreadCount = Number(summary.unread_count) || 0;
+
+            if (unreadCount > 0) {
+                const badge = document.createElement('span');
+                badge.className = 'badge rounded-pill text-bg-danger';
+                badge.textContent = String(unreadCount);
+                badge.setAttribute('aria-label', `${unreadCount} unread messages`);
+
+                indicators.appendChild(badge);
+            }
+
+            heading.appendChild(indicators);
 
             const preview = document.createElement('div');
             preview.className = 'small text-body-secondary text-truncate mt-1';
-            preview.textContent = `${summary.latest_is_own ? 'You: ' : ''}${String(summary.latest_message_body ?? '').replace(/\s+/g, ' ').trim()}`;
+
+            preview.textContent = `${summary.latest_is_own ? 'You: ' : ''}` + String(summary.latest_message_body ?? '').replace(/\s+/g, ' ').trim();
 
             const timestamp = document.createElement('small');
             timestamp.className = 'text-body-secondary d-block mt-1';
+
             timestamp.textContent = viewableDateTimeHelper(summary.latest_message_created_at, 'datetime');
 
             link.append(heading, preview, timestamp);
@@ -187,4 +217,4 @@ export class MessagePreview {
 
         this.lastRenderedSignature = signature;
     }
-}
+};
