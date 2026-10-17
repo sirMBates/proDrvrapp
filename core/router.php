@@ -46,9 +46,14 @@ class Router {
                     */
                     if (strtoupper($method) === 'GET' && $route['uri'] === '/message-center') {
                         $destination = '/message-center';
+
+                        $conversationId = filter_var($_GET['conversation'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
                         $recipientId = filter_var($_GET['recipient'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
-                        if ($recipientId !== false) {
+                        if ($conversationId !== false && $conversationId !== null) {
+                            $destination .= '?conversation=' . (int) $conversationId;
+                        } elseif ($recipientId !== false && $recipientId !== null) {
                             $destination .= '?recipient=' . (int) $recipientId;
                         }
 

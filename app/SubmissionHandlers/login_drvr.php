@@ -41,6 +41,7 @@ class LoginContr {
         $_SESSION['user_id'] = $result['userId'];
         $_SESSION['first_name'] = $result['firstName'];
         $_SESSION['logged_in'] = true;
+        $_SESSION['role'] = $result['role'];
         $birthdate = $result['birthdate'];
 
         if (!empty($birthdate) && date('md') === date('md', strtotime($birthdate))) {

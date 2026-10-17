@@ -491,11 +491,40 @@ async function loadMessengerContacts() {
 };
 
 async function openRequestedMessengerConversation() {
-    if (notificationDestinationOpened) {
+    if (notificationDestinationOpened || isSendingMessage || isDeletingConversations || openingConversationKey !== null) {
         return;
     }
 
-    const requestedRecipient = new URLSearchParams(window.location.search).get('recipient');
+    const params = new URLSearchParams(window.location.search);
+    const requestedConversation = params.get('conversation');
+
+    if (requestedConversation !== null) {
+        const conversationId = Number(requestedConversation);
+        if (!Number.isSafeInteger(conversationId) || conversationId < 1) {
+            return;
+        }
+        /*
+         * Wait until the authenticated summaries include this
+         * conversation. The unread refresh calls this function again.
+         */
+        const summary = conversationSummariesById.get(conversationId);
+        if (!summary) {
+            return;
+        }
+
+        if (summary.conversation_type === 'group') {
+            notificationDestinationOpened = true;
+            await openMessengerGroupConversation(groupSummaryToContact(summary));
+        } else if (summary.conversation_type === 'direct' && summary.recipient) {
+            notificationDestinationOpened = true;
+            await openMessengerConversation(summary.recipient);
+        }
+
+        return;
+    }
+
+    // Support existing direct-message notification links.
+    const requestedRecipient = params.get('recipient');
     if (requestedRecipient === null) {
         return;
     }

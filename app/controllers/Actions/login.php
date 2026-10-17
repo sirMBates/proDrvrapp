@@ -48,7 +48,7 @@ if (isset($_POST['loginAcct'])) {
     * Only accept the exact Messenger destination format
     * that the Router creates.
     */
-    if (is_string($messengerDestination) && preg_match('~\A/message-center(?:\?recipient=[1-9][0-9]*)?\z~', $messengerDestination)) {
+    if (is_string($messengerDestination) && preg_match('~\A/message-center(?:\?(?:conversation|recipient)=[1-9][0-9]*)?\z~', $messengerDestination) === 1) {
         $redirect = $messengerDestination;
     }
 

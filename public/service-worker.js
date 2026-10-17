@@ -682,10 +682,8 @@ self.addEventListener('push', event => {
                 badge: '/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png',
                 tag: 'prodriver-message',
                 data: {
-                    recipientId: Number.isSafeInteger(payload.sender_id)
-                        && payload.sender_id > 0
-                            ? payload.sender_id
-                            : null
+                    conversationId: Number.isSafeInteger(payload.conversation_id) && payload.conversation_id > 0 ? payload.conversation_id : null,
+                    recipientId: Number.isSafeInteger(payload.sender_id) && payload.sender_id > 0 ? payload.sender_id : null
                 }
             });
         })()
@@ -697,11 +695,10 @@ self.addEventListener('notificationclick', event => {
 
     event.waitUntil(
         (async () => {
+            const conversationId = event.notification.data?.conversationId;
             const recipientId = event.notification.data?.recipientId;
 
-            const path = Number.isSafeInteger(recipientId) && recipientId > 0
-                ? `/message-center?recipient=${recipientId}`
-                : '/message-center';
+            const path = Number.isSafeInteger(conversationId) && conversationId > 0 ? `/message-center?conversation=${conversationId}` : Number.isSafeInteger(recipientId) && recipientId > 0 ? `/message-center?recipient=${recipientId}` : '/message-center';
 
             const targetUrl = new URL(path, self.location.origin).href;
 

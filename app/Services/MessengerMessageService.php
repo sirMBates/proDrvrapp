@@ -48,7 +48,7 @@ class MessengerMessageService {
 
                 foreach ($recipientIds as $recipientId) {
                     try {
-                        $this->webPushService->notifyDriver($recipientId, $driverId);
+                        $this->webPushService->notifyDriver((int) $recipientId, $driverId, (int) $message['conversation_id']);
                     } catch (\Throwable $e) {
                         error_log('[MESSENGER PUSH] Message ' . $message['message_id'] . ', recipient ' . $recipientId . ': ' . get_class($e));
                     }

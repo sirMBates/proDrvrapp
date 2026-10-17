@@ -64,7 +64,15 @@ class PushSubscriptionService {
 
         $parts = parse_url($endpoint);
 
-        if (!is_array($parts) || strtolower($parts['scheme'] ?? '') !== 'https' || !in_array(strtolower($parts['host'] ?? ''), self::ALLOWED_PUSH_HOSTS, true) || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment']) || (isset($parts['port']) && $parts['port'] !== 443) || empty($parts['path']) || $parts['path'] === '/') {
+        if (!is_array($parts)) {
+            throw new \InvalidArgumentException('Unsupported push endpoint.');
+        }
+
+        $host = strtolower($parts['host'] ?? '');
+
+        $isAllowedHost = in_array($host, self::ALLOWED_PUSH_HOSTS, true) || str_ends_with($host, '.notify.windows.com');
+
+        if (strtolower($parts['scheme'] ?? '') !== 'https' || !$isAllowedHost || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment']) || (isset($parts['port']) && $parts['port'] !== 443) || empty($parts['path']) || $parts['path'] === '/') {
             throw new \InvalidArgumentException('Unsupported push endpoint.');
         }
 

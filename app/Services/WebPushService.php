@@ -21,8 +21,8 @@ class WebPushService {
         $this->subscriptionRepository = $subscriptionRepository;
     }
 
-    public function notifyDriver(int $driverId, int $senderId): array {
-        if ($driverId < 1 || $senderId < 1) {
+    public function notifyDriver(int $driverId, int $senderId, ?int $conversationId = null): array {
+        if ($driverId < 1 || $senderId < 1 || ($conversationId !== null && $conversationId < 1)) {
             throw new \InvalidArgumentException('Invalid push notification identity.');
         }
 
@@ -74,7 +74,8 @@ class WebPushService {
             $client, $httpFactory, $httpFactory);
 
         $payload = json_encode([
-            'sender_id' => $senderId
+            'sender_id' => $senderId,
+            'conversation_id' => $conversationId
         ], JSON_THROW_ON_ERROR);
 
         $accepted = 0;
