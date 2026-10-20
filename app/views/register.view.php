@@ -31,6 +31,15 @@ include "partials/flashmessage.php";
                                 </div>
 
                                 <div class="input-group mb-2">
+                                        <span class="input-group-text"><i class="fa-solid fa-cake-candles fs-4 text-primary"></i></span>
+                                        <div class="form-floating">
+                                                <input id="date-of-birth" type="date" class="form-control form-control-lg" name="dateofbirth" required>
+                                                <label for="date-of-birth" class="text-capitalize"><b>birth date</b></label>
+                                        </div>
+                                        <div class="invalid-feedback fs-5"><strong>Enter your birthdate.</strong></div>
+                                </div>
+
+                                <div class="input-group mb-2">
                                         <span class="input-group-text"><i class="fa-solid fa-mobile fs-4 text-primary"></i></span>
                                         <div class="form-floating">
                                                 <input id="mobile_num" type="tel" inputmode="tel" class="form-control form-control-lg" name="mobilenum" placeholder="Mobile number" pattern="[0-9]{10}" required>
@@ -40,12 +49,41 @@ include "partials/flashmessage.php";
                                 </div>
 
                                 <div class="input-group mb-2">
-                                        <span class="input-group-text"><i class="fa-solid fa-cake-candles fs-4 text-primary"></i></span>
+                                        <span class="input-group-text"><i class="fa-solid fa-id-card fs-4 text-primary"></i></span>
                                         <div class="form-floating">
-                                                <input id="date-of-birth" type="date" class="form-control form-control-lg" name="dateofbirth" required>
-                                                <label for="date-of-birth" class="text-capitalize"><b>birth date</b></label>
+                                                <input id="cdl-driver-license" type="text" class="form-control form-control-lg" name="cdl_driver_license" placeholder="Enter Driver License ID#" autocomplete="off" maxlength="32" required>
+                                                <label for="cdl-driver-license" class="text-capitalize"><b>driver license</b></label>
                                         </div>
-                                        <div class="invalid-feedback fs-5"><strong>Enter your birthdate.</strong></div>
+                                        <div class="invalid-feedback fs-5"><strong>Enter your driver license ID #.</strong></div>
+                                </div>
+
+                                <div class="input-group mb-2">
+                                        <span class="input-group-text">
+                                                <i class="fa-solid fa-map-location-dot fs-4 text-primary"></i>
+                                        </span>
+                                        <div class="form-floating">
+                                                <input id="driver-license-state" type="text" class="form-control form-control-lg text-uppercase" name="driver_license_state" placeholder="Issuing State" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="address-level1" required>
+                                                <label for="driver-license-state" class="text-capitalize"><b>issuing state</b></label>
+                                        </div>
+                                        <div class="invalid-feedback fs-5"><strong>Enter the 2-letter issuing state.</strong></div>
+                                </div>
+
+                                <div class="input-group mb-2">
+                                        <span class="input-group-text"><i class="fa-solid fa-calendar fs-4 text-primary"></i></span>
+                                        <div class="form-floating">
+                                                <input id="driver-license-expire" type="date" class="form-control form-control-lg" name="driver_license_expire" placeholder="Enter license expiration date" required>
+                                                <label for="driver-license-expire" class="text-capitalize"><b>driver license expiration</b></label>
+                                        </div>
+                                        <div class="invalid-feedback fs-5"><strong>Enter expiration date of driver license.</strong></div>
+                                </div>
+
+                                <div class="input-group mb-2">
+                                        <span class="input-group-text"><i class="fa-solid fa-calendar fs-4 text-primary"></i></span>
+                                        <div class="form-floating">
+                                                <input id="dot-medical-expire" type="date" class="form-control form-control-lg" name="dot_medical_expire" placeholder="Enter D.O.T med expiration date" required>
+                                                <label for="dot-medical-expire" class="text-capitalize"><b>d.o.t medical expiration</b></label>
+                                        </div>
+                                        <div class="invalid-feedback fs-5"><strong>Enter expiration date of d.o.t med status.</strong></div>
                                 </div>
 
                                 <input id="drvrToken" type="hidden" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>

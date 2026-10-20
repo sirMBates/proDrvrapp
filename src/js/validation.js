@@ -10,12 +10,11 @@ const pswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#%&$_]).\S{8,}$
 const decimalPattern = /^\d+(\.\d{1,2})?$/;
 const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
 const datetimePattern = /^\d{4}-\d{2}-\d{2}[T ]([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
-//const photoPattern = /^[a-zA-Z0-9./_-]+\.(jpg|jpeg|png|gif)$/i;
 const textPattern = /^[A-Za-z0-9\s.,!?'"()\-@#%$&_+=:;\/\n\r\t\p{Emoji}]{20,300}$/u;
 const assignmentTextareaPattern = /^[^\x00-\x08\x0B\x0C\x0E-\x1F\x7F<>]*$/u;
-/**
- * Validation class to validate various types of input using regular expressions.
- */
+const licensePattern = /^[A-Za-z0-9\- ]{1,32}$/;
+const statePattern = /^[A-Za-z]{2}$/;
+
 export class Validation {
     /**
      * Validates various types of input using regular expressions.
@@ -45,6 +44,15 @@ export class Validation {
 
             case 'date':
                 return this.validateDate(input);
+
+            case 'expiration-date':
+                return this.validateExpirationDate(input);
+
+            case 'license':
+                return this.validateLicense(input);
+
+            case 'state':
+                return this.validateState(input);
 
             case 'time':
                 return this.validateTime(input);
@@ -189,5 +197,30 @@ export class Validation {
 
         const length = Array.from(input.trim()).length;
         return length >= 1 && length <= 150;
+    }
+
+    static validateLicense(input) {
+        return licensePattern.test(input.trim());
+    }
+
+    static validateState(input) {
+        return statePattern.test(input.trim());
+    }
+
+    static validateExpirationDate(input) {
+        if (!this.validateDate(input)) {
+            return false;
+        }
+
+        const expirationDate = new Date(`${input}T00:00:00`);
+
+        if (Number.isNaN(expirationDate.getTime())) {
+            return false;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return expirationDate >= today;
     }
 };
