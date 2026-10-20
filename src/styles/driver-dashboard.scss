@@ -45,3 +45,40 @@
         margin-top: auto;
     }
 }
+
+#dashboard-info {
+    .dashboard-assignment-row {
+        cursor: pointer;
+        transition: background-color 150ms ease-in-out;
+
+        &:hover {
+            --bs-table-bg-state: rgba(var(--bs-prodriverclr-rgb), 0.08);
+        }
+
+        &:active {
+            --bs-table-bg-state: rgba(var(--bs-prodriverclr-rgb), 0.14);
+        }
+
+        td {
+            vertical-align: middle;
+        }
+
+        .assignment-home-action {
+            cursor: default;
+        }
+    }
+}
+
+[data-bs-theme="dark"] {
+    #dashboard-info {
+        .dashboard-assignment-row {
+            &:hover {
+                --bs-table-bg-state: rgba(var(--bs-prodriverclr-rgb), 0.30);
+            }
+
+            &:active {
+                --bs-table-bg-state: rgba(var(--bs-prodriverclr-rgb), 0.42);
+            }
+        }
+    }
+}

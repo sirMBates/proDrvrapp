@@ -16,7 +16,7 @@ use InvalidArgumentException;
 use RuntimeException;
 
 class AssignmentService {
-    public function __construct(private AssignmentRepository $assignmentRepository, private DriverSharedNoteRepository $driverSharedNoteRepository, private EmergencyService $emergencyService, private TimesheetRepository $timesheetRepository, private AssignmentStatusVerificationService $assignmentStatusVerificationService) {}
+    public function __construct(private AssignmentRepository $assignmentRepository, private DriverSharedNoteRepository $driverSharedNoteRepository, private EmergencyService $emergencyService, private TimesheetRepository $timesheetRepository, private AssignmentStatusVerificationService $assignmentStatusVerificationService, private AssignmentOperationalGate $assignmentOperationalGate) {}
 
     public function confirm(int $orderId, int $driverId, string $assignmentControl): array {
         if ($driverId < 1 || $orderId < 1) {
@@ -101,6 +101,8 @@ class AssignmentService {
             throw new \InvalidArgumentException('Assignment could not be found.');
         }
 
+        $this->assignmentOperationalGate->assertGarageReportReached($assignment);
+
         if (!AssignmentValidator::canSave($assignment)) {
             throw new \InvalidArgumentException('Assignment changes are not available at this time.');
         }
@@ -177,6 +179,8 @@ class AssignmentService {
         if ($assignment === null) {
             throw new InvalidArgumentException('Assignment could not be found.');
         }
+
+        $this->assignmentOperationalGate->assertGarageReportReached($assignment);
 
         if (!AssignmentValidator::canComplete($assignment)) {
             throw new InvalidArgumentException('This assignment cannot be completed at this time.');
@@ -301,6 +305,8 @@ class AssignmentService {
             throw new \InvalidArgumentException('Assignment could not be found.');
         }
 
+        $this->assignmentOperationalGate->assertGarageReportReached($assignment);
+
         if (!AssignmentValidator::canSave($assignment)) {
             throw new \InvalidArgumentException('Assignment changes are not available at this time.');
         }
@@ -351,6 +357,8 @@ class AssignmentService {
         if ($assignment === null) {
             throw new InvalidArgumentException('Assignment could not be found.');
         }
+
+        $this->assignmentOperationalGate->assertGarageReportReached($assignment);
 
         if (!AssignmentValidator::canComplete($assignment)) {
             throw new InvalidArgumentException('This assignment cannot be completed at this time.');

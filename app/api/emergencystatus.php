@@ -35,12 +35,14 @@ try {
         'status' => 'success',
         'emergency_active' => $isActive
     ]);
+    exit();
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
         'message' => 'Unable to retrieve Emergency state.'
     ]);
+    exit();
 }
 
 ?>

@@ -8,6 +8,7 @@ use App\Repositories\DriverStatusRepository;
 use App\Services\AssignmentStatusVerificationService;
 use App\Services\SignatureRequestService;
 use App\Services\SignatureService;
+use App\Services\AssignmentOperationalGate;
 use Core\Database;
 use Core\Storage;
 
@@ -44,8 +45,9 @@ try {
     $signatureRequestRepository = new SignatureRequestRepository($pdo);
 
     $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+    $assignmentOperationalGate = new AssignmentOperationalGate();
     $signatureRequestService = new SignatureRequestService($pdo, $signatureRequestRepository, $assignmentRepository, $assignmentStatusVerificationService);
-    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage);
+    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage, $assignmentOperationalGate);
 
     $request = $signatureRequestService->getActiveRequestByToken($token);
     if ($request === null) {

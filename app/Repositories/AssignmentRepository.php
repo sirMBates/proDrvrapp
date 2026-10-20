@@ -138,6 +138,43 @@ class AssignmentRepository {
         return $stmt->fetchAll();
     }
 
+    public function findOperationalAssignmentsByDriver(int $driverId, string $nextDayStart): array {
+        if ($driverId < 1) {
+            throw new \InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $nextDayStart = trim($nextDayStart);
+
+        if ($nextDayStart === '') {
+            throw new \InvalidArgumentException('Next day start is required.');
+        }
+
+        $sql = "SELECT wo.*, dc.operator_id, u.first_name, u.last_name, u.birth_date
+                FROM work_orders wo
+                INNER JOIN users u
+                ON wo.driver_id = u.user_id
+                INNER JOIN driver_credentials dc
+                ON dc.user_id = u.user_id
+                WHERE wo.driver_id = :driver_id
+                AND wo.assignment_status = 'confirmed'
+                AND wo.completed_at IS NULL
+                AND wo.canceled_at IS NULL
+                AND wo.start_date_time < :next_day_start
+                ORDER BY wo.start_date_time ASC, wo.order_id ASC";
+        $stmt = $this->pdo->prepare($sql);
+
+        $executed = $stmt->execute([
+            ':driver_id' => $driverId,
+            ':next_day_start' => $nextDayStart
+        ]);
+
+        if (!$executed) {
+            throw new \RuntimeException('Operational assignment query failed.');
+        }
+
+        return $stmt->fetchAll();
+    }
+
     public function findByIdentity(int $orderId, int $driverId, string $assignmentControl): ?array {
         $sql = "SELECT order_id, assignment_control, order_ref, vehicle_id, driver_id, start_date_time, status_verified_at, status_verified_vehicle_id, arrived_location_status_id, on_assignment_status_id, signature_required, pre_signature_path, pre_signature_hash, pre_signature_at, post_signature_path, post_signature_hash, post_signature_at, signature_status, assignment_status, confirmed_at, canceled_at, completed_at
                 FROM work_orders

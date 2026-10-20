@@ -11,6 +11,7 @@ use App\Repositories\TimesheetRepository;
 use App\Services\AssignmentService;
 use App\Services\EmergencyService;
 use App\Services\AssignmentStatusVerificationService;
+use App\Services\AssignmentOperationalGate;
 
 requireLoginAjax();
 
@@ -87,8 +88,9 @@ $driverSharedNoteRepository = new DriverSharedNoteRepository($pdo);
 $timesheetRepository = new TimesheetRepository($pdo);
 
 $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+$assignmentOperationalGate = new AssignmentOperationalGate();
 $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-$assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService);
+$assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService, $assignmentOperationalGate);
 
 $confirmRequested = isset($_POST['confirm']);
 $cancelRequested = isset($_POST['cancel']);

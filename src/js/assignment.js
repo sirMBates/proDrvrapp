@@ -1,7 +1,6 @@
-import { proDriverRequest, viewableDateTimeHelper, showFlashAlert, fadeOut, fadeIn, ServiceTimeCalculator, focusFirstInvalid, setSubmittingState } from "./helpers.js";
+import { proDriverRequest, viewableDateTimeHelper, showFlashAlert, ServiceTimeCalculator, focusFirstInvalid, setSubmittingState } from "./helpers.js";
 import { buildModal } from "./appmodal.js";
 import { normalizeDecimalValue, validateEditableElement, validateAssignmentTextarea, validateCurrentAssignmentFields, appendHiddenFields, toInputDateTime, toDisplayDateTime, appendEditableFields } from "./assignment-form.js";
-import { handleAssignmentFetch } from "./pwa.js";
 
 const primaryA = document.querySelector('#tableA');
 const groupB = document.querySelector('#tableB');
@@ -11,8 +10,6 @@ const locationPickup = document.querySelector('#pickup-details');
 const locationDestination = document.querySelector('#destination-details');
 const operatorNotes = document.querySelector('#shared-job-note');
 const clickCells = document.querySelectorAll('.editable-data');
-const confirmBtn = document.querySelector('#confirm-job');
-const cancelBtn = document.querySelector('#cancel-job');
 const saveBtn = document.querySelector('#save-assignment');
 const completeBtn = document.querySelector('#submit-assignment');
 const drvrToken = document.querySelector('#drvrToken').value;
@@ -24,56 +21,26 @@ let showAssignment;
 let assignments = [];
 let currentIndex = 0;
 let pagination = null;
+let currentOperationalAccess = false;
+let operationalAccessTimer = null;
 // Auto-refresh Assignments on Tab Focus (debounced, full sync) ===
 let lastAssignmentsUpdate = 0;
 
 function updateButtonStates(assignment) {
-    if (!assignment) return;
-
-    const status = String(assignment.assignment_status ?? 'pending').toLowerCase();
-
-    if (status === 'confirmed') {
-        $(confirmBtn).prop('disabled', true);
-        $(cancelBtn).prop('disabled', true);
-        $(saveBtn).prop('disabled', false);
-        $(completeBtn).prop('disabled', false);
-        return;
-    } 
-    
-    if (status === 'pending') {
-        $(confirmBtn).prop('disabled', false);
-        $(cancelBtn).prop('disabled', false);
+    if (!assignment) {
         $(saveBtn).prop('disabled', true);
         $(completeBtn).prop('disabled', true);
+        $(operatorNotes).prop('disabled', true);
         return;
     }
 
-    // fallback — unknown state
-    $(confirmBtn).prop('disabled', true);
-    $(cancelBtn).prop('disabled', true);
-    $(saveBtn).prop('disabled', true);
-    $(completeBtn).prop('disabled', true);
-};
+    const status = String(assignment.assignment_status ?? '').toLowerCase();
+    const isConfirmed = status === 'confirmed';
+    const actionsAvailable = isConfirmed && currentOperationalAccess === true;
 
-// --- Broadcast Helper (BC + Storage Fallback) ---
-function broadcastAssignmentsUpdate(assignments) {
-    // Always update localStorage first (used by Home view & offline)
-    localStorage.setItem('assignments', JSON.stringify(assignments));
-
-    try {
-        // Use BroadcastChannel if available
-        const bc = new BroadcastChannel('assignments');
-        bc.postMessage({ type: 'assignments-updated' });
-        bc.close();
-        console.log('[SYNC] BroadcastChannel update sent.');
-    } catch (err) {
-        // Fallback to StorageEvent simulation (older browsers)
-        console.warn('[SYNC] BC unavailable, using StorageEvent fallback.');
-        window.dispatchEvent(new StorageEvent('storage', {
-            key: 'assignments',
-            newValue: JSON.stringify(assignments)
-        }));
-    }
+    $(saveBtn).prop('disabled', !actionsAvailable);
+    $(completeBtn).prop('disabled', !actionsAvailable);
+    $(operatorNotes).prop('disabled', !actionsAvailable);
 };
 
 function getCurrentAssignment() {
@@ -104,138 +71,9 @@ function clearStoredPostSignature(assignmentControl) {
     console.log(`[SIGNATURE] Cleared stored post-trip signature for ${control}.`);
 };
 
-async function refreshAssignmentsFromServer(preferredOrderId = null) {
-    try {
-        const response = await getAssignment('https://prodriver.local/getassignments', {            
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'include',
-            cache: 'no-store',
-            headers: {
-                'X-CSRF-Token': drvrToken
-            }
-        });
-
-        if (!response || response.status !== 'success' || !Array.isArray(response.data)) {
-            console.warn('[ASSIGNMENT REFRESH] Invalid assignment response.', response);
-            return false;
-        }
-
-        /*
-         * Preserve the previous list before replacing it.
-         * This lets us identify assignments that were completed
-         * or canceled and therefore disappeared from the server list.
-         */
-        const previousAssignments = Array.isArray(assignments) ? [...assignments] : [];
-
-        /*
-         * The backend should already return active assignments only,
-         * but this remains as defensive frontend filtering.
-         */
-        const refreshedAssignments = response.data.filter(assignment => {
-            const status = String(assignment.assignment_status ?? '').toLowerCase();
-            return (!assignment.completed_at && !assignment.canceled_at && status !== 'completed' && status !== 'canceled');
-        });
-
-        /*
-         * Build a set containing every assignment control that
-         * still exists in the refreshed active list.
-         */
-        const refreshedAssignmentControls = new Set(refreshedAssignments.map(assignment => String(assignment.assignment_control ?? '')).filter(Boolean));
-
-        /*
-         * An assignment that existed previously but no longer exists
-         * in the server response was completed, canceled, or otherwise
-         * removed from the driver's active assignments.
-         */
-        const removedAssignments = previousAssignments.filter(assignment => {
-            const assignmentControl = String(assignment.assignment_control ?? '');
-            return (assignmentControl !== '' && !refreshedAssignmentControls.has(assignmentControl));
-        });
-
-        /*
-         * Remove locally stored signatures belonging only to
-         * assignments that are no longer active.
-         */
-        removedAssignments.forEach(assignment => {
-            clearStoredSignatures(assignment.assignment_control);
-        });
-
-        assignments = refreshedAssignments;
-        localStorage.setItem('assignments', JSON.stringify(assignments));
-
-        /*
-         * No active assignments remain.
-         */
-        if (assignments.length === 0) {
-            currentIndex = 0;
-
-            sessionStorage.setItem('lastAssignmentIndex', '0');
-            document.querySelector('#assignment-pager')?.remove();
-            pagination = null;
-            showNoAssignments();
-
-            console.log('[ASSIGNMENT REFRESH] No active assignments remain.', {
-                removed: removedAssignments.map(assignment => assignment.assignment_control)
-            });
-
-            return true;
-        }
-
-        /*
-         * Preserve the preferred assignment when it still exists.
-         * This is useful after confirmation or Save Changes.
-         */
-        const preferredIndex = preferredOrderId !== null ? assignments.findIndex(assignment => String(assignment.order_id) === String(preferredOrderId)) : -1;
-
-        if (preferredIndex >= 0) {
-            currentIndex = preferredIndex;
-        } else {
-            /*
-             * The preferred assignment may have been completed or
-             * canceled. Keep the index inside the new array bounds
-             * so the next available assignment is displayed.
-             */
-            const safeCurrentIndex = Number.isInteger(currentIndex) ? currentIndex : 0;
-            currentIndex = Math.min(Math.max(safeCurrentIndex, 0), assignments.length - 1);
-        }
-
-        sessionStorage.setItem('lastAssignmentIndex', String(currentIndex));
-
-        /*
-         * Recreate the pager so the number of pills agrees
-         * with the refreshed assignment list.
-         */
-        if (typeof window._rebuildAssignmentPagination === 'function') {
-            window._rebuildAssignmentPagination();
-        }
-
-        showAssignment(currentIndex);
-        const currentAssignment = getCurrentAssignment();
-
-        if (currentAssignment) {
-            updateButtonStates(currentAssignment);
-        }
-
-        console.log('[ASSIGNMENT REFRESH] Active assignments refreshed.', {
-            count: assignments.length, 
-            currentIndex,
-            assignmentControl: currentAssignment?.assignment_control ?? null,
-            orderId: currentAssignment?.order_id ?? null,
-            removedAssignments: removedAssignments.map(assignment => ({
-                assignmentControl: assignment.assignment_control,
-                orderId: assignment.order_id
-            }))
-        });
-
-        return true;
-    } catch (error) {
-        console.error('[ASSIGNMENT REFRESH] Failed to refresh assignments from server:', error);
-        return false;
-    }
-};
-
 function showNoAssignments() {
+    clearOperationalAccessTimer();
+    currentOperationalAccess = false;
     assignments = [];
     currentIndex = 0;
 
@@ -277,8 +115,6 @@ function showNoAssignments() {
 
     emptyState.classList.remove('hidden');
 
-    $(confirmBtn).prop('disabled', true);
-    $(cancelBtn).prop('disabled', true);
     $(saveBtn).prop('disabled', true);
     $(completeBtn).prop('disabled', true);
 };
@@ -286,44 +122,6 @@ function showNoAssignments() {
 function showAssignmentInterface() {
     document.querySelector('.assignment-card')?.classList.remove('hidden');
     document.querySelector('#no-assignments')?.classList.add('hidden');
-};
-
-function loadNextAssignment(afterIndex) {
-    // Case 1: There are still other assignments left
-    if (assignments.length > 0) {
-        const nextIndex = afterIndex >= assignments.length ? assignments.length - 1 : afterIndex;
-        if (nextIndex >= 0) {
-            showAssignment(nextIndex);
-            return;
-        }
-    }
-
-    showNoAssignments();
-};
-
-async function clearAssignmentUI() {
-    const assignmentCard = document.querySelector('.assignment-card');
-    if (!assignmentCard) return;
-
-    await fadeOut(assignmentCard); // smooth fade out
-
-    // Grab your primary assignment container (or however your current assignment is shown)
-    const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
-    const primaryDrvrId = primaryA.childNodes[3].childNodes[1].childNodes[3];
-    const primaryDrvrName = primaryA.childNodes[3].childNodes[1].childNodes[5];
-
-    // Clear out the content
-    primaryCoachId.textContent = 'Loading next assignment...';
-    primaryDrvrId.textContent = '';
-    primaryDrvrName.textContent = '';
-
-    // Optionally disable action buttons to prevent interactions mid-transition
-    $(confirmBtn).prop('disabled', false);
-    $(cancelBtn).prop('disabled', false);
-    $(saveBtn).prop('disabled', true);
-    $(completeBtn).prop('disabled', true);
-
-    await fadeIn(assignmentCard); // smooth fade back in
 };
 
 function getAssignmentStorageId(assignment) {
@@ -454,7 +252,7 @@ function findStoredAssignmentIdentity(orderId, assignmentControl) {
         console.warn('[ASSIGNMENT DRAFT] Unable to resolve stored assignment identity.', err);
         return null;
     }
-}
+};
 
 function clearAssignmentDraftByIdentity(orderId, orderRef) {
     const assignmentIdentity = {
@@ -485,7 +283,6 @@ function clearSubmittedAssignmentDraftFromUrl() {
     const params = new URLSearchParams(window.location.search);
 
     const status = params.get('status');
-    const error = params.get('error');
     const orderId = params.get('order_id');
     let orderRef = params.get('order_ref');
     const assignmentControl = params.get('assignment_control');
@@ -495,38 +292,22 @@ function clearSubmittedAssignmentDraftFromUrl() {
         'completed'
     ];
 
-    const rejectedStatuses = [
-        'assignment_update'
-    ];
-
-    const shouldClearDraft = successfulStatuses.includes(status) || rejectedStatuses.includes(error);
+    const shouldClearDraft = successfulStatuses.includes(status);
 
     if (!orderRef && orderId && assignmentControl) {
         const storedAssignment = findStoredAssignmentIdentity(orderId, assignmentControl);
-
         orderRef = String(storedAssignment?.order_ref ?? '').trim();
     }
 
-    if (!shouldClearDraft || !orderId || !orderRef) {
-        return;
-    }
+    if (shouldClearDraft && orderId && orderRef) {
+        const cleared = clearAssignmentDraftByIdentity(orderId, orderRef);
 
-    const cleared = clearAssignmentDraftByIdentity(orderId, orderRef);
-    if (cleared) {
-        console.log(`[ASSIGNMENT DRAFT] Cleared submitted draft:`, { status, error, orderId, orderRef });
-    }
-
-    if (rejectedStatuses.includes(error) && assignmentControl) {
-        const preSignatureKey = `pre-signature:${assignmentControl}`;
-        const postSignatureKey = `post-signature:${assignmentControl}`;
-
-        const preSignature = localStorage.getItem(preSignatureKey);
-        const postSignature = localStorage.getItem(postSignatureKey);
-
-        if (preSignature && postSignature) {
-            clearStoredPostSignature(assignmentControl);
-        } else {
-            clearStoredSignatures(assignmentControl);
+        if (cleared) {
+            console.log('[ASSIGNMENT DRAFT] Cleared submitted draft:', {
+                    status,
+                    orderId,
+                    orderRef
+            });
         }
     }
 
@@ -537,11 +318,7 @@ function clearSubmittedAssignmentDraftFromUrl() {
     params.delete('assignment_control');
 
     const remainingQuery = params.toString();
-
-    const cleanUrl =
-        window.location.pathname +
-        (remainingQuery ? `?${remainingQuery}` : '') +
-        window.location.hash;
+    const cleanUrl = window.location.pathname + (remainingQuery ? `?${remainingQuery}` : '') + window.location.hash;
 
     window.history.replaceState({}, document.title, cleanUrl);
 };
@@ -619,6 +396,92 @@ function reconcileCompletedAssignmentFromRedirect() {
         assignments: remainingAssignments,
         currentIndex: correctedIndex
     };
+};
+
+async function checkOperationalAccess(orderId, assignmentControl) {
+    if (!orderId || !assignmentControl) {
+        return false;
+    }
+
+    const params = new URLSearchParams({
+        orderId,
+        assignmentControl
+    });
+
+    try {
+        const data = await proDriverRequest(`/assignment-operational-access?${params.toString()}`);
+        return (data?.status === 'success' && data?.operational === true);
+    } catch (error) {
+        console.error('[ASSIGNMENT OPERATIONAL ACCESS ERROR]', error);
+        return false;
+    }
+};
+
+function clearOperationalAccessTimer() {
+    if (operationalAccessTimer !== null) {
+        clearTimeout(operationalAccessTimer);
+        operationalAccessTimer = null;
+    }
+};
+
+function scheduleOperationalAccessCheck(assignment) {
+    clearOperationalAccessTimer();
+
+    if (!assignment || currentOperationalAccess) {
+        return;
+    }
+
+    const startDateTime = assignment.start_date_time;
+
+    if (!startDateTime) {
+        return;
+    }
+
+    const garageReportTime = dtHelper(startDateTime, 'raw');
+    if (!(garageReportTime instanceof Date)) {
+            return;
+        }
+    
+    const delay = garageReportTime.getTime() - Date.now();
+
+    if (!Number.isFinite(delay) || delay <= 0) {
+        return;
+    }
+
+    operationalAccessTimer = setTimeout(async () => {
+        const currentAssignment = getCurrentAssignment();
+
+        if (!currentAssignment) {
+            return;
+        }
+
+        const checkedOrderId = currentAssignment.order_id;
+        const checkedAssignmentControl = currentAssignment.assignment_control;
+        const operationalAccess = await checkOperationalAccess(checkedOrderId, checkedAssignmentControl);
+        const latestAssignment = getCurrentAssignment();
+
+        const isStillCurrentAssignment = String(latestAssignment?.order_id ?? '') === String(checkedOrderId ?? '') && String(latestAssignment?.assignment_control ?? '') === String(checkedAssignmentControl ?? '');
+
+        if (!isStillCurrentAssignment) {
+            return;
+        }
+
+        currentOperationalAccess = operationalAccess;
+
+        updateButtonStates(latestAssignment);
+        publishOperationalAccess(latestAssignment);
+    }, delay);
+};
+
+function publishOperationalAccess(assignment) {
+    window.dispatchEvent(new CustomEvent('assignment-operational-access-changed', {
+            detail: {
+                orderId: assignment?.order_id ?? null,
+                assignmentControl: assignment?.assignment_control ?? '',
+                operationalAccess: currentOperationalAccess === true
+            }
+        }
+    ));
 };
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -743,7 +606,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // Renders the assignment details to your existing UI tables
-    showAssignment = function(index) {
+    showAssignment = async function(index) {
         if (assignments.length === 0) {
             showNoAssignments();
             return;
@@ -755,6 +618,10 @@ window.addEventListener('DOMContentLoaded', () => {
         currentIndex = index;
         sessionStorage.setItem('lastAssignmentIndex', index);
         const assignment = assignments[index];
+
+        clearOperationalAccessTimer();
+        currentOperationalAccess = false;
+        updateButtonStates(assignment);
 
         // Existing DOM refs
         const primaryCoachId = primaryA.childNodes[3].childNodes[1].childNodes[1];
@@ -860,7 +727,21 @@ window.addEventListener('DOMContentLoaded', () => {
             pagination.renderPills();
             pagination.updateButtons();
         }
+
+        const operationalAccess = await checkOperationalAccess(assignment.order_id, assignment.assignment_control);
+        const currentAssignment = getCurrentAssignment();
+
+        const isStillCurrentAssignment = String(currentAssignment?.order_id ?? '') === String(assignment.order_id ?? '') && String(currentAssignment?.assignment_control ?? '') === String(assignment.assignment_control ?? '');
+
+        if (!isStillCurrentAssignment) {
+            return;
+        }
+
+        currentOperationalAccess = operationalAccess;
+
         updateButtonStates(assignment);
+        publishOperationalAccess(assignment);
+        scheduleOperationalAccessCheck(assignment);
 
         const assignmentForm = document.querySelector('.assignment-card');
         if (assignmentForm) {
@@ -878,7 +759,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 orderId: assignment.order_id,
                 assignmentControl: assignment.assignment_control,
                 requiresSignature: Number(assignment.signature_required) === 1,
-                signatureStatus: assignment.signature_status
+                signatureStatus: assignment.signature_status,
+                operationalAccess: currentOperationalAccess
             }
         }));
 
@@ -942,7 +824,7 @@ window.addEventListener('DOMContentLoaded', () => {
         showNoAssignments();
     }
 
-    getAssignment("https://prodriver.local/getassignments", {
+    getAssignment('/getoperationalassignments', {
         method: 'GET', 
         mode: 'cors',
         credentials: 'include',
@@ -1010,6 +892,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     clickCells.forEach(cell => {
         cell.addEventListener('click', () => {
+            if (!currentOperationalAccess) {
+                drvrAlert('info', 'Assignment changes are available at Garage Report Time.');
+                return;
+            }
             const type = cell.dataset.type;
             const field = cell.dataset.field;
 
@@ -1063,7 +949,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     const assignment = getCurrentAssignment();
 
                     if (!assignment) {
-                        showFlashAlert('warning', 'Missing assignment data.');
+                        drvrAlert('warning', 'Missing assignment data.');
                         return;
                     }
 
@@ -1075,7 +961,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     const spotTime = assignment.spot_time;
 
                     if (!assignment?.start_date_time || !spotTime || !actualEndValue) {
-                        showFlashAlert('warning', 'Please enter spot time and/or actual end time.');
+                        drvrAlert('warning', 'Please enter spot time and/or actual end time.');
                         return;
                     }
 
@@ -1091,7 +977,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     const [spotHour, spotMinute, spotSecond = 0] = spotTime.split(':').map(Number);
 
                     if (Number.isNaN(reportObj.getTime()) || Number.isNaN(startObj.getTime()) || Number.isNaN(endObj.getTime()) || !Number.isInteger(spotHour) || !Number.isInteger(spotMinute) || !Number.isInteger(spotSecond)) {
-                        showFlashAlert('warning', 'Invalid report time, spot time, or actual end time.');
+                        drvrAlert('warning', 'Invalid report time, spot time, or actual end time.');
                         return;
                     }
 
@@ -1105,14 +991,14 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
 
                     if (endObj <= startObj) {
-                        showFlashAlert('warning', 'Actual end date and time must be after the spot date and time.');
+                        drvrAlert('warning', 'Actual end date and time must be after the spot date and time.');
                         return;
                     }
 
                     const total = ServiceTimeCalculator.getTotalHours(startObj, endObj);
 
                     if (Number.isNaN(total.decimal)) {
-                        showFlashAlert('warning', 'Unable to calculate total hours.');
+                        drvrAlert('warning', 'Unable to calculate total hours.');
                         return;
                     }
 
@@ -1122,10 +1008,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
                     //const assignment = getCurrentAssignment();
                     updateAssignmentDraftField(assignment, field, totalValue);
-                    showFlashAlert('info', `Total hours updated: ${total.formatted} (${totalValue} hrs)`);
+                    drvrAlert('info', `Total hours updated: ${total.formatted} (${totalValue} hrs)`);
                 } catch (err) {
                     console.error("[CALC ERROR]", err);
-                    showFlashAlert('error', 'Error calculating total hours.');
+                    drvrAlert('error', 'Error calculating total hours.');
                 }
                 return;
             }
@@ -1225,26 +1111,6 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('load', () => {
         setTimeout(() => restoreButtonStateFromStorage(), 300);
     });
-
-    function saveActiveEditableInputDraft () {
-        const active = document.activeElement;
-        if (!active || active.tagName !== 'INPUT') return;
-
-        const cell = active.closest('.editable-data');
-        if (!cell) return;
-
-        const field = cell.dataset.field;
-        const type = cell.dataset.type;
-
-        let value = active.value.trim();
-
-        if ( (type === 'datetime' || type === 'datetime-local') && value ) {
-            value = value.replace('T', ' ');
-        }
-
-        const assignment = getCurrentAssignment();
-        updateAssignmentDraftField(assignment, field, value);
-    }
 
     window.addEventListener('pageshow', (event) => {
         if (event.persisted) {
@@ -1404,8 +1270,6 @@ function restoreButtonStateFromStorage() {
         console.log('Vehicle ID:', current.vehicle_id);
         console.log('Status flags:', { isPending, isConfirmed, isCanceled, isCompleted });
         console.log('🔘 Button states applied:');
-        console.log('Confirm button:', $(confirmBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
-        console.log('Cancel button:', $(cancelBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.log('Save button:', $(saveBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.log('Complete button:', $(completeBtn).prop('disabled') ? '❌ disabled' : '✅ enabled');
         console.groupEnd();
@@ -1563,92 +1427,6 @@ function submitAssignment(options) {
     }
 };
 
-// Confirm assignment button 
-confirmBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const assignment = getCurrentAssignment();
-    if (!assignment) return;
-
-    try {
-        const formData = new FormData();
-        formData.append('assignment_control', assignment['assignment_control']);
-        formData.append('order_id', assignment['order_id']);
-        formData.append('confirm', '1');
-        formData.append('__method', 'PATCH');
-        const result = await handleAssignmentFetch({
-            method: 'POST',
-            mode: 'cors',
-            credentials: 'include',
-            headers: {
-                'X-CSRF-Token': drvrToken
-            },
-            body: formData
-        });
-        drvrAlert(result.status, result.message); // toast
-        // Only update Local model on confirmed success and refresh the currently displayed assignment in UI
-        if (result.status === 'success') {
-            const confirmedOrderId =
-            assignment.order_id;
-
-            await refreshAssignmentsFromServer(confirmedOrderId);
-            broadcastAssignmentsUpdate(assignments);
-
-            const current = getCurrentAssignment();
-
-            if (current) {
-                updateButtonStates(current);
-            }
-        }
-    } catch (error) {
-        console.error('Error confirmation assignment:', error);
-        drvrAlert('error', 'Something went wrong. Please try again.');
-    }
-});
-
-// Cancel/Remove assignment button
-cancelBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const assignment = getCurrentAssignment();
-    if (!assignment) {
-        console.warn('No assignment selected yet.');
-        return;
-    }
-
-    try {
-        const formData = new FormData();
-        formData.append('assignment_control', assignment['assignment_control']);
-        formData.append('order_id', assignment['order_id']);
-        formData.append('cancel', '1');
-        formData.append('__method', 'PATCH');
-        const options = {
-            method: 'POST',
-            mode: 'cors',
-            credentials: 'include',
-            headers: {
-                'X-CSRF-Token': drvrToken
-            },
-            body: formData
-        };
-        const result = await handleAssignmentFetch(options);
-        if (result.status === 'success') {
-            //console.log('Assignment confirmed:', result);
-            drvrAlert(result.status, result.message); // toast
-            // Remove canceled assignment from array
-            assignments.splice(currentIndex, 1);
-            broadcastAssignmentsUpdate(assignments);
-            // Immediately clear UI for visual feedback
-            clearAssignmentUI();
-            // Load next assignment ( or fallback )
-            loadNextAssignment(currentIndex);
-        } else {
-            drvrAlert(result.status, result.message); // toast
-        }
-    } catch (error) {
-        console.error('Error canceling assignment:', error);
-        drvrAlert('error', 'Something went wrong. Please try again.');
-    }
-});
-
 // Update/Modify assignment button
 saveBtn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -1681,7 +1459,7 @@ document.addEventListener('visibilitychange', async () => {
 
     if ( hasCurrentAssignmentDraft() ) {
         console.log('[SYNC] Skipped refresh because unsaved assignment edits exist.');
-        showFlashAlert('info', 'Unsaved edits preserved.');
+        drvrAlert('info', 'Unsaved edits preserved.');
         return;
     }
 
@@ -1690,7 +1468,7 @@ document.addEventListener('visibilitychange', async () => {
     lastAssignmentsUpdate = now;
 
     try {
-        const fresh = await getAssignment("https://prodriver.local/getassignments", {
+        const fresh = await getAssignment('/getoperationalassignments', {
             method: 'GET',
             mode: 'cors',
             credentials: 'include',
@@ -1705,7 +1483,7 @@ document.addEventListener('visibilitychange', async () => {
             localStorage.setItem('assignments', JSON.stringify(assignments));
             if (assignments.length === 0) {
                 showNoAssignments();
-                showFlashAlert('info', 'No active assignment(s) available.');
+                drvrAlert('info', 'No active assignment(s) available.');
                 return;
             }
 
@@ -1721,15 +1499,15 @@ document.addEventListener('visibilitychange', async () => {
 
             // Re-render and restore state
             showAssignment(currentIndex);
-            showFlashAlert('info', 'Assignments refreshed.');
+            drvrAlert('info', 'Assignments refreshed.');
 
             return;
         }
 
         showNoAssignments();
-        showFlashAlert('error', 'Unable to retrieve assignments.');
+        drvrAlert('error', 'Unable to retrieve assignments.');
     } catch (error) {
         console.error('[SYNC] Assignment page refresh failed:', error);
-        showFlashAlert('error', 'Failed to refresh assignments.');
+        drvrAlert('error', 'Failed to refresh assignments.');
     }
 });

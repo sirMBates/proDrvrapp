@@ -62,9 +62,8 @@ class WorkAssignmentService {
         ];
     }
 
-    private function prepareAssignments(int $driverId): array {
+    private function prepareAssignments(array $results, int $driverId): array {
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
-        $results = $this->assignmentRepository->findActiveAssignmentsByDriver($driverId);
 
         unset($_SESSION['birth_date']);
         unset($_SESSION['signature_required']);
@@ -119,8 +118,21 @@ class WorkAssignmentService {
         return $results;
     }
 
-    public function driverAssignments (int $driverId): array {
-        return $this->prepareAssignments($driverId);
+    public function driverAssignments(int $driverId): array {
+        $results = $this->assignmentRepository->findActiveAssignmentsByDriver($driverId);
+        return $this->prepareAssignments($results, $driverId);
+    }
+
+    public function operationalDriverAssignments(int $driverId): array {
+        if ($driverId < 1) {
+            throw new \InvalidArgumentException('Invalid driver ID.');
+        }
+
+        $today = new \DateTimeImmutable('today');
+        $nextDayStart = $today->modify('+1 day')->setTime(0, 0, 0)->format('Y-m-d H:i:s');
+        $results = $this->assignmentRepository->findOperationalAssignmentsByDriver($driverId, $nextDayStart);
+
+        return $this->prepareAssignments($results, $driverId);
     }
 }
 

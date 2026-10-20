@@ -11,7 +11,7 @@ use PDO;
 use InvalidArgumentException;
 
 final class SignatureService {
-    public function __construct(private PDO $pdo, private AssignmentRepository $assignmentRepository, private AssignmentStatusVerificationService $assignmentStatusVerificationService, private Storage $storage) {}
+    public function __construct(private PDO $pdo, private AssignmentRepository $assignmentRepository, private AssignmentStatusVerificationService $assignmentStatusVerificationService, private Storage $storage, private AssignmentOperationalGate $assignmentOperationalGate) {}
 
     public function saveSignature(array $signatureRequest, string $signature): array {
         $orderId = (int) ($signatureRequest['order_id'] ?? 0);
@@ -31,6 +31,14 @@ final class SignatureService {
             throw new InvalidArgumentException('This assignment does not require a signature.');
         }
 
+        $signatureType = trim((string) ($signatureRequest['signature_type'] ?? ''));
+
+        if (!in_array($signatureType, ['pre', 'post'], true)) {
+            throw new InvalidArgumentException('Invalid signature type.');
+        }
+        
+        $this->assignmentOperationalGate->assertGarageReportReached($assignment);        
+
         $signatureBackup = null;
         $signatureData = [];
 
@@ -38,17 +46,10 @@ final class SignatureService {
             if (!$this->pdo->beginTransaction()) {
                 throw new \RuntimeException('Unable to begin signature transaction.');
             }
-
             /*
             * No signature validation, file processing, or signature metadata updates occur before assignment status verification.
             */
             $this->assignmentStatusVerificationService->verifyOrFail($assignment, $driverId, trim((string) ($assignment['vehicle_id'] ?? '')));
-
-            $signatureType = trim((string) ($signatureRequest['signature_type'] ?? ''));
-
-            if (!in_array($signatureType, ['pre', 'post'], true)) {
-                throw new InvalidArgumentException('Invalid signature type.');
-            }
 
             if ($signatureType === 'pre') {
                 $validSignature = AssignmentValidator::hasPreTripSignature(['pre_signature_base64' => $signature]);
@@ -135,6 +136,8 @@ final class SignatureService {
         if (!AssignmentValidator::requiresSignature($assignment)) {
             throw new InvalidArgumentException('This assignment does not require a signature.');
         }
+
+        $this->assignmentOperationalGate->assertGarageReportReached($assignment);
 
         $backup = null;
         $signatureData = [];

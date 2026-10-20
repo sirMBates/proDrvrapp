@@ -5,9 +5,7 @@ declare(strict_types=1);
 use Core\Database;
 use App\Repositories\AssignmentRepository;
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+requireLoginAjax();
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -57,13 +55,13 @@ try {
         ]);
         exit();
     }
-
     echo json_encode([
         'status' => 'success',
         'signatureData' => [
             'signature_status' => $assignment['signature_status'] ?? 'pending'
         ]
     ]);
+    exit();
 } catch (Throwable $e) {
     error_log('[SIGNATURE STATUS ERROR] ' . $e->getMessage());
     http_response_code(500);
@@ -71,6 +69,7 @@ try {
         'status' => 'error',
         'message' => 'Unable to retrieve signature status.'
     ]);
+    exit();
 }
 
 ?>

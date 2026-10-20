@@ -20,7 +20,7 @@ include "partials/custom-modal.php";
                                                 <th scope="col">garage report time</th>
                                                 <th scope="col">vehicle id</th>
                                                 <th scope="col">loc. spot time</th>
-                                                <th scope="col">status</th>
+                                                <th scope="col">assignment status / action</th>
                                         </tr>
                                 </thead>
                                 <tbody class="table-group-divider">

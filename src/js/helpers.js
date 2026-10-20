@@ -160,6 +160,9 @@ export function viewableDateTimeHelper(input, format = 'datetime') {
     const formattedTime = `${hour}:${minute}${period}`;
 
     switch (format) {
+        case 'raw':
+            return date;
+
         case 'date':
             return formattedDate;
 

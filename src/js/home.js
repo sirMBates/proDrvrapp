@@ -2,6 +2,7 @@ import { bdayCelebrationHandler } from "./celebration.js";
 import { proDriverRequest, viewableDateTimeHelper, showFlashAlert } from "./helpers.js";
 import { DriverStatusHistory } from './driver-status-history.js';
 import { MessagePreview } from './message-preview.js';
+import { buildModal } from "./appmodal.js";
 
 const drvrBirthDate = document.querySelector('#drvrbday')?.value ?? '';
 const mainContent = document.querySelector('main');
@@ -13,9 +14,13 @@ const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const birthdayThemeBtn = document.querySelector('#birthday-theme-btn');
 const todayDate = dtHelper(new Date(), 'date');
+const dashboardTableBody = document.querySelector('#dashboard-info tbody');
 const messagePreviewContainer = document.getElementById('dashboard-message-preview');
 const messagePreview = new MessagePreview(messagePreviewContainer);
 let lastAssignmentsUpdate = 0;
+let bcSupported = false;
+let assignmentsChannel = null;
+let currentHomeAssignments = [];
 
 function resetDailyFlags () {
         const lastPlayed = localStorage.getItem('dateOfThemePlayed');
@@ -28,43 +33,134 @@ function resetDailyFlags () {
 resetDailyFlags();
 
 function showNoDashboardAssignments() {
-    const tableBody = document.querySelector('#dashboard-info tbody');
-    if (!tableBody) return;
-
-    tableBody.replaceChildren();
-    const emptyRow = document.createElement('tr');
-    const emptyCell = document.createElement('td');
-    emptyCell.colSpan = 6;
-    emptyCell.className = 'text-center text-muted py-4';
-
-    const heading = document.createElement('strong');
-    heading.className = 'd-block mb-1';
-    heading.textContent = 'No Active Assignment(s)';
-
-    const message = document.createElement('span');
-    message.textContent = 'You’re all caught up! New assignment(s) from dispatch will appear here automatically.';
-    emptyCell.append(heading, message);
-
-    emptyRow.appendChild(emptyCell);
-    tableBody.appendChild(emptyRow);
-
-    localStorage.setItem('assignments', JSON.stringify([]));
-};
-
-// --- Centralized Table Render Helper ---
-function renderHomeTable(assignments, fromSync = false) {
         const tableBody = document.querySelector('#dashboard-info tbody');
         if (!tableBody) return;
 
-        const activeAssignments = Array.isArray(assignments) ? assignments.filter(assignment => !assignment.completed_at && !assignment.canceled_at && assignment.assignment_status !== 'completed' && assignment.assignment_status !== 'canceled') : [];
+        currentHomeAssignments = [];
+        tableBody.replaceChildren();
+
+        const emptyRow = document.createElement('tr');
+        const emptyCell = document.createElement('td');
+        emptyCell.colSpan = 7;
+        emptyCell.className = 'text-center text-muted py-4';
+
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-bus-front fs-2 d-block mb-2';
+        icon.setAttribute('aria-hidden', 'true');
+
+        const heading = document.createElement('strong');
+        heading.className = 'd-block mb-1';
+        heading.textContent = 'No Active Assignment(s)';
+
+        const message = document.createElement('span');
+        message.textContent = 'You’re all caught up! New assignment(s) from dispatch will appear here automatically.';
+        emptyCell.append(icon, heading, message);
+
+        emptyRow.appendChild(emptyCell);
+        tableBody.appendChild(emptyRow);
+
+        localStorage.setItem('assignments', JSON.stringify([]));
+};
+
+function getActiveAssignments(assignments) {
+    if (!Array.isArray(assignments)) {
+        return [];
+    }
+
+    return assignments.filter(assignment => {
+        const status = String(assignment.assignment_status ?? '').toLowerCase();
+        return (!assignment.completed_at && !assignment.canceled_at && status !== 'completed' && status !== 'canceled');
+    });
+};
+
+function showHomeAssignmentDetails(assignment) {
+        if (!assignment) {
+                return;
+        }
+
+        const garageReportTime = dtHelper(assignment.start_date_time, 'time');
+        const spotTime = dtHelper(assignment.spot_time, 'time');
+        const origin = escapeHTML(assignment.origin?.trim() || 'Not provided');
+        const destination = escapeHTML(assignment.destination?.trim() || 'Not provided');
+        const pickupDetails = escapeHTML(assignment.pickup_details?.trim() || 'No pickup details provided.');
+        const destinationDetails = escapeHTML(assignment.destination_details?.trim() || 'No destination details provided.');
+
+        const message = `
+                <div class="text-start">
+                        <div class="row g-3">
+                                <div class="col-6">
+                                        <span class="fw-semibold d-block">
+                                                Garage Report Time
+                                        </span>
+                                        <span>${escapeHTML(garageReportTime)}</span>
+                                </div>
+
+                                <div class="col-6">
+                                        <span class="fw-semibold d-block">
+                                                Spot Time
+                                        </span>
+                                        <span>${escapeHTML(spotTime)}</span>
+                                </div>
+
+                                <div class="col-12">
+                                        <hr class="my-1">
+                                </div>
+
+                                <div class="col-md-6">
+                                        <span class="fw-semibold d-block">
+                                                Origin
+                                        </span>
+                                        <span>${origin}</span>
+                                </div>
+
+                                <div class="col-md-6">
+                                        <span class="fw-semibold d-block">
+                                                Destination
+                                        </span>
+                                        <span>${destination}</span>
+                                </div>
+
+                                <div class="col-12">
+                                        <hr class="my-1">
+                                </div>
+
+                                <div class="col-12">
+                                        <span class="fw-semibold d-block">
+                                                Pickup Details
+                                        </span>
+                                        <span>${pickupDetails}</span>
+                                </div>
+
+                                <div class="col-12">
+                                        <span class="fw-semibold d-block">
+                                                Destination Details
+                                        </span>
+                                        <span>${destinationDetails}</span>
+                                </div>
+                        </div>
+                </div>
+        `;
+
+        buildModal.info(message, 'Got It!');
+
+        const infoModal = document.querySelector('#info-modal');
+        if (!infoModal) {
+                return;
+        }
+
+        bootstrap.Modal.getOrCreateInstance(infoModal).show();
+};
+
+// --- Centralized Table Render Helper ---
+function renderHomeTable(assignments) {
+        const tableBody = document.querySelector('#dashboard-info tbody');
+        if (!tableBody) return;
+
+        const activeAssignments = getActiveAssignments(assignments);
+        currentHomeAssignments = activeAssignments;
 
         if (activeAssignments.length === 0) {
                 showNoDashboardAssignments();
-
-                if (fromSync) {
-                        showFlashAlert('info', 'No active assignment(s) available.');
-                }
-
                 lastAssignmentsUpdate = Date.now();
                 return;
         }
@@ -72,54 +168,214 @@ function renderHomeTable(assignments, fromSync = false) {
         tableBody.replaceChildren();
         activeAssignments.forEach(assignment => {
                 const row = document.createElement('tr');
+                row.classList.add('dashboard-assignment-row');
+                const status = String(assignment.assignment_status ?? 'pending').toLowerCase();
+                const isPending = status === 'pending';
+                const isConfirmed = status === 'confirmed';
+
+                row.dataset.orderId = assignment.order_id ?? '';
+                row.dataset.assignmentControl = assignment.assignment_control ?? '';
+
                 row.innerHTML = `
-                        <td><a href="/assignments?assignment=${encodeURIComponent(assignment.assignment_control)}" class="link-primary fw-semibold">${assignment.order_id ?? ''}</a></td>
+                        <td>${assignment.order_id ?? ''}</td>
                         <td>${assignment.operator_id ?? ''}</td>
                         <td>${dtHelper(assignment.start_date_time, 'date')}</td>
                         <td>${dtHelper(assignment.start_date_time, 'time')}</td>
                         <td>${assignment.vehicle_id ?? ''}</td>
                         <td>${dtHelper(assignment.spot_time, 'time')}</td>
-                        <td class="text-capitalize">${assignment.assignment_status ?? 'pending'}</td>
+                        <td class="assignment-home-action"></td>
                 `;
+
+                const actionCell = row.querySelector('.assignment-home-action');
+
+                if (isPending) {
+                        const buttonGroup = document.createElement('div');
+                        buttonGroup.className = 'd-flex flex-wrap gap-2';
+
+                        const confirmBtn = document.createElement('button');
+                        confirmBtn.type = 'button';
+                        confirmBtn.className = 'btn btn-sm btn-success';
+                        confirmBtn.textContent = 'Confirm';
+                        confirmBtn.dataset.assignmentAction = 'confirm';
+
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.type = 'button';
+                        cancelBtn.className = 'btn btn-sm btn-outline-danger';
+                        cancelBtn.textContent = 'Cancel';
+                        cancelBtn.dataset.assignmentAction = 'cancel';
+
+                        buttonGroup.append(confirmBtn, cancelBtn);
+                        actionCell.appendChild(buttonGroup);
+                } else if (isConfirmed) {
+                        const confirmed = document.createElement('span');
+                        confirmed.className = 'badge text-bg-success';
+                        confirmed.textContent = 'Confirmed';
+                        actionCell.appendChild(confirmed);
+                } else {
+                        actionCell.textContent = status || 'Pending';
+                        actionCell.classList.add('text-capitalize');
+                }
+
                 tableBody.appendChild(row);
         });
 
-        if (fromSync) {
-                showFlashAlert('info', 'Assignments updated!');
+        lastAssignmentsUpdate = Date.now();
+};
+
+function findHomeAssignment(row) {
+        const orderId = row?.dataset.orderId ?? '';
+        const assignmentControl = row?.dataset.assignmentControl ?? '';
+
+        return currentHomeAssignments.find(assignment => {
+                return (String(assignment.order_id ?? '') === String(orderId) && String(assignment.assignment_control ?? '') === String(assignmentControl));
+        }) ?? null;
+};
+
+function escapeHTML(value) {
+        const element = document.createElement('div');
+        element.textContent = String(value ?? '');
+        return element.innerHTML;
+};
+
+async function refreshHomeAssignments() {
+        const data = await getAssignment('https://prodriver.local/getassignments', {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                cache: 'no-store',
+                headers: {
+                        'X-CSRF-Token': drvrToken
+                }
+        });
+
+        if (data?.status !== 'success' || !Array.isArray(data.data)) {
+                throw new Error(data?.message ?? 'Unable to retrieve assignments.');
         }
 
-        lastAssignmentsUpdate = Date.now();
+        const activeAssignments = getActiveAssignments(data.data);
+        localStorage.setItem('assignments', JSON.stringify(activeAssignments));
+
+        renderHomeTable(activeAssignments);
+        return activeAssignments;
+};
+
+function broadcastAssignmentsUpdate(assignments) {
+        if (assignmentsChannel) {
+                assignmentsChannel.postMessage({
+                        type: 'assignments-updated'
+                });
+                return;
+        }
+
+        // StorageEvent fallback for browsers without BroadcastChannel.
+        localStorage.setItem('assignments', JSON.stringify(assignments));
+};
+
+dashboardTableBody?.addEventListener('click', async (event) => {
+        const actionButton = event.target.closest('[data-assignment-action]');
+
+        // Confirm / Cancel owns this click.
+        if (actionButton) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const row = actionButton.closest('tr');
+                const orderId = row?.dataset.orderId ?? '';
+                const assignmentControl = row?.dataset.assignmentControl ?? '';
+                const action = actionButton.dataset.assignmentAction ?? '';
+
+                if (!orderId || !assignmentControl || !['confirm', 'cancel'].includes(action)) {
+                        showFlashAlert('error', 'Invalid assignment request.');
+                        return;
+                }
+
+                await submitAssignmentDecision(orderId, assignmentControl, action, row);
+                return;
+        }
+
+        // Otherwise, treat the assignment row as a details request.
+        const row = event.target.closest('tr[data-assignment-control]');
+
+        if (!row) {
+                return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const assignment = findHomeAssignment(row);
+        if (!assignment) {
+                showFlashAlert('error', 'Unable to load assignment details.');
+                return;
+        }
+
+        showHomeAssignmentDetails(assignment);
+});
+
+async function submitAssignmentDecision(orderId, assignmentControl, action, row) {
+        const buttons = row.querySelectorAll('[data-assignment-action]');
+
+        buttons.forEach(button => {
+                button.disabled = true;
+        });
+
+        const formData = new FormData();
+
+        formData.append('__method', 'PATCH');
+        formData.append('order_id', orderId);
+        formData.append('assignment_control', assignmentControl);
+        formData.append(action, '1');
+
+        try {
+                const data = await proDriverRequest('/assignmentstatushandler', {
+                        method: 'POST',
+                        headers: {
+                                'X-CSRF-Token': drvrToken
+                        },
+                        body: formData
+                });
+
+                if (data?.status !== 'success') {
+                        throw new Error(data?.message ?? 'Assignment decision failed.');
+                }
+
+                showFlashAlert('success', data.message ?? (action === 'confirm' ? 'Assignment confirmed.' : 'Assignment canceled.'));
+
+                const refreshedAssignments = await refreshHomeAssignments();
+                broadcastAssignmentsUpdate(refreshedAssignments);
+        } catch (error) {
+                console.error('[HOME ASSIGNMENT DECISION ERROR]', error);
+                showFlashAlert('error', error?.message ?? 'Unable to update the assignment.');
+
+                buttons.forEach(button => {
+                        button.disabled = false;
+                });
+        }
 };
 
 driverStatusHistory.init();
 messagePreview.init();
 
 // --- BroadcastChannel + Fallback Setup ---
-let bcSupported = false;
-
 try {
-        const bc = new BroadcastChannel('assignments');
+        assignmentsChannel = new BroadcastChannel('assignments');
         bcSupported = true;
-        bc.onmessage = async (evt) => {
-                if (evt?.data?.type === 'assignments-updated') {
-                        const fresh = await getAssignment("https://prodriver.local/getassignments", {
-                                method: 'GET',
-                                mode: 'cors',
-                                credentials: 'include',
-                                cache: 'no-store',
-                                headers: {
-                                        'X-CSRF-Token': drvrToken
-                                }
-                        });
-                        if (fresh?.status === 'success') {
-                                const activeAssignments = fresh.data.filter(a => !a.completed_at && !a.canceled_at);
-                                localStorage.setItem('assignments', JSON.stringify(activeAssignments));
-                                renderHomeTable(activeAssignments, true);
-                        }
+
+        assignmentsChannel.onmessage = async (evt) => {
+                if (evt?.data?.type !== 'assignments-updated') {
+                        return;
+                }
+
+                try {
+                        await refreshHomeAssignments();
+                } catch (error) {
+                        console.error('[SYNC] Failed to refresh assignments:', error);
+                        showFlashAlert('error', 'Unable to refresh assignments.');
                 }
         };
 } catch {
-  bcSupported = false;
+        bcSupported = false;
+        assignmentsChannel = null;
 };
 
 // --- Fallback if BroadcastChannel unavailable ---
@@ -128,7 +384,7 @@ if (!bcSupported) {
                 if (event.key === 'assignments' && event.newValue) {
                         try {
                                 const updated = JSON.parse(event.newValue);
-                                renderHomeTable(updated, true);
+                                renderHomeTable(updated);
                                 console.log('[SYNC] Home updated from storage fallback.');
                         } catch (err) {
                                 console.error('Failed to parse updated assignments:', err);
@@ -155,60 +411,34 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
         };
 
-        getAssignment("https://prodriver.local/getassignments", {
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                cache: 'no-store',
-                headers: {
-                        'X-CSRF-Token': drvrToken
-                }
-        })
-        .then(data => {
-                if (data?.status === 'success' && Array.isArray(data.data)) {
-                        const activeAssignments = data.data.filter(a => !a.completed_at && !a.canceled_at);
-                        localStorage.setItem('assignments', JSON.stringify(activeAssignments));
-                        renderHomeTable(activeAssignments);
-                        handleBirthdayTheme();
-                        return;
-                }
-                showNoDashboardAssignments();
+        refreshHomeAssignments().then(() => {
                 handleBirthdayTheme();
         })
         .catch(error => {
                 console.error('Fetch operation failed:', error);
+                showNoDashboardAssignments();
+                handleBirthdayTheme();
                 showFlashAlert('error', 'The dashboard could not be refreshed.');
         });
 });
 
 // --- Tab Focus Auto Refresh (debounced) ---
 document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState !== 'visible') return;
-
-    const now = Date.now();
-    if (now - lastAssignmentsUpdate < 5000) return; // prevent too frequent reloads
-
-    try {
-        const fresh = await getAssignment("https://prodriver.local/getassignments", {
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'include',
-            cache: 'no-store',
-            headers: { 'X-CSRF-Token': drvrToken }
-        });
-
-        if (fresh?.status === 'success' && Array.isArray(fresh.data)) {
-                const activeAssignments = fresh.data.filter(a => !a.completed_at && !a.canceled_at);
-                localStorage.setItem('assignments', JSON.stringify(activeAssignments));
-                renderHomeTable(activeAssignments, true);
-                return;            
+        if (document.visibilityState !== 'visible') {
+                return;
         }
-        showNoDashboardAssignments();
-        showFlashAlert('error', 'Unable to retrieve assignments.');
-    } catch (error) {
-        console.error('[SYNC] Failed to refresh dashboard:', error);
-        showFlashAlert('error', 'Failed to refresh dashboard.');
-    }
+
+        const now = Date.now();
+        if (now - lastAssignmentsUpdate < 5000) {
+                return;
+        }
+
+        try {
+                await refreshHomeAssignments();
+        } catch (error) {
+                console.error('[SYNC] Failed to refresh dashboard:', error);
+                showFlashAlert('error', 'Failed to refresh dashboard.');
+        }
 });
 
 function handleBirthdayTheme() {

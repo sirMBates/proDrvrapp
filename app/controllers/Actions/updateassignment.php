@@ -11,6 +11,7 @@ use App\Repositories\TimesheetRepository;
 use App\Services\AssignmentService;
 use App\Services\EmergencyService;
 use App\Services\AssignmentStatusVerificationService;
+use App\Services\AssignmentOperationalGate;
 use App\Validation\AssignmentValidator;
 use App\ImportExport\AssignmentExporter;
 use Core\Flash;
@@ -75,7 +76,8 @@ if ($method === 'PATCH') {
 
             $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
             $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService);
+            $assignmentOperationalGate = new AssignmentOperationalGate();
+            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService, $assignmentOperationalGate);
 
             $prepared = $assignmentService->prepareUpdate((int) $orderId, $driverId, $assignmentControl, $data);
 
@@ -254,7 +256,8 @@ if ($method === 'PATCH') {
 
             $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
             $emergencyService = new EmergencyService($pdo, $emergencyRepository, $driverStatusRepository);
-            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService);
+            $assignmentOperationalGate = new AssignmentOperationalGate();
+            $assignmentService = new AssignmentService($assignmentRepository, $driverSharedNoteRepository, $emergencyService, $timesheetRepository, $assignmentStatusVerificationService, $assignmentOperationalGate);
 
             // PREPARE / VALIDATE
             // No database or filesystem mutations happen here.

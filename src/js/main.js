@@ -70,7 +70,7 @@ $(document).ready(() => {
                         button: 'Understood'
                 },
                 '/assignments': {
-                        text: `This is where your job orders will be viewed. You\'ll be able to edit certain times, details and add notes for dispatch and your personal reference.<br> You must confirm the job by clicking the button below once received.<br> When you\'re completing the job, click the edit button down below if there are any changes to be made.<br> If no changes, complete the dispatch order.<br> You can also cancel the job if dispatch allows.`, 
+                        text: `This is your active assignment workspace. Confirmed assignments scheduled for today, along with any earlier assignments that are still in progress, will appear here. Once Garage Report Time is reached, the available assignment actions will unlock so you can update job information, collect required signatures and complete the assignment.`, 
                         button: 'Ok'
                 },
                 '/profile': {
@@ -89,15 +89,14 @@ $(document).ready(() => {
         });
 
         infoBtn.addEventListener('click', () => {
-                modalInstance.show();
-        });
-
-        infoModal.addEventListener('shown.bs.modal', () => {
                 const path = curView;
+
                 if (modalMessages[path]) {
                         const { text, button } = modalMessages[path];
                         infoModalMsg.info(text, button);
                 }
+
+                modalInstance.show();
         });
 
         infoModBtn.addEventListener('click', () => {
@@ -250,8 +249,7 @@ window.addEventListener('driver-status-updated', (e) => {
         if (statusRecord?.driverStatus === 'Emergency') {
             applyEmergencyUiState(true);
         }
-    }
-);
+});
 
 function applyEmergencyUiState(active) {
         if (active) {

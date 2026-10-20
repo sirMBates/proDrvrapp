@@ -145,8 +145,6 @@ include "partials/confirm-modal.php";
                         <section id="workOrder-btns" class="vstack gap-2 col-lg-12 mx-auto">
                                 <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
                                 <input type="hidden" name="__method" value="PATCH">
-                                <button id="confirm-job" class="btn btn-outline-primary" type="button" name="confirm" disabled>Confirm</button>
-                                <button id="cancel-job" class="btn btn-outline-danger" type="button" name="cancel" disabled>Cancel</button>
                                 <button id="save-assignment" class="btn btn-outline-info" type="submit" name="modify" value="1" disabled>Save Changes</button>
                                 <button id="submit-assignment" class="btn btn-outline-success" type="submit" name="assignment-complete" value="1" disabled>Complete Dispatch Order</button>
                         </section>

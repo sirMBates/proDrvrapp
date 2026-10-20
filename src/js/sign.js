@@ -27,13 +27,14 @@ const unconfirmModalOptBtn = document.querySelector('#confirm-modal-cancel');
 const signBtnContainer = signBox.childNodes[3];
 const signatureQrContainer = document.querySelector('#signature-qr-container');
 const signatureQr = document.querySelector('#signature-qr');
+
 let pendingWarningFor = null;
 let signatureWarningTimer = null;
-let signature;
 let currentSignatureOrderId = '';
 let currentSignatureAssignmentControl = '';
 let currentLocalSignatureType = null;
 let signatureStatusPollTimer = null;
+let currentOperationalAccess = false;
 
 async function blockIfEmergencyActive() {
     const emergencyState = await syncEmergencyState();
@@ -98,6 +99,11 @@ function finalizeSignatureInterface() {
 
     openSignBoxBtn?.classList.remove('d-none');
     $(openSignBoxBtn).prop('disabled', true);
+};
+
+function updateSignatureOperationalState() {
+    if (!openSignBoxBtn) return;
+    $(openSignBoxBtn).prop('disabled', !currentOperationalAccess);
 };
 
 function getSignatureWarningKey(assignmentControl) {
@@ -470,21 +476,44 @@ function showWarnModalForAssignment(assignmentControl, requiresSignature, signat
     });
 };
 
+window.addEventListener('assignment-operational-access-changed', (event) => {
+    const {
+        orderId,
+        assignmentControl,
+        operationalAccess
+    } = event.detail ?? {};
+
+    const isCurrentAssignment = String(orderId ?? '') === String(currentSignatureOrderId ?? '') && String(assignmentControl ?? '') === String(currentSignatureAssignmentControl ?? '');
+
+    if (!isCurrentAssignment) {
+        return;
+    }
+
+    currentOperationalAccess = operationalAccess === true;
+    updateSignatureOperationalState();
+});
+
 // Listen for the event from assignment.js
 window.addEventListener('assignmentChanged', (e) => {
     const {
         orderId,
         assignmentControl,
         requiresSignature,
-        signatureStatus
+        signatureStatus,
+        operationalAccess
     } = e.detail ?? {};
 
     currentSignatureOrderId = orderId ?? '';
     currentSignatureAssignmentControl = String(assignmentControl ?? '');
+    currentOperationalAccess = operationalAccess === true;
+
     showWarnModalForAssignment(currentSignatureAssignmentControl, Boolean(requiresSignature), signatureStatus);
+
     if (requiresSignature) {
         restoreSignatureState(signatureStatus);
     }
+
+    updateSignatureOperationalState();
 });
 
 // On unconfirm modal btn, handle signature already recorded for post trip.
@@ -535,6 +564,11 @@ async function unConfirmPostSignHandler() {
 // Choose how to collect the pre-inspection signature.
 $(openSignBoxBtn).on('click', async () => {
     if (await blockIfEmergencyActive()) {
+        return;
+    }
+
+    if (!currentOperationalAccess) {
+        showFlashAlert('info', 'Signature collection is available at Garage Report Time.');
         return;
     }
 

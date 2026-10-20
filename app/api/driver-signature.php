@@ -6,6 +6,7 @@ use App\Repositories\AssignmentRepository;
 use App\Repositories\DriverStatusRepository;
 use App\Services\AssignmentStatusVerificationService;
 use App\Services\SignatureService;
+use App\Services\AssignmentOperationalGate;
 use Core\Database;
 use Core\Storage;
 
@@ -58,10 +59,11 @@ try {
     $driverStatusRepository = new DriverStatusRepository($pdo);
 
     $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+    $assignmentOperationalGate = new AssignmentOperationalGate();
 
     $storage = new Storage();
 
-    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage);
+    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage, $assignmentOperationalGate);
 
     $request = [
         'order_id' => (int) $orderId,

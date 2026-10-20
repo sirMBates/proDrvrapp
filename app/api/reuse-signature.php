@@ -6,6 +6,7 @@ use App\Repositories\AssignmentRepository;
 use App\Repositories\DriverStatusRepository;
 use App\Services\SignatureService;
 use App\Services\AssignmentStatusVerificationService;
+use App\Services\AssignmentOperationalGate;
 use Core\Database;
 use Core\Storage;
 
@@ -73,12 +74,13 @@ try {
     $driverStatusRepository = new DriverStatusRepository($pdo);
 
     $assignmentStatusVerificationService = new AssignmentStatusVerificationService($assignmentRepository, $driverStatusRepository);
+    $assignmentOperationalGate = new AssignmentOperationalGate();
 
     $storage = new Storage();
 
-    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage);
+    $signatureService = new SignatureService($pdo, $assignmentRepository, $assignmentStatusVerificationService, $storage, $assignmentOperationalGate);
 
-    $signatureData = $signatureService->reusePreSignatureAsPost((int) $orderId, $driverId, $assignentControl);
+    $signatureData = $signatureService->reusePreSignatureAsPost((int) $orderId, $driverId, $assignmentControl);
 
     http_response_code(200);
     echo json_encode([
