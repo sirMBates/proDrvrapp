@@ -97,6 +97,78 @@ include "partials/info-modal.php";
                                 </div>
                         </div>
 
+                        <!-- CDL License -->
+                        <div class="col-12">
+                                <div class="card field-card">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                        <h6 class="text-muted mb-1">CDL / Driver License</h6>
+                                                        <p id="cdlNumberDisplay" class="field-value"></p>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+
+                        <!-- CDL Issuing State -->
+                        <div class="col-12">
+                                <div class="card field-card">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                        <h6 class="text-muted mb-1">Issuing State</h6>
+                                                        <p id="cdlStateDisplay" class="field-value"></p>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+
+                        <!-- CDL Status -->
+                        <div class="col-12">
+                                <div class="card field-card">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                        <h6 class="text-muted mb-1">CDL Status</h6>
+                                                        <p id="cdlStatusDisplay" class="field-value"></p>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+
+                        <!-- CDL Expiration -->
+                        <div class="col-12">
+                                <div class="card field-card">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                        <h6 class="text-muted mb-1">CDL Expiration</h6>
+                                                        <p id="cdlExpirationDisplay" class="field-value"></p>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+
+                        <!-- DOT Medical Status -->
+                        <div class="col-12">
+                                <div class="card field-card">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                        <h6 class="text-muted mb-1">DOT Medical Status</h6>
+                                                        <p id="dotMedStatusDisplay" class="field-value"></p>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+
+                        <!-- DOT Medical Expiration -->
+                        <div class="col-12">
+                                <div class="card field-card">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                                <div>
+                                                        <h6 class="text-muted mb-1">DOT Medical Expiration</h6>
+                                                        <p id="dotMedExpirationDisplay" class="field-value"></p>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+
                         <!-- Status -->
                         <div class="col-12">
                                 <div class="card field-card">

@@ -42,7 +42,7 @@ class ScriptsMiddleware {
                 return ['/dist/js/signup.js'];
 
             case '/register':
-                return ['/dist/js/registerprofilehandler.js'];
+                return ['/dist/js/register-onboarding.js'];
 
             case '/signin':
                 return ['/dist/js/signin.js'];
@@ -82,7 +82,7 @@ class ScriptsMiddleware {
                 return ['/dist/js/timesheet-history.js'];
 
             case '/profile':
-                return ['/dist/js/profilehandler.js'];
+                return ['/dist/js/profile.js'];
 
             case '/signature':
                 return ['/dist/js/signature-access.js'];

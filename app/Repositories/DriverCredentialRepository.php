@@ -14,14 +14,20 @@ class DriverCredentialRepository {
         $this->pdo = $pdo ?? (new Database())->connect();
     }
 
-    public function create(int $userId, string $operatorId): int {
-        $sql = "INSERT INTO driver_credentials (user_id, operator_id)
-                VALUES (:user_id, :operator_id)";
+    public function create(int $userId, string $operatorId, string $encryptedCdlNumber, string $cdlState, string $cdlExpirationDate, string $dotMedExpirationDate): int {
+        $sql = "INSERT INTO driver_credentials (user_id, operator_id, cdl_number, cdl_state, cdl_status, cdl_expiration_date, dot_med_status, dot_med_expiration_date)
+                VALUES (:user_id, :operator_id, :cdl_number, :cdl_state, :cdl_status, :cdl_expiration_date, :dot_med_status, :dot_med_expiration_date)";
         $stmt = $this->pdo->prepare($sql);
 
         $stmt->execute([
             ':user_id' => $userId,
-            ':operator_id' => $operatorId
+            ':operator_id' => $operatorId,
+            ':cdl_number' => $encryptedCdlNumber,
+            ':cdl_state' => $cdlState,
+            ':cdl_status' => 'valid',
+            ':cdl_expiration_date' => $cdlExpirationDate,
+            ':dot_med_status' => 'valid',
+            ':dot_med_expiration_date' => $dotMedExpirationDate
         ]);
 
         return (int) $this->pdo->lastInsertId();

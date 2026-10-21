@@ -31,21 +31,21 @@ include "partials/flashmessage.php";
                                 </div>
 
                                 <div class="input-group mb-2">
-                                        <span class="input-group-text"><i class="fa-solid fa-cake-candles fs-4 text-primary"></i></span>
-                                        <div class="form-floating">
-                                                <input id="date-of-birth" type="date" class="form-control form-control-lg" name="dateofbirth" required>
-                                                <label for="date-of-birth" class="text-capitalize"><b>birth date</b></label>
-                                        </div>
-                                        <div class="invalid-feedback fs-5"><strong>Enter your birthdate.</strong></div>
-                                </div>
-
-                                <div class="input-group mb-2">
                                         <span class="input-group-text"><i class="fa-solid fa-mobile fs-4 text-primary"></i></span>
                                         <div class="form-floating">
                                                 <input id="mobile_num" type="tel" inputmode="tel" class="form-control form-control-lg" name="mobilenum" placeholder="Mobile number" pattern="[0-9]{10}" required>
                                                 <label for="mobile_num" class="text-capitalize"><b>mobile number</b></label>
                                         </div>
                                         <div class="invalid-feedback fs-5"><strong>Enter mobile number.</strong></div>
+                                </div>
+
+                                <div class="input-group mb-2">
+                                        <span class="input-group-text"><i class="fa-solid fa-cake-candles fs-4 text-primary"></i></span>
+                                        <div class="form-floating">
+                                                <input id="date-of-birth" type="date" class="form-control form-control-lg" name="dateofbirth" required>
+                                                <label for="date-of-birth" class="text-capitalize"><b>birth date</b></label>
+                                        </div>
+                                        <div class="invalid-feedback fs-5"><strong>Enter your birthdate.</strong></div>
                                 </div>
 
                                 <div class="input-group mb-2">

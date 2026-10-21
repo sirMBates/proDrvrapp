@@ -14,20 +14,28 @@ class RegistrationContr {
     private string $lastName;
     private string $mobileNumber;
     private string $birthDate;
+    private string $cdlNumber;
+    private string $cdlState;
+    private string $cdlExpirationDate;
+    private string $dotMedExpirationDate;
     private RegistrationService $registrationService;
 
-    public function __construct(int $userId, string $operatorId, string $firstName, string $lastName, string $mobileNumber, string $birthDate) {
+    public function __construct(int $userId, string $operatorId, string $firstName, string $lastName, string $mobileNumber, string $birthDate, string $cdlNumber, string $cdlState, string $cdlExpirationDate, string $dotMedExpirationDate) {
         $this->userId = $userId;
         $this->operatorId = $operatorId;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->mobileNumber = $mobileNumber;
         $this->birthDate = $birthDate;
+        $this->cdlNumber = $cdlNumber;
+        $this->cdlState = $cdlState;
+        $this->cdlExpirationDate = $cdlExpirationDate;
+        $this->dotMedExpirationDate = $dotMedExpirationDate;
         $this->registrationService = new RegistrationService();
     }
 
     public function processProfile(): void {
-        if (!Validator::required($this->operatorId) || !Validator::required($this->firstName) || !Validator::required($this->lastName) || !Validator::required($this->mobileNumber) || !Validator::required($this->birthDate)) {
+        if (!Validator::required($this->operatorId) || !Validator::required($this->firstName) || !Validator::required($this->lastName) || !Validator::required($this->mobileNumber) || !Validator::required($this->birthDate) || !Validator::required($this->cdlNumber) || !Validator::required($this->cdlState) || !Validator::required($this->cdlExpirationDate) || !Validator::required($this->dotMedExpirationDate)) {
             Flash::setMsg('warning', 'Please fill in all required fields.');
             header("Location: /register?warning=missing+info"); //emptyinputs
             exit();
@@ -57,7 +65,31 @@ class RegistrationContr {
             exit();
         }
 
-        $updated = $this->registrationService->completeRegistration($this->userId, $this->operatorId, $this->firstName, $this->lastName, $this->mobileNumber, $this->birthDate);
+        if (!Validator::matches($this->cdlNumber, '/^[A-Za-z0-9\- ]{1,32}$/')) {
+            Flash::setMsg('warning', 'Please enter a valid driver license number.');
+            header("Location: /register?warning=invalid+license");
+            exit();
+        }
+
+        if (!Validator::matches($this->cdlState, '/^[A-Z]{2}$/')) {
+            Flash::setMsg('warning', 'Please enter a valid issuing state.');
+            header("Location: /register?warning=invalid+state");
+            exit();
+        }
+
+        if (!Validator::currentOrFutureDate($this->cdlExpirationDate)) {
+            Flash::setMsg('warning', 'Please enter a valid driver license expiration date.');
+            header("Location: /register?warning=invalid+license+expiration");
+            exit();
+        }
+
+        if (!Validator::currentOrFutureDate($this->dotMedExpirationDate)) {
+            Flash::setMsg('warning', 'Please enter a valid DOT medical expiration date.');
+            header("Location: /register?warning=invalid+medical+expiration");
+            exit();
+        }
+
+        $updated = $this->registrationService->completeRegistration($this->userId, $this->operatorId, $this->firstName, $this->lastName, $this->mobileNumber, $this->birthDate, $this->cdlNumber, $this->cdlState, $this->cdlExpirationDate, $this->dotMedExpirationDate);
 
         if (!$updated) {
             Flash::setMsg('error', 'The registration could not be completed. Please try again.');

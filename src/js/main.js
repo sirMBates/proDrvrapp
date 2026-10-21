@@ -1,5 +1,5 @@
 import { ThemeManager } from './theme.js';
-import { initProfilePictureHandler } from './profile.js';
+import { initProfilePictureHandler } from "./profile-picture-handler.js";
 import { buildModal } from './appmodal.js';
 import { proDriverRequest, showFlashAlert, getCurrentView } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';

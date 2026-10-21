@@ -25,7 +25,6 @@ include_once base_path("app/SubmissionHandlers/get_drvr.php");
 
 $getDriversProfile = new GetDrvrContr();
 $getDriversProfile->driverInfo();
-echo json_encode($operator);
 exit();
 
 ?>

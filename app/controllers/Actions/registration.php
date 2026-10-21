@@ -43,10 +43,14 @@ $lastName = trim((string) ($_POST['surname'] ?? ''));
 $mobileNumber = trim((string) ($_POST['mobilenum'] ?? ''));
 $birthDate = trim((string) ($_POST['dateofbirth'] ?? ''));
 $operatorId = 'PRODRVR-' . str_pad((string) $userId, 5, '0', STR_PAD_LEFT);
+$cdlNumber = trim((string) ($_POST['cdl_driver_license'] ?? ''));
+$cdlState = strtoupper(trim((string) ($_POST['driver_license_state'] ?? '')));
+$cdlExpirationDate = trim((string) ($_POST['driver_license_expire'] ?? ''));
+$dotMedExpirationDate = trim((string) ($_POST['dot_medical_expire'] ?? ''));
 
 // Complete the driver's registration profile. ↓
 include_once base_path("app/SubmissionHandlers/complete_registration.php");
-$registration = new RegistrationContr($userId, $operatorId, $firstName, $lastName, $mobileNumber, $birthDate);
+$registration = new RegistrationContr($userId, $operatorId, $firstName, $lastName, $mobileNumber, $birthDate, $cdlNumber, $cdlState, $cdlExpirationDate, $dotMedExpirationDate);
 $registration->processProfile();
 
 setcookie(
@@ -59,6 +63,7 @@ setcookie(
     true                    // httponly
 );
 
+unset($_SESSION['registration_pending']);
 unset($_SESSION['user_id']);
 unset($_SESSION['user_name']);
 

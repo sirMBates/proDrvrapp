@@ -29,6 +29,7 @@ $signup = new AddDrvrContr($username, $email, $password);
 $signup->addDriver();
 
 $_SESSION['user_name'] = $username;
+$_SESSION['registration_pending'] = true;
 Flash::setMsg('success', 'Account created successfully! Please complete your profile.');
 header("Location: /register?success=acct+created", true, 303);
 exit();

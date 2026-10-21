@@ -85,4 +85,5 @@ class AddDrvrContr {
         return $this->userRepository->checkUser($this->username, $this->email);
     }
 }
+
 ?>

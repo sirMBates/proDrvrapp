@@ -255,6 +255,22 @@ final class Validator {
 
         return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', trim($value)) === 1;
     }
+
+    public static function currentOrFutureDate(mixed $value): bool {
+        if (!self::date($value)) {
+            return false;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', trim((string) $value));
+
+        if ($date === false) {
+            return false;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        return $date >= $today;
+    }
 }
 
 ?>

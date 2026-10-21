@@ -30,6 +30,7 @@ class DriverProfileService {
         }
 
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+        $cdlNumber = Crypto::decrypt($credentials['cdl_number'], $key);
 
         return [
             'userId' => (int) $user['user_id'],
@@ -41,10 +42,27 @@ class DriverProfileService {
             'lastName' => Crypto::decrypt($user['last_name'], $key),
             'mobileNumber' => Crypto::decrypt($user['mobile_number'], $key),
             'birthdate' => Crypto::decrypt($user['birth_date'], $key),
+
+            'cdlNumber' => $this->maskCdlNumber($cdlNumber),
+            'cdlState' => $credentials['cdl_state'],
+            'cdlStatus' => $credentials['cdl_status'],
+            'cdlExpirationDate' => $credentials['cdl_expiration_date'],
+            'dotMedStatus' => $credentials['dot_med_status'],
+            'dotMedExpirationDate' => $credentials['dot_med_expiration_date'],
             'profilePicture' => $user['profile_picture'] ?: null
         ];
     }
-}
 
+    private function maskCdlNumber(string $cdlNumber): string {
+        $visibleCharacters = 5;
+        $length = strlen($cdlNumber);
+
+        if ($length <= $visibleCharacters) {
+            return str_repeat('*', $length);
+        }
+
+        return str_repeat('*', $length - $visibleCharacters). substr($cdlNumber, -$visibleCharacters);
+    }
+}
 
 ?>
