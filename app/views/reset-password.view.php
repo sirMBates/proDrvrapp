@@ -2,9 +2,6 @@
     require "partials/outhead.php";
     $alert = new Core\Flash();
     include "partials/flashmessage.php";
-    if (isset($_GET['cleared'])) {
-        $_SESSION['reset'] = $_GET['cleared'];
-    }
 ?>
 
     <main class="container-fluid d-flex justify-content-center">
@@ -18,10 +15,6 @@
                     <div class="input-group my-1">
                             <input type="password" id="resetpswd" class="form-control fs-4" name="password" placeholder="Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Password" data-bs-content="Must contain a minimum of 8 characters with atleast 1 (U)ppercase letter, 1 (l)owercase letter, 1 number and 1 special character. (i.e. !@#%&$_)" data-bs-placement="top" data-bs-trigger="focus" required><span class="input-group-text rounded-end" id="pwd-icon-click" aria-describedby="password"><i class="fa-solid fa-eye" id="pwd-icon"></i></span>
                             <div class="invalid-feedback">Please enter a password</div>
-                    </div>
-
-                    <div class="input-group">
-                            <input id="resetToken" type="hidden" class="form-control" name="resetToken" value="<?= $_SESSION['reset']; ?>" required>
                     </div>
 
                     <div class="input-group my-1">

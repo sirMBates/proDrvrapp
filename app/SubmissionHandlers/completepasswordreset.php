@@ -21,20 +21,20 @@ class CompletePasswordResetContr {
     public function completePasswordReset(): void {
         if (!Validator::required($this->password)) {
             Flash::setMsg('warning', 'Please enter your new password.');
-            header("Location: /compreset?warning=left+blank");
+            header("Location: /reset-password", true, 303);
             exit();
         }
 
         if (!UserValidator::password($this->password)) {
             Flash::setMsg('warning', 'Please re-type your password.');
-            header("Location: /compreset?warning=fix");
+            header("Location: /reset-password", true, 303);
             exit();
         }
 
         $completed = $this->passwordResetService->completePasswordReset($this->token, $this->password);
         if (!$completed) {
             Flash::setMsg('error', 'This password reset is invalid, expired, or has already been used.');
-            header("Location: /forget?error=reset+failed");
+            header("Location: /forget?error=reset+failed", true, 303);
             exit();
         }
     }

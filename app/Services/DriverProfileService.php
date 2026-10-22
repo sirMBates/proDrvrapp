@@ -30,7 +30,8 @@ class DriverProfileService {
         }
 
         $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
-        $cdlNumber = Crypto::decrypt($credentials['cdl_number'], $key);
+        $encryptedCdlNumber = $credentials['cdl_number'] ?? null;
+        $cdlNumber = $encryptedCdlNumber !== null && $encryptedCdlNumber !== '' ? Crypto::decrypt($credentials['cdl_number'], $key) : null;
 
         return [
             'userId' => (int) $user['user_id'],
@@ -43,7 +44,7 @@ class DriverProfileService {
             'mobileNumber' => Crypto::decrypt($user['mobile_number'], $key),
             'birthdate' => Crypto::decrypt($user['birth_date'], $key),
 
-            'cdlNumber' => $this->maskCdlNumber($cdlNumber),
+            'cdlNumber' => $cdlNumber !== null ? $this->maskCdlNumber($cdlNumber) : null,
             'cdlState' => $credentials['cdl_state'],
             'cdlStatus' => $credentials['cdl_status'],
             'cdlExpirationDate' => $credentials['cdl_expiration_date'],

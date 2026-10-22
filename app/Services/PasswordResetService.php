@@ -6,15 +6,19 @@ namespace App\Services;
 
 use App\Repositories\PasswordResetRepository;
 use App\Repositories\UserRepository;
+use Core\Database;
+use PDO;
 
 class PasswordResetService {
     private PasswordResetRepository $passwordResetRepository;
     private UserRepository $userRepository;
     private int $resetLifetimeMinutes;
+    private PDO $pdo;
 
     public function __construct() {
-        $this->passwordResetRepository = new PasswordResetRepository();
-        $this->userRepository = new UserRepository();
+        $this->pdo = (new Database())->connect();
+        $this->passwordResetRepository = new PasswordResetRepository($this->pdo);
+        $this->userRepository = new UserRepository($this->pdo);
         $this->resetLifetimeMinutes = (int) ($_ENV['PASSWORD_RESET_LIFETIME_MINUTES'] ?? 15);
     }
 
@@ -67,13 +71,32 @@ class PasswordResetService {
             return false;
         }
 
-        $userId = (int) $resetRequest['user_id'];
-        $passwordUpdated = $this->userRepository->updatePassword($userId, $newPassword);
-        if (!$passwordUpdated) {
+        try {
+            $this->pdo->beginTransaction();
+
+            $userId = (int) $resetRequest['user_id'];
+
+            $passwordUpdated = $this->userRepository->updatePassword($userId, $newPassword);
+            if (!$passwordUpdated) {
+                $this->pdo->rollBack();
+                return false;
+            }
+
+            $resetMarkedUsed = $this->passwordResetRepository->markUsed((int) $resetRequest['reset_id']);
+            if (!$resetMarkedUsed) {
+                $this->pdo->rollBack();
+                return false;
+            }
+
+            $this->pdo->commit();
+            return true;
+        } catch (\Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
             return false;
         }
-
-        return $this->passwordResetRepository->markUsed((int) $resetRequest['reset_id']);
     }
 }
 

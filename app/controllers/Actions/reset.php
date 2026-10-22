@@ -15,10 +15,15 @@ if ($token === '') {
 }
 
 include_once base_path("app/SubmissionHandlers/reset_pwd.php");
+
 $isResetValid = new ResetPwdContr($token);
 $isResetValid->validateResetToken();
+
+$_SESSION['password_reset_pending'] = true;
+$_SESSION['password_reset_token'] = $token;
+
 Flash::setMsg('success', 'Please fill out form below to complete the reset.');
-header("Location: /reset-password?cleared=" . urlencode($token));
+header("Location: /reset-password", true, 303);
 exit();
 
 ?>

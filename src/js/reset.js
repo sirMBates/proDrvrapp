@@ -6,6 +6,7 @@ const confRespwd = document.querySelector('#conf-reset-pswd');
 const pwdIcon = document.querySelector('#pwd-icon');
 const confPwdIcon = document.querySelector('#con-pwd-icon');
 const resetBtn = document.querySelector('#reset');
+const resetForm = document.querySelector('#resetpw');
 
 $(function () {
         $(resetpwd).on('input', () => {
@@ -72,7 +73,7 @@ $(function () {
         }
     });
 
-    $(resetBtn).on('submit', () => {
+    $(resetForm).on('submit', () => {
         return formValidation();
     });
 });
