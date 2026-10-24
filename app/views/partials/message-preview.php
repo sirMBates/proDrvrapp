@@ -1,5 +1,5 @@
 <div id="dashboard-message-preview" class="card dashboard-message-preview shadow-sm">
-    <div class="card-header d-flex justify-content-between align-items-center gap-2 bg-prodriverclr">
+    <div class="card-header d-flex justify-content-between align-items-center gap-2 bg-prodriverclr text-light">
         <h2 class="h5 mb-0">Messages</h2>
 
         <span data-message-preview-total class="badge rounded-pill text-bg-danger d-none"></span>

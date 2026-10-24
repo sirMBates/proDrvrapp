@@ -17,7 +17,7 @@ const defaultProfileImage = "../../dist/images-videos/logoandicons/photo-camera-
 const mainMenuItems = document.querySelectorAll("#navbarSupportedContent .nav-link");
 const driverMenu = document.querySelector(".offcanvas-body");
 const themeBtn = document.querySelector("#themeBtn");
-const themeBtnText = themeBtn?.nextElementSibling ?? null;
+const themeBtnText = document.querySelector('#themeBtnText');
 const themeModeIndicator = document.querySelector('#themeModeIndicator');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = proDriverRequest;
@@ -50,7 +50,7 @@ window.addEventListener('load', async () => {
 
 $(document).ready(() => {
         // Skip modal setup on /help-faq
-        if (curView === '/faqs' || curView === '/counter' || curView === '/message-center' || curView === '/signature' || curView === '/timesheet-review' || curView === '/submitted-timesheets') {
+        if (curView === '/faqs' || curView === '/counter' || curView === '/preferences' || curView === '/message-center' || curView === '/signature' || curView === '/timesheet-review' || curView === '/submitted-timesheets') {
                 return;
         }
 
@@ -66,7 +66,7 @@ $(document).ready(() => {
                         button: 'Ok'
                 },
                 '/contact': {
-                        text: `Need help with something? Not sure of what to do next? Here, you can use this page to send an email with any problems regarding the use of the app. <u>Please and only if neccessary!</u> For account issues, please refer to your company administrator.`, 
+                        text: `Customize how ProDriver works for you. Preferences let you adjust personal app settings such as appearance, dashboard options and available notification preferences. Settings required by your company or for ProDriver operations may be displayed here but cannot be changed.`, 
                         button: 'Understood'
                 },
                 '/assignments': {
