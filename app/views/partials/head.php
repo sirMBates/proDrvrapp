@@ -6,7 +6,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex">
         <meta name="theme-color" content="#1D5283">
-        <script>(() => {
+        <script>
+        (() => {
                 try {
                         const savedMode = localStorage.getItem('prodriverThemeMode');
                         const legacyOverride = localStorage.getItem('userThemeOverride');
@@ -19,11 +20,16 @@
                         }
 
                         document.documentElement.dataset.bsTheme = mode;
+
+                        const pageGuidance = localStorage.getItem('prodriverPageGuidance');
+                        if (pageGuidance === 'false') {
+                                document.documentElement.classList.add('page-guidance-disabled');
+                        }
                 } catch (error) {
                         document.documentElement.dataset.bsTheme = 'light';
                 }
-        })();</script>
-
+        })();
+        </script>
         <link rel="manifest" href="/manifest.json">
         <link rel="stylesheet" href="/dist/styles/components.css">
         <?php

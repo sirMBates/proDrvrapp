@@ -1,6 +1,5 @@
 import { ThemeManager } from './theme.js';
 import { initProfilePictureHandler } from "./profile-picture-handler.js";
-import { buildModal } from './appmodal.js';
 import { proDriverRequest, showFlashAlert, getCurrentView } from './helpers.js';
 import { ChangeStatus } from './changestatus.js';
 import { syncEmergencyState } from './emergency-state.js';
@@ -9,6 +8,7 @@ import { ConnectionIndicator } from './connectionindicator.js';
 import { StatusDock } from './statusdock.js';
 import { LogoutManager } from './logout.js';
 import { initializeMessageNotifications } from './message-notifications.js';
+import { PageGuidance } from './page-guidance.js';
 import { getPreferences, updatePreference } from './preferences.js';
 
 const curView = getCurrentView();
@@ -23,6 +23,8 @@ const themeModeSwitch = document.querySelector('#themeModeSwitch');
 const themeAutoLabel = document.querySelector('#themeAutoLabel');
 const themeManualLabel = document.querySelector('#themeManualLabel');
 const themeModeDescription = document.querySelector('#themeModeDescription');
+const pageGuidanceSwitch = document.querySelector('#pageGuidanceSwitch');
+const pageGuidanceDescription = document.querySelector('#pageGuidanceDescription');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = proDriverRequest;
 const drvrToken = document.querySelector('#drvrToken').value;
@@ -36,6 +38,7 @@ const returnToServiceButton = document.querySelector('#return-to-service-button'
 const logoutModalError = document.querySelector('#logout-modal-error');
 const logoutTrigger = document.querySelector('#logout-link');
 const driverOffcanvas = document.querySelector('#drivermenu');
+let pageGuidance;
 let connectionIndicator;
 let themeManager;
 let driverStatus;
@@ -135,6 +138,16 @@ function updateThemePreferenceUi() {
     }
 };
 
+function updatePageGuidanceUi(enabled) {
+    if (pageGuidanceSwitch) {
+        pageGuidanceSwitch.checked = enabled;
+    }
+
+    if (pageGuidanceDescription) {
+        pageGuidanceDescription.textContent = enabled ? 'Information helpers are available throughout ProDriver.' : 'Information helpers are hidden. Turn Page Guidance on anytime to restore them.';
+    }
+};
+
 window.addEventListener('load', async () => {
         const emergencyState = await syncEmergencyState();
         if (emergencyState === true) {
@@ -144,81 +157,7 @@ window.addEventListener('load', async () => {
         }
 }, false);
 
-$(document).ready(() => {
-        // Skip modal setup on /help-faq
-        if (curView === '/faqs' || curView === '/counter' || curView === '/preferences' || curView === '/message-center' || curView === '/signature' || curView === '/timesheet-review' || curView === '/submitted-timesheets') {
-                return;
-        }
-
-        const infoBtn = document.querySelector('#notifyinfo');
-        const infoModal = document.querySelector('#info-modal');
-        const infoModalMsg = buildModal;
-        const infoModBtn = document.querySelector('#info-ok');
-
-        // Centralized config for modal messages
-        const modalMessages = {
-                '/': {
-                        text: `Welcome to your dashboard. From here, you can update your status (which will automatically notify dispatch) and get brief details about your job(s) (if any assignments assigned to you) for the day. If and when you need to update your status from another page, click the icon in the navigation bar and search for switch status. That is where you\'ll also find other options as well.`, 
-                        button: 'Ok'
-                },
-                '/contact': {
-                        text: `Customize how ProDriver works for you. Preferences let you adjust personal app settings such as appearance, dashboard options and available notification preferences. Settings required by your company or for ProDriver operations may be displayed here but cannot be changed.`, 
-                        button: 'Understood'
-                },
-                '/assignments': {
-                        text: `This is your active assignment workspace. Confirmed assignments scheduled for today, along with any earlier assignments that are still in progress, will appear here. Once Garage Report Time is reached, the available assignment actions will unlock so you can update job information, collect required signatures and complete the assignment.`, 
-                        button: 'Ok'
-                },
-                '/profile': {
-                        text: `Here on your account info profile, this is where you can view your personal information. You can only update your email, mobile number and password. If you would like to update any of the 3, click the button next to the field you would like to update.`, 
-                        button: 'Ok'
-                },
-                '/timesheet': {
-                        text: `This is your timesheet (cha\`ching\`💰). This sheet will hold a record of each job/order you\'ve done for the week. Once the week is over, a new sheet will be made available for you to utilize. If your payroll dept requests, you may send this sheet to them as is, print it out or download a copy for yourself.`, 
-                        button: 'Ok'
-                }
-        };
-
-        const modalInstance = new bootstrap.Modal(infoModal, {
-                backdrop: 'static',
-                keyboard: false
-        });
-
-        infoBtn.addEventListener('click', () => {
-                const path = curView;
-
-                if (modalMessages[path]) {
-                        const { text, button } = modalMessages[path];
-                        infoModalMsg.info(text, button);
-                }
-
-                modalInstance.show();
-        });
-
-        infoModBtn.addEventListener('click', () => {
-                modalInstance.hide();
-        });
-});
-
 window.addEventListener('DOMContentLoaded', () => {
-        logoutManager = new LogoutManager({
-                logoutTrigger,
-                driverOffcanvas,
-                csrfToken: logoutCsrfToken?.value ?? '',
-                modal: logoutModal,
-                endShiftButton: endShiftLogoutButton,
-                logoutOnlyButton: logoutOnlyButton,
-                returnToServiceButton: returnToServiceButton,
-                errorDisplay: logoutModalError
-        });
-        logoutManager.init();
-
-        if (logoutTrigger) {
-                initializeMessageNotifications({
-                        csrfToken: logoutCsrfToken?.value || drvrToken
-                });
-        }
-
         themeManager = new ThemeManager({
                 themeButton: themeBtn,
                 themeButtonText: themeBtnText,
@@ -254,15 +193,46 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
         });
 
+        pageGuidance = new PageGuidance(curView);
+        pageGuidance.init();
+
+        pageGuidanceSwitch?.addEventListener('change', async () => {
+                const previousState = pageGuidance.isEnabled();
+                const nextState = pageGuidanceSwitch.checked;
+
+                pageGuidance.setEnabled(nextState);
+                updatePageGuidanceUi(nextState);
+
+                localStorage.setItem('prodriverPageGuidance', String(nextState));
+                document.documentElement.classList.toggle('page-guidance-disabled', !nextState);
+
+                try {
+                        await updatePreference('show_page_guidance', nextState);
+                } catch (error) {
+                        console.error('Unable to save Page Guidance preference:', error);
+                        localStorage.setItem('prodriverPageGuidance', String(previousState));
+                        document.documentElement.classList.toggle('page-guidance-disabled', !previousState);
+
+                        pageGuidance.setEnabled(previousState);
+                        updatePageGuidanceUi(previousState);
+
+                        showFlashAlert('danger', 'Your Page Guidance preference could not be saved.');
+                }
+        });
+
         getPreferences().then(preferences => {
                 const accountTheme = preferences?.theme;
+                const showPageGuidance = preferences?.show_page_guidance;
 
-                if (!accountTheme) {
-                        return;
+                if (accountTheme && accountTheme !== themeManager.getMode()) {
+                        themeManager.syncMode(accountTheme);
                 }
 
-                if (accountTheme !== themeManager.getMode()) {
-                        themeManager.syncMode(accountTheme);
+                if (typeof showPageGuidance === 'boolean') {
+                        localStorage.setItem('prodriverPageGuidance', String(showPageGuidance));
+                        document.documentElement.classList.toggle('page-guidance-disabled', !showPageGuidance);
+                        pageGuidance.setEnabled(showPageGuidance);
+                        updatePageGuidanceUi(showPageGuidance);
                 }
         }).catch(error => {
                 console.error('Unable to synchronize driver preferences:', error);
@@ -318,8 +288,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': drvrToken
                 }
-        })
-        .then(result => {
+        }).then(result => {
                 if (result?.status !== 'success') {
                         throw new Error(result?.message || 'Current status could not be loaded.');
                 }
@@ -327,10 +296,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 const currentStatus = result.data?.currentStatus ?? null;
 
                 driverStatus.setConfirmedStatus(currentStatus?.driverStatus || null);
-        })
-        .catch(error => {
+        }).catch(error => {
                 console.error('Unable to load current driver status:', error);
-
                 /*
                 * Cache is only a temporary display fallback.
                 * It does not replace the database.
@@ -354,21 +321,19 @@ window.addEventListener('DOMContentLoaded', () => {
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': drvrToken
                 }
-        })
-        .then(data => {
-            const driver = data;
-            const drvrMainMenu = document.querySelector('#drivermenu');
-            const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
-            if (driver) {
-                drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
-                if (driver['profilePicture']) {
-                    menuProfileImage.setAttribute('src', '/setprofilepicture');  // Assuming profilePicture contains the image URL
-                } else {
-                    menuProfileImage.setAttribute('src', defaultProfileImage); // Default image if no profile picture is found
+        }).then(data => {
+                const driver = data;
+                const drvrMainMenu = document.querySelector('#drivermenu');
+                const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3]; 
+                if (driver) {
+                        drvrMainHeader.textContent = `${driver['firstName']} ${driver['lastName']}`;
+                        if (driver['profilePicture']) {
+                                menuProfileImage.setAttribute('src', '/setprofilepicture');  // Assuming profilePicture contains the image URL
+                        } else {
+                                menuProfileImage.setAttribute('src', defaultProfileImage); // Default image if no profile picture is found
+                        }
                 }
-            }
-        })
-        .catch(error => {
+        }).catch(error => {
                 if (error) {
                         const drvrMainMenu = document.querySelector('#drivermenu');
                         const drvrMainHeader = drvrMainMenu.childNodes[1].childNodes[3];
@@ -376,6 +341,24 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
                 console.error('There was a problem with the fetch operation:', error);
         });
+
+        logoutManager = new LogoutManager({
+                logoutTrigger,
+                driverOffcanvas,
+                csrfToken: logoutCsrfToken?.value ?? '',
+                modal: logoutModal,
+                endShiftButton: endShiftLogoutButton,
+                logoutOnlyButton: logoutOnlyButton,
+                returnToServiceButton: returnToServiceButton,
+                errorDisplay: logoutModalError
+        });
+        logoutManager.init();
+
+        if (logoutTrigger) {
+                initializeMessageNotifications({
+                        csrfToken: logoutCsrfToken?.value || drvrToken
+                });
+        }
 });
 
 // Insert profile image in the driver menu bar

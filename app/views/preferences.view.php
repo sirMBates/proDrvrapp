@@ -1,12 +1,20 @@
 <?php
 require "partials/head.php";
 require "partials/banner.php";
+include "partials/info-modal.php";
 ?>
 
 <main class="container py-4">
     <input type="hidden" id="drvrToken" value="<?= htmlspecialchars($_SESSION['drvr_token'] ?? '') ?>">
     <div class="mb-4">
-        <h1 class="h2 mb-1">Preferences</h1>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="h2 mb-0">Preferences</h1>
+
+            <button type="button" id="notifyinfo" class="btn btn-sm border-0 bg-transparent p-1" aria-label="Preferences information">
+                <i class="fa-solid fa-circle-info fs-5 text-light" aria-hidden="true"></i>
+            </button>
+        </div>
+
         <p class="text-body-secondary mb-0">
             Customize your ProDriver experience.
         </p>
@@ -66,6 +74,33 @@ require "partials/banner.php";
                     </span>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="card shadow-sm mt-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+                <div>
+                    <h2 class="h5 card-title mb-1">
+                        <i class="fa-solid fa-circle-info me-2" aria-hidden="true"></i>
+                        Page Guidance
+                    </h2>
+
+                    <p class="text-body-secondary mb-0">
+                        Show helpful information buttons throughout ProDriver.
+                    </p>
+                </div>
+
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="pageGuidanceSwitch" aria-label="Show page guidance">
+                </div>
+            </div>
+
+            <hr class="my-3">
+
+            <small id="pageGuidanceDescription" class="text-body-secondary">
+                Information helpers are available throughout ProDriver.
+            </small>
         </div>
     </section>
 </main>

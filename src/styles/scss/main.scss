@@ -276,3 +276,6 @@ html[data-bs-theme='dark'] .driver-status-dock.bg-statusdockclr {
     100% { background-color: rgba(255, 0, 0, 0.08); }
 }
 
+.page-guidance-disabled #notifyinfo {
+    display: none !important;
+}
