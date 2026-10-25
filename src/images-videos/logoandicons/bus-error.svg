@@ -1,0 +1,32 @@
+<svg width="500" height="250" viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Road -->
+    <rect x="0" y="180" width="500" height="70" fill="#2d3748"/>
+
+    <!-- Barrier -->
+    <rect x="350" y="120" width="120" height="20" fill="#dc3545"/>
+    <rect x="350" y="140" width="120" height="20" fill="#ffffff"/>
+
+    <!-- Barrier Posts -->
+    <rect x="360" y="90" width="12" height="90" fill="#6c757d"/>
+    <rect x="448" y="90" width="12" height="90" fill="#6c757d"/>
+
+    <!-- Bus Body -->
+    <rect x="80" y="80" rx="12" ry="12"
+          width="220" height="90"
+          fill="#0d6efd"/>
+
+    <!-- Windows -->
+    <rect x="100" y="100" width="35" height="30" fill="#dbeafe"/>
+    <rect x="145" y="100" width="35" height="30" fill="#dbeafe"/>
+    <rect x="190" y="100" width="35" height="30" fill="#dbeafe"/>
+    <rect x="235" y="100" width="35" height="30" fill="#dbeafe"/>
+
+    <!-- Wheels -->
+    <circle cx="130" cy="180" r="20" fill="#111"/>
+    <circle cx="250" cy="180" r="20" fill="#111"/>
+
+    <circle cx="130" cy="180" r="10" fill="#aaa"/>
+    <circle cx="250" cy="180" r="10" fill="#aaa"/>
+
+</svg>

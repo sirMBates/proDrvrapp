@@ -40,10 +40,6 @@ class Router {
             if($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
                 // Check if route is protected
                 if ($route['protected'] && (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
-                    /*
-                    * Preserve only a Messenger page destination.
-                    * Do not save POST requests or arbitrary URLs.
-                    */
                     if (strtoupper($method) === 'GET' && $route['uri'] === '/message-center') {
                         $destination = '/message-center';
 
@@ -71,11 +67,45 @@ class Router {
 
     protected function abort($code = 404){
         http_response_code($code);
-        $_SERVER['IS_ERROR_PAGE'] = true;
-        require base_path("app/views/errors/{$code}.php");
+        $errors = [
+            401 => [
+                'title' => 'Unauthorized',
+                'message' => 'You must sign in before accessing this route.'
+            ],
+
+            403 => [
+                'title' => 'Route Restricted',
+                'message' => 'You do not have permission to access this resource.'
+            ],
+
+            404 => [
+                'title' => 'Route Not Found',
+                'message' => 'The destination you are looking for does not exist.'
+            ],
+
+            419 => [
+                'title' => 'Session Expired',
+                'message' => 'Your session has expired. Please sign in again.'
+            ],
+
+            429 => [
+                'title' => 'Traffic Congestion',
+                'message' => 'Too many requests have been sent. Please slow down and try again.'
+            ],
+
+            500 => [
+                'title' => 'Dispatch Center Offline',
+                'message' => 'Something went wrong on our end.'
+            ]
+        ];
+
+        $errorCode = $code;
+        $errorTitle = $errors[$code]['title'] ?? 'Application Error';
+        $errorMessage = $errors[$code]['message'] ?? 'An unexpected error occurred.';
+
+        require base_path("app/views/errors/error.php");
         exit();
     }
 };
-
 
 ?>
