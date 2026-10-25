@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Services\PreferenceService;
 
-//requireLoginAjax();
+requireLoginAjax();
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -30,7 +30,6 @@ if ($driverId < 1) {
 }
 
 try {
-
     $service = new PreferenceService();
     $preferences = $service->getPreferences($driverId);
 
