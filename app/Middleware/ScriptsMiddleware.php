@@ -56,11 +56,14 @@ class ScriptsMiddleware {
             case '/':
                 return ['/dist/js/home.js'];
 
-            case '/contact':
-                return ['/dist/js/contacthandler.js'];
+            /*case '/contact':
+                return ['/dist/js/contacthandler.js'];*/
 
             case '/counter':
                 return ['/dist/js/ticker.js'];
+
+            case '/preferences':
+                return ['/dist/js/preferences.js'];
 
             case '/assignments':
                 $scripts = ['/dist/js/assignment.js'];

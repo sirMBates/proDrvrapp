@@ -206,6 +206,45 @@ class UserRepository {
 
         return $stmt->fetchAll();
     }
+
+    public function findPreferencesByUserId(int $userId): ?string {
+        if ($userId < 1) {
+            throw new \InvalidArgumentException('Invalid user ID.');
+        }
+
+        $sql = "SELECT preferences FROM users
+                WHERE user_id = :user_id
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':user_id' => $userId
+        ]);
+
+        $result = $stmt->fetch();
+
+        if ($result === false) {
+            throw new \RuntimeException('User not found.');
+        }
+
+        return $result['preferences'];
+    }
+
+    public function updatePreferences(int $userId, string $preferences): bool {
+        if ($userId < 1) {
+            throw new \InvalidArgumentException('Invalid user ID.');
+        }
+
+        $sql = "UPDATE users
+                SET preferences = :preferences
+                WHERE user_id = :user_id";
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':preferences' => $preferences,
+            ':user_id' => $userId
+        ]);
+    }
 }
 
 ?>

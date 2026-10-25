@@ -35,6 +35,7 @@ export class ThemeManager {
 
         this.mode = this.loadSavedMode();
         this.applyMode();
+        this.updateModeIndicator();
         this.themeButton?.addEventListener('click', this.handleThemeButtonClick);
 
         this.startAutoThemeCheck();
@@ -52,6 +53,17 @@ export class ThemeManager {
             this.saveMode(mode);
         }
 
+        this.applyMode();
+        this.updateModeIndicator();
+    }
+
+    syncMode(mode) {
+        if (!VALID_THEME_MODES.includes(mode)) {
+            throw new TypeError(`Invalid theme mode: ${mode}`);
+        }
+
+        this.mode = mode;
+        this.saveMode(mode);
         this.applyMode();
         this.updateModeIndicator();
     }
@@ -106,11 +118,13 @@ export class ThemeManager {
     toggleTheme() {
         const nextTheme = this.activeTheme === THEME_MODES.DARK ? THEME_MODES.LIGHT : THEME_MODES.DARK;
 
-        /*
-         * A manual button click changes the mode
-         * from Auto to an explicit preference.
-         */
         this.setMode(nextTheme);
+
+        window.dispatchEvent(new CustomEvent('theme-mode-changed', {
+            detail: {
+                mode: this.mode
+            }
+        }));
     }
 
     refreshAutoTheme() {

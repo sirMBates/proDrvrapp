@@ -9,6 +9,7 @@ import { ConnectionIndicator } from './connectionindicator.js';
 import { StatusDock } from './statusdock.js';
 import { LogoutManager } from './logout.js';
 import { initializeMessageNotifications } from './message-notifications.js';
+import { getPreferences, updatePreference } from './preferences.js';
 
 const curView = getCurrentView();
 const menuProfileImage = document.querySelector('#menuProfileImage');
@@ -18,7 +19,10 @@ const mainMenuItems = document.querySelectorAll("#navbarSupportedContent .nav-li
 const driverMenu = document.querySelector(".offcanvas-body");
 const themeBtn = document.querySelector("#themeBtn");
 const themeBtnText = document.querySelector('#themeBtnText');
-const themeModeIndicator = document.querySelector('#themeModeIndicator');
+const themeModeSwitch = document.querySelector('#themeModeSwitch');
+const themeAutoLabel = document.querySelector('#themeAutoLabel');
+const themeManualLabel = document.querySelector('#themeManualLabel');
+const themeModeDescription = document.querySelector('#themeModeDescription');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = proDriverRequest;
 const drvrToken = document.querySelector('#drvrToken').value;
@@ -38,6 +42,98 @@ let driverStatus;
 let statusMsg;
 let statusDock;
 let logoutManager;
+
+function applyEmergencyUiState(active) {
+        if (active) {
+                localStorage.setItem('isActiveEmergency', 'true');
+                emergencyBackground.forEach(background => {
+                        background.classList.remove('bg-prodriverclr');
+                        background.classList.add('bg-danger');
+                });
+
+                if (statusMsg) {
+                statusMsg.classList.add('text-danger');
+                }
+        } else {
+                localStorage.removeItem('isActiveEmergency');
+                emergencyBackground.forEach(background => {
+                        background.classList.remove('bg-danger');
+                        background.classList.add('bg-prodriverclr');
+                });
+
+                if (statusMsg) {
+                        statusMsg.classList.remove('text-danger');
+                }
+        }
+
+        window.dispatchEvent(new CustomEvent('emergency-state-changed', { detail: { active }}));
+};
+
+// Highlight the active link of the current page.
+function activeLink() {
+    mainMenuItems.forEach(link => {
+        const href = link.getAttribute('href');
+        const activePaths = (link.dataset.activePaths || '').split(',').map(path => path.trim()).filter(Boolean);
+        let isActive = false;
+
+        if (activePaths.length) {
+            isActive = activePaths.includes(curView);
+        } else if (href && href !== '#') {
+            const linkLocation = new URL(href, window.location.origin).pathname;
+            isActive = curView === linkLocation;
+        }
+
+        link.classList.toggle('active', isActive);
+
+        if (isActive && href && href !== '#') {
+            link.setAttribute('aria-current', 'page');
+        } else {
+            link.removeAttribute('aria-current');
+        }
+    });
+
+    document.querySelectorAll('.dropdown-item[href]').forEach(link => {
+        const linkLocation = new URL(link.getAttribute('href'), window.location.origin).pathname;
+        const isActive = curView === linkLocation;
+
+        link.classList.toggle('active', isActive);
+
+        if (isActive) {
+            link.setAttribute('aria-current', 'page');
+        } else {
+            link.removeAttribute('aria-current');
+        }
+    });
+};
+activeLink();
+
+function updateThemePreferenceUi() {
+    if (!themeManager) {
+        return;
+    }
+
+    const isManual = themeManager.getMode() !== 'auto';
+
+    if (themeModeSwitch) {
+        themeModeSwitch.checked = isManual;
+    }
+
+    if (themeAutoLabel) {
+        themeAutoLabel.classList.toggle('theme-auto', !isManual);
+        themeAutoLabel.classList.toggle('text-body-secondary', isManual);
+        themeAutoLabel.classList.toggle('fw-semibold', !isManual);
+    }
+
+    if (themeManualLabel) {
+        themeManualLabel.classList.toggle('theme-manual', isManual);
+        themeManualLabel.classList.toggle('text-body-secondary', !isManual);
+        themeManualLabel.classList.toggle('fw-semibold', isManual);
+    }
+
+    if (themeModeDescription) {
+        themeModeDescription.textContent = isManual ? 'Choose your Light or Dark theme.' : 'Let ProDriver choose automatically.';
+    }
+};
 
 window.addEventListener('load', async () => {
         const emergencyState = await syncEmergencyState();
@@ -126,12 +222,65 @@ window.addEventListener('DOMContentLoaded', () => {
         themeManager = new ThemeManager({
                 themeButton: themeBtn,
                 themeButtonText: themeBtnText,
-                modeIndicator: themeModeIndicator,
                 driverMenu,
                 statusDock: document.querySelector('#driver-status-dock'),
                 currentView: curView
         });
         themeManager.init();
+        updateThemePreferenceUi();
+
+        window.addEventListener('theme-changed', () => {
+                updateThemePreferenceUi();
+        })
+
+        themeModeSwitch?.addEventListener('change', async () => {
+                const previousMode = themeManager.getMode();
+
+                const nextMode = themeModeSwitch.checked ? themeManager.getActiveTheme() : 'auto';
+
+                if (nextMode === previousMode) {
+                        updateThemePreferenceUi();
+                        return;
+                }
+
+                themeManager.setMode(nextMode);
+
+                try {
+                        await updatePreference('theme', nextMode);
+                } catch (error) {
+                        console.error('Unable to save theme mode:', error);
+                        themeManager.syncMode(previousMode);
+                        showFlashAlert('danger', 'Your theme mode could not be saved.');
+                }
+        });
+
+        getPreferences().then(preferences => {
+                const accountTheme = preferences?.theme;
+
+                if (!accountTheme) {
+                        return;
+                }
+
+                if (accountTheme !== themeManager.getMode()) {
+                        themeManager.syncMode(accountTheme);
+                }
+        }).catch(error => {
+                console.error('Unable to synchronize driver preferences:', error);
+        });
+
+        window.addEventListener('theme-mode-changed', async event => {
+                const mode = event.detail?.mode;
+                if (!mode) {
+                        return;
+                }
+
+                try {
+                        await updatePreference('theme', mode);
+                } catch (error) {
+                        console.error('Unable to save theme preference:', error);
+                        showFlashAlert('danger', 'Your theme changed on this device, but the preference could not be saved.');
+                }
+        });
 
         const statusDockElement = document.querySelector('#driver-status-dock');
         statusDock = new StatusDock(statusDockElement);
@@ -250,67 +399,3 @@ window.addEventListener('driver-status-updated', (e) => {
             applyEmergencyUiState(true);
         }
 });
-
-function applyEmergencyUiState(active) {
-        if (active) {
-                localStorage.setItem('isActiveEmergency', 'true');
-                emergencyBackground.forEach(background => {
-                        background.classList.remove('bg-prodriverclr');
-                        background.classList.add('bg-danger');
-                });
-
-                if (statusMsg) {
-                statusMsg.classList.add('text-danger');
-                }
-        } else {
-                localStorage.removeItem('isActiveEmergency');
-                emergencyBackground.forEach(background => {
-                        background.classList.remove('bg-danger');
-                        background.classList.add('bg-prodriverclr');
-                });
-
-                if (statusMsg) {
-                        statusMsg.classList.remove('text-danger');
-                }
-        }
-
-        window.dispatchEvent(new CustomEvent('emergency-state-changed', { detail: { active }}));
-};
-
-// Highlight the active link of the current page.
-function activeLink() {
-    mainMenuItems.forEach(link => {
-        const href = link.getAttribute('href');
-        const activePaths = (link.dataset.activePaths || '').split(',').map(path => path.trim()).filter(Boolean);
-        let isActive = false;
-
-        if (activePaths.length) {
-            isActive = activePaths.includes(curView);
-        } else if (href && href !== '#') {
-            const linkLocation = new URL(href, window.location.origin).pathname;
-            isActive = curView === linkLocation;
-        }
-
-        link.classList.toggle('active', isActive);
-
-        if (isActive && href && href !== '#') {
-            link.setAttribute('aria-current', 'page');
-        } else {
-            link.removeAttribute('aria-current');
-        }
-    });
-
-    document.querySelectorAll('.dropdown-item[href]').forEach(link => {
-        const linkLocation = new URL(link.getAttribute('href'), window.location.origin).pathname;
-        const isActive = curView === linkLocation;
-
-        link.classList.toggle('active', isActive);
-
-        if (isActive) {
-            link.setAttribute('aria-current', 'page');
-        } else {
-            link.removeAttribute('aria-current');
-        }
-    });
-};
-activeLink();

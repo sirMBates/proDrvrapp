@@ -249,16 +249,12 @@ footer h6 {
 }
 
 .theme-auto {
-    font-size: 0.7em;
-    margin-left: 5px;
-    /*color: gray;*/
+    color: cornflowerblue !important;
     animation: pulseAuto 1.5s infinite;
 }
 
 /* Manual mode style */
 .theme-manual {
-    font-size: 0.7em;
-    margin-left: 5px;
     color: orange !important;
     animation: none; /* no animation for manual override */
 }
