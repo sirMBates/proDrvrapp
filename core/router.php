@@ -36,33 +36,48 @@ class Router {
     }
 
     public function route($uri, $method) {
+        $method = strtoupper($method);
+        $uriExists = false;
+
         foreach($this->routes as $route) {
-            if($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
-                // Check if route is protected
-                if ($route['protected'] && (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
-                    if (strtoupper($method) === 'GET' && $route['uri'] === '/message-center') {
-                        $destination = '/message-center';
+            if ($route['uri'] === $uri) {
+                $uriExists = true;
 
-                        $conversationId = filter_var($_GET['conversation'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                if ($route['method'] === $method) {
+                     // Check if route is protected
+                    if ($route['protected'] && (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
+                        if ($method === 'GET' && $route['uri'] === '/message-center') {
+                            $destination = '/message-center';
 
-                        $recipientId = filter_var($_GET['recipient'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                            $conversationId = filter_var($_GET['conversation'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
-                        if ($conversationId !== false && $conversationId !== null) {
-                            $destination .= '?conversation=' . (int) $conversationId;
-                        } elseif ($recipientId !== false && $recipientId !== null) {
-                            $destination .= '?recipient=' . (int) $recipientId;
+                            $recipientId = filter_var($_GET['recipient'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+                            if ($conversationId !== false && $conversationId !== null) {
+                                $destination .= '?conversation=' . (int) $conversationId;
+                            } elseif ($recipientId !== false && $recipientId !== null) {
+                                $destination .= '?recipient=' . (int) $recipientId;
+                            }
+
+                            $_SESSION['messenger_login_destination'] = $destination;
                         }
 
-                        $_SESSION['messenger_login_destination'] = $destination;
+                        header("Location: /signin");
+                        exit(); 
                     }
 
-                    header("Location: /signin");
-                    exit();
+                    return require base_path($route['controller']);
                 }
-                return require base_path($route['controller']);
             }
         }
-        $this->abort();
+
+        // URI exists, but method did not match
+        if ($uriExists) {
+            $this->abort(403);
+        }
+
+        // URI does not exist at all
+        $this->abort(404);
     }
 
     protected function abort($code = 404){
@@ -75,12 +90,17 @@ class Router {
 
             403 => [
                 'title' => 'Route Restricted',
-                'message' => 'You do not have permission to access this resource.'
+                'message' => 'This route cannot be accessed directly.'
             ],
 
             404 => [
                 'title' => 'Route Not Found',
                 'message' => 'The destination you are looking for does not exist.'
+            ],
+
+            405 => [
+                'title' => 'Method Not Allowed',
+                'message' => 'This method is not allowed'
             ],
 
             419 => [
@@ -106,6 +126,6 @@ class Router {
         require base_path("app/views/errors/error.php");
         exit();
     }
-};
+}
 
 ?>

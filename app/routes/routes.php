@@ -67,3 +67,5 @@ $router->patch('/setprofilepicture', 'app/api/setprofilepicture.php');
 $router->patch('/assignmentstatushandler', 'app/api/assignmentstatushandler.php');
 $router->patch('/assignments', 'app/controllers/Actions/updateassignment.php');
 $router->patch('/updatepreferences', 'app/api/updatepreferences.php');
+
+?>
