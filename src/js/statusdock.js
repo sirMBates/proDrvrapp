@@ -1,9 +1,4 @@
-const DOCK_STORAGE_KEY = 'driverStatusDockState';
-
-const DOCK_STATES = Object.freeze({
-    EXPANDED: 'expanded',
-    COLLAPSED: 'collapsed'
-});
+const DOCK_STORAGE_KEY = 'prodriverStatusDockExpanded';
 
 export class StatusDock {
     constructor(dock) {
@@ -24,7 +19,9 @@ export class StatusDock {
             return;
         }
 
-        this.preferredCollapsed = localStorage.getItem(DOCK_STORAGE_KEY) === DOCK_STATES.COLLAPSED;
+        const cachedExpanded = localStorage.getItem(DOCK_STORAGE_KEY);
+        this.preferredCollapsed = cachedExpanded === 'false';
+
         this.emergencyActive = localStorage.getItem('isActiveEmergency') === 'true';
         this.toggleButton.addEventListener('click', this.handleToggle);
 
@@ -40,9 +37,35 @@ export class StatusDock {
             return;
         }
 
-        this.preferredCollapsed = !this.dock.classList.contains('is-collapsed');
-        localStorage.setItem(DOCK_STORAGE_KEY, this.preferredCollapsed ? DOCK_STATES.COLLAPSED : DOCK_STATES.EXPANDED);
+        const expanded = this.dock.classList.contains('is-collapsed');
+        this.setExpanded(expanded);
+
+        window.dispatchEvent(new CustomEvent('status-dock-preference-changed', {
+            detail: {
+                expanded
+            }
+        }));
+    }
+
+    setExpanded(expanded) {
+        if (typeof expanded !== 'boolean') {
+            throw new TypeError('Status Dock expanded state must be a boolean.');
+        }
+
+        this.preferredCollapsed = !expanded;
+
+        localStorage.setItem(DOCK_STORAGE_KEY, String(expanded));
+
+        if (this.emergencyActive || this.statusUpdating) {
+            this.applyState(false);
+            return;
+        }
+
         this.applyState(this.preferredCollapsed);
+    }
+
+    isExpanded() {
+        return !this.preferredCollapsed;
     }
 
     handleEmergencyState(event) {
@@ -69,6 +92,7 @@ export class StatusDock {
 
     applyState(collapsed) {
         this.dock.classList.toggle('is-collapsed', collapsed);
+        document.documentElement.classList.toggle('status-dock-collapsed', collapsed);
         this.toggleButton.setAttribute('aria-expanded', String(!collapsed));
         this.toggleButton.setAttribute('aria-label', collapsed ? 'Expand driver status dock' : 'Collapse driver status dock');
     }

@@ -103,6 +103,33 @@ include "partials/info-modal.php";
             </small>
         </div>
     </section>
+
+    <section class="card shadow-sm mt-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+                <div>
+                    <h2 class="h5 card-title mb-1">
+                        <i class="fa-solid fa-table-columns me-2" aria-hidden="true"></i>
+                        Status Dock
+                    </h2>
+
+                    <p class="text-body-secondary mb-0">
+                        Choose whether the driver status controls stay expanded.
+                    </p>
+                </div>
+
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="statusDockSwitch" aria-label="Keep Status Dock expanded">
+                </div>
+            </div>
+
+            <hr class="my-3">
+
+            <small id="statusDockDescription" class="text-body-secondary">
+                The Status Dock is currently expanded.
+            </small>
+        </div>
+    </section>
 </main>
 
 <?php

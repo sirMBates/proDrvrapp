@@ -25,6 +25,8 @@ const themeManualLabel = document.querySelector('#themeManualLabel');
 const themeModeDescription = document.querySelector('#themeModeDescription');
 const pageGuidanceSwitch = document.querySelector('#pageGuidanceSwitch');
 const pageGuidanceDescription = document.querySelector('#pageGuidanceDescription');
+const statusDockSwitch = document.querySelector('#statusDockSwitch');
+const statusDockDescription = document.querySelector('#statusDockDescription');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = proDriverRequest;
 const drvrToken = document.querySelector('#drvrToken').value;
@@ -148,6 +150,16 @@ function updatePageGuidanceUi(enabled) {
     }
 };
 
+function updateStatusDockPreferenceUi(expanded) {
+        if (statusDockSwitch) {
+                statusDockSwitch.checked = expanded;
+        }
+
+        if (statusDockDescription) {
+                statusDockDescription.textContent = expanded ? 'The Status Dock is currently expanded.' : 'The Status Dock is currently collapsed. Your current status and connection remain visible.';
+        }
+};
+
 window.addEventListener('load', async () => {
         const emergencyState = await syncEmergencyState();
         if (emergencyState === true) {
@@ -193,6 +205,20 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
         });
 
+        window.addEventListener('theme-mode-changed', async event => {
+                const mode = event.detail?.mode;
+                if (!mode) {
+                        return;
+                }
+
+                try {
+                        await updatePreference('theme', mode);
+                } catch (error) {
+                        console.error('Unable to save theme preference:', error);
+                        showFlashAlert('danger', 'Your theme changed on this device, but the preference could not be saved.');
+                }
+        });
+
         pageGuidance = new PageGuidance(curView);
         pageGuidance.init();
 
@@ -220,41 +246,50 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
         });
 
-        getPreferences().then(preferences => {
-                const accountTheme = preferences?.theme;
-                const showPageGuidance = preferences?.show_page_guidance;
-
-                if (accountTheme && accountTheme !== themeManager.getMode()) {
-                        themeManager.syncMode(accountTheme);
-                }
-
-                if (typeof showPageGuidance === 'boolean') {
-                        localStorage.setItem('prodriverPageGuidance', String(showPageGuidance));
-                        document.documentElement.classList.toggle('page-guidance-disabled', !showPageGuidance);
-                        pageGuidance.setEnabled(showPageGuidance);
-                        updatePageGuidanceUi(showPageGuidance);
-                }
-        }).catch(error => {
-                console.error('Unable to synchronize driver preferences:', error);
-        });
-
-        window.addEventListener('theme-mode-changed', async event => {
-                const mode = event.detail?.mode;
-                if (!mode) {
-                        return;
-                }
-
-                try {
-                        await updatePreference('theme', mode);
-                } catch (error) {
-                        console.error('Unable to save theme preference:', error);
-                        showFlashAlert('danger', 'Your theme changed on this device, but the preference could not be saved.');
-                }
-        });
-
         const statusDockElement = document.querySelector('#driver-status-dock');
         statusDock = new StatusDock(statusDockElement);
         statusDock.init();
+
+        statusDockSwitch?.addEventListener('change', async () => {
+                const previousState = statusDock.isExpanded();
+                const nextState = statusDockSwitch.checked;
+
+                statusDock.setExpanded(nextState);
+                updateStatusDockPreferenceUi(nextState);
+
+                try {
+                        await updatePreference('status_dock_expanded', nextState);
+                } catch (error) {
+                        console.error('Unable to save Status Dock preference.', error);
+                        statusDock.setExpanded(previousState);
+                        updateStatusDockPreferenceUi(previousState);
+
+                        showFlashAlert('danger', 'Your Status Dock preference could not be saved.');
+                }
+        });
+
+        window.addEventListener('status-dock-preference-changed', async event => {
+                const expanded = event.detail?.expanded;
+
+                if (typeof expanded !== 'boolean') {
+                        return;
+                }
+
+                updateStatusDockPreferenceUi(expanded);
+
+                try {
+                        await updatePreference('status_dock_expanded', expanded);
+                } catch (error) {
+                        console.error('Unable to save Status Dock preference:', error);
+
+                        const restoredState = !expanded;
+
+                        statusDock.setExpanded(restoredState);
+                        updateStatusDockPreferenceUi(restoredState);
+
+                        showFlashAlert('danger', 'Your Status Dock preference could not be saved.');
+                }
+        });
 
         const statusButtons = document.querySelectorAll('#driver-status-controls .set-status');
         statusMsg = document.querySelector('#driver-status-dock #statusMessage');
@@ -311,6 +346,30 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
 
                 statusMsg.textContent = 'Current status: Unavailable';
+        });
+
+        getPreferences().then(preferences => {
+                const accountTheme = preferences?.theme;
+                const showPageGuidance = preferences?.show_page_guidance;
+                const statusDockExpanded = preferences?.status_dock_expanded;
+
+                if (accountTheme && accountTheme !== themeManager.getMode()) {
+                        themeManager.syncMode(accountTheme);
+                }
+
+                if (typeof showPageGuidance === 'boolean') {
+                        localStorage.setItem('prodriverPageGuidance', String(showPageGuidance));
+                        document.documentElement.classList.toggle('page-guidance-disabled', !showPageGuidance);
+                        pageGuidance.setEnabled(showPageGuidance);
+                        updatePageGuidanceUi(showPageGuidance);
+                }
+
+                if (typeof statusDockExpanded === 'boolean') {
+                        statusDock.setExpanded(statusDockExpanded);
+                        updateStatusDockPreferenceUi(statusDockExpanded);
+                }
+        }).catch(error => {
+                console.error('Unable to synchronize driver preferences:', error);
         });
 
         getDriver('/getprofile', {

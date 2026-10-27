@@ -275,7 +275,37 @@ body:has(#driver-status-dock) {
 
 body:has(#driver-status-dock.is-collapsed) {
     --pwa-install-bottom: calc(var(--driver-status-dock-collapsed-height) + 1.5rem + env(safe-area-inset-bottom));
-    padding-bottom: calc(var(--driver-status-dock-collapsed-height) + 1rem + env(safe-area-inset-bottom));
+    padding-bottom: 0;
+}
+
+.status-dock-collapsed #driver-status-dock {
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    left: auto;
+    width: min(24rem, calc(100vw - 1.5rem));
+    min-height: var(--driver-status-dock-collapsed-height);
+    padding-bottom: 0;
+    border: 1px solid var(--bs-border-color) !important;
+    border-radius: var(--bs-border-radius-lg);
+}
+
+.status-dock-collapsed #driver-status-controls {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(1rem);
+    pointer-events: none;
+}
+
+.status-dock-collapsed #driver-status-dock .container-xl {
+    gap: 0 !important;
+}
+
+html.status-dock-collapsed body:has(#driver-status-dock) {
+    --pwa-install-bottom: calc(var(--driver-status-dock-collapsed-height) + 1.5rem + env(safe-area-inset-bottom));
+    padding-bottom: 0;
 }
 
 .fixed-bottom.driver-status-dock {

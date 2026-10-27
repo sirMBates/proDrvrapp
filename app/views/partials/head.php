@@ -25,6 +25,11 @@
                         if (pageGuidance === 'false') {
                                 document.documentElement.classList.add('page-guidance-disabled');
                         }
+
+                        const statusDockExpanded = localStorage.getItem('prodriverStatusDockExpanded');
+                        if (statusDockExpanded === 'false') {
+                                document.documentElement.classList.add('status-dock-collapsed');
+                        }
                 } catch (error) {
                         document.documentElement.dataset.bsTheme = 'light';
                 }
