@@ -34,7 +34,8 @@ class AuthenticationService {
             'authenticated' => true,
             'userId' => (int) $user['user_id'],
             'firstName' => Crypto::decrypt($user['first_name'], $key),
-            'birthdate' => Crypto::decrypt($user['birth_date'], $key)
+            'birthdate' => Crypto::decrypt($user['birth_date'], $key),
+            'role' => $user['role']
         ];
     }
 

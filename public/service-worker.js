@@ -17,7 +17,7 @@
  * have explicit application-level rules.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE = `prodriver-static-${CACHE_VERSION}`;
 const FONT_CACHE = `prodriver-fonts-${CACHE_VERSION}`;
 
@@ -27,8 +27,8 @@ const STATUS_SYNC_TAG = 'prodriver-status-sync';
 
 const STATIC_ASSETS = [
     '/manifest.json',
-    '/dist/js/app.js',
-    '/dist/js/main.js',
+    '/dist/js/shared/app.js',
+    '/dist/js/shared/pwa.js',
     '/dist/styles/scss/main.css',
     '/dist/styles/style.css',
     '/dist/images-videos/logoandicons/prodrvr-bus-icon-192.png',

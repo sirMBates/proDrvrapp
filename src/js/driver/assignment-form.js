@@ -1,0 +1,196 @@
+import { Validation } from "../validation/validation.js";
+import { setFieldError, setFieldValid } from '../shared/helpers.js';
+
+export function normalizeDecimalValue(value) {
+    const num = parseFloat(value);
+
+    if (Number.isNaN(num)) {
+        return '';
+    }
+    return num.toFixed(2);
+};
+
+export function validateEditableElement(el, type, field) {
+    const value = (el?.value ?? el?.textContent ?? '').trim();
+
+    if (!Validation.validate(value, type)) {
+        setFieldError(el, `Invalid ${field.replaceAll('_', ' ')}.`);
+        return false;
+    }
+
+    setFieldValid(el);
+    return true;
+};
+
+export function validateAssignmentTextarea(el) {
+    const value = (el?.value ?? '').trim();
+
+    if (!Validation.validateMessage(value, 'assignment-textarea')) {
+        setFieldError(el, 'Please remove invalid characters.');
+        return false;
+    }
+
+    setFieldValid(el);
+    return true;
+};
+
+export function validateCrossFieldRules({ mode = 'complete' } = {}) {
+    const errors = [];
+    const isSaveMode = mode === 'save';
+
+    const totalHrsCell = document.querySelector('[data-field="total_hrs"]');
+    const drivingTimeCell = document.querySelector('[data-field="driving_time"]');
+    const endTimeCell = document.querySelector('[data-field="actual_end_time"]');
+    const dropTimeCell = document.querySelector('[data-field="actual_drop_time"]');
+
+    const totalInput = totalHrsCell?.querySelector('input');
+    const driveInput = drivingTimeCell?.querySelector('input');
+    const endInput = endTimeCell?.querySelector('input');
+    const dropInput = dropTimeCell?.querySelector('input');
+
+    const totalRaw = (totalInput?.value ?? totalHrsCell?.textContent ?? '').trim();
+    const driveRaw = (driveInput?.value ?? drivingTimeCell?.textContent ?? '').trim();
+    const totalVal = totalRaw === '' ? NaN : parseFloat(totalRaw);
+    const driveVal = driveRaw === '' ? NaN : parseFloat(driveRaw);
+
+    if (!Number.isNaN(totalVal) && !Number.isNaN(driveVal) && driveVal > totalVal) {
+        setFieldError(driveInput || drivingTimeCell, 'Driving time cannot exceed total hours.');
+        setFieldError(totalInput || totalHrsCell, 'Total hours must be at least driving time.');
+        errors.push(driveInput || drivingTimeCell);
+    }
+
+    const endVal = (endInput?.value || endTimeCell?.dataset.raw || '').trim();
+    const dropVal = (dropInput?.value || dropTimeCell?.dataset.raw || dropTimeCell?.textContent || '').trim();
+
+    if (endVal && dropVal) {
+        const normalizedEndVal = endVal.replace(' ', 'T').slice(0, 16);
+        const normalizedDropVal = dropVal.replace(' ', 'T').slice(0, 16);
+
+        const endDate = new Date(normalizedEndVal);
+        const dropDate = new Date(normalizedDropVal);
+
+        if (!Number.isNaN(endDate.getTime()) && !Number.isNaN(dropDate.getTime()) && endDate < dropDate) {
+            setFieldError(endInput || endTimeCell, 'Actual end time cannot be earlier than drop time.');
+            setFieldError(dropInput || dropTimeCell, 'Actual drop time must be before end time.');
+            errors.push(endInput || endTimeCell);
+        }
+    }
+
+    return errors;
+};
+
+export function validateCurrentAssignmentFields(options) {
+    const {
+        showFlashAlert,
+        focusFirstInvalid,
+        mode = 'complete'
+    } = options;
+    const errors = [];
+    const editableCells = document.querySelectorAll('.editable-data');
+    const isSaveMode = mode === 'save';
+
+    for (const cell of editableCells) {
+        const field = cell.dataset.field || '';
+        const type = cell.dataset.type || '';
+        const inputEl = cell.querySelector('input');
+        const target = inputEl || cell;
+
+        let value = inputEl ? inputEl.value.trim() : ((type === 'datetime' || type === 'datetime-local') ? (cell.dataset.raw || cell.textContent.trim()) : cell.textContent.trim());
+
+        if (type === 'time' && value) {
+            value = value.slice(0, 5);
+        }
+
+        if ((type === 'datetime' || type === 'datetime-local') && value) {
+            value = value.replace(' ', 'T').slice(0, 16);
+        }
+
+        if (type === 'decimal' && value) {
+            value = normalizeDecimalValue(value);
+        }
+
+        if (isSaveMode && value === '') {
+            continue;
+        }
+
+        if (!Validation.validate(value, type)) {
+            setFieldError(target, `Invalid ${field.replaceAll('_', ' ')}.`);
+            errors.push(target);
+            continue;
+        }
+        setFieldValid(target);
+    }
+
+    const sharedJobNote = document.getElementById('shared-job-note');
+    if (sharedJobNote) {
+        const value = sharedJobNote.value.trim();
+
+        if (!(isSaveMode && value === '')) {
+            if (!validateAssignmentTextarea(sharedJobNote)) {
+                errors.push(sharedJobNote);
+            }
+        }
+    }
+
+    const crossFieldErrors = validateCrossFieldRules({ mode });
+    errors.push(...crossFieldErrors);
+
+    if (errors.length) {
+        showFlashAlert('error', 'Please correct the highlighted fields.');
+        focusFirstInvalid(errors);
+        return false;
+    }
+
+    return true;
+};
+
+export function appendHiddenFields(form, fields) {
+    Object.entries(fields).forEach(([name, value]) => {
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = name;
+        hidden.value = value ?? '';
+        hidden.classList.add('temp-hidden');
+        form.appendChild(hidden);
+    })
+};
+
+export function appendEditableFields(form) {
+    // Collect All editable cells, even blank ones
+    const editableCells = form.querySelectorAll('.editable-data');
+    for (const cell of editableCells) {
+        const field = cell.dataset.field || '';
+        const type = cell.dataset.type || '';
+        const inputEl = cell.querySelector('input');
+
+        let value = inputEl ? inputEl.value.trim() : (cell.dataset.raw || cell.textContent.trim());
+
+        if (type === 'datetime' || type === 'datetime-local') {
+            value = inputEl ? inputEl.value.trim() : toInputDateTime(cell.dataset.raw || '');
+        }
+
+        if (type === 'time' && value) {
+            value = value.slice(0, 5);
+        }
+
+        if (type === 'decimal' && value) {
+            value = normalizeDecimalValue(value);
+        }
+
+        // Add hidden field
+        if (!field) continue;
+        appendHiddenFields(form, { [field]: value });
+    };
+};
+
+export function toInputDateTime(value) {
+    if (!value) return '';
+
+    return value.replace(' ', 'T').slice(0, 16);
+};
+
+export function toDisplayDateTime(value, formatter) {
+    if (!value) return '';
+
+    return formatter(value, 'datetime');
+};

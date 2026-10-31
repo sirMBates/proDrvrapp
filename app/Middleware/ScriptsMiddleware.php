@@ -11,87 +11,108 @@ class ScriptsMiddleware {
             return [];
         }
 
-        // Public pages (no clock/main)
-        $publicPages = [
+        // Authentication/account pages
+        $authPages = [
             '/signup',
             '/register',
             '/signin',
             '/forget',
-            '/reset-password',
+            '/reset-password'
+        ];
+
+        if (in_array($uri, $authPages, true)) {
+            return self::authScripts($uri);
+        }
+
+        // Public/customer-facing pages
+        $publicPages = [
             '/signature'
         ];
 
-        // If public page → only page-specific scripts
-        if (in_array($uri, $publicPages)) {
-            return self::pageScripts($uri);
+        if (in_array($uri, $publicPages, true)) {
+            return self::publicScripts($uri);
         }
 
-        // Otherwise → inside the app
+        // Authenticated Driver application
         $scripts = [
-            '/dist/js/clock.js',
-            '/dist/js/main.js'
+            '/dist/js/shared/clock.js',
+            '/dist/js/driver/main.js'
         ];
 
-        // Add page-specific scripts
-        return array_merge($scripts, self::pageScripts($uri));
+        return array_merge($scripts, self::driverScripts($uri));
     }
 
-    private static function pageScripts(string $uri): array {
+    private static function authScripts(string $uri): array {
         switch ($uri) {
             case '/signup':
-                return ['/dist/js/signup.js'];
+                return ['/dist/js/auth/signup.js'];
 
             case '/register':
-                return ['/dist/js/register-onboarding.js'];
+                return ['/dist/js/auth/register-onboarding.js'];
 
             case '/signin':
-                return ['/dist/js/signin.js'];
+                return ['/dist/js/auth/signin.js'];
 
             case '/forget':
-                return ['/dist/js/forget.js'];
+                return ['/dist/js/auth/forget.js'];
 
             case '/reset-password':
-                return ['/dist/js/reset.js'];
+                return ['/dist/js/auth/reset.js'];
 
+            default:
+                return [];
+        }
+    }
+
+    private static function publicScripts(string $uri): array {
+        switch ($uri) {
+            case '/signature':
+                return ['/dist/js/public/signature-access.js'];
+
+            default:
+                return [];
+        }
+    }
+
+    private static function driverScripts(string $uri): array {
+        switch ($uri) {
             case '/':
-                return ['/dist/js/home.js'];
-
-            /*case '/contact':
-                return ['/dist/js/contacthandler.js'];*/
+                return ['/dist/js/driver/dashboard.js'];
 
             case '/counter':
-                return ['/dist/js/ticker.js'];
+                return ['/dist/js/driver/ticker.js'];
 
             case '/preferences':
-                return ['/dist/js/preferences.js'];
+                return ['/dist/js/driver/preferences.js'];
 
             case '/assignments':
-                $scripts = ['/dist/js/assignment.js'];
+                $scripts = ['/dist/js/driver/assignment.js'];
+
                 if (!empty($_SESSION['signature_required'])) {
-                    $scripts[] = '/dist/js/sign.js';
+                    $scripts[] = '/dist/js/driver/sign.js';
                 }
+
                 return $scripts;
 
             case '/message-center':
-                return ['/dist/js/messages.js'];
+                return ['/dist/js/driver/messages.js'];
 
             case '/timesheet':
-                return ['/dist/js/timesheet.js'];
-            
+                return ['/dist/js/driver/timesheet.js'];
+
             case '/timesheet-review':
-                return ['/dist/js/timesheet-review.js'];
+                return ['/dist/js/driver/timesheet-review.js'];
 
             case '/submitted-timesheets':
-                return ['/dist/js/timesheet-history.js'];
+                return ['/dist/js/driver/timesheet-history.js'];
 
             case '/profile':
-                return ['/dist/js/profile.js'];
-
-            case '/signature':
-                return ['/dist/js/signature-access.js'];
+                return ['/dist/js/driver/profile.js'];
 
             default:
                 return [];
         }
     }
 }
+
+?>

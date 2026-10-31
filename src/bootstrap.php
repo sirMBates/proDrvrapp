@@ -55,48 +55,50 @@ return new class {
     */
 
     public function handleHttps(): void {
-        $uri = parse_url($_SERVER['REQUEST_URI'])['path'];
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
         $method = $_POST['__method'] ?? $_SERVER['REQUEST_METHOD'];
 
         // Run script middleware BEFORE routing
         $GLOBALS['page_scripts'] = ScriptsMiddleware::resolve($uri);
 
-        if (isset($_SESSION['user_id']) && isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
-            // prevent Logged-in users from hitting signup/signin
-            if (in_array($uri, ['/signup', '/signin', '/register', '/forget', '/reset-password'])) {
-                header("Location: /");
-                exit();
-            }
+        $isAuthenticated = isset($_SESSION['user_id'], $_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 
-            $router = new \Core\Router;
-            $routes = require base_path("app/routes/routes.php");
-            // require base_path('app/routes/public.php');
-            // require base_path('app/routes/driver.php');
-            // require base_path('app/routes/dispatch.php');
-            // require base_path('app/routes/admin.php');
-            $router->route($uri, $method);
-            return;
+        // Prevent authenticated users from returning to auth/account setup pages
+        if ($isAuthenticated && in_array($uri, ['/signup', '/signin', '/register', '/forget', '/reset-password'], true)) {
+            header('Location: /');
+            exit();
         }
 
-        if ($uri === '/') {
+        // Handle unauthenticated root request
+        if (!$isAuthenticated && $uri === '/') {
             if (!isset($_COOKIE['driver_registered'])) {
-                header("Location: /signup");
+                header('Location: /signup');
                 exit();
             }
 
-            /*if (!isset($_SESSION['logged_in'])) {
-                header("Location: /signin");
-                exit();
-            }*/
-
-            // routeSwitcher($_SESSION['role']);
-
-            header("Location: /signin");
+            header('Location: /signin');
             exit();
         }
 
         $router = new \Core\Router;
-        $routes = require base_path("app/routes/routes.php");
+
+        // Routes available outside the authenticated role areas
+        require base_path('app/routes/auth.php');
+        require base_path('app/routes/public.php');
+
+        // Load only the route map belonging to the authenticated role
+        if ($isAuthenticated) {
+            switch ($_SESSION['role'] ?? null) {
+                case 'driver':
+                    require base_path('app/routes/driver.php');
+                    break;
+
+                default:
+                    http_response_code(403);
+                    exit();
+            }
+        }
+
         $router->route($uri, $method);
     }
 }
