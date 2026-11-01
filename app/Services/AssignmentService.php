@@ -277,23 +277,11 @@ class AssignmentService {
             throw new InvalidArgumentException('The actual end time cannot be in the future.');
         }
 
-        /*
-        * Signatures are intentionally NOT persisted here.
-        * Complete may receive a newly captured signature that has not yet
-        * been saved. The execution step will persist it first and then
-        * verify the resulting authoritative signature state.
-        */
-        $signaturePayload = [
-            'pre_signature_base64' => trim((string) ($data['pre_signature_base64'] ?? '')),
-            'post_signature_base64' => trim((string) ($data['post_signature_base64'] ?? ''))
-        ];
-
         return [
             'assignment' => $assignment,
             'changes' => $changes,
             'final_assignment' => $finalAssignment,
-            'shared_job_note' => $sharedJobNote,
-            'signature_payload' => $signaturePayload
+            'shared_job_note' => $sharedJobNote
         ];
     }
 
@@ -374,57 +362,6 @@ class AssignmentService {
         }
 
         $sharedJobNote = trim((string) ($prepared['shared_job_note'] ?? ''));
-
-        $signaturePayload = $prepared['signature_payload'] ?? [];
-        if (!is_array($signaturePayload)) {
-            throw new RuntimeException('Prepared signature data is invalid.');
-        }
-
-        $preSignature = trim((string) ($signaturePayload['pre_signature_base64'] ?? ''));
-        $postSignature = trim((string) ($signaturePayload['post_signature_base64'] ?? ''));
-        $signatureRequired = AssignmentValidator::requiresSignature($assignment);
-
-        // Validate submitted signature payloads before writing files.
-        if ($preSignature !== '') {
-            if (!AssignmentValidator::hasPreTripSignature(['pre_signature_base64' => $preSignature])) {
-                throw new InvalidArgumentException('The pre-trip signature is invalid.');
-            }
-        }
-
-        if ($postSignature !== '') {
-            if (!AssignmentValidator::hasPostTripSignature(['post_signature_base64' => $postSignature])) {
-                throw new InvalidArgumentException('The post-trip signature is invalid.');
-            }
-        }
-
-        /*
-        * Save newly submitted signatures.
-        * Storage ignores empty signature values, so an existing pre-trip
-        * signature is left untouched when only a new post-trip signature
-        * is submitted during completion.
-        */
-        if ($signatureRequired) {
-            if ($preSignature !== '' || $postSignature !== '') {
-                $signatureData = $storage->saveSignatures([
-                    'order_id' => $orderId,
-                    'pre_signature_base64' => $preSignature,
-                    'post_signature_base64' => $postSignature
-                ]);
-
-                foreach ($signatureData as $field => $value) {
-                    // Do not overwrite existing database metadata with NULL
-                    // for a signature that was not submitted.
-                    if ($value !== null) {
-                        $changes[$field] = $value;
-                    }
-                }
-            }
-        } else {
-            // Keep non-signature assignments explicit in the database.
-            if (($assignment['signature_status'] ?? null) !== 'not-required') {
-                $changes['signature_status'] = 'not-required';
-            }
-        }
 
         // Persist only fields that actually changed plus any newly generated
         // signature metadata.

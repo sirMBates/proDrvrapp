@@ -35,6 +35,7 @@ let currentSignatureAssignmentControl = '';
 let currentLocalSignatureType = null;
 let signatureStatusPollTimer = null;
 let currentOperationalAccess = false;
+let currentSignatureStatus = '';
 
 async function blockIfEmergencyActive() {
     const emergencyState = await syncEmergencyState();
@@ -103,7 +104,10 @@ function finalizeSignatureInterface() {
 
 function updateSignatureOperationalState() {
     if (!openSignBoxBtn) return;
-    $(openSignBoxBtn).prop('disabled', !currentOperationalAccess);
+
+    const signatureComplete = currentSignatureStatus === 'complete';
+
+    $(openSignBoxBtn).prop('disabled', signatureComplete || !currentOperationalAccess);
 };
 
 function getSignatureWarningKey(assignmentControl) {
@@ -369,6 +373,8 @@ function startSignatureStatusPolling(signatureType) {
                 stopSignatureStatusPolling();
                 signatureQrContainer?.classList.add('d-none');
 
+                currentSignatureStatus = 'complete';
+
                 showPersistedSignature('pre');
                 showPersistedSignature('post');
 
@@ -505,6 +511,7 @@ window.addEventListener('assignmentChanged', (e) => {
 
     currentSignatureOrderId = orderId ?? '';
     currentSignatureAssignmentControl = String(assignmentControl ?? '');
+    currentSignatureStatus = String(signatureStatus ?? '');
     currentOperationalAccess = operationalAccess === true;
 
     showWarnModalForAssignment(currentSignatureAssignmentControl, Boolean(requiresSignature), signatureStatus);
@@ -548,6 +555,8 @@ async function unConfirmPostSignHandler() {
         if (data.status !== 'success') {
             return false;
         }
+
+        currentSignatureStatus = 'complete';
 
         showPersistedSignature('pre');
         showPersistedSignature('post');
@@ -731,6 +740,7 @@ $(signBtn).on('click', async () => {
         }
 
         if (currentLocalSignatureType === 'post') {
+            currentSignatureStatus = 'complete';
             showPersistedSignature('pre');
             showPersistedSignature('post');
 

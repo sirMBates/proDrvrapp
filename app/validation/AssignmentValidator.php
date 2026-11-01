@@ -116,17 +116,6 @@ final class AssignmentValidator {
         return Validator::pngDataUrl($data['post_signature_base64'] ?? null);
     }
 
-    public static function hasRequiredSignatures(array $data, array $assignment): bool {
-        if (!self::requiresSignature($assignment)) {
-            return true;
-        }
-
-        return (
-            self::hasPreTripSignature($data) &&
-            self::hasPostTripSignature($data)
-        );
-    }
-
     public static function validSignatureStatus(mixed $status, bool $signatureRequired): bool {
         if ($status === null || $status === '') {
             return true;

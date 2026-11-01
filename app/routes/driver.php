@@ -18,7 +18,6 @@ $router->get('/getoperationalassignments', 'app/api/getoperationalassignments.ph
 $router->get('/assignment-operational-access', 'app/api/assignment-operational-access.php');
 $router->get('/getstatus', 'app/api/getstatus.php');
 $router->get('/emergencystatus', 'app/api/emergencystatus.php');
-$router->get('/signature-access', 'app/api/signature-access.php');
 $router->get('/signature-image', 'app/api/signature-image.php');
 $router->get('/signature-status', 'app/api/signature-status.php');
 $router->get('/connection-check', 'app/api/connection-check.php');

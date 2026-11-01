@@ -1376,20 +1376,6 @@ function submitAssignment(options) {
         } else if (flagName === 'modify') {
             updateStoredPayrollDataIfPresent(assignment);
         }
-        
-        form.querySelectorAll("input[name='pre_signature_base64'], " + "input[name='post_signature_base64']").forEach(input => input.remove());
-
-        const requiresSignature = Number(assignment.signature_required) === 1;
-        const signatureControl = assignment.assignment_control;
-        const signaturePayload = requiresSignature ? {
-            pre_signature_base64: localStorage.getItem(`pre-signature:${signatureControl}`) ?? '',
-            post_signature_base64: localStorage.getItem(`post-signature:${signatureControl}`) ?? ''
-        } : {
-            pre_signature_base64: '',
-            post_signature_base64: ''
-        };
-
-        appendHiddenFields(form, signaturePayload);
 
         console.log('[ACTUAL END SUBMISSION]', form.querySelector('input[name="actual_end_time"]')?.value);
 

@@ -9,7 +9,7 @@ function dd($value) {
 }
 
 function urlIs($value) {
-    return $_SERVER['REQUEST_URI'] === $value;
+    return parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === $value;
 }
 
 function base_path($path) {

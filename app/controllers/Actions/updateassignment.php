@@ -61,8 +61,6 @@ if ($method === 'PATCH') {
         }
 
         $orderRef = '';
-        $storage = null;
-        $signatureBackup = null;
         $pdo = null;
 
         try {
@@ -84,37 +82,6 @@ if ($method === 'PATCH') {
             $assignment = $prepared['assignment'];
             $preparedData = $prepared['data'];
             $orderRef = (string) ($assignment['order_ref'] ?? '');
-            $signatureRequired = AssignmentValidator::requiresSignature($assignment);
-            $preSignature = trim((string) ($data['pre_signature_base64'] ?? ''));
-            $postSignature = trim((string) ($data['post_signature_base64'] ?? ''));
-
-            if ($preSignature !== '' && !AssignmentValidator::hasPreTripSignature($data)) {
-                throw new InvalidArgumentException('The pre-trip signature is invalid.');
-            }
-
-            if ($postSignature !== '' && !AssignmentValidator::hasPostTripSignature($data)) {
-                throw new InvalidArgumentException('The post-trip signature is invalid.');
-            }
-
-            if ($signatureRequired) {
-                if ($preSignature !== '' || $postSignature !== '') {
-                    $storage = new Storage();
-                    $signatureBackup = $storage->createSignatureBackup((string) $orderId);
-                    $signatureData = $storage->saveSignatures([
-                        'order_id' => (int) $orderId,
-                        'pre_signature_base64' => $preSignature,
-                        'post_signature_base64' => $postSignature
-                    ]);
-
-                    forEach($signatureData as $key => $value) {
-                        if ($value !== null) {
-                            $preparedData[$key] = $value;
-                        }
-                    }
-                }
-            } else {
-                $preparedData['signature_status'] = 'not-required';
-            }
 
             if (!$pdo->beginTransaction()) {
                 throw new RuntimeException('Unable to begin assignment update transaction.');
@@ -123,11 +90,6 @@ if ($method === 'PATCH') {
             $result = $assignmentService->updatePrepared((int) $orderId, $driverId, $assignmentControl, $preparedData);
 
             $pdo->commit();
-
-            if ($storage !== null && $signatureBackup !== null) {
-                $storage->discardSignatureBackup($signatureBackup);
-                $signatureBackup = null;
-            }
 
             $alert::setMsg('success', $result['message'] ?? 'Assignment updated successfully.');
 
@@ -148,14 +110,6 @@ if ($method === 'PATCH') {
                 $pdo->rollback();
             }
 
-            if ($storage !== null && $signatureBackup !== null) {
-                try {
-                    $storage->rollbackSignatureBackup($signatureBackup);
-                } catch (Throwable $rollbackError) {
-                    // Log this below when structured logging is wired here.
-                }
-            }
-
             unset($_SESSION['flash']['success']);
             $alert::setMsg('error', $e->getMessage());
             $query = http_build_query([
@@ -170,14 +124,6 @@ if ($method === 'PATCH') {
         } catch (RuntimeException $e) {
             if ($pdo instanceof PDO && $pdo->inTransaction()) {
                 $pdo->rollback();
-            }
-
-            if ($storage !== null && $signatureBackup !== null) {
-                try {
-                    $storage->rollbackSignatureBackup($signatureBackup);
-                } catch (Throwable $rollbackError) {
-                    // Log this below when structured logging is wired here.
-                }
             }
 
             unset($_SESSION['flash']['success']);
@@ -195,14 +141,6 @@ if ($method === 'PATCH') {
         } catch (Throwable $e) {
             if ($pdo instanceof PDO && $pdo->inTransaction()) {
                 $pdo->rollback();
-            }
-
-            if ($storage !== null && $signatureBackup !== null) {
-                try {
-                    $storage->rollbackSignatureBackup($signatureBackup);
-                } catch (Throwable $rollbackError) {
-                    // Log this below when structured logging is wired here.
-                }
             }
 
             unset($_SESSION['flash']['success']);
@@ -232,7 +170,6 @@ if ($method === 'PATCH') {
 
         // Filesystem resources participating in completion.
         $storage = null;
-        $signatureBackup = null;
         $filePath = 'D:/Documents/TestAssignments.xlsx';
         $workbookBackupPath = null;
         $workbookOriginallyExisted = false;
@@ -263,19 +200,7 @@ if ($method === 'PATCH') {
             // No database or filesystem mutations happen here.
             $prepared = $assignmentService->prepareCompletion((int) $orderId, $driverId, $assignmentControl, $data);
 
-            /*
-            * SIGNATURE BACKUP
-            * We only need a signature backup if the browser actually
-            * submitted a new pre/post signature.
-            */
-            $signaturePayload = $prepared['signature_payload'] ?? [];
-            $preSignature = trim((string) ($signaturePayload['pre_signature_base64'] ?? ''));
-            $postSignature = trim((string) ($signaturePayload['post_signature_base64'] ?? ''));
-
             $storage = new Storage();
-            if ($preSignature !== '' || $postSignature !== '') {
-                $signatureBackup = $storage->createSignatureBackup((string) $orderId);
-            }
 
             /*
             * EXCEL BACKUP
@@ -322,17 +247,6 @@ if ($method === 'PATCH') {
             // Nothing becomes permanent in MySQL until every database
             // operation above succeeds.
             $pdo->commit();
-
-            // SUCCESS — DISCARD COMPENSATING BACKUP
-            if ($signatureBackup !== null) {
-                try {
-                    $storage->discardSignatureBackup($signatureBackup);
-                } catch (Throwable $cleanupError) {
-                    $devLogger->error('[ASSIGNMENT COMPLETE] Unable to discard ' . 'signature backup: ' . $cleanupError->getMessage());
-                }
-
-                $signatureBackup = null;
-            }
 
             if ($workbookBackupPath !== null && is_file($workbookBackupPath)) {
                 if (!unlink($workbookBackupPath)) {
@@ -386,15 +300,6 @@ if ($method === 'PATCH') {
                 @unlink($filePath);
             }
 
-            // SIGNATURE ROLLBACK
-            if ($storage !== null && $signatureBackup !== null) {
-                try {
-                    $storage->rollbackSignatureBackup($signatureBackup);
-                } catch (Throwable $rollbackError) {
-                    $devLogger->error('[ASSIGNMENT COMPLETE] Signature rollback failed: ' . $rollbackError->getMessage());
-                }
-            }
-
             $devLogger->warning('[ASSIGNMENT COMPLETE] Validation failed: ' . $e->getMessage());
 
             $alert::setMsg('danger', $e->getMessage());
@@ -417,15 +322,6 @@ if ($method === 'PATCH') {
 
             } elseif (!$workbookOriginallyExisted && is_file($filePath)) {
                 @unlink($filePath);
-            }
-
-            // SIGNATURE ROLLBACK
-            if ($storage !== null && $signatureBackup !== null) {
-                try {
-                    $storage->rollbackSignatureBackup($signatureBackup);
-                } catch (Throwable $rollbackError) {
-                    $devLogger->error('[ASSIGNMENT COMPLETE] Signature rollback failed: ' . $rollbackError->getMessage());
-                }
             }
 
             $devLogger->error('[ASSIGNMENT COMPLETE] Operation failed: ' . $e->getMessage());
