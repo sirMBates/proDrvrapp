@@ -11,31 +11,32 @@ use Core\Database;
 class AssignmentRepository {
     private PDO $pdo;
     private ?Logger $logger;
+    private UserRepository $userRepository;
 
     public function __construct(?PDO $pdo = null, ?Logger $logger = null) {
         $this->pdo = $pdo ?? (new Database())->connect();
         $this->logger = $logger;
+        $this->userRepository = new UserRepository($this->pdo);
     }
 
     public function insertAssignment(array $data): bool|string {
         try {
             $operatorId = isset($data['operator_id']) ? trim((string) $data['operator_id']) : null;
 
-            // Step 1: Resolve driver/user from driver_credentials
-            $driverSql = "SELECT user_id
-                        FROM driver_credentials
-                        WHERE operator_id = :operator_id
-                        LIMIT 1";
-            $driverStmt = $this->pdo->prepare($driverSql);
-
-            $driverStmt->bindValue(':operator_id', $operatorId, PDO::PARAM_STR);
-            $driverStmt->execute();
-
-            $driverFound = $driverStmt->fetch();
-            if (!$driverFound) {
-                $this->logger?->log("❌ FAILURE: No driver found for operator_id: {$data['operator_id']}");
+            // Step 1: Resolve imported operator ID against the driver's staff ID
+            if ($operatorId === null || $operatorId === '') {
+                $this->logger?->warning('Skipping assignment with missing operator_id.');
                 return 'driver_not_found';
             }
+
+            $driverFound = $this->userRepository->findDriverByStaffId($operatorId);
+
+            if ($driverFound === null) {
+                $this->logger?->log("❌ FAILURE: No driver found for operator_id: {$operatorId}");
+
+                return 'driver_not_found';
+            }
+
             $driverId = (int) $driverFound['user_id'];
 
             // Step 2: Pre-check for duplicate assignment
@@ -120,10 +121,14 @@ class AssignmentRepository {
     }
 
     public function findActiveAssignmentsByDriver(int $driverId): array {
-        $sql = "SELECT wo.*, dc.operator_id, u.first_name, u.last_name, u.birth_date
-                FROM work_orders wo INNER JOIN users u ON wo.driver_id = u.user_id
-                INNER JOIN driver_credentials dc ON dc.user_id = u.user_id
-                WHERE wo.driver_id = :driver_id AND wo.completed_at IS NULL AND wo.canceled_at IS NULL AND wo.assignment_status <> 'canceled'
+        $sql = "SELECT wo.*, u.staff_id AS operator_id, u.first_name, u.last_name, u.birth_date
+                FROM work_orders wo
+                INNER JOIN users u
+                ON wo.driver_id = u.user_id
+                WHERE wo.driver_id = :driver_id
+                AND wo.completed_at IS NULL
+                AND wo.canceled_at IS NULL
+                AND wo.assignment_status <> 'canceled'
                 ORDER BY wo.start_date_time ASC, wo.order_id ASC";
         $stmt = $this->pdo->prepare($sql);
 
@@ -149,12 +154,10 @@ class AssignmentRepository {
             throw new \InvalidArgumentException('Next day start is required.');
         }
 
-        $sql = "SELECT wo.*, dc.operator_id, u.first_name, u.last_name, u.birth_date
+        $sql = "SELECT wo.*, u.staff_id AS operator_id, u.first_name, u.last_name, u.birth_date
                 FROM work_orders wo
                 INNER JOIN users u
                 ON wo.driver_id = u.user_id
-                INNER JOIN driver_credentials dc
-                ON dc.user_id = u.user_id
                 WHERE wo.driver_id = :driver_id
                 AND wo.assignment_status = 'confirmed'
                 AND wo.completed_at IS NULL

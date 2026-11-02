@@ -30,9 +30,9 @@ if (isset($_POST['loginAcct'])) {
     $messengerDestination = $_SESSION['messenger_login_destination'] ?? null;
     // Running error handlers and user signin.
     $signin->loginUser();
-    if (!isset($_COOKIE['driver_registered'])) {
+    if (!isset($_COOKIE['account_registered'])) {
         setcookie(
-            'driver_registered', 
+            'account_registered', 
             'true', 
             time() + (86400 * 365), // 1 year
             '/',                    // path

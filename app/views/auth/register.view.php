@@ -1,15 +1,30 @@
 <?php
 require base_path('app/views/partials/outhead.php');
 $alert = new Core\Flash();
+$registrationRoleDisplay = match ($registrationRole) {
+        'driver' => 'Driver',
+        'dispatch' => 'Dispatcher',
+        'admin' => 'Administrator'
+};
 include base_path('app/views/partials/flashmessage.php');
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
-        <main class="container-fluid my-auto">
+        <main class="container-fluid my-4">
                 <div id="form_container" class="container">
                         <form id="acct_info" action="" method="POST" class="needs-validation" novalidate>
                                 <input type="hidden" name="__method" value="patch">
                                 <input type="hidden" name="action" value="complete-registration">
-                                <h2 class="text-center text-capitalize text-dark">hello, <?= htmlspecialchars($_SESSION['user_name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h2>
+                                <h2 class="text-center text-capitalize text-dark">
+                                        hello, <?= htmlspecialchars($_SESSION['user_name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                </h2>
+                                <div class="text-center mb-3">
+                                        <span class="text-dark">
+                                                Account Role:
+                                        </span>
+                                        <span class="badge text-bg-primary fs-6">
+                                                <?= htmlspecialchars($registrationRoleDisplay, ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                </div>
                                 <p class="h5 text-center text-capitalize text-dark">please enter information below!</p>
 
                                 <div class="input-group mb-2">
@@ -47,45 +62,45 @@ include base_path('app/views/partials/flashmessage.php');
                                         </div>
                                         <div class="invalid-feedback fs-5"><strong>Enter your birthdate.</strong></div>
                                 </div>
-
-                                <div class="input-group mb-2">
-                                        <span class="input-group-text"><i class="fa-solid fa-id-card fs-4 text-primary"></i></span>
-                                        <div class="form-floating">
-                                                <input id="cdl-driver-license" type="text" class="form-control form-control-lg" name="cdl_driver_license" placeholder="Enter Driver License ID#" autocomplete="off" maxlength="32" required>
-                                                <label for="cdl-driver-license" class="text-capitalize"><b>driver license</b></label>
+                                <?php if ($registrationRole === 'driver'): ?>
+                                        <div class="input-group mb-2">
+                                                <span class="input-group-text"><i class="fa-solid fa-id-card fs-4 text-primary"></i></span>
+                                                <div class="form-floating">
+                                                        <input id="cdl-driver-license" type="text" class="form-control form-control-lg" name="cdl_driver_license" placeholder="Enter Driver License ID#" autocomplete="off" maxlength="32" required>
+                                                        <label for="cdl-driver-license" class="text-capitalize"><b>driver license</b></label>
+                                                </div>
+                                                <div class="invalid-feedback fs-5"><strong>Enter your driver license ID #.</strong></div>
                                         </div>
-                                        <div class="invalid-feedback fs-5"><strong>Enter your driver license ID #.</strong></div>
-                                </div>
 
-                                <div class="input-group mb-2">
-                                        <span class="input-group-text">
-                                                <i class="fa-solid fa-map-location-dot fs-4 text-primary"></i>
-                                        </span>
-                                        <div class="form-floating">
-                                                <input id="driver-license-state" type="text" class="form-control form-control-lg text-uppercase" name="driver_license_state" placeholder="Issuing State" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="address-level1" required>
-                                                <label for="driver-license-state" class="text-capitalize"><b>issuing state</b></label>
+                                        <div class="input-group mb-2">
+                                                <span class="input-group-text">
+                                                        <i class="fa-solid fa-map-location-dot fs-4 text-primary"></i>
+                                                </span>
+                                                <div class="form-floating">
+                                                        <input id="driver-license-state" type="text" class="form-control form-control-lg text-uppercase" name="driver_license_state" placeholder="Issuing State" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="address-level1" required>
+                                                        <label for="driver-license-state" class="text-capitalize"><b>issuing state</b></label>
+                                                </div>
+                                                <div class="invalid-feedback fs-5"><strong>Enter the 2-letter issuing state.</strong></div>
                                         </div>
-                                        <div class="invalid-feedback fs-5"><strong>Enter the 2-letter issuing state.</strong></div>
-                                </div>
 
-                                <div class="input-group mb-2">
-                                        <span class="input-group-text"><i class="fa-solid fa-calendar fs-4 text-primary"></i></span>
-                                        <div class="form-floating">
-                                                <input id="driver-license-expire" type="date" class="form-control form-control-lg" name="driver_license_expire" placeholder="Enter license expiration date" required>
-                                                <label for="driver-license-expire" class="text-capitalize"><b>driver license expiration</b></label>
+                                        <div class="input-group mb-2">
+                                                <span class="input-group-text"><i class="fa-solid fa-calendar fs-4 text-primary"></i></span>
+                                                <div class="form-floating">
+                                                        <input id="driver-license-expire" type="date" class="form-control form-control-lg" name="driver_license_expire" placeholder="Enter license expiration date" required>
+                                                        <label for="driver-license-expire" class="text-capitalize"><b>driver license expiration</b></label>
+                                                </div>
+                                                <div class="invalid-feedback fs-5"><strong>Enter expiration date of driver license.</strong></div>
                                         </div>
-                                        <div class="invalid-feedback fs-5"><strong>Enter expiration date of driver license.</strong></div>
-                                </div>
 
-                                <div class="input-group mb-2">
-                                        <span class="input-group-text"><i class="fa-solid fa-calendar fs-4 text-primary"></i></span>
-                                        <div class="form-floating">
-                                                <input id="dot-medical-expire" type="date" class="form-control form-control-lg" name="dot_medical_expire" placeholder="Enter D.O.T med expiration date" required>
-                                                <label for="dot-medical-expire" class="text-capitalize"><b>d.o.t medical expiration</b></label>
+                                        <div class="input-group mb-2">
+                                                <span class="input-group-text"><i class="fa-solid fa-calendar fs-4 text-primary"></i></span>
+                                                <div class="form-floating">
+                                                        <input id="dot-medical-expire" type="date" class="form-control form-control-lg" name="dot_medical_expire" placeholder="Enter D.O.T med expiration date" required>
+                                                        <label for="dot-medical-expire" class="text-capitalize"><b>d.o.t medical expiration</b></label>
+                                                </div>
+                                                <div class="invalid-feedback fs-5"><strong>Enter expiration date of d.o.t med status.</strong></div>
                                         </div>
-                                        <div class="invalid-feedback fs-5"><strong>Enter expiration date of d.o.t med status.</strong></div>
-                                </div>
-
+                                <?php endif; ?>
                                 <input id="drvrToken" type="hidden" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
 
                                 <div id="save_btn_box" class="col-12 row mx-auto mb-3">

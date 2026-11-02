@@ -13,13 +13,23 @@ class UserRepository {
         $this->pdo = $pdo ?? (new Database())->connect();
     }
 
-    public function createUser(string $username, string $email, string $password): int {
+    public function createUser(string $username, string $email, string $password, string $role): int {
         $hashPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO users (username, email, password, first_name, last_name, mobile_number, birth_date, profile_picture) VALUES (?,?,?,?,?,?,?,?)";
+        $sql = "INSERT INTO users (username, email, password, first_name, last_name, mobile_number, birth_date, profile_picture, role)
+                VALUES (:username, :email, :password, :first_name, :last_name, :mobile_number, :birth_date, :profile_picture, :role)";
         $stmt = $this->pdo->prepare($sql);
+
         $stmt->execute([
-            $username, $email, $hashPassword, '', '', '', null, null
+            ':username' => $username,
+            ':email' => $email,
+            ':password' => $hashPassword,
+            ':first_name' => '',
+            ':last_name' => '',
+            ':mobile_number' => '',
+            ':birth_date' => null,
+            ':profile_picture' => null,
+            ':role' => $role
         ]);
 
         return (int) $this->pdo->lastInsertId();
@@ -69,6 +79,28 @@ class UserRepository {
             throw new \RuntimeException('User not found.');
         }
         return $user;
+    }
+
+    public function findDriverByStaffId(string $staffId): ?array {
+        $staffId = trim($staffId);
+
+        if ($staffId === '') {
+            throw new \InvalidArgumentException('Staff ID is required.');
+        }
+
+        $sql = "SELECT * FROM users
+                WHERE staff_id = :staff_id
+                AND role = 'driver'
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':staff_id' => $staffId
+        ]);
+
+        $user = $stmt->fetch();
+
+        return $user !== false ? $user : null;
     }
 
     public function findByEmail(string $email): ?array {
@@ -244,6 +276,21 @@ class UserRepository {
             ':preferences' => $preferences,
             ':user_id' => $userId
         ]);
+    }
+
+    public function assignStaffId(int $userId, string $staffId): bool {
+        $sql = "UPDATE users
+                SET staff_id = :staff_id
+                WHERE user_id = :user_id
+                AND staff_id IS NULL";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':staff_id' => $staffId,
+            ':user_id' => $userId
+        ]);
+
+        return $stmt->rowCount() === 1;
     }
 }
 

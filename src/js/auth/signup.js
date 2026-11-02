@@ -15,7 +15,18 @@ const accountAccessKey = checkInputs[4];
 const pwdIcon = document.querySelector('#pwd-icon');
 const confPwdIcon = document.querySelector('#con-pwd-icon');
 const signUpBtn = document.querySelector('#signup');
-const keyIcon = document.querySelector('#key-icon');
+const signUpForm = document.querySelector('#signUpAcct');
+
+function updateSignUpButton() {
+    const usernameValid = Validation.validateOnlyUsername($(usernameInput).val(), $(usernameInput).attr('type'));
+    const emailValid = Validation.validate($(emailInput).val(), $(emailInput).attr('type'));
+    const passwordValid = Validation.validate($(passwordInput).val(), 'password');
+    const confirmPasswordValid = Validation.validate($(confPasswordInput).val(), 'password');
+    const passwordsMatch = $(passwordInput).val() === $(confPasswordInput).val();
+    const accessKeyValid = Validation.validate($(accountAccessKey).val(), 'access-key');
+
+    $(signUpBtn).prop('disabled', !(usernameValid && emailValid && passwordValid && confirmPasswordValid && passwordsMatch && accessKeyValid));
+}
 /*
 ** Validate and secure the inputs after each one has a value before submission 
 ** following this! ↓
@@ -29,6 +40,7 @@ $(function () {
             $(usernameInput).removeClass('is-invalid');
             $(usernameInput).addClass('is-valid');
         }
+        updateSignUpButton();
     })
 
     $(emailInput).on('input', () => {
@@ -39,6 +51,7 @@ $(function () {
             $(emailInput).removeClass('is-invalid');
             $(emailInput).addClass('is-valid');
         }
+        updateSignUpButton();
     })
 
     $(passwordInput).on('input', () => {
@@ -49,6 +62,7 @@ $(function () {
             $(passwordInput).removeClass('is-invalid');
             $(passwordInput).addClass('is-valid');
         }
+        updateSignUpButton();
     })
         
     $(confPasswordInput).on('input', () => {
@@ -59,19 +73,37 @@ $(function () {
             if (!isValid && confPswordVal !== pswordVal) {
                 $(confPasswordInput).addClass('is-invalid');
                 $("#password-does-not-match-text").removeAttr("hidden");
-                $(signUpBtn).prop("disabled", true);
             } else if (isValid && confPswordVal !== pswordVal) {
                 $(confPasswordInput).addClass('is-invalid');
                 $("#password-does-not-match-text").removeAttr("hidden");
-                $(signUpBtn).prop("disabled", true);
             } else {
                 $(confPasswordInput).removeClass('is-invalid');
                 $(confPasswordInput).addClass('is-valid');
                 $("#password-does-not-match-text").attr("hidden", true);
-                $(signUpBtn).prop("disabled", false);
             }
         }
+        updateSignUpButton();
     })
+
+    $(accountAccessKey).on('input', () => {
+        let value = $(accountAccessKey).val().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+
+        if (value.length > 4) {
+            value = `${value.slice(0, 4)}-${value.slice(4)}`;
+        }
+
+        $(accountAccessKey).val(value);
+
+        const isValid = Validation.validate(value, 'access-key');
+
+        if (!isValid) {
+            $(accountAccessKey).removeClass('is-valid').addClass('is-invalid');
+        } else {
+            $(accountAccessKey).removeClass('is-invalid').addClass('is-valid');
+        }
+
+        updateSignUpButton();
+    });
 
 // Checkbox functionality. Enables password to be hidden or viewed.
     $(pwdIcon).on("click", function() {
@@ -86,7 +118,7 @@ $(function () {
         $(confPwdIcon).toggleClass("fa-eye fa-eye-slash");
     })
 
-    $(signUpBtn).on('submit', () => {
+    $(signUpForm).on('submit', () => {
         return formValidation();
     });
 });

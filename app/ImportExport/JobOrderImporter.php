@@ -6,7 +6,6 @@ namespace App\ImportExport;
 
 use Exception;
 use App\Repositories\AssignmentRepository;
-use App\Repositories\DriverCredentialRepository;
 use App\Repositories\UserRepository;
 use App\Validation\ImporterAssignmentValidator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -52,7 +51,7 @@ class JobOrderImporter {
             $controlBatch = 'PD-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(2)));
             $controlSequence = 0;
             $assignmentRepository = new AssignmentRepository(null, $this->logger);
-            $credentialRepository = new DriverCredentialRepository();
+            $userRepository = new UserRepository();
             $notifiedDrivers = [];
             $insertedCount = 0;
             $duplicateCount = 0;
@@ -92,15 +91,16 @@ class JobOrderImporter {
                     continue;
                 }
 
-                // Lookup driver_id from credentials table
-                $credentials = $credentialRepository->findByOperatorId($operatorId);
-                if ($credentials === null) {
+                // Resolve the imported Operator ID against the driver's staff ID
+                $driver = $userRepository->findDriverByStaffId($operatorId);
+
+                if ($driver === null) {
                     $failedCount++;
                     $this->logger->error("No driver found for operator_id: " . "{$operatorId} (row {$index})");
                     continue;
                 }
 
-                $driverId = (int) $credentials['user_id'];
+                $driverId = (int) $driver['user_id'];
 
                 $controlSequence++;
                 $assignmentControl = $controlBatch . '-' . str_pad((string) $controlSequence, 4, '0', STR_PAD_LEFT);

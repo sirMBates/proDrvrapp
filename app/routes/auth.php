@@ -7,7 +7,7 @@ $router->get('/forget', 'app/controllers/Pages/auth/forget.php');
 $router->get('/reset-password', 'app/controllers/Pages/auth/reset-password.php');
 $router->get('/reset', 'app/controllers/Actions/reset.php');
 
-$router->post('/signup', 'app/controllers/Actions/adduser.php');
+$router->post('/signup', 'app/controllers/Actions/createuser.php');
 $router->post('/signin', 'app/controllers/Actions/login.php');
 $router->post('/forget', 'app/controllers/Actions/forgetpw.php');
 $router->post('/reset-password', 'app/controllers/Actions/finishpwdprocess.php');

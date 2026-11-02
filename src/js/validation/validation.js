@@ -14,6 +14,7 @@ const textPattern = /^[A-Za-z0-9\s.,!?'"()\-@#%$&_+=:;\/\n\r\t\p{Emoji}]{20,300}
 const assignmentTextareaPattern = /^[^\x00-\x08\x0B\x0C\x0E-\x1F\x7F<>]*$/u;
 const licensePattern = /^[A-Za-z0-9\- ]{1,32}$/;
 const statePattern = /^[A-Za-z]{2}$/;
+const accessKeyPattern = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
 export class Validation {
     /**
@@ -66,6 +67,9 @@ export class Validation {
 
             case 'password':
                 return this.validatePassword(input);
+
+            case 'access-key':
+                return this.validateAccessKey(input);
 
             case 'file':
                 return this.validatePhoto(input);
@@ -154,6 +158,10 @@ export class Validation {
 
     static validatePassword(input) {
         return pswordPattern.test(input);
+    }
+
+    static validateAccessKey(input) {
+        return accessKeyPattern.test(input);
     }
 
     static validatePhoto(input) {

@@ -37,7 +37,7 @@ class DriverProfileService {
             'userId' => (int) $user['user_id'],
             'username' => $user['username'],
             'email' => $user['email'],
-            'operatorid' => $credentials['operator_id'],
+            'operatorid' => $user['staff_id'],
 
             'firstName' => Crypto::decrypt($user['first_name'], $key),
             'lastName' => Crypto::decrypt($user['last_name'], $key),

@@ -71,7 +71,7 @@ return new class {
 
         // Handle unauthenticated root request
         if (!$isAuthenticated && $uri === '/') {
-            if (!isset($_COOKIE['driver_registered'])) {
+            if (!isset($_COOKIE['account_registered'])) {
                 header('Location: /signup');
                 exit();
             }

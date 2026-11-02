@@ -24,13 +24,18 @@ include base_path('app/views/partials/info-modal.php');
                                 </div>          
                                 
                                 <div class="input-group my-1">
-                                        <input type="password" id="confirmPassword" class="form-control fs-4" name="confirmPassword" placeholder="Confirm Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Confirm password" data-bs-content="Re-enter password" data-bs-placement="bottom" data-bs-trigger="focus" required><span class="input-group-text rounded-end" aria-describedby="confirmPassword"><i class="fa-solid fa-eye" id="con-pwd-icon"></i></span>
+                                        <input type="password" id="confirm-password" class="form-control fs-4" name="confirmPassword" placeholder="Confirm Password" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Confirm password" data-bs-content="Re-enter password" data-bs-placement="bottom" data-bs-trigger="focus" required>
+                                        <span class="input-group-text rounded-end" aria-describedby="confirmPassword">
+                                                <i class="fa-solid fa-eye" id="con-pwd-icon"></i>
+                                        </span>
                                         <div class="invalid-feedback">Re-type password exactly.</div>
                                 </div>
 
                                 <div class="input-group my-1">
-                                        <span class="input-group-text" aria-describedby="accessAccountKey"><i class="fa-solid fa-key" id="key-icon"></i></span>
-                                        <input type="text" id="access-account-key" class="form-control fs-5 rounded-end" name="accessAccountKey" placeholder="Please enter access key" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Access Account Key" data-bs-content="Enter the key you were given" data-bs-placement="bottom" data-bs-trigger="focus" disabled>
+                                        <span class="input-group-text" aria-describedby="accessAccountKey">
+                                                <i class="fa-solid fa-key" id="key-icon"></i>
+                                        </span>
+                                        <input type="password" id="access-account-key" class="form-control fs-5 rounded-end" name="access_key" placeholder="Please enter access key" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" data-bs-container="body" data-bs-toggle="popover" data-bs-title="Access Account Key" data-bs-content="Enter the access key you were given." data-bs-placement="bottom" data-bs-trigger="focus" required>
                                         <div class="invalid-feedback">Please enter you account access key.</div>
                                 </div>
 

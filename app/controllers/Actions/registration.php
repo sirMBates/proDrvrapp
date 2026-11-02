@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Services\RegistrationService;
 use Core\Flash;
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -17,6 +18,13 @@ if ($method !== 'PATCH') {
 
 $userId = (int) ($_SESSION['user_id'] ?? 0);
 if ($userId < 1) {
+    Flash::setMsg('danger', 'Your registration session is no longer valid. Please start again.');
+    header("Location: /signup?danger=session+expired");
+    exit();
+}
+
+$registrationRole = (string) ($_SESSION['registration_role'] ?? '');
+if (!in_array($registrationRole, ['driver', 'dispatch', 'admin'], true)) {
     Flash::setMsg('danger', 'Your registration session is no longer valid. Please start again.');
     header("Location: /signup?danger=session+expired");
     exit();
@@ -42,19 +50,37 @@ $firstName = trim((string) ($_POST['forename'] ?? ''));
 $lastName = trim((string) ($_POST['surname'] ?? ''));
 $mobileNumber = trim((string) ($_POST['mobilenum'] ?? ''));
 $birthDate = trim((string) ($_POST['dateofbirth'] ?? ''));
-$operatorId = 'PRODRVR-' . str_pad((string) $userId, 5, '0', STR_PAD_LEFT);
-$cdlNumber = trim((string) ($_POST['cdl_driver_license'] ?? ''));
-$cdlState = strtoupper(trim((string) ($_POST['driver_license_state'] ?? '')));
-$cdlExpirationDate = trim((string) ($_POST['driver_license_expire'] ?? ''));
-$dotMedExpirationDate = trim((string) ($_POST['dot_medical_expire'] ?? ''));
+$cdlNumber = null;
+$cdlState = null;
+$cdlExpirationDate = null;
+$dotMedExpirationDate = null;
 
-// Complete the driver's registration profile. ↓
-include_once base_path("app/SubmissionHandlers/complete_registration.php");
-$registration = new RegistrationContr($userId, $operatorId, $firstName, $lastName, $mobileNumber, $birthDate, $cdlNumber, $cdlState, $cdlExpirationDate, $dotMedExpirationDate);
-$registration->processProfile();
+if ($registrationRole === 'driver') {
+    $cdlNumber = trim((string) ($_POST['cdl_driver_license'] ?? ''));
+    $cdlState = strtoupper(trim((string) ($_POST['driver_license_state'] ?? '')));
+    $cdlExpirationDate = trim((string) ($_POST['driver_license_expire'] ?? ''));
+    $dotMedExpirationDate = trim((string) ($_POST['dot_medical_expire'] ?? ''));
+}
+
+// Complete the account registration profile. ↓
+$registrationService = new RegistrationService();
+
+try {
+    $updated = $registrationService->completeRegistration($userId, $firstName, $lastName, $mobileNumber, $birthDate, $cdlNumber, $cdlState, $cdlExpirationDate, $dotMedExpirationDate);
+} catch (\InvalidArgumentException $exception) {
+    Flash::setMsg('warning', $exception->getMessage());
+    header("Location: /register?warning=invalid+registration");
+    exit();
+}
+
+if (!$updated) {
+    Flash::setMsg('error', 'The registration could not be completed. Please try again.');
+    header("Location: /register?error=try+again");
+    exit();
+}
 
 setcookie(
-    'driver_registered', 
+    'account_registered', 
     'true', 
     time() + (86400 * 365), // 1 year
     '/',                    // path
@@ -64,10 +90,11 @@ setcookie(
 );
 
 unset($_SESSION['registration_pending']);
+unset($_SESSION['registration_role']);
 unset($_SESSION['user_id']);
 unset($_SESSION['user_name']);
 
-// Go to signin page after firstname, lastname, mobile and birthdate has been successfully entered. ↓
+// Go to signin page after information has been successfully entered. ↓
 Flash::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');
 header("Location: /signin?success=profile+updated");
 exit();
