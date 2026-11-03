@@ -4,7 +4,7 @@
 
 #signaturePad {
         border: 2px solid black;
-        cursor: url('../images-videos/logoandicons/icons8-pen-50.png') 1 50, pointer;
+        cursor: url("../../images-videos/logoandicons/icons8-pen-50.png") 1 50, pointer;
 }
 
 .editable-data {
@@ -51,18 +51,9 @@
     color: #495057;
 }
 
-.input-error {
-    outline: 2px solid #ff3b3b !important;
-    background-color: rgba(255, 0, 0, 0.08) !important;
-}
-
 .input-valid {
     outline: 2px solid rgba(25, 135, 84, 0.65) !important;
     background-color: rgba(25, 135, 84, 0.06) !important;
-}
-
-.input-error-flash {
-    animation: flashError 0.4s ease;
 }
 
 .field-error-message {
@@ -86,11 +77,6 @@
 
 .field-error-icon {
     color: #dc3545;
-}
-
-@keyframes flashError {
-    0% { background-color: rgba(255, 0, 0, 0.35); }
-    100% { background-color: rgba(255, 0, 0, 0.08); }
 }
 
 .hidden {

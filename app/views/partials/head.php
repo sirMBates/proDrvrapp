@@ -36,10 +36,9 @@
         })();
         </script>
         <link rel="manifest" href="/manifest.json">
-        <link rel="stylesheet" href="/dist/styles/components.css">
-        <?php
-                require base_path("app/includes/getstyle.php");
-        ?>
+        <?php foreach ($GLOBALS['page_styles'] ?? [] as $style): ?>
+                <link rel="stylesheet" href="<?= htmlspecialchars($style, ENT_QUOTES, 'UTF-8') ?>">
+        <?php endforeach; ?>
         <link rel="stylesheet" href="/dist/styles/scss/main.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

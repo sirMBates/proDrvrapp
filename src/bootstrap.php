@@ -13,6 +13,7 @@ use App\ImportExport\JobOrderImporter;
 use Core\Logger;
 use App\Validation\ImporterAssignmentValidator;
 use App\Middleware\ScriptsMiddleware;
+use App\Middleware\StylesMiddleware;
 
 return new class {
     private Logger $logger;
@@ -58,8 +59,9 @@ return new class {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
         $method = $_POST['__method'] ?? $_SERVER['REQUEST_METHOD'];
 
-        // Run script middleware BEFORE routing
+        // Run script and styles middleware BEFORE routing
         $GLOBALS['page_scripts'] = ScriptsMiddleware::resolve($uri);
+        $GLOBALS['page_styles'] = StylesMiddleware::resolve($uri, $_SESSION['role'] ?? null);
 
         $isAuthenticated = isset($_SESSION['user_id'], $_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 

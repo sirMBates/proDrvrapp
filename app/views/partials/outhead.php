@@ -7,12 +7,9 @@
         <meta name="robots" content="noindex">
         <meta name="theme-color" content="#1D5283">
         <link rel="manifest" href="/manifest.json">
-        <?php
-        $url = $_SERVER['REQUEST_URI'];
-        if ($url !== '/views/404.php') {
-                require_once base_path("app/includes/getstyle.php");
-        }
-        ?>
+        <?php foreach ($GLOBALS['page_styles'] ?? [] as $style): ?>
+                <link rel="stylesheet" href="<?= htmlspecialchars($style, ENT_QUOTES, 'UTF-8') ?>">
+        <?php endforeach; ?>
         <link rel="stylesheet" href="/dist/styles/scss/main.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

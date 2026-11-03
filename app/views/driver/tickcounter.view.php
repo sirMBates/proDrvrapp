@@ -1,6 +1,6 @@
 <?php
-require_once "partials/head.php";
-require_once "partials/banner.php";
+require_once base_path("app/views/partials/head.php");
+require_once base_path("app/views/partials/banner.php");
 ?>
 <main class="container-fluid m-2 p-2">
     <div class="card">
@@ -21,5 +21,5 @@ require_once "partials/banner.php";
     </div>
 </main>
 <?php
-require_once "partials/footer.php";
+require_once base_path("app/views/partials/footer.php");
 ?>
