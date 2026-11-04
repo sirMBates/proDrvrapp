@@ -10,16 +10,16 @@ $alert = new Core\Flash();
 ?>
         <div class="banner-top">
                 <div class="flex-shrink-0 d-flex align-items-center banner-logo">                                
-                        <img src="../../dist/images-videos/pro_drvr_logo.png" class="img-fluid m-3" id="logo" alt="companylogo">                     
+                        <img src="../../../dist/images-videos/pro_drvr_logo.png" class="img-fluid m-3" id="logo" alt="companylogo">                     
                 </div>
 
                 <div id="alert-container" class="flex-grow-1 d-flex justify-content-center align-items-center">
-                        <?php include_once base_path("app/views/partials/flashmessage.php");?>
+                        <?php include_once base_path("app/views/partials/shared/flashmessage.php");?>
                 </div>
         </div>
 <?php
         if (!urlIs('/signature')) {
-                require "info-nav.php";
+                require base_path('app/views/partials/shared/info-nav.php');
         }
 ?>
 </header>

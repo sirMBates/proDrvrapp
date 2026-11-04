@@ -1,7 +1,7 @@
 <?php
-    require base_path('app/views/partials/outhead.php');
+    require base_path('app/views/partials/auth/outhead.php');
     $alert = new Core\Flash();
-    include base_path('app/views/partials/flashmessage.php');
+    include base_path('app/views/partials/shared/flashmessage.php');
 ?>
 
     <main class="container-fluid d-flex justify-content-center">
@@ -34,5 +34,5 @@
 
 
 <?php
-    require base_path('app/views/partials/outfooter.php');
+    require base_path('app/views/partials/auth/outfooter.php');
 ?>

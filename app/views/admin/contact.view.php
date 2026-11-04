@@ -1,7 +1,7 @@
 <?php
-require base_path('app/views/partials/head.php');
-require base_path('app/views/partials/banner.php');
-include base_path('app/views/partials/info-modal.php');
+require base_path('app/views/partials/shared/head.php');
+require base_path('app/views/partials/driver/banner.php');
+include base_path('app/views/partials/shared/info-modal.php');
 ?>
     <main class="container-fluid">
         <div class="card my-3" style="width: 100%;">
@@ -45,5 +45,5 @@ include base_path('app/views/partials/info-modal.php');
     </main>
 
 <?php
-    require base_path('app/views/partials/footer.php');
+    require base_path('app/views/partials/shared/footer.php');
 ?>

@@ -1,8 +1,8 @@
 <?php
-require base_path('app/views/partials/head.php');
-require base_path('app/views/partials/banner.php');
-include base_path('app/views/partials/info-modal.php');
-include base_path('app/views/partials/custom-modal.php');
+require base_path('app/views/partials/shared/head.php');
+require base_path('app/views/partials/driver/banner.php');
+include base_path('app/views/partials/shared/info-modal.php');
+include base_path('app/views/partials/shared/custom-modal.php');
 ?>
 <main class="container-fluid mb-1 d-flex flex-column align-items-center">
         <button id="birthday-theme-btn" type="button" class="btn-sm position-absolute rounded-1 z-3 me-2 end-0 text-capitalize d-none"><i class="me-2 fa-solid fa-cake-candles"></i>happy birthday</button>
@@ -49,11 +49,11 @@ include base_path('app/views/partials/custom-modal.php');
         </div>
         <section class="dashboard-preview-grid">
                 <?php
-                        require base_path('app/views/partials/status-history.php');
-                        require base_path('app/views/partials/message-preview.php');
+                        require base_path('app/views/partials/driver/status-history.php');
+                        require base_path('app/views/partials/driver/message-preview.php');
                 ?>
         </section>
 </main>
 <?php
-require base_path('app/views/partials/footer.php');
+require base_path('app/views/partials/shared/footer.php');
 ?>

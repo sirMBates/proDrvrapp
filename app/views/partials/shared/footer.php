@@ -1,9 +1,12 @@
-<?php 
-        if (!urlIs('/signature')) {
-                require 'driver-status-dock.php';
-        }
+<?php
+
+declare(strict_types=1);
+
+if (($_SESSION['role'] ?? null) === 'driver' && !urlIs('/signature')) {
+	require base_path('app/views/partials/driver/driver-status-dock.php');
+}
 ?>
-        
+
 <footer class="<?= urlIs('/signature') ? 'd-none' : 'mt-auto justify-content-center d-flex bg-prodriverclr border border-start-0 border-end-0 border-1 border-black container-fluid';?>">
         <div class="container text-center">
                 <h4 class="text-uppercase text-light">pro-driver</h4>

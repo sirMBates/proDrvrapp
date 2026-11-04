@@ -1,8 +1,8 @@
 <?php
-require base_path('app/views/partials/head.php');
-require base_path('app/views/partials/banner.php');
-include base_path('app/views/partials/info-modal.php');
-include base_path('app/views/partials/confirm-modal.php');
+require base_path('app/views/partials/shared/head.php');
+require base_path('app/views/partials/driver/banner.php');
+include base_path('app/views/partials/shared/info-modal.php');
+include base_path('app/views/partials/shared/confirm-modal.php');
 ?>
 
 <main class="container-fluid p-3">
@@ -160,5 +160,5 @@ include base_path('app/views/partials/confirm-modal.php');
 </main>
 
 <?php 
-require base_path('app/views/partials/footer.php');
+require base_path('app/views/partials/shared/footer.php');
 ?>

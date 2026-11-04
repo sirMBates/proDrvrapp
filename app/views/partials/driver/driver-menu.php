@@ -2,7 +2,7 @@
         <div class="offcanvas-header bg-prodriverclr">
                 <div id="profilecon" style="width: 60px; height: 60px;" class="border border-2 border-primary rounded d-inline-block me-2">                        
                         <label for="menuProfileInput">
-                                <img id="menuProfileImage" src="../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="mx-1 my-1">
+                                <img id="menuProfileImage" src="../../dist/images-videos/logoandicons/photo-camera-interface-symbol-for-button.png" alt="N/A" width="50" height="50" class="mx-1 my-1">
                         </label>
 
                         <input type="file" id="menuProfileInput" accept="image/jpg, image/jpeg, image/png, image/gif">
@@ -55,5 +55,5 @@
         </div>
 </div>
 <?php
-require base_path('app/views/partials/logout-modal.php');
+require base_path('app/views/partials/driver/logout-modal.php');
 ?>

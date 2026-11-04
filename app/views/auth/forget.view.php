@@ -1,7 +1,7 @@
 <?php
-    require base_path('app/views/partials/outhead.php');
+    require base_path('app/views/partials/auth/outhead.php');
     $alert = new Core\Flash();
-    include base_path('app/views/partials/flashmessage.php');
+    include base_path('app/views/partials/shared/flashmessage.php');
 ?>
     <main class="w-50 my-5 align-self-center">
         <h1 class="text-center text-light text-bg-dark font-monospace"><u>Reset your password here!</u></h1>
@@ -25,5 +25,5 @@
         </form>
     </main> 
 <?php
-    require base_path('app/views/partials/outfooter.php');
+    require base_path('app/views/partials/auth/outfooter.php');
 ?>

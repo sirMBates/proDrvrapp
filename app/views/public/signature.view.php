@@ -1,5 +1,5 @@
 <?php
-require base_path('app/views/partials/head.php');
+require base_path('app/views/partials/shared/head.php');
 ?>
 
 <main class="container py-4">
@@ -63,5 +63,5 @@ require base_path('app/views/partials/head.php');
 </main>
 
 <?php
-require base_path('app/views/partials/footer.php');
+require base_path('app/views/partials/shared/footer.php');
 ?>

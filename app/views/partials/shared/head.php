@@ -26,10 +26,14 @@
                                 document.documentElement.classList.add('page-guidance-disabled');
                         }
 
-                        const statusDockExpanded = localStorage.getItem('prodriverStatusDockExpanded');
-                        if (statusDockExpanded === 'false') {
-                                document.documentElement.classList.add('status-dock-collapsed');
-                        }
+                        <?php if (($_SESSION['role'] ?? null) === 'driver'): ?>
+
+                                const statusDockExpanded = localStorage.getItem('prodriverStatusDockExpanded');
+                                if (statusDockExpanded === 'false') {
+                                        document.documentElement.classList.add('status-dock-collapsed');
+                                }
+
+                        <?php endif; ?>
                 } catch (error) {
                         document.documentElement.dataset.bsTheme = 'light';
                 }

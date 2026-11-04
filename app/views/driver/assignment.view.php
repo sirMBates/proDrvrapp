@@ -1,8 +1,8 @@
 <?php
-require base_path('app/views/partials/head.php');
-require base_path('app/views/partials/banner.php');
-include base_path('app/views/partials/info-modal.php');
-include base_path('app/views/partials/confirm-modal.php');
+require base_path('app/views/partials/shared/head.php');
+require base_path('app/views/partials/driver/banner.php');
+include base_path('app/views/partials/shared/info-modal.php');
+include base_path('app/views/partials/shared/confirm-modal.php');
 ?>       
 <main class="w-100 d-flex flex-column justify-content-center p-1">
         <div id="assignmentContainer">
@@ -121,7 +121,7 @@ include base_path('app/views/partials/confirm-modal.php');
                         </section>
 <?php
         if (isset($_SESSION['signature_required']) && $_SESSION['signature_required'] === 1) {
-                require_once base_path('app/views/partials/signpad.php');
+                require_once base_path('app/views/partials/driver/signpad.php');
         }
 ?>
                         <section id="driver-notes-box" class="card my-3">
@@ -152,5 +152,5 @@ include base_path('app/views/partials/confirm-modal.php');
         </div>
 </main>       
 <?php
-require base_path('app/views/partials/footer.php');
+require base_path('app/views/partials/shared/footer.php');
 ?>

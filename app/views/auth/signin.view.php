@@ -1,8 +1,8 @@
 <?php
-require base_path('app/views/partials/outhead.php');
+require base_path('app/views/partials/auth/outhead.php');
 $alert = new Core\Flash();
-include base_path('app/views/partials/flashmessage.php');
-include base_path('app/views/partials/info-modal.php');
+include base_path('app/views/partials/shared/flashmessage.php');
+include base_path('app/views/partials/shared/info-modal.php');
 if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
         unset($_SESSION['reset']);
 }
@@ -33,5 +33,5 @@ if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
                 </form>
         </div>
 <?php
-require base_path('app/views/partials/outfooter.php');
+require base_path('app/views/partials/auth/outfooter.php');
 ?>

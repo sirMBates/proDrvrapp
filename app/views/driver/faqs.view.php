@@ -1,6 +1,6 @@
 <?php
-require base_path('app/views/partials/head.php');
-require base_path('app/views/partials/banner.php');
+require base_path('app/views/partials/shared/head.php');
+require base_path('app/views/partials/driver/banner.php');
 ?>
 
 <main class="container-fluid my-2">
@@ -156,5 +156,5 @@ require base_path('app/views/partials/banner.php');
     </div>
 </main>
 <?php
-require base_path('app/views/partials/footer.php');
+require base_path('app/views/partials/shared/footer.php');
 ?>

@@ -1,6 +1,6 @@
 <?php
     $title = $errorTitle;
-    require base_path("app/views/partials/outhead.php");
+    require base_path("app/views/partials/auth/outhead.php");
 ?>
 <style>
 .error-code {

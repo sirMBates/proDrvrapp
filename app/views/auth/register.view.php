@@ -1,12 +1,12 @@
 <?php
-require base_path('app/views/partials/outhead.php');
+require base_path('app/views/partials/auth/outhead.php');
 $alert = new Core\Flash();
 $registrationRoleDisplay = match ($registrationRole) {
         'driver' => 'Driver',
         'dispatch' => 'Dispatcher',
         'admin' => 'Administrator'
 };
-include base_path('app/views/partials/flashmessage.php');
+include base_path('app/views/partials/shared/flashmessage.php');
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-4">
@@ -110,5 +110,5 @@ include base_path('app/views/partials/flashmessage.php');
                 </div>
         </main>
 <?php
-        require base_path('app/views/partials/outfooter.php');
+        require base_path('app/views/partials/auth/outfooter.php');
 ?>

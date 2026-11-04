@@ -1,7 +1,7 @@
 <?php
     // Only required for signature widget.
-    include_once "warn-modal.php";
-    include_once "confirm-modal.php";
+    include_once base_path('app/views/partials/shared/warn-modal.php');
+    include_once base_path('app/views/partials/shared/confirm-modal.php');
 ?>
 <div id="signature-widget-buttons" class="container d-inline-flex my-3 d-none">
     <button id="open-sign-box" class="btn btn-primary text-capitalize" type="button"><i class="px-2 fa-solid fa-signature"></i>pre-inspection signature</button>
@@ -19,7 +19,7 @@
         <button type="button" class="btn btn-md btn-secondary m-2">Clear</button>
         <button type="button" class="btn btn-md btn-primary m-2">Sign</button>
         <button type="button" class="btn btn-md btn-primary m-2 d-none">Sign</button>
-    </div>    
+    </div>
 </section>
 
 <section id="signature-display" class="container my-3 d-none" aria-live="polite">
