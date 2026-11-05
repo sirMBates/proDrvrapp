@@ -1,59 +1,88 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Services\AuthenticationService;
 use Core\Flash;
+use Core\Logger;
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['loginAcct'])) {
-    header("Location: /signin");
+    header('Location: /signin', true, 303);
     exit();
 }
 
-$sessionToken = $_SESSION['drvr_token'] ?? '';
-$formToken = (string) ($_POST['drvrtoken'] ?? '');
+$formToken = trim((string) ($_POST['drvrtoken'] ?? ''));
+$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
 
 if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
-    Flash::setMsg('error', 'Your session has expired. Please try again.');
-    header("Location: /signin?error=csrf");
+    Flash::setMsg('danger', 'Please retry your request.');
+    header('Location: /signin?danger=try+again', true, 303);
     exit();
 }
 
-if (isset($_POST['loginAcct'])) {
-    $username = trim((string) ($_POST['username'] ?? ''));
-    $password = (string) ($_POST['password'] ?? '');
-    
-    // Instantiate the sign in user controller class. ↓
-    include_once base_path("app/SubmissionHandlers/login_drvr.php");
-    $signin = new LoginContr($username, $password);
+$username = trim((string) ($_POST['username'] ?? ''));
+$password = (string) ($_POST['password'] ?? '');
+
+try {
+    $authenticationService = new AuthenticationService();
+    $account = $authenticationService->authenticate($username, $password);
+
     $messengerDestination = $_SESSION['messenger_login_destination'] ?? null;
-    // Running error handlers and user signin.
-    $signin->loginUser();
-    if (!isset($_COOKIE['account_registered'])) {
-        setcookie(
-            'account_registered', 
-            'true', 
-            time() + (86400 * 365), // 1 year
-            '/',                    // path
-            'prodriver.local',      // domain
-            true,                   // secure ( works with HTTPS )
-            true                    // httponly
-        );
+
+    session_regenerate_id(true);
+
+    $_SESSION['user_id'] = $account['userId'];
+    $_SESSION['first_name'] = $account['firstName'];
+    $_SESSION['logged_in'] = true;
+    $_SESSION['role'] = $account['role'];
+
+    unset($_SESSION['birth_date']);
+
+    if ($_SESSION['role'] === 'driver') {
+        $birthdate = $account['birthdate'] ?? null;
+
+        if (!empty($birthdate) && date('md') === date('md', strtotime($birthdate))) {
+            $_SESSION['birth_date'] = $birthdate;
+        }
     }
-    // Redirect to home page upon successful login with valid message.
+
+    if (!isset($_COOKIE['account_registered'])) {
+        setcookie('account_registered', 'true', [
+            'expires' => time() + (86400 * 365),
+            'path' => '/',
+            'domain' => 'prodriver.local',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
+
     Flash::setMsg('success', $_SESSION['first_name'], ['greet' => true]);
     $redirect = '/';
-    /*
-    * Only accept the exact Messenger destination format
-    * that the Router creates.
-    */
+
     if (is_string($messengerDestination) && preg_match('~\A/message-center(?:\?(?:conversation|recipient)=[1-9][0-9]*)?\z~', $messengerDestination) === 1) {
         $redirect = $messengerDestination;
     }
 
     unset($_SESSION['messenger_login_destination']);
-    header("Location: " . $redirect);
+    header('Location: ' . $redirect, true, 303);
+    exit();
+} catch (\InvalidArgumentException $exception) {
+    Flash::setMsg('danger', $exception->getMessage());
+    header('Location: /signin?danger=invalid+credentials', true, 303);
+    exit();
+} catch (\DomainException $exception) {
+    Flash::setMsg('danger', $exception->getMessage());
+    header('Location: /signin?danger=account+locked', true, 303);
+    exit();
+} catch (\Throwable $exception) {
+    Logger::logException($exception, 'Account authentication failed');
+    Flash::setMsg('danger', 'Unable to sign in. Please try again.');
+    header('Location: /signin?danger=authentication+failed', true, 303);
     exit();
 }
 
