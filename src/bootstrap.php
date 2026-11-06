@@ -65,9 +65,17 @@ return new class {
 
         $isAuthenticated = isset($_SESSION['user_id'], $_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 
+        $isRegistrationPending = !$isAuthenticated && isset($_SESSION['user_id']) && ($_SESSION['registration_pending'] ?? false) === true;
+
         // Prevent authenticated users from returning to auth/account setup pages
         if ($isAuthenticated && in_array($uri, ['/signup', '/signin', '/register', '/forget', '/reset-password'], true)) {
             header('Location: /');
+            exit();
+        }
+
+        // Send pending registrations back to onboarding.
+        if ($isRegistrationPending && $uri === '/') {
+            header('Location: /register', true, 303);
             exit();
         }
 

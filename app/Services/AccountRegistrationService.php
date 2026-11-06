@@ -50,7 +50,7 @@ class AccountRegistrationService {
 
         $role = (string) $access['role'];
 
-        $userId = $this->userRepository->createUser($username, $email, $password, $role);
+        $userId = $this->userRepository->createUser($username, $email, $password, $role, 'pending');
 
         return [
             'user_id' => $userId,

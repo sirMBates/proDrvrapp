@@ -23,6 +23,10 @@ class RegistrationService {
         try {
             // The role stored on the user account is authoritative.
             $user = $userRepository->findById($userId);
+            if (($user['account_status'] ?? null) !== 'pending') {
+                throw new \InvalidArgumentException('This account is not eligible to complete registration.');
+            }
+
             $role = (string) $user['role'];
 
             if (!in_array($role, ['driver', 'dispatch', 'admin'], true)) {
@@ -71,6 +75,13 @@ class RegistrationService {
                 if ($credentialId < 1) {
                     throw new \RuntimeException('Unable to create driver credentials.');
                 }
+            }
+
+            // Activate only after all onboarding operations succeed.
+            $accountActivated = $userRepository->activatePendingAccount($userId);
+
+            if (!$accountActivated) {
+                throw new \RuntimeException('Unable to activate account after registration.');
             }
 
             $pdo->commit();

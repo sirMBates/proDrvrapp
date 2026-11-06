@@ -17,16 +17,16 @@ if ($method !== 'PATCH') {
 }
 
 $userId = (int) ($_SESSION['user_id'] ?? 0);
-if ($userId < 1) {
-    Flash::setMsg('danger', 'Your registration session is no longer valid. Please start again.');
-    header("Location: /signup?danger=session+expired");
+if ($userId < 1 || ($_SESSION['registration_pending'] ?? false) !== true) {
+    Flash::setMsg('danger', 'Your registration session is no longer valid. Please sign in to continue.');
+    header("Location: /signin?danger=registration+session+expired", true, 303);
     exit();
 }
 
 $registrationRole = (string) ($_SESSION['registration_role'] ?? '');
 if (!in_array($registrationRole, ['driver', 'dispatch', 'admin'], true)) {
-    Flash::setMsg('danger', 'Your registration session is no longer valid. Please start again.');
-    header("Location: /signup?danger=session+expired");
+    Flash::setMsg('danger', 'Your registration session is no longer valid. Please sign in to continue.');
+    header("Location: /signin?danger=registration+session+expired", true, 303);
     exit();
 }
 
@@ -89,10 +89,9 @@ setcookie(
     true                    // httponly
 );
 
-unset($_SESSION['registration_pending']);
-unset($_SESSION['registration_role']);
-unset($_SESSION['user_id']);
-unset($_SESSION['user_name']);
+unset($_SESSION['registration_pending'], $_SESSION['registration_role'], $_SESSION['user_id'], $_SESSION['user_name'], $_SESSION['logged_in'], $_SESSION['role'], $_SESSION['first_name'], $_SESSION['birth_date']);
+
+session_regenerate_id(true);
 
 // Go to signin page after information has been successfully entered. ↓
 Flash::setMsg('success', 'You\'ve updated your profile successfully! Please sign in to continue.');

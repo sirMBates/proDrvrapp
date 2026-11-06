@@ -24,16 +24,25 @@ class AuthenticationService {
         }
 
         $user = $this->userRepository->findByUsername($username);
-
         if ($user === null || !password_verify($password, $user['password'])) {
             throw new \InvalidArgumentException('Invalid username or password.');
         }
 
-        if (($user['account_status'] ?? null) !== 'active') {
-            $message = match ($user['account_status'] ?? null) {
+        $status = $user['account_status'] ?? null;
+        if ($status === 'pending') {
+            return [
+                'authenticated' => false,
+                'registrationPending' => true,
+                'userId' => (int) $user['user_id'],
+                'username' => $user['username'],
+                'role' => $user['role']
+            ];
+        }
+
+        if ($status !== 'active') {
+            $message = match ($status) {
                 'locked' => 'Your account has been locked by administration. Please contact your administrator.',
                 'inactive-locked' => 'Your account has been suspended due to inactivity. Please contact your administrator.',
-                'pending' => 'Your account registration is incomplete. Please complete your registration.',
                 default => 'Your account is currently unavailable. Please contact your administrator.'
             };
 

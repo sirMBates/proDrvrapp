@@ -50,7 +50,8 @@ class DriverProfileService {
             'cdlExpirationDate' => $credentials['cdl_expiration_date'],
             'dotMedStatus' => $credentials['dot_med_status'],
             'dotMedExpirationDate' => $credentials['dot_med_expiration_date'],
-            'profilePicture' => $user['profile_picture'] ?: null
+            'profilePicture' => $user['profile_picture'] ? : null,
+            'accountStatus' => $user['account_status']
         ];
     }
 

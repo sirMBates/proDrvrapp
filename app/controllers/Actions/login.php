@@ -31,9 +31,29 @@ try {
     $authenticationService = new AuthenticationService();
     $account = $authenticationService->authenticate($username, $password);
 
+    if (($account['registrationPending'] ?? false) === true) {
+        session_regenerate_id(true);
+
+        unset($_SESSION['logged_in'], $_SESSION['first_name'], $_SESSION['role'], $_SESSION['birth_date'], $_SESSION['messenger_login_destination']);
+
+        $_SESSION['user_id'] = $account['userId'];
+        $_SESSION['user_name'] = $account['username'];
+        $_SESSION['registration_pending'] = true;
+        $_SESSION['registration_role'] = $account['role'];
+
+        Flash::setMsg('info', 'Welcome back! Please complete your registration to activate your account.');
+        header('Location: /register?info=resume+registration', true, 303);
+        exit();
+    }
+
+    if (($account['authenticated'] ?? false) !== true) {
+        throw new \RuntimeException('Unexpected authentication result.');
+    }
+
     $messengerDestination = $_SESSION['messenger_login_destination'] ?? null;
 
     session_regenerate_id(true);
+    unset($_SESSION['registration_pending'], $_SESSION['registration_role']);
 
     $_SESSION['user_id'] = $account['userId'];
     $_SESSION['first_name'] = $account['firstName'];

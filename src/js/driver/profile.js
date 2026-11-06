@@ -46,7 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
         cdlExpirationDisplay.textContent = viewableDateTimeHelper(driver.cdlExpirationDate, 'date');
         dotMedStatusDisplay.textContent = formatCredentialStatus(driver.dotMedStatus);
         dotMedExpirationDisplay.textContent = viewableDateTimeHelper(driver.dotMedExpirationDate, 'date');
-        statusDisplay.textContent = localStorage.getItem('status') || sessionStorage.getItem('status') || '';
+        statusDisplay.textContent = driver.accountStatus.chartAt(0).toUppercase() + driver.accountStatus.slice(1);
 
         if (driver.profilePicture) {
             profilePageImage.setAttribute('src', `/setprofilepicture?t=${Date.now()}`);

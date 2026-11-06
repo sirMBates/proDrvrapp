@@ -13,11 +13,11 @@ class UserRepository {
         $this->pdo = $pdo ?? (new Database())->connect();
     }
 
-    public function createUser(string $username, string $email, string $password, string $role): int {
+    public function createUser(string $username, string $email, string $password, string $role, string $accountStatus): int {
         $hashPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO users (username, email, password, first_name, last_name, mobile_number, birth_date, profile_picture, role)
-                VALUES (:username, :email, :password, :first_name, :last_name, :mobile_number, :birth_date, :profile_picture, :role)";
+        $sql = "INSERT INTO users (username, email, password, first_name, last_name, mobile_number, birth_date, profile_picture, role, account_status)
+                VALUES (:username, :email, :password, :first_name, :last_name, :mobile_number, :birth_date, :profile_picture, :role, :account_status)";
         $stmt = $this->pdo->prepare($sql);
 
         $stmt->execute([
@@ -29,7 +29,8 @@ class UserRepository {
             ':mobile_number' => '',
             ':birth_date' => null,
             ':profile_picture' => null,
-            ':role' => $role
+            ':role' => $role,
+            ':account_status' => $accountStatus
         ]);
 
         return (int) $this->pdo->lastInsertId();
@@ -49,6 +50,20 @@ class UserRepository {
             ':birth_date' => $encryptedBirthDate,
             ':user_id' => $userId
         ]);
+    }
+
+    public function activatePendingAccount(int $userId): bool {
+        $sql = "UPDATE users
+                SET account_status = 'active'
+                WHERE user_id = :user_id
+                AND account_status = 'pending'";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            ':user_id' => $userId
+        ]);
+
+        return $stmt->rowCount() === 1;
     }
 
     public function findByUsername(string $username): ?array {
