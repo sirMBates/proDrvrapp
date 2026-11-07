@@ -17,7 +17,7 @@
                 <input id="email" type="email" class="form-control" name="email" placeholder="Please enter your email" required>
                 <label for="email">Email address</label>
 
-                <div class="invalid-feedback">
+                <div class="invalid-feedback bg-black">
                     Please enter a valid email address.
                 </div>
             </div>
