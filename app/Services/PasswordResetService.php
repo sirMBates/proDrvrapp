@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Repositories\PasswordResetRepository;
 use App\Repositories\UserRepository;
+use App\Validation\Validator;
+use App\Validation\UserValidator;
 use Core\Database;
 use PDO;
 
@@ -42,6 +44,10 @@ class PasswordResetService {
         ];
     }
 
+    public function invalidateResetRequest(int $resetId): bool {
+        return $this->passwordResetRepository->markUsed($resetId);
+    }
+
     public function validateToken(string $rawToken): ?array {
         if ($rawToken === '') {
             return null;
@@ -66,6 +72,10 @@ class PasswordResetService {
     }
 
     public function completePasswordReset(string $rawToken, string $newPassword): bool {
+	if ($this->validateResetPassword($newPassword) !== null) {
+	    return false;
+	}
+
         $resetRequest = $this->validateToken($rawToken);
         if ($resetRequest === null) {
             return false;
@@ -97,6 +107,30 @@ class PasswordResetService {
 
             return false;
         }
+    }
+
+    public function validateResetEmail(string $email): ?string {
+        if (!Validator::required($email)) {
+            return 'empty';
+        }
+
+        if (!Validator::email($email)) {
+            return 'invalid';
+        }
+
+        return null;
+    }
+
+    public function validateResetPassword(string $password): ?string {
+	if (!Validator::required($password)) {
+	    return 'empty';
+	}
+
+	if (!UserValidator::password($password)) {
+	    return 'invalid';
+	}
+
+	return null;
     }
 }
 

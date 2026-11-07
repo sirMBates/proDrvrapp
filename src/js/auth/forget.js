@@ -1,22 +1,18 @@
 import { Validation } from '../validation/validation.js';
-import { formValidation }  from '../shared/helpers.js';
+import { formValidation } from '../shared/helpers.js';
 
 const forgetEmail = document.querySelector('#email');
-const forgetBtn = document.querySelector('#forget-pwd');
+const forgetForm = document.querySelector('#forgetpswd');
 
 (() => {
+    if (!forgetEmail || !forgetForm) return;
+
+    // Initialize Bootstrap form validation once.
+    formValidation();
+
+    // Provide immediate email validation feedback.
     $(forgetEmail).on('input', () => {
-            let isValid = Validation.validate($(forgetEmail).val(), $(forgetEmail).attr('type'));
-            if (!isValid) {
-                $(forgetEmail).addClass('is-invalid');
-            } else {
-                $(forgetEmail).removeClass('is-invalid');
-                $(forgetEmail).addClass('is-valid');
-            }
+        const isValid = Validation.validate($(forgetEmail).val(), $(forgetEmail).attr('type'));
+        $(forgetEmail).toggleClass('is-invalid', !isValid).toggleClass('is-valid', isValid);
     });
-
-    $(forgetBtn).on('submit', () => {
-        return formValidation();
-    })
-
 })();
