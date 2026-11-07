@@ -20,6 +20,10 @@ class DriverProfileService {
 
     public function driverProfile(int $userId): array {
         $user = $this->userRepository->findById($userId);
+        if ($user === null) {
+            throw new \RuntimeException('Driver profile not found.');
+        }
+
         if ($user['role'] !== 'driver') {
             throw new \RuntimeException('User is not a driver.');
         }
