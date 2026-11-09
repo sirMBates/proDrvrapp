@@ -43,8 +43,8 @@ function requireLoginAjax() {
     }
 }
 
-function routeSwitcher($role) {
-    switch($_SESSION[$role] ?? null) {
+function routeSwitcher(?string $role): void {
+    switch($role) {
         case 'driver':
             require base_path('app/routes/driver.php');
             break;
