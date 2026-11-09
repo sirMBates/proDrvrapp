@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Services\DriverProfileService;
+use App\Services\ProfileImageService;
+use App\Validation\ProfileImageValidator;
 
 $method = strtoupper($_POST['__method'] ?? $_SERVER['REQUEST_METHOD']);
 
@@ -93,13 +95,40 @@ if ($method === 'PATCH') {
         exit();
     }
 
-    include_once base_path("app/SubmissionHandlers/set_profile_pic.php");
-
     $file = $_FILES['profileImage'];
-    $drvrPicture = new SetDrvrPictureContr($file);
-    $result = $drvrPicture->setProfilePicture();
+    $imageValidator = new ProfileImageValidator();
+    $validation = $imageValidator->validate($file);
 
-    echo json_encode($result);
+    if (!$validation['valid']) {
+        http_response_code($validation['http_code']);
+        echo json_encode([
+            'status' => 'error',
+            'message' => $validation['message']
+        ]);
+        exit();
+    }
+
+    try {
+        $profileImageService = new ProfileImageService();
+
+        $result = $profileImageService->uploadImage($driverId, $file);
+
+        if (($result['status'] ?? null) !== 'success') {
+            http_response_code(500);
+        } else {
+            http_response_code(200);
+        }
+
+    	echo json_encode($result);
+    } catch (\Throwable $exception ) {
+	    error_log('Profile image upload failed: ' . $exception->getMessage());
+	    http_response_code(500);
+	    echo json_encode([
+	        'status' => 'error',
+	        'message' => 'Profile image could not be uploaded.'
+	    ]);
+    }
+
     exit();
 }
 

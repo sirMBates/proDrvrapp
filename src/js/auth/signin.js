@@ -7,6 +7,7 @@ const usernameInput = checkInputs[0];
 const passwordInput = checkInputs[1];
 const pwdIcon = document.querySelector('#psword-icon');
 const signInForm = document.querySelector('#logInAcct');
+const signInBtn = document.querySelector('#signin');
 const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
 const infoModBtn = document.querySelector('#info-ok');
