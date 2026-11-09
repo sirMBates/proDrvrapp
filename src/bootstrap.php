@@ -98,15 +98,7 @@ return new class {
 
         // Load only the route map belonging to the authenticated role
         if ($isAuthenticated) {
-            switch ($_SESSION['role'] ?? null) {
-                case 'driver':
-                    require base_path('app/routes/driver.php');
-                    break;
-
-                default:
-                    http_response_code(403);
-                    exit();
-            }
+            routeSwitcher($_SESSION['role'] ?? null);
         }
 
         $router->route($uri, $method);
