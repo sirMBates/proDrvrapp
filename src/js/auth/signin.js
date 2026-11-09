@@ -6,7 +6,7 @@ const checkInputs = document.querySelectorAll('.form-control');
 const usernameInput = checkInputs[0]; 
 const passwordInput = checkInputs[1];
 const pwdIcon = document.querySelector('#psword-icon');
-const signInBtn = document.querySelector('#signin');
+const signInForm = document.querySelector('#logInAcct');
 const infoModal = document.querySelector('#info-modal');
 const infoModalMsg = buildModal;
 const infoModBtn = document.querySelector('#info-ok');
@@ -40,7 +40,7 @@ $(document).ready(() => {
         $(pwdIcon).toggleClass("fa-eye fa-eye-slash");
     });
 
-    $(signInBtn).on('submit', () => {
+    $(signInForm).on('submit', () => {
         return formValidation();
     });
 });
@@ -73,6 +73,7 @@ if (!drvrAgreed) {
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
 const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, {
-    container: 'body'
+    container: 'body',
+    trigger: 'focus'
 }));
 //const popover = new bootstrap.Popover('.popover-dismiss', {trigger: 'focus'});
