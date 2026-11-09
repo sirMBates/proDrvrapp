@@ -44,17 +44,21 @@ function requireLoginAjax() {
 }
 
 function routeSwitcher($role) {
-    switch($role) {
+    switch($_SESSION[$role] ?? null) {
         case 'driver':
-            header("Location: /driver");
-            exit();
+            require base_path('app/routes/driver.php');
+            break;
 
         case 'dispatch':
-            header("Location: /dispatch");
-            exit();
+            require base_path('app/routes/dispatch.php');
+            break;
 
         case 'admin':
-            header("Location: /admin");
+            require base_path('app/routes/admin.php');
+            break;
+
+        default:
+            http_response_code(403);
             exit();
     }
 }
