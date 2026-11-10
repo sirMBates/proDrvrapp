@@ -36,10 +36,12 @@ class ScriptsMiddleware {
         // Authenticated application scripts
         $role = $_SESSION['role'] ?? null;
 
+        $sharedScripts = ['/dist/js/shared/clock.js'];
+
         return match ($role) {
-            'driver' => array_merge(['/dist/js/shared/clock.js', '/dist/js/driver/main.js'], self::driverScripts($uri)),
-            'dispatch' => self::dispatchScripts($uri),
-            'admin' => self::adminScripts($uri),
+            'driver' => array_merge($sharedScripts, ['/dist/js/driver/main.js'], self::driverScripts($uri)),
+            'dispatch' => array_merge($sharedScripts, self::dispatchScripts($uri)),
+            'admin' => array_merge($sharedScripts, self::adminScripts($uri)),
             default => []
         };
     }

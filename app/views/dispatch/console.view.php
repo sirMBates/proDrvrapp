@@ -1,29 +1,17 @@
 <?php
 require base_path('app/views/partials/shared/head.php');
+require base_path('app/views/partials/dispatch/header.php');
 ?>
-<div class="container-fluid dispatch-console py-4">
-    <div class="row g-4">
+<div id="dispatch-layout" class="dispatch-layout">
 
-        <!-- Sidebar -->
-        <aside class="col-12 col-lg-2">
-            <div class="card h-100 border-0 shadow-sm dispatch-sidebar">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-4">ProDriver</h5>
+    <!-- Sidebar -->
+    <?php
+    require base_path('app/views/partials/dispatch/sidebar.php');
+    ?>
 
-                    <nav class="nav flex-column gap-2">
-                        <a href="#" class="nav-link active">Dashboard</a>
-                        <a href="#" class="nav-link">Drivers</a>
-                        <a href="#" class="nav-link">Messages</a>
-                        <a href="#" class="nav-link">Emergencies</a>
-                        <a href="#" class="nav-link">Assignments</a>
-                        <a href="#" class="nav-link">Settings</a>
-                    </nav>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Area -->
-        <main class="col-12 col-lg-10">
+    <!-- Main Area -->
+    <main class="dispatch-console">
+        <div class="container-fluid py-4">
 
             <!-- Header -->
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
@@ -201,10 +189,9 @@ require base_path('app/views/partials/shared/head.php');
                         </div>
                     </div>
                 </section>
-
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 </div>
 <?php
 require base_path('app/views/partials/shared/footer.php');

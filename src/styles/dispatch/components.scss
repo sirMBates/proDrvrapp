@@ -1,0 +1,115 @@
+.dispatch-header {
+    height: 60px;
+    min-height: 60px;
+    width: 100%;
+    position: relative;
+    z-index: 1030;
+
+    #dispatch-menu-toggle {
+        flex-shrink: 0;
+
+        &:focus-visible {
+            outline: 2px solid #8ADEFF;
+            outline-offset: 4px;
+        }
+
+        img {
+            display: block;
+            object-fit: contain;
+        }
+    }
+
+    #clock_container {
+        color: var(--bs-light);
+
+        #dateCon, #timeCon {
+            color: inherit;
+
+            > div {
+                color: inherit;
+            }
+        }
+    }
+
+    .dispatch-role-badge {
+        background-color: #d7f0ff;
+        color: #173c5d;
+        border: 1px solid #8adeff;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        padding: 0.4rem 0.65rem;
+    }
+}
+
+.dispatch-layout {
+    --dispatch-sidebar-width: 240px;
+
+    display: grid;
+    grid-template-columns: var(--dispatch-sidebar-width) minmax(0, 1fr);
+    min-height: calc(100vh - 60px);
+    transition: grid-template-columns 0.2s ease;
+
+    &.sidebar-collapsed {
+        --dispatch-sidebar-width: 68px;
+    }
+}
+
+.dispatch-sidebar {
+    min-width: 0;
+    background: #102a43;
+    color: #fff;
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-height: 44px;
+        padding: 0.75rem;
+        color: rgba(255, 255, 255, 0.75);
+        border-radius: 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+
+        i {
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        &:hover,
+        &.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        &:focus-visible {
+            outline: 2px solid #8adeff;
+            outline-offset: 2px;
+        }
+    }
+}
+
+.dispatch-layout.sidebar-collapsed {
+    .dispatch-sidebar .dispatch-nav-label {
+        display: none;
+    }
+
+    .dispatch-sidebar .nav-link {
+        justify-content: center;
+        gap: 0;
+    }
+}
+
+.dispatch-console {
+    min-width: 0;
+}
+
+@media (max-width: 991.98px) {
+    .dispatch-layout {
+        display: block;
+    }
+
+    .dispatch-sidebar {
+        display: none;
+    }
+}

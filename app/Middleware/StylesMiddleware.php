@@ -101,7 +101,8 @@ class StylesMiddleware {
 
     private static function dispatchStyles(string $uri): array {
         $styles = [
-            '/dist/styles/shared/application-shell.css'
+            '/dist/styles/shared/application-shell.css',
+            '/dist/styles/dispatch/components.css'
         ];
 
         $pageStyles = match ($uri) {
