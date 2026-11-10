@@ -8,26 +8,15 @@ use PHPMailer\PHPMailer\Exception;
 
 $mail = new PHPMailer(true);
 $mail->SMTPDebug = 2; //SMTP::DEBUG_SERVER
+$mail->Debugoutput = 'error_log';
 $mail->isSMTP();
 $mail->SMTPAuth = true;
 $mail->Host = $_ENV['MAIL_HOST'];
 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
 $mail->Port = (int) $_ENV['MAIL_PORT'];
-/* Strictly in a development environment use
-** use the code below for sending email without
-** an SSL Certificate Authority (CA) to
-** get through the SSL socket layer 
-** (used in a production environment).↓
-*/ 
-$mail->SMTPOptions = array(
-    'ssl' => array(
-        'verify_peer' => false,
-        'verify_peer_name' => false,
-        'allow_self_signed' => true
-    )
-);
 $mail->Username = $_ENV['MAIL_USERNAME'];
 $mail->Password = $_ENV['MAIL_PASSWORD'];
-// Don't forget to set the mail isHTML ⬇ Don't set the below code in this setup file.
-// $mail->isHTML(true);
+
 return $mail;
+
+?>

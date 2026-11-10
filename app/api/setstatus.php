@@ -9,7 +9,7 @@ use App\Services\EmergencyService;
 use App\Services\DriverStatusService;
 use Core\Database;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json');
 

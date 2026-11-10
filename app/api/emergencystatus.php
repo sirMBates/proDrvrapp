@@ -7,7 +7,7 @@ use App\Repositories\EmergencyRepository;
 use App\Repositories\DriverStatusRepository;
 use App\Services\EmergencyService;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json');
 

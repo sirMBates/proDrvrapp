@@ -33,6 +33,16 @@ body, .offcanvas-body {
     @include gradient-x-three-colors();
 }
 
+body.prodrvrbkgd {
+    --prodriver-alert-top: 16px;
+}
+
+@media (max-width: 576px) {
+    body.prodrvrbkgd #form-container {
+        margin-top: 7rem !important;
+    }
+}
+
 html[data-bs-theme='dark'] body,
 html[data-bs-theme='dark'] .offcanvas-body {
     @include body-bkgd-nite-mode(
@@ -86,9 +96,37 @@ html[data-bs-theme='dark'] header.site-banner {
     }
 }
 
-#alert-container {
-    min-height: 50px;
-    flex: 1 1 auto;
+.prodriver-alert-container,
+.prodriver-server-flash {
+    position: fixed;
+    top: calc(var(--prodriver-alert-top, 64px) + 0.75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(90vw, 520px);
+    pointer-events: none;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.prodriver-alert-container {
+    z-index: 1050;
+}
+
+.prodriver-server-flash {
+    z-index: 1055;
+
+    > .alert {
+        pointer-events: auto;
+        margin-inline: auto;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.18);
+        text-align: center;
+    }
+}
+
+.prodriver-alert-container > * {
+    pointer-events: auto;
 }
 
 .input-error {
@@ -109,3 +147,4 @@ html[data-bs-theme='dark'] header.site-banner {
 .page-guidance-disabled #notifyinfo {
     display: none !important;
 }
+

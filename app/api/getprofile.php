@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Services\DriverProfileService;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://prodriver.local');

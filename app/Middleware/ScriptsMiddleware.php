@@ -33,13 +33,15 @@ class ScriptsMiddleware {
             return self::publicScripts($uri);
         }
 
-        // Authenticated Driver application
-        $scripts = [
-            '/dist/js/shared/clock.js',
-            '/dist/js/driver/main.js'
-        ];
+        // Authenticated application scripts
+        $role = $_SESSION['role'] ?? null;
 
-        return array_merge($scripts, self::driverScripts($uri));
+        return match ($role) {
+            'driver' => array_merge(['/dist/js/shared/clock.js', '/dist/js/driver/main.js'], self::driverScripts($uri)),
+            'dispatch' => self::dispatchScripts($uri),
+            'admin' => self::adminScripts($uri),
+            default => []
+        };
     }
 
     private static function authScripts(string $uri): array {
@@ -112,6 +114,14 @@ class ScriptsMiddleware {
             default:
                 return [];
         }
+    }
+
+    private static function dispatchScripts(string $uri): array {
+        return [];
+    }
+
+    private static function adminScripts(string $uri): array {
+        return [];
     }
 }
 

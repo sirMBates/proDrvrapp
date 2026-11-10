@@ -10,7 +10,7 @@ use App\Services\AssignmentOperationalGate;
 use Core\Database;
 use Core\Storage;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json; charset=utf-8');
 

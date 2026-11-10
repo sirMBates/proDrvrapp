@@ -25,25 +25,47 @@ function view($path, $attributes = []) {
     require base_path('app/views/' . $path);
 }
 
-function requireLoginAjax() {
+function requireLoginAjax(?string $requiredRole = null): void {
     if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
     }
 
-    if (!isset($_SESSION['user_id'])) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Unauthorized']);
+    header('Content-Type: application/json; charset=utf-8');
+
+    // 1. Verify the authenticated session.
+    $isAuthenticated = isset($_SESSION['user_id'], $_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
+
+    if (!$isAuthenticated) {
+        http_response_code(401);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Authentication required.'
+        ]);
         exit();
     }
 
-    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+    // 2. Verify role authorization when required.
+    if ($requiredRole !== null && ($_SESSION['role'] ?? null) !== $requiredRole) {
         http_response_code(403);
-        echo json_encode(['error' => 'Direct access not allowed']);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Access denied.'
+        ]);
+        exit();
+    }
+
+    // 3. Reject direct browser navigation.
+    if (strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'xmlhttprequest') {
+        http_response_code(403);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Direct access not allowed.'
+        ]);
         exit();
     }
 }
 
-function routeSwitcher(?string $role): void {
+function routeSwitcher(\Core\Router $router, ?string $role): void {
     switch($role) {
         case 'driver':
             require base_path('app/routes/driver.php');
@@ -62,3 +84,5 @@ function routeSwitcher(?string $role): void {
             exit();
     }
 }
+
+?>

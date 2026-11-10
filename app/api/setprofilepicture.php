@@ -58,7 +58,7 @@ if ($method === 'GET') {
 }
 
 if ($method === 'PATCH') {
-    requireLoginAjax();
+    requireLoginAjax('driver');
     header("Content-Type: application/json; charset=utf-8");
 
     $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;

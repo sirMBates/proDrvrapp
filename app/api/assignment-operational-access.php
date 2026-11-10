@@ -6,7 +6,7 @@ use Core\Database;
 use App\Repositories\AssignmentRepository;
 use App\Services\AssignmentOperationalGate;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json; charset=utf-8');
 

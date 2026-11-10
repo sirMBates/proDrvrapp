@@ -1,7 +1,5 @@
 <?php
 require base_path('app/views/partials/auth/outhead.php');
-$alert = new Core\Flash();
-include base_path('app/views/partials/shared/flashmessage.php');
 include base_path('app/views/partials/shared/info-modal.php');
 if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
         unset($_SESSION['reset']);

@@ -18,8 +18,8 @@ if (($_SESSION['role'] ?? null) === 'driver' && !urlIs('/signature')) {
 <!-- Load JQuery Color CDN(Content Delivery Network) -->
 <script src='https://code.jquery.com/color/jquery.color-3.0.0.min.js' integrity="sha256-KfnxwOV3FhXN7A/28TCtqslo5fRS23cxO5XcxVO5we8=" crossorigin='anonymous'></script>
 <script src="/dist/js/shared/pwa.js"></script>
-<?php foreach ($GLOBALS['page_scripts'] as $script): ?>
-        <script type="module" src="<?= $script ?>"></script>
+<?php foreach ($GLOBALS['page_scripts'] ?? [] as $script): ?>
+        <script type="module" src="<?= htmlspecialchars($script, ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php endforeach; ?>
 </body>
 </html>

@@ -9,7 +9,7 @@ use App\Repositories\EmergencyRepository;
 use App\Services\DriverStatusService;
 use App\Services\EmergencyService;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');

@@ -1,3 +1,7 @@
+/* =========================================
+   DRIVER BANNER — INFO BAR
+========================================= */
+
 #infobar {
     width: 100%;
     min-height: 28px;
@@ -7,49 +11,57 @@
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     color: var(--infobar-text);
+
+    > .container-fluid {
+        height: 100%;
+    }
+
+    #title {
+        color: var(--infobar-title);
+        text-shadow: var(--infobar-title-shadow);
+        font-weight: 500 !important;
+    }
 }
 
-#infobar > .container-fluid {
-    height: 100%;
-}
-
-#infobar #title {
-    color: var(--infobar-title);
-    text-shadow: var(--infobar-title-shadow);
-    font-weight: 500 !important;
-}
-
-#infobar #title, #clock_container,
-#dateCon, #timeCon,
+#infobar #title,
+#clock_container,
+#dateCon,
+#timeCon,
 #dateCon > div,
 #timeCon > div {
     color: var(--infobar-text);
-    font-size: clamp(0.6rem, 1.5vw, 0.8rem); 
+    font-size: clamp(0.6rem, 1.5vw, 0.8rem);
     line-height: 1;
 }
 
+/* =========================================
+   DRIVER BANNER — STRUCTURE
+========================================= */
+
 .site-banner {
     width: 100%;
-    background: url("../../images-videos/headerbkgd.jpg") no-repeat scroll 35% 55%;
-    background-size: cover;
+    min-height: 170px;
+    padding: 0 !important;
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 370px;
-    padding: 0 !important;
-}
 
-.site-banner::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, .7);
-    z-index: 0;
-}
+    background: url("../../images-videos/headerbkgd.jpg") no-repeat scroll 35% 55%;
+    background-size: cover;
 
-.site-banner > * {
-    position: relative;
-    z-index: 1;
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
 }
 
 .site-banner, main, footer {
@@ -60,16 +72,36 @@ main {
     min-width: 0;
 }
 
+/* =========================================
+   DRIVER BANNER — LOGO SECTION
+========================================= */
+
 .banner-top {
     width: 100%;
-    padding: 1rem;
+    padding: 0.5rem 1rem;
     display: flex;
     flex: 1 1 auto;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    flex-wrap: wrap;
-    gap: .5rem;
 }
+
+.banner-logo {
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-width: 0;
+
+    img {
+        display: block;
+        width: clamp(100px, 10vw, 150px);
+        max-width: 100%;
+        height: auto;
+        opacity: 0.85;
+    }
+}
+
+/* =========================================
+   DRIVER BANNER — NAVIGATION
+========================================= */
 
 .banner-nav {
     width: 100%;
@@ -85,96 +117,59 @@ main {
     -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     box-shadow: 0 4px 10px var(--banner-nav-shadow);
+
+    .navbar-brand,
+    .nav-link {
+        color: var(--banner-link-color) !important;
+        transition: color 0.2s ease, text-shadow 0.2s ease;
+
+        &:hover {
+            color: var(--banner-link-hover) !important;
+            text-shadow: 0 0 8px rgba(255, 250, 240, 0.25);
+        }
+    }
+
+    .nav-link.active {
+        color: var(--banner-link-active) !important;
+        text-shadow: 0 0 8px rgba(138, 222, 255, 0.35);
+    }
+
+    .navbar-toggler {
+        border-color: rgba(250, 249, 246, 0.25);
+
+        &:focus {
+            box-shadow: 0 0 0 0.15rem rgba(138, 222, 255, 0.25);
+        }
+    }
+
+    &.bg-danger {
+        background-color: var(--bs-danger) !important;
+    }
 }
 
 html[data-bs-theme='dark'] header .banner-main-nav.bg-prodriverclr {
     background-color: var(--banner-nav-bg) !important;
 }
 
-.banner-main-nav.bg-danger {
-    background-color: var(--bs-danger) !important;
-}
-
-.banner-main-nav .navbar-brand,
-.banner-main-nav .nav-link {
-    color: var(--banner-link-color) !important;
-    transition: color 0.2s ease, text-shadow 0.2s ease;
-}
-
-.banner-main-nav .navbar-brand:hover,
-.banner-main-nav .nav-link:hover {
-    color: var(--banner-link-hover) !important;
-    text-shadow: 0 0 8px rgba(255, 250, 240, 0.25);
-}
-
-.banner-main-nav .nav-link.active {
-    color: var(--banner-link-active) !important;
-    text-shadow: 0 0 8px rgba(138, 222, 255, 0.35);
-}
-
-.banner-main-nav .navbar-toggler {
-    border-color: rgba(250, 249, 246, 0.25);
-}
-
-.banner-main-nav .navbar-toggler:focus {
-    box-shadow: 0 0 0 0.15rem rgba(138, 222, 255, 0.25);
-}
-
-.banner-logo {
-    flex: 0 0 auto;
-    max-width: 24%;
-    min-width: 140px;
-}
-
-.banner-logo img {
-    width: clamp(150px, 15vw, 300px);
-    height: auto;
-    opacity: .85;
-}
-
-body::-webkit-scrollbar {
-    width: 20px;
-}
-
-body::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 10px grey;
-    border-radius: 10px;
-}
-
-body::-webkit-scrollbar-thumb {
-    background-color: #0096FF;
-    border-radius: 10px;
-}
-
-body::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(29, 82, 131, 0.9);
-}
-
-@media only screen and (width < 380px) {
-    body::-webkit-scrollbar {
-        display: none;
-    }
-}
+/* =========================================
+   DRIVER BANNER — RESPONSIVE
+========================================= */
 
 @media (max-width: 576px) {
-    .banner-top {
-        justify-content: space-between; 
+    .site-banner {
+        min-height: 150px;
     }
 
-    #alert-container {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        text-align: center;
+    .banner-top {
+        padding: 0.375rem 0.75rem;
+    }
+
+    .banner-logo img {
+        width: 100px;
     }
 
     #statusMessage {
-        order: 2;
         font-size: clamp(1rem, 3vw, 1.3rem);
-    }
-
-    .banner-logo {
-        order: 1;
     }
 }
 
@@ -203,6 +198,38 @@ body::-webkit-scrollbar-thumb:hover {
     }
 }
 
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+body::-webkit-scrollbar {
+    width: 20px;
+
+    &-track {
+        box-shadow: inset 0 0 10px grey;
+        border-radius: 10px;
+    }
+
+    &-thumb {
+        background-color: #0096FF;
+        border-radius: 10px;
+
+        &:hover {
+            background-color: rgba(29, 82, 131, 0.9);
+        }
+    }
+}
+
+@media only screen and (width < 380px) {
+    body::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* =========================================
+   CLOCK
+========================================= */
+
 #clock_container {
     font-family: "Orbitron", sans-serif;
     font-weight: 700;
@@ -213,30 +240,38 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes blink {
-    0% { opacity: 0}
-    100% { opacity: 1}
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
+/* =========================================
+   FOOTER / PROFILE
+========================================= */
 
 footer h6 {
-    -webkit-text-stroke: .25px black;
+    -webkit-text-stroke: 0.25px black;
 }
 
-#profilecon img {
-    cursor: pointer;
+#profilecon {
+    img {
+        cursor: pointer;
+    }
+
+    label {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    #menuProfileInput {
+        display: none;
+    }
 }
 
-#profilecon label {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
+/* =========================================
+   THEME CONTROLS
+========================================= */
 
-#profilecon #menuProfileInput {
-    display: none;
-}
-
-/* Subtle pulse for Auto mode */
 @keyframes pulseAuto {
     0% { opacity: 1; }
     50% { opacity: 0.6; }
@@ -248,9 +283,7 @@ footer h6 {
     animation: pulseAuto 1.5s infinite;
 }
 
-/* Manual mode style */
 .theme-manual {
     color: orange !important;
-    animation: none; /* no animation for manual override */
+    animation: none;
 }
-

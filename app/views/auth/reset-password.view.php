@@ -1,7 +1,5 @@
 <?php
-    require base_path('app/views/partials/auth/outhead.php');
-    $alert = new Core\Flash();
-    include base_path('app/views/partials/shared/flashmessage.php');
+require base_path('app/views/partials/auth/outhead.php');
 ?>
 
     <main class="container-fluid d-flex justify-content-center">

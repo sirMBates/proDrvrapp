@@ -13,7 +13,7 @@ use App\Services\EmergencyService;
 use App\Services\AssignmentStatusVerificationService;
 use App\Services\AssignmentOperationalGate;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: https://prodriver.local");

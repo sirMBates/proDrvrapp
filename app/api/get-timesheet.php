@@ -8,7 +8,7 @@ use App\Services\PayPeriodService;
 use App\Services\TimesheetService;
 use Core\Database;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');

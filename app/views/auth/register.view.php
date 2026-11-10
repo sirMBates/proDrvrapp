@@ -1,16 +1,14 @@
 <?php
 require base_path('app/views/partials/auth/outhead.php');
-$alert = new Core\Flash();
 $registrationRoleDisplay = match ($registrationRole) {
         'driver' => 'Driver',
         'dispatch' => 'Dispatcher',
         'admin' => 'Administrator'
 };
-include base_path('app/views/partials/shared/flashmessage.php');
 ?>
         <!--<img id="logo" src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" class="my-3 img-fluid" alt="Not Available">-->
         <main class="container-fluid my-4">
-                <div id="form_container" class="container">
+                <div id="form-container" class="container">
                         <form id="acct_info" action="" method="POST" class="needs-validation" novalidate>
                                 <input type="hidden" name="__method" value="patch">
                                 <input type="hidden" name="action" value="complete-registration">

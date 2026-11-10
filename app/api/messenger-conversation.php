@@ -7,7 +7,7 @@ use App\Repositories\UserRepository;
 use App\Repositories\ConversationRepository;
 use App\Services\MessengerConversationService;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');

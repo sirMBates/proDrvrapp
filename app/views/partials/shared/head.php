@@ -26,7 +26,11 @@
                                 document.documentElement.classList.add('page-guidance-disabled');
                         }
 
-                        <?php if (($_SESSION['role'] ?? null) === 'driver'): ?>
+                        <?php 
+                                $currentRole = $_SESSION['role'] ?? null; 
+                        ?>
+
+                        <?php if ($currentRole === 'driver'): ?>
 
                                 const statusDockExpanded = localStorage.getItem('prodriverStatusDockExpanded');
                                 if (statusDockExpanded === 'false') {
@@ -53,6 +57,6 @@
         <script src="https://kit.fontawesome.com/f2acae2623.js" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/jquery-4.0.0.min.js" integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=" crossorigin="anonymous"></script>
         <link rel="icon" type="image/png" sizes="50x50" href="/dist/images-videos/logoandicons/prodrvr-bus-icon.png">                
-        <title><?= $title;?></title>
+        <title><?= htmlspecialchars((string) ($title ?? 'ProDriver'), ENT_QUOTES, 'UTF-8') ?></title>
 </head>
 <body class="d-flex flex-column overflow-x-hidden min-vh-100 noprint">

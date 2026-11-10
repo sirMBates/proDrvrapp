@@ -98,7 +98,7 @@ return new class {
 
         // Load only the route map belonging to the authenticated role
         if ($isAuthenticated) {
-            routeSwitcher($_SESSION['role'] ?? null);
+            routeSwitcher($router, $_SESSION['role'] ?? null);
         }
 
         $router->route($uri, $method);

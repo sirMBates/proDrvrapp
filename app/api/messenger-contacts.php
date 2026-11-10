@@ -6,7 +6,7 @@ use Core\Database;
 use App\Repositories\UserRepository;
 use App\Services\MessengerContactService;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');

@@ -1,3 +1,6 @@
+<?php
+require base_path('app/views/partials/shared/head.php');
+?>
 <div class="container-fluid dispatch-console py-4">
     <div class="row g-4">
 
@@ -203,3 +206,6 @@
         </main>
     </div>
 </div>
+<?php
+require base_path('app/views/partials/shared/footer.php');
+?>

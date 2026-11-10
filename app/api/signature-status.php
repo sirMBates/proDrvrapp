@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Core\Database;
 use App\Repositories\AssignmentRepository;
 
-requireLoginAjax();
+requireLoginAjax('driver');
 
 header('Content-Type: application/json; charset=utf-8');
 

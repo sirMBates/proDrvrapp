@@ -1,7 +1,5 @@
 <?php
 require base_path('app/views/partials/auth/outhead.php');
-$alert = new Core\Flash();
-include base_path('app/views/partials/shared/flashmessage.php');
 include base_path('app/views/partials/shared/info-modal.php');
 ?>       
         <!--<img src="../images-videos/logoandicons/BestTrailsTravels_Logo.png" id="logo" class="mt-3 img-fluid" alt="Not Available">-->

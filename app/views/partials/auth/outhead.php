@@ -23,3 +23,9 @@
 </head>
 <body class="d-flex flex-column align-items-center min-vh-100 overflow-y-scroll noprint prodrvrbkgd">
 
+<div class="prodriver-server-flash">
+<?php
+    $alert = new Core\Flash();
+    include base_path('app/views/partials/shared/flashmessage.php');
+?>
+</div>
