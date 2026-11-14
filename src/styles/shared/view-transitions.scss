@@ -1,0 +1,46 @@
+@media(prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none;
+    }
+
+    main {
+        view-transition-name: page-content;
+    }
+
+    ::view-transition-old(page-content) {
+        animation: page-out 220ms ease-in both;
+    }
+
+    ::view-transition-new(page-content) {
+        animation: page-in 280ms ease-out both;
+    }
+
+    @keyframes page-out {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateX(-24px);
+        }
+    }
+
+    @keyframes page-in {
+        from {
+            opacity: 0;
+            transform: translateX(24px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+}
