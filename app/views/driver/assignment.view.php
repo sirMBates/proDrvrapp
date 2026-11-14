@@ -143,7 +143,7 @@ include base_path('app/views/partials/shared/confirm-modal.php');
                         </section>
 
                         <section id="workOrder-btns" class="vstack gap-2 col-lg-12 mx-auto">
-                                <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= $_SESSION['user_token']?>" required>
                                 <input type="hidden" name="__method" value="PATCH">
                                 <button id="save-assignment" class="btn btn-outline-info" type="submit" name="modify" value="1" disabled>Save Changes</button>
                                 <button id="submit-assignment" class="btn btn-outline-success" type="submit" name="assignment-complete" value="1" disabled>Complete Dispatch Order</button>

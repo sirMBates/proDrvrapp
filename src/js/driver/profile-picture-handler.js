@@ -2,7 +2,7 @@ export function initProfilePictureHandler(options) {
     const {
         profileInput,
         profileImage,
-        drvrToken,
+        userToken,
         getDriver,
         defaultProfileImage,
         Validation,
@@ -31,7 +31,7 @@ export function initProfilePictureHandler(options) {
                     // Prepare form data for upload
                     const formData = new FormData();
                     formData.append('profileImage', file);
-                    formData.append('drvrtoken', drvrToken);
+                    formData.append('userToken', userToken);
                     formData.append('__method', 'PATCH');
     
                     // Upload to server
@@ -40,7 +40,7 @@ export function initProfilePictureHandler(options) {
                             credentials: 'include',
                             method: 'POST',
                             headers: { 
-                                    'X-CSRF-Token': drvrToken
+                                    'X-CSRF-Token': userToken
                             }, // if needed
                             body: formData,
                     })

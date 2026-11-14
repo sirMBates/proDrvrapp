@@ -17,7 +17,7 @@ const previousButton = document.querySelector('#previous-timesheet');
 const nextButton = document.querySelector('#next-timesheet');
 const saveButton = document.querySelector('#save-timesheet');
 const reviewButton = document.querySelector('#review-timesheet');
-const drvrTokenInput = document.querySelector('#drvrToken');
+const userTokenInput = document.querySelector('#userToken');
 const reviewPeriodStartInput = document.querySelector('#review-period-start');
 const reviewPeriodEndInput = document.querySelector('#review-period-end');
 const TIMESHEET_COLUMN_COUNT = 13;
@@ -670,7 +670,7 @@ function saveAndLockTimesheet() {
         return;
     }
 
-    const csrfToken = drvrTokenInput?.value?.trim() ?? '';
+    const csrfToken = userTokenInput?.value?.trim() ?? '';
     if (!csrfToken) {
         showFlashAlert('error', 'The security token is unavailable. Please reload the page.');
         return;

@@ -35,7 +35,7 @@ include base_path('app/views/partials/shared/custom-modal.php');
                                         </tr>
                                 </tbody>
                                 <form>
-                                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                        <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= $_SESSION['user_token']?>" required>
                                         
                                         <div class="input-group">
                                                 <input id="drvrbday" type="hidden" class="form-control" value="<?php if (isset($_SESSION['birth_date'])) {

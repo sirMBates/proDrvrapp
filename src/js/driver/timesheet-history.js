@@ -13,7 +13,7 @@ const submittedAt = document.querySelector('#timesheet-history-submitted-at');
 const viewLink = document.querySelector('#timesheet-history-view');
 const downloadLink = document.querySelector('#timesheet-history-download');
 const printButton = document.querySelector('#timesheet-history-print');
-const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
+const userToken = document.querySelector('#userToken')?.value ?? '';
 let submissions = [];
 
 function hideElement(element) {
@@ -158,7 +158,7 @@ async function loadTimesheetHistory() {
                 method: 'GET',
                 cache: 'no-store',
                 headers: {
-                    'X-CSRF-Token': drvrToken
+                    'X-CSRF-Token': userToken
                 }
             }
         );

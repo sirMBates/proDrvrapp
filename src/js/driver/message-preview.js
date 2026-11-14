@@ -78,7 +78,7 @@ export class MessagePreview {
         this.inFlight = true;
 
         try {
-            const token = document.querySelector('#drvrToken')?.value;
+            const token = document.querySelector('#userToken')?.value;
 
             if (!token) {
                 throw new Error('Your session token is missing. Reload the page.');

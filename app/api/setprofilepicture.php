@@ -62,8 +62,8 @@ if ($method === 'PATCH') {
     header("Content-Type: application/json; charset=utf-8");
 
     $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-    $formToken = isset($_POST['drvrtoken']) ? trim((string) $_POST['drvrtoken']) : null;
-    $sessionToken = $_SESSION['drvr_token'] ?? null;
+    $formToken = isset($_POST['userToken']) ? trim((string) $_POST['userToken']) : null;
+    $sessionToken = $_SESSION['user_token'] ?? null;
 
     if ($sessionToken === null) {
         http_response_code(403);

@@ -99,7 +99,7 @@ $registrationRoleDisplay = match ($registrationRole) {
                                                 <div class="invalid-feedback fs-5"><strong>Enter expiration date of d.o.t med status.</strong></div>
                                         </div>
                                 <?php endif; ?>
-                                <input id="drvrToken" type="hidden" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                <input id="userToken" type="hidden" name="userToken" value="<?= $_SESSION['user_token']?>" required>
 
                                 <div id="save_btn_box" class="col-12 row mx-auto mb-3">
                                         <button id="register" type="submit" class="btn btn-primary btn-lg text-uppercase">complete registration</button>

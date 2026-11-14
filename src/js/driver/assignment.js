@@ -12,7 +12,7 @@ const operatorNotes = document.querySelector('#shared-job-note');
 const clickCells = document.querySelectorAll('.editable-data');
 const saveBtn = document.querySelector('#save-assignment');
 const completeBtn = document.querySelector('#submit-assignment');
-const drvrToken = document.querySelector('#drvrToken').value;
+const userToken = document.querySelector('#userToken').value;
 const getAssignment = proDriverRequest;
 const dtHelper = viewableDateTimeHelper;
 const drvrAlert = showFlashAlert;
@@ -830,7 +830,7 @@ window.addEventListener('DOMContentLoaded', () => {
         credentials: 'include',
         cache: 'no-store',
         headers: {
-            'X-CSRF-Token': drvrToken
+            'X-CSRF-Token': userToken
         }
     })
     .then(data => {
@@ -1363,11 +1363,11 @@ function submitAssignment(options) {
         Object.keys(identifiers).forEach(name => form.querySelectorAll(`input[name="${name}"]`).forEach(h => h.remove()));
         appendHiddenFields(form, identifiers);
 
-        // Add CSRF token from drvrtoken input only once
-        const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
-        if (drvrtokenInput) {
+        // Add CSRF token from userToken input only once
+        const userTokenInput = document.querySelector('input[name="userToken"]');
+        if (userTokenInput) {
             form.querySelectorAll(`input[name='X-CSRF-Token']`).forEach(h => h.remove());
-            appendHiddenFields(form, { 'X-CSRF-Token': drvrtokenInput.value });
+            appendHiddenFields(form, { 'X-CSRF-Token': userTokenInput.value });
         }
 
         // Payroll snapshot
@@ -1460,7 +1460,7 @@ document.addEventListener('visibilitychange', async () => {
             credentials: 'include',
             cache: 'no-store',
             headers: { 
-                'X-CSRF-Token': drvrToken 
+                'X-CSRF-Token': userToken
             }
         });
 

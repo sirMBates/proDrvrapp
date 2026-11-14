@@ -46,7 +46,7 @@ async function enableMessageNotifications() {
     }
 
     const publicKey = controls?.dataset.publicKey;
-    const token = document.querySelector('#drvrToken')?.value;
+    const token = document.querySelector('#userToken')?.value;
 
     if (!publicKey || !token) {
         showFlashAlert('error', 'Notification configuration is unavailable. Please reload the page.');

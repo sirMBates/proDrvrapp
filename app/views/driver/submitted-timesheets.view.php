@@ -116,7 +116,7 @@ require base_path('app/views/partials/driver/banner.php');
                     </div>
 
                     <div class="card-footer">
-                        <input id="drvrToken" type="hidden" name="drvrtoken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+                        <input id="userToken" type="hidden" name="userToken" value="<?= htmlspecialchars($_SESSION['user_token'], ENT_QUOTES, 'UTF-8') ?>">
                         <div class="d-grid d-md-flex justify-content-md-end gap-2">
                             <a id="timesheet-history-view" class="btn btn-outline-primary" href="#" target="_blank" rel="noopener">
                                 <i class="fa-solid fa-eye me-2" aria-hidden="true"></i>

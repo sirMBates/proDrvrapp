@@ -12,7 +12,7 @@ require_once base_path("app/views/partials/driver/banner.php");
             <div class="d-flex justify-content-center align-items-center border border-3 rounded-2 border-besttrailsclr" style="min-width: 100px; height: 60px;">
                 <span id="counter" class="fs-1 mx-2">0</span>
             </div>
-            <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+            <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= $_SESSION['user_token']?>" required>
         </div>
         <div class="card-footer d-inline-flex justify-content-evenly">
             <button id="adder" class="btn btn-lg btn-primary text-uppercase" type="button">tick</button>

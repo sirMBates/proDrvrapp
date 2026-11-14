@@ -11,9 +11,9 @@ const STATUS_MAP = Object.freeze({
     emergency: 'Emergency'
 });
 export class ChangeStatus {
-    constructor(buttons, drvrToken, statusDisplay) {
+    constructor(buttons, userToken, statusDisplay) {
         this.buttons = [...buttons];
-        this.drvrToken = drvrToken;
+        this.userToken = userToken;
         this.statusDisplay = statusDisplay;
         this.statusValue = statusDisplay?.querySelector('.driver-status-display__value') ?? statusDisplay;
         this.drvrStatus = '';
@@ -21,7 +21,7 @@ export class ChangeStatus {
     };
 
     init() {
-        if (this.buttons.length === 0 || !this.drvrToken || !this.statusDisplay) {
+        if (this.buttons.length === 0 || !this.userToken || !this.statusDisplay) {
             return;
         }
 
@@ -57,7 +57,7 @@ export class ChangeStatus {
             return;
         }
 
-        await this.updateDBStatus(this.drvrToken, newStatus, button);
+        await this.updateDBStatus(this.userToken, newStatus, button);
     };
 
     async updateDBStatus(token, driverStatus, button) {

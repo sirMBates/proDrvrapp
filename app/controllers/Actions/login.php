@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['loginAcct'])) {
     exit();
 }
 
-$formToken = trim((string) ($_POST['drvrtoken'] ?? ''));
-$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
+$formToken = trim((string) ($_POST['userToken'] ?? ''));
+$sessionToken = (string) ($_SESSION['user_token'] ?? '');
 
 if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
     Flash::setMsg('danger', 'Please retry your request.');

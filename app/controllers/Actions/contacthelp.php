@@ -7,8 +7,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 $alert = new Flash();
-$formToken = trim((string) ($_POST['drvrtoken'] ?? ''));
-$sessionToken = $_SESSION['drvr_token'] ?? '';
+$formToken = trim((string) ($_POST['userToken'] ?? ''));
+$sessionToken = $_SESSION['user_token'] ?? '';
 
 if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
     $alert::setMsg('error', 'Unfortunately, there was an issue with your request. Please, try again.');

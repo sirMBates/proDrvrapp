@@ -162,9 +162,9 @@ async function createSignatureRequest(signatureType) {
         return null;
     }
 
-    const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
+    const userTokenInput = document.querySelector('input[name="userToken"]');
 
-    if (!drvrtokenInput?.value) {
+    if (!userTokenInput?.value) {
         console.error('[SIGNATURE REQUEST] CSRF token unavailable.');
         showFlashAlert('error', 'The signature request could not be authorized.');
 
@@ -175,7 +175,7 @@ async function createSignatureRequest(signatureType) {
         const data = await proDriverRequest('/signature-request', {
             method: 'POST',
             headers: {
-                'X-CSRF-Token': drvrtokenInput.value
+                'X-CSRF-Token': userTokenInput.value
             },
             body: JSON.stringify({
                 order_id: currentSignatureOrderId,
@@ -534,8 +534,8 @@ async function unConfirmPostSignHandler() {
         return false;
     }
 
-    const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
-    if (!drvrtokenInput?.value) {
+    const userTokenInput = document.querySelector('input[name="userToken"]');
+    if (!userTokenInput?.value) {
         console.error('[SIGNATURE] CSRF token unavailable.');
         return false;
     }
@@ -544,7 +544,7 @@ async function unConfirmPostSignHandler() {
         const data = await proDriverRequest('/reuse-signature', {
             method: 'POST',
             headers: {
-                'X-CSRF-Token': drvrtokenInput.value
+                'X-CSRF-Token': userTokenInput.value
             },
             body: JSON.stringify({
                 order_id: currentSignatureOrderId,
@@ -691,8 +691,8 @@ $(signBtn).on('click', async () => {
         return;
     }
 
-    const drvrtokenInput = document.querySelector('input[name="drvrtoken"]');
-    if (!drvrtokenInput?.value) {
+    const userTokenInput = document.querySelector('input[name="userToken"]');
+    if (!userTokenInput?.value) {
         console.error('[SIGNATURE] CSRF token unavailable.');
         return;
     }
@@ -706,7 +706,7 @@ $(signBtn).on('click', async () => {
         const data = await proDriverRequest('/driver-signature', {
             method: 'POST',
             headers: {
-                'X-CSRF-Token': drvrtokenInput.value
+                'X-CSRF-Token': userTokenInput.value
             },
             body: JSON.stringify({
                 order_id: currentSignatureOrderId,

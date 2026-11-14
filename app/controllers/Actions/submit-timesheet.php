@@ -32,8 +32,8 @@ if ($driverId < 1) {
     exit();
 }
 
-$formToken = trim((string) ($_POST['drvrtoken'] ?? ''));
-$sessionToken = trim((string) ($_SESSION['drvr_token'] ?? ''));
+$formToken = trim((string) ($_POST['userToken'] ?? ''));
+$sessionToken = trim((string) ($_SESSION['user_token'] ?? ''));
 
 if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
     Flash::setMsg('danger', 'The Timesheet request expired. Please try again.');

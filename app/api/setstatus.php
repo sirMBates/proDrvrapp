@@ -36,7 +36,7 @@ try {
     }
 
     $csrfToken = (string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? $data['csrf_token'] ?? '');
-    $sessionToken = (string) ($_SESSION['drvr_token'] ?? ''); 
+    $sessionToken = (string) ($_SESSION['user_token'] ?? '');
     if ($csrfToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $csrfToken)) {
         http_response_code(403);
         echo json_encode([

@@ -34,7 +34,7 @@ if ($driverId <= 0) {
 }
 
 $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-$sessionToken = $_SESSION['drvr_token'] ?? '';
+$sessionToken = $_SESSION['user_token'] ?? '';
 
 if ($csrfToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $csrfToken)) {
     http_response_code(403);

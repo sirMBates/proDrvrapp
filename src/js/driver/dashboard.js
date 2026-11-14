@@ -10,7 +10,7 @@ const statusHistoryContainer = document.getElementById('driver-status-history');
 const driverStatusHistory = new DriverStatusHistory(statusHistoryContainer);
 const getAssignment = proDriverRequest;
 const dtHelper = viewableDateTimeHelper;
-const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
+const userToken = document.querySelector('#userToken')?.value ?? '';
 const dashBoardStatusValue = document.querySelector('table').childNodes[3].childNodes[1].childNodes[11];
 const birthdayThemeBtn = document.querySelector('#birthday-theme-btn');
 const todayDate = dtHelper(new Date(), 'date');
@@ -244,7 +244,7 @@ async function refreshHomeAssignments() {
                 credentials: 'include',
                 cache: 'no-store',
                 headers: {
-                        'X-CSRF-Token': drvrToken
+                        'X-CSRF-Token': userToken
                 }
         });
 
@@ -330,7 +330,7 @@ async function submitAssignmentDecision(orderId, assignmentControl, action, row)
                 const data = await proDriverRequest('/assignmentstatushandler', {
                         method: 'POST',
                         headers: {
-                                'X-CSRF-Token': drvrToken
+                                'X-CSRF-Token': userToken
                         },
                         body: formData
                 });

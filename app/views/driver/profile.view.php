@@ -180,7 +180,7 @@ include base_path('app/views/partials/shared/info-modal.php');
                                         </div>
                                 </div>
                         </div>
-                        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                        <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= $_SESSION['user_token']?>" required>
                 </div>
 
                 <div class="text-center mt-4">

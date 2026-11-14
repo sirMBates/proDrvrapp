@@ -111,7 +111,7 @@ include base_path('app/views/partials/shared/confirm-modal.php');
                 </a>
 
                 <form id="submit-timesheet-form" action="/submit-timesheet" method="POST" class="d-grid">
-                    <input id="drvrToken" type="hidden" name="drvrtoken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+                    <input id="userToken" type="hidden" name="userToken" value="<?= htmlspecialchars($_SESSION['user_token'], ENT_QUOTES, 'UTF-8') ?>">
 
                     <input id="submit-period-start" type="hidden" name="period_start" value="">
 

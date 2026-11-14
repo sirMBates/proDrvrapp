@@ -29,7 +29,7 @@ const statusDockSwitch = document.querySelector('#statusDockSwitch');
 const statusDockDescription = document.querySelector('#statusDockDescription');
 const emergencyBackground = document.querySelectorAll('.bg-prodriverclr');
 const getDriver = proDriverRequest;
-const drvrToken = document.querySelector('#drvrToken').value;
+const userToken = document.querySelector('#userToken').value;
 const drvrAlert = showFlashAlert;
 const connectionIndicatorElement = document.querySelector('#connection-indicator');
 const logoutModal = document.querySelector('#logout-modal');
@@ -293,7 +293,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         const statusButtons = document.querySelectorAll('#driver-status-controls .set-status');
         statusMsg = document.querySelector('#driver-status-dock #statusMessage');
-        const tokenElement = document.getElementById('drvrToken');
+        const tokenElement = document.getElementById('userToken');
 
         if (statusButtons.length === 0 || !statusMsg || !tokenElement?.value) {
                 console.error('Driver status dock initialization failed.', {
@@ -321,7 +321,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 credentials: 'include',
                 headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': drvrToken
+                        'X-CSRF-Token': userToken
                 }
         }).then(result => {
                 if (result?.status !== 'success') {
@@ -378,7 +378,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 credentials: 'include',
                 headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': drvrToken
+                        'X-CSRF-Token': userToken
                 }
         }).then(data => {
                 const driver = data;
@@ -415,7 +415,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         if (logoutTrigger) {
                 initializeMessageNotifications({
-                        csrfToken: logoutCsrfToken?.value || drvrToken
+                        csrfToken: logoutCsrfToken?.value || userToken
                 });
         }
 });
@@ -426,7 +426,7 @@ if (menuProfileInput && menuProfileImage) {
     initProfilePictureHandler({
         profileInput: menuProfileInput,
         profileImage: menuProfileImage,
-        drvrToken,
+        userToken,
         getDriver: proDriverRequest,
         defaultProfileImage: defaultProfileImage,
         Validation,

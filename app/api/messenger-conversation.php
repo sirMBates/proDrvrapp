@@ -33,7 +33,7 @@ if ($driverId <= 0 || ($_SESSION['logged_in'] ?? false) !== true) {
 }
 
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-$sessionToken = $_SESSION['drvr_token'] ?? '';
+$sessionToken = $_SESSION['user_token'] ?? '';
 
 if ($headerToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $headerToken)) {
     http_response_code(403);

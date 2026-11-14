@@ -23,8 +23,8 @@ if ($resetPending !== true || !is_string($token) || $token === '') {
     exit();
 }
 
-$formToken = (string) ($_POST['drvrtoken'] ?? '');
-$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
+$formToken = (string) ($_POST['userToken'] ?? '');
+$sessionToken = (string) ($_SESSION['user_token'] ?? '');
 
 if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
     Flash::setMsg('danger', 'Please retry your request.');

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$logoutCsrfToken = htmlspecialchars((string) ($_SESSION['drvr_token'] ?? ''), ENT_QUOTES, 'UTF-8');
+$logoutCsrfToken = htmlspecialchars((string) ($_SESSION['user_token'] ?? ''), ENT_QUOTES, 'UTF-8');
 
 ?>
 

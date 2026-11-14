@@ -10,8 +10,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$formToken = isset($_POST['drvrtoken']) ? trim((string) $_POST['drvrtoken']) : '';
-$sessionToken = (string) ($_SESSION['drvr_token'] ?? '');
+$formToken = isset($_POST['userToken']) ? trim((string) $_POST['userToken']) : '';
+$sessionToken = (string) ($_SESSION['user_token'] ?? '');
 
 if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
     Flash::setMsg('danger', 'Please retry your request.');

@@ -27,7 +27,7 @@ $logFilePath = 'D:/webapps/logs/error.log';
 $devLogger = new Logger($logFilePath);
 
 $headerToken = $_POST['X-CSRF-Token'] ?? null;
-$sessionToken = $_SESSION['drvr_token'] ?? null;
+$sessionToken = $_SESSION['user_token'] ?? null;
 
 if ($sessionToken === null) {
     $alert::setMsg('error', 'Your session has expired. Please sign in again.');

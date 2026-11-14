@@ -5,7 +5,7 @@ include base_path('app/views/partials/shared/info-modal.php');
 ?>
 
 <main class="container py-4">
-    <input type="hidden" id="drvrToken" value="<?= htmlspecialchars($_SESSION['drvr_token'] ?? '') ?>">
+    <input type="hidden" id="userToken" value="<?= htmlspecialchars($_SESSION['user_token'] ?? '') ?>">
     <div class="mb-4">
         <div class="d-flex align-items-center gap-2 mb-1">
             <h1 class="h2 mb-0">Preferences</h1>

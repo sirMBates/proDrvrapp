@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-$sessionToken = $_SESSION['drvr_token'] ?? null;
+$sessionToken = $_SESSION['user_token'] ?? null;
 
 if ($sessionToken === null) {
     http_response_code(403);

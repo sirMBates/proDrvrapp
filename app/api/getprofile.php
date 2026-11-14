@@ -13,7 +13,7 @@ header('Access-Control-Allow-Headers: X-CSRF-Token, Content-Type, X-Requested-Wi
 
 // Validate CSRF token.
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-$sessionToken = $_SESSION['drvr_token'] ?? null;
+$sessionToken = $_SESSION['user_token'] ?? null;
 
 if (!is_string($headerToken) || !is_string($sessionToken) || $headerToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $headerToken)) {
     http_response_code(403);

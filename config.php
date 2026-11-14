@@ -59,17 +59,12 @@ if (!$isCli) {
         }
     }
 
-    if (!isset($_SESSION['drvr_token']) || !isset($_SESSION['token_time'])) {
-        $_SESSION['drvr_token'] = generateToken();
-        $_SESSION['token_time'] = time();
-    } else {
-        # create a token to store with the user to validate that this is said user
-        # update token dynamically after a specific time has passed.↓
-        $expirationTime = 60 * 30;
-        if (time() - (int) $_SESSION['token_time'] >= $expirationTime) {
-            $_SESSION['drvr_token'] = generateToken();
-            $_SESSION['token_time'] = time();
-        }
+    /*
+    * Generate one CSRF token per session.
+    * The token remains valid for the lifetime of the session.
+    */
+    if (!isset($_SESSION['user_token']) || !is_string($_SESSION['user_token']) || $_SESSION['user_token'] === '') {
+        $_SESSION['user_token'] = generateToken();
     }
 }
 

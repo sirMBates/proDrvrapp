@@ -5,7 +5,7 @@ require base_path('app/views/partials/driver/banner.php');
 
 <main class="container-fluid my-2">
     <div class="card">
-        <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES);?>">
+        <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= htmlspecialchars($_SESSION['user_token'], ENT_QUOTES);?>">
         <img id="card-img" src="../../dist/images-videos/drvrarea1.jpg" alt="n/a" class="card-img-top">
         <div class="card-body">
             <h5 class="card-title"><u><b class="text-uppercase">faq</b>s</u></h5>

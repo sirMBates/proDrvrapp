@@ -1,7 +1,7 @@
 import { Validation } from "../validation/validation.js";
 import { formValidation } from '../shared/helpers.js';
 import { proDriverRequest } from '../shared/helpers.js';
-const driverToken = document.querySelector('#drvrToken')?.value ?? '';
+const driverToken = document.querySelector('#userToken')?.value ?? '';
 const driverName = document.querySelector('#drvr-name');
 const operatorId = document.querySelector('#operatorid');
 const driverEmail = document.querySelector('#drvr-email');

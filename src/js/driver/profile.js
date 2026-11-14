@@ -7,7 +7,7 @@ const drvrAlert = showFlashAlert;
 const profilePageInput = document.querySelector('#profilePictureInput');
 const profilePageImage = document.querySelector('#profilePictureImage');
 const defaultProfileImage = '../../../dist/images-videos/logoandicons/defaultProfileImage.jpg';
-const drvrToken = document.querySelector('#drvrToken').value;
+const userToken = document.querySelector('#userToken').value;
 const fullnameDisplay = document.querySelector('#fullnameDisplay');
 const operatorIdDisplay = document.querySelector('#operatorIdDisplay');
 const usernameDisplay = document.querySelector('#usernameDisplay');
@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': drvrToken
+            'X-CSRF-Token': userToken
         }
     })
     .then(driver => {
@@ -63,7 +63,7 @@ if (profilePageInput && profilePageImage) {
     initProfilePictureHandler({
         profileInput: profilePageInput,
         profileImage: profilePageImage,
-        drvrToken,
+        userToken,
         getDriver: proDriverRequest,
         defaultProfileImage: defaultProfileImage,
         Validation,
@@ -259,7 +259,7 @@ updateInfoBtn?.addEventListener('click', () => {
         action: 'update-contact-information',
         email: updatedEmail,
         mobile: updatedMobile,
-        drvrtoken: drvrToken,
+        userToken: userToken,
         __method: "PATCH"
     };
 
@@ -276,7 +276,7 @@ updatePswdBtn?.addEventListener('click', () => {
         currentPassword,
         newPassword,
         confirmPassword,
-        drvrtoken: drvrToken,
+        userToken: userToken,
         __method: "PATCH"
     };
 

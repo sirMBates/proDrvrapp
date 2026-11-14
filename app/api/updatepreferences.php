@@ -30,7 +30,7 @@ if ($driverId < 1) {
 }
 
 $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-$sessionToken = $_SESSION['drvr_token'] ?? null;
+$sessionToken = $_SESSION['user_token'] ?? null;
 
 if (!$headerToken || !$sessionToken || !hash_equals($sessionToken, $headerToken)) {
     http_response_code(403);

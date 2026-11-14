@@ -1,6 +1,6 @@
 import { proDriverRequest } from '../shared/helpers.js';
 
-const drvrToken = document.querySelector('#drvrToken')?.value ?? '';
+const userToken = document.querySelector('#userToken')?.value ?? '';
 
 export async function getPreferences() {
     const response = await proDriverRequest('/getpreferences', {
@@ -15,14 +15,14 @@ export async function getPreferences() {
 }
 
 export async function updatePreference(preference, value) {
-    if (!drvrToken) {
+    if (!userToken) {
         throw new Error('Driver security token is unavailable.');
     }
 
     const response = await proDriverRequest('/updatepreferences', {
         method: 'PATCH',
         headers: {
-            'X-CSRF-Token': drvrToken
+            'X-CSRF-Token': userToken
         },
         body: JSON.stringify({
             preference,

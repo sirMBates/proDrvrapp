@@ -6,7 +6,7 @@ include base_path('app/views/partials/shared/confirm-modal.php');
 ?>
 
 <main class="container-fluid p-3">
-        <input id="drvrToken" type="hidden" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+        <input id="userToken" type="hidden" value="<?= htmlspecialchars($_SESSION['user_token'], ENT_QUOTES, 'UTF-8') ?>">
         <section id="timesheet" class="card" aria-labelledby="timesheet-title">
                 <div class="card-header bg-prodriverclr text-light">
                         <div class="d-flex justify-content-between align-items-center gap-3">
@@ -130,7 +130,7 @@ include base_path('app/views/partials/shared/confirm-modal.php');
                                 </button>
 
                                 <form id="review-timesheet-form" action="/review-timesheet" class="d-grid" method="POST">
-                                        <input type="hidden" name="drvrtoken" value="<?= htmlspecialchars($_SESSION['drvr_token'], ENT_QUOTES, 'UTF-8') ?>">
+                                        <input type="hidden" name="userToken" value="<?= htmlspecialchars($_SESSION['user_token'], ENT_QUOTES, 'UTF-8') ?>">
 
                                         <input id="review-period-start" type="hidden" name="period_start" value="">
 

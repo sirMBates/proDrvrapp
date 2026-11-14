@@ -20,7 +20,7 @@ require base_path('app/views/partials/auth/outhead.php');
                 </div>
             </div>
 
-            <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= htmlspecialchars((string) ($_SESSION['drvr_token'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+            <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= htmlspecialchars((string) ($_SESSION['user_token'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 
             <div class="d-flex flex-column justify-content-center mb-3">
                 <button id="forget-pwd" type="submit" class="btn btn-primary my-2 p-2 fs-5" name="forget-pswd">

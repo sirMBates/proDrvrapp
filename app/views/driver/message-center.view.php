@@ -234,7 +234,7 @@ include base_path('app/views/partials/shared/confirm-modal.php');
                                                 <textarea id="messengerMessage" class="form-control" rows="2" placeholder="Type your message..." disabled></textarea>
                                             </div>
 
-                                            <input id="drvrToken" type="hidden" class="form-control" name="drvrtoken" value="<?= $_SESSION['drvr_token']?>" required>
+                                            <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= $_SESSION['user_token']?>" required>
                                             
                                             <div class="col-12 col-md-auto">
                                                 <button id="messenger-send-button" type="submit" class="btn btn-primary w-100" disabled>
