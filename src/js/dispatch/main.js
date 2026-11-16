@@ -1,5 +1,5 @@
-
 import { proDriverRequest } from '../shared/helpers.js';
+import { ConnectionIndicator } from '../shared/connectionindicator.js';
 
 const dispatchProfileName = document.querySelector('#dispatch-profile-name');
 const dispatchProfileStaffId = document.querySelector('#dispatch-profile-staff-id');
@@ -37,8 +37,15 @@ async function loadDispatchProfile() {
         dispatchProfileName.textContent = 'Profile unavailable';
         dispatchProfileStaffId.textContent = '';
     }
-}
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDispatchProfile();
+
+    const connectionElement = document.querySelector('#dispatch-connection-indicator');
+
+    if (connectionElement) {
+        const connectionIndicator = new ConnectionIndicator(connectionElement);
+        connectionIndicator.init();
+    }
 });

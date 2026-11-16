@@ -34,8 +34,21 @@
 
     </nav>
 
+    <!-- Dispatch Server Connection -->
+    <div class="dispatch-connection-status px-3 py-2 border-top mt-auto">
+
+        <div id="dispatch-connection-indicator" class="connection-indicator d-flex align-items-center gap-2" role="status" aria-live="polite" aria-label="Server connection: checking">
+            <span class="connection-indicator__light" aria-hidden="true"></span>
+
+            <span class="connection-indicator__label">
+                Checking connection...
+            </span>
+        </div>
+
+    </div>
+
     <!-- Dispatcher Profile -->
-    <div id="dispatch-profile" class="dispatch-profile mt-auto p-3 border-top">
+    <div id="dispatch-profile" class="dispatch-profile p-3 border-top">
         <div class="d-flex align-items-center gap-2">
 
             <div class="dispatch-profile-avatar flex-shrink-0">

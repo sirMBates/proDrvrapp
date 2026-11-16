@@ -1,3 +1,5 @@
+@import "../shared/_connection-indicator";
+
 .dispatch-header {
     height: 60px;
     min-height: 60px;
@@ -55,6 +57,8 @@
 }
 
 .dispatch-sidebar {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     background: #102a43;
     color: #fff;
@@ -104,6 +108,18 @@
     min-width: 0;
 }
 
+.dispatch-layout.sidebar-collapsed {
+    .dispatch-connection-status {
+        display: flex;
+        justify-content: center;
+        padding-inline: 0.5rem !important;
+    }
+
+    .connection-indicator__label {
+        display: none;
+    }
+}
+
 @media (max-width: 991.98px) {
     .dispatch-layout {
         display: block;
@@ -112,4 +128,13 @@
     .dispatch-sidebar {
         display: none;
     }
+}
+
+/*  ========================================================
+    Server Connnection Indicator
+    ========================================================  */
+
+/* Green: confirmed connection */
+.connection-indicator.is-online {
+    color: var(--bs-success);
 }
