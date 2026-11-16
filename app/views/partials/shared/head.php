@@ -32,10 +32,20 @@
 
                         <?php if ($currentRole === 'driver'): ?>
 
-                                const statusDockExpanded = localStorage.getItem('prodriverStatusDockExpanded');
+                        const driverId = <?= (int) ($_SESSION['user_id'] ?? 0) ?>;
+
+                        if (driverId > 0) {
+                                const storagePrefix = `prodriver:${driverId}`;
+                                const pendingExpanded = localStorage.getItem(`${storagePrefix}:statusDockPendingSync`);
+                                const savedExpanded = localStorage.getItem(`${storagePrefix}:statusDockExpanded`);
+
+                                // An unsynchronized selection takes priority.
+                                const statusDockExpanded = pendingExpanded === 'true' || pendingExpanded === 'false' ? pendingExpanded : savedExpanded;
+
                                 if (statusDockExpanded === 'false') {
                                         document.documentElement.classList.add('status-dock-collapsed');
                                 }
+                        }
 
                         <?php endif; ?>
                 } catch (error) {

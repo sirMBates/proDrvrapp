@@ -4,7 +4,7 @@ import { proDriverRequest, showFlashAlert, getCurrentView } from '../shared/help
 import { ChangeStatus } from './changestatus.js';
 import { syncEmergencyState } from './emergency-state.js';
 import { Validation } from '../validation/validation.js';
-import { ConnectionIndicator } from './connectionindicator.js';
+import { ConnectionIndicator } from '../shared/connectionindicator.js';
 import { StatusDock } from './statusdock.js';
 import { LogoutManager } from '../shared/logout.js';
 import { initializeMessageNotifications } from './message-notifications.js';
@@ -247,28 +247,128 @@ window.addEventListener('DOMContentLoaded', () => {
         });
 
         const statusDockElement = document.querySelector('#driver-status-dock');
+        const driverId = Number(statusDockElement?.dataset.driverId);
+
+        const statusDockPendingKey = Number.isSafeInteger(driverId) && driverId > 0 ? `prodriver:${driverId}:statusDockPendingSync` : null;
+
+        let statusDockRevision = 0;
+
+        function markStatusDockPending(expanded) {
+                if (!statusDockPendingKey) {
+                        return;
+                }
+
+                statusDockRevision++;
+
+                localStorage.setItem(statusDockPendingKey, String(expanded));
+        }
+
+        
+        function clearStatusDockPending(expanded, revision) {
+                if (!statusDockPendingKey) {
+                        return;
+                }
+
+                // A newer driver selection must never be cleared
+                // by an older request.
+                if (revision !== statusDockRevision) {
+                        return;
+                }
+
+                if (localStorage.getItem(statusDockPendingKey) === String(expanded)) {
+                        localStorage.removeItem(statusDockPendingKey);
+                }
+        }
+
+
+        function getPendingStatusDockPreference() {
+                if (!statusDockPendingKey) {
+                        return null;
+                }
+
+                const value = localStorage.getItem(statusDockPendingKey);
+
+                if (value === 'true') {
+                        return true;
+                }
+
+                if (value === 'false') {
+                        return false;
+                }
+
+                return null;
+        }
+
+        let statusDockSyncPromise = null;
+
+        async function syncStatusDockPreference() {
+                if (statusDockSyncPromise) {
+                        return statusDockSyncPromise;
+                }
+
+                if (getPendingStatusDockPreference() === null) {
+                        return;
+                }
+
+                statusDockSyncPromise = (async () => {
+                        while (true) {
+                                const expanded = getPendingStatusDockPreference();
+                                const revision = statusDockRevision;
+
+                                if (expanded === null) {
+                                        return;
+                                }
+
+                                try {
+                                        await updatePreference('status_dock_expanded', expanded);
+                                } catch (error) {
+                                        console.warn('Status Dock preference synchronization pending:', error);
+                                        return;
+                                }
+
+                                clearStatusDockPending(expanded, revision);
+
+                                // If another selection was made while the request
+                                // was processing, synchronize that newer value too.
+                                if (getPendingStatusDockPreference() === null) {
+                                        return;
+                                }
+                        }
+                })();
+
+                try {
+                        await statusDockSyncPromise;
+                } finally {
+                        statusDockSyncPromise = null;
+                }
+        }
+
+        if (!Number.isSafeInteger(driverId) || driverId <= 0) {
+                console.error('Unable to identify the current driver for perference synchronization.');
+        }
+
         statusDock = new StatusDock(statusDockElement);
         statusDock.init();
 
-        statusDockSwitch?.addEventListener('change', async () => {
-                const previousState = statusDock.isExpanded();
-                const nextState = statusDockSwitch.checked;
+        const pendingExpanded = getPendingStatusDockPreference();
 
-                statusDock.setExpanded(nextState);
-                updateStatusDockPreferenceUi(nextState);
+        if (pendingExpanded !== null) {
+                statusDock.setExpanded(pendingExpanded);
+        }
 
-                try {
-                        await updatePreference('status_dock_expanded', nextState);
-                } catch (error) {
-                        console.error('Unable to save Status Dock preference.', error);
-                        statusDock.setExpanded(previousState);
-                        updateStatusDockPreferenceUi(previousState);
+        updateStatusDockPreferenceUi(statusDock.isExpanded());
 
-                        showFlashAlert('danger', 'Your Status Dock preference could not be saved.');
-                }
+        statusDockSwitch?.addEventListener('change', () => {
+                const expanded = statusDockSwitch.checked;
+
+                statusDock.setExpanded(expanded);
+                updateStatusDockPreferenceUi(expanded);
+
+                markStatusDockPending(expanded);
+                void syncStatusDockPreference();
         });
-
-        window.addEventListener('status-dock-preference-changed', async event => {
+        
+        window.addEventListener('status-dock-preference-changed', event => {
                 const expanded = event.detail?.expanded;
 
                 if (typeof expanded !== 'boolean') {
@@ -277,18 +377,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 updateStatusDockPreferenceUi(expanded);
 
-                try {
-                        await updatePreference('status_dock_expanded', expanded);
-                } catch (error) {
-                        console.error('Unable to save Status Dock preference:', error);
-
-                        const restoredState = !expanded;
-
-                        statusDock.setExpanded(restoredState);
-                        updateStatusDockPreferenceUi(restoredState);
-
-                        showFlashAlert('danger', 'Your Status Dock preference could not be saved.');
-                }
+                markStatusDockPending(expanded);
+                void syncStatusDockPreference();
         });
 
         const statusButtons = document.querySelectorAll('#driver-status-controls .set-status');
@@ -314,39 +404,59 @@ window.addEventListener('DOMContentLoaded', () => {
                 checkInterval: 30000,
                 timeout: 5000
         });
-        connectionIndicator.init();
 
-        getDriver('/getstatus', {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': userToken
-                }
-        }).then(result => {
-                if (result?.status !== 'success') {
-                        throw new Error(result?.message || 'Current status could not be loaded.');
-                }
-
-                const currentStatus = result.data?.currentStatus ?? null;
-
-                driverStatus.setConfirmedStatus(currentStatus?.driverStatus || null);
-        }).catch(error => {
-                console.error('Unable to load current driver status:', error);
-                /*
-                * Cache is only a temporary display fallback.
-                * It does not replace the database.
-                */
-                const cachedStatus = localStorage.getItem('status');
-
-                if (cachedStatus) {
-                        driverStatus.setConfirmedStatus(cachedStatus);
-                        showFlashAlert('info', 'Showing your last known status.');
+        window.addEventListener('prodriver-connection-changed', event => {
+                if (event.detail?.state !== 'online') {
                         return;
                 }
 
-                statusMsg.textContent = 'Current status: Unavailable';
+                // Synchronize any pending Status Dock preference.
+                void syncStatusDockPreference();
+
+                // Refresh the driver's current status from MySQL.
+                void refreshDriverStatus();
         });
+
+        connectionIndicator.init();
+        
+        async function refreshDriverStatus() {
+                try {
+                        const result = await getDriver('/getstatus', {
+                        method: 'GET',
+                        credentials: 'include',
+                                headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-Token': userToken
+                                }
+                        });
+
+                        if (result?.status !== 'success') {
+                                throw new Error(result?.message || 'Current status could not be loaded.');
+                        }
+
+                        const currentStatus = result.data?.currentStatus ?? null;
+
+                        driverStatus.setConfirmedStatus(currentStatus?.driverStatus || null);
+                } catch (error) {
+                        console.error('Unable to load current driver status:', error);
+
+                        const cachedStatus = localStorage.getItem('status');
+                        if (cachedStatus) {
+                                driverStatus.setConfirmedStatus(cachedStatus);
+                                showFlashAlert('info', 'Showing your last known status.');
+                                return;
+                        }
+
+                        const statusValue = statusMsg.querySelector('.driver-status-display__value');
+
+                        if (statusValue) {
+                                statusValue.textContent = 'Unavailable';
+                        }
+                }
+        }
+
+        // Initial status load
+        void refreshDriverStatus();
 
         getPreferences().then(preferences => {
                 const accountTheme = preferences?.theme;
@@ -363,11 +473,20 @@ window.addEventListener('DOMContentLoaded', () => {
                         pageGuidance.setEnabled(showPageGuidance);
                         updatePageGuidanceUi(showPageGuidance);
                 }
+                
+                const pendingExpanded = getPendingStatusDockPreference();
 
-                if (typeof statusDockExpanded === 'boolean') {
+                if (pendingExpanded !== null) {
+                        // The browser has an unsaved driver selection.
+                        // Do not overwrite it with an older database value.
+                        statusDock.setExpanded(pendingExpanded);
+                        updateStatusDockPreferenceUi(pendingExpanded);
+                } else if (typeof statusDockExpanded === 'boolean') {
+                        // No pending change: synchronize normally with MySQL.
                         statusDock.setExpanded(statusDockExpanded);
                         updateStatusDockPreferenceUi(statusDockExpanded);
                 }
+
         }).catch(error => {
                 console.error('Unable to synchronize driver preferences:', error);
         });

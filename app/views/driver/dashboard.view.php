@@ -34,16 +34,15 @@ include base_path('app/views/partials/shared/custom-modal.php');
                                                 <td></td>  
                                         </tr>
                                 </tbody>
-                                <form>
-                                        <input id="userToken" type="hidden" class="form-control" name="userToken" value="<?= $_SESSION['user_token']?>" required>
+
+                                <input type="hidden" id="userToken" class="form-control" name="userToken" value="<?= $_SESSION['user_token']?>" required>
                                         
-                                        <div class="input-group">
-                                                <input id="drvrbday" type="hidden" class="form-control" value="<?php if (isset($_SESSION['birth_date'])) {
-                                                        $formatDate = date('m-d-Y', strtotime($_SESSION['birth_date']));
-                                                        echo $formatDate;
-                                                }; ?>" disabled>
-                                        </div>
-                                </form>
+                                <div class="input-group">
+                                        <input id="drvrbday" type="hidden" class="form-control" value="<?php if (isset($_SESSION['birth_date'])) {
+                                                $formatDate = date('m-d-Y', strtotime($_SESSION['birth_date']));
+                                                echo $formatDate;
+                                        }; ?>" disabled>
+                                </div>
                         </table>
                 </div>
         </div>

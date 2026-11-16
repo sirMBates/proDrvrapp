@@ -1,7 +1,8 @@
+@import "../shared/_connection-indicator";
+
 :root {
     --driver-status-dock-height: 8.5rem;
     --driver-status-dock-collapsed-height: 3.75rem;
-    --driver-status-light-size: 0.75rem;
 }
 
 html[data-bs-theme='dark']
@@ -171,68 +172,9 @@ html.status-dock-collapsed body:has(#driver-status-dock) {
    Server Connection Indicator
    ========================================================= */
 
-.connection-indicator {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    min-width: 7.5rem;
-    min-height: 2.65rem;
-    padding: 0.375rem 0.75rem;
-    color: var(--bs-secondary-color);
-    background-color: var(--bs-body-bg);
-    border: 2px solid currentColor;
-    border-radius: var(--bs-border-radius);
-    font-size: 0.875rem;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
-    transition:
-        color 180ms ease,
-        border-color 180ms ease,
-        box-shadow 180ms ease;
-}
-
-.connection-indicator__light {
-    display: inline-block;
-    flex: 0 0 auto;
-    width: var(--driver-status-light-size);
-    height: var(--driver-status-light-size);
-    background-color: currentColor;
-    border: 2px solid var(--bs-body-bg);
-    border-radius: 50%;
-    box-shadow:
-        0 0 0 2px currentColor,
-        0 0 0.5rem currentColor;
-    transition:
-        color 180ms ease,
-        background-color 180ms ease,
-        box-shadow 180ms ease;
-}
-
 /* Blue: confirmed connection */
 .connection-indicator.is-online {
     color: var(--bs-primary);
-}
-
-/* Yellow: checking, reconnecting, or synchronizing */
-.connection-indicator.is-reconnecting {
-    color: var(--bs-warning-text-emphasis);
-}
-
-/* Red with a stronger outer ring: offline */
-.connection-indicator.is-offline {
-    color: var(--bs-danger);
-    border-width: 3px;
-}
-
-.connection-indicator.is-offline
-.connection-indicator__light {
-    box-shadow:
-        0 0 0 3px var(--bs-body-bg),
-        0 0 0 5px currentColor,
-        0 0 0.65rem currentColor;
 }
 
 /* =========================================================

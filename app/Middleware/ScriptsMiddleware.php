@@ -40,7 +40,7 @@ class ScriptsMiddleware {
 
         return match ($role) {
             'driver' => array_merge($sharedScripts, ['/dist/js/driver/main.js'], self::driverScripts($uri)),
-            'dispatch' => array_merge($sharedScripts, self::dispatchScripts($uri)),
+            'dispatch' => array_merge($sharedScripts, ['/dist/js/dispatch/main.js'], self::dispatchScripts($uri)),
             'admin' => array_merge($sharedScripts, self::adminScripts($uri)),
             default => []
         };
@@ -119,7 +119,13 @@ class ScriptsMiddleware {
     }
 
     private static function dispatchScripts(string $uri): array {
-        return [];
+        switch ($uri) {
+            case '/':
+                return ['/dist/js/dispatch/console.js'];
+
+            default:
+                return [];
+        }
     }
 
     private static function adminScripts(string $uri): array {

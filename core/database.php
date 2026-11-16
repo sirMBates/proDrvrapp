@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Core;
 
 use PDO;
-use PDOException;
 
 class Database {
     private $type; 
@@ -33,13 +32,7 @@ class Database {
             PDO::ATTR_EMULATE_PREPARES => false,                   //Disable emulation of prepared statements
         ];
 
-        try {
-            $this->connection = new PDO($dsn, $this->username, $this->password, $options);
-        }
-        catch (PDOException $error) {
-            print "Error: " . $error->getMessage() . "<br>";
-            die();
-        }
+        $this->connection = new PDO($dsn, $this->username, $this->password, $options);
     }
 
     public function connect() {

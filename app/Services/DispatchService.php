@@ -21,6 +21,9 @@ class DispatchService {
         }
 
         $user = $this->userRepository->findById($userId);
+	if (!$user) {
+	    throw new \RuntimeException('Dispatch user not found.');
+	}
 
         if ($user['role'] !== 'dispatch') {
             throw new \RuntimeException('User is not authorized as dispatch.');

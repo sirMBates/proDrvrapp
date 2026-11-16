@@ -1,10 +1,11 @@
-const DOCK_STORAGE_KEY = 'prodriverStatusDockExpanded';
-
 export class StatusDock {
     constructor(dock) {
         this.dock = dock;
-        this.toggleButton = dock?.querySelector('#driver-status-dock-toggle') ?? null;
 
+        const driverId = Number(dock?.dataset.driverId);
+        this.storageKey = Number.isSafeInteger(driverId) && driverId > 0 ? `prodriver:${driverId}:statusDockExpanded` : null;
+
+        this.toggleButton = dock?.querySelector('#driver-status-dock-toggle') ?? null;
         this.preferredCollapsed = false;
         this.emergencyActive = false;
         this.statusUpdating = false;
@@ -19,7 +20,7 @@ export class StatusDock {
             return;
         }
 
-        const cachedExpanded = localStorage.getItem(DOCK_STORAGE_KEY);
+        const cachedExpanded = this.storageKey ? localStorage.getItem(this.storageKey) : null;
         this.preferredCollapsed = cachedExpanded === 'false';
 
         this.emergencyActive = localStorage.getItem('isActiveEmergency') === 'true';
@@ -54,7 +55,9 @@ export class StatusDock {
 
         this.preferredCollapsed = !expanded;
 
-        localStorage.setItem(DOCK_STORAGE_KEY, String(expanded));
+        if (this.storageKey) {
+            localStorage.setItem(this.storageKey, String(expanded));
+        }
 
         if (this.emergencyActive || this.statusUpdating) {
             this.applyState(false);
