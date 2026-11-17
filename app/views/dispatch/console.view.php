@@ -34,7 +34,9 @@ require base_path('app/views/partials/dispatch/header.php');
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <small class="text-body-secondary">Active Drivers</small>
-                            <h3 class="fw-bold mb-0">18</h3>
+                            <h3 id="dispatch-active-drivers-count" class="fw-bold mb-0" aria-live="polite">
+                                —
+                            </h3>
                         </div>
                     </div>
                 </div>
@@ -80,28 +82,10 @@ require base_path('app/views/partials/dispatch/header.php');
                         <div class="card-body p-0">
                             <div class="list-group list-group-flush">
 
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Marvin Bates</strong>
-                                        <div class="small text-body-secondary">Assignment #2481</div>
+                                <div id="dispatch-driver-status-list" class="list-group list-group-flush" aria-live="polite">
+                                    <div class="list-group-item text-body-secondary py-3">
+                                        Loading driver information...
                                     </div>
-                                    <span class="badge text-bg-success">Available</span>
-                                </div>
-
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Mike Johnson</strong>
-                                        <div class="small text-body-secondary">Assignment #2483</div>
-                                    </div>
-                                    <span class="badge text-bg-primary">On Assignment</span>
-                                </div>
-
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Sarah Davis</strong>
-                                        <div class="small text-body-secondary">Assignment #2480</div>
-                                    </div>
-                                    <span class="badge text-bg-danger">Emergency</span>
                                 </div>
 
                             </div>
