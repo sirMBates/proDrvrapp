@@ -13,6 +13,7 @@ $router->post('/forget', 'app/controllers/Actions/forgetpw.php');
 $router->post('/reset-password', 'app/controllers/Actions/finishpwdprocess.php');
 $router->post('/reset', 'app/controllers/Actions/reset.php');
 $router->post('/logout', 'app/controllers/Actions/logout.php');
+//$router->post('/device-transfer', 'app/controllers/Actions/device-transfer.php');
 
 $router->patch('/register', 'app/controllers/Actions/registration.php');
 

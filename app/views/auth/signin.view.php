@@ -1,6 +1,7 @@
 <?php
 require base_path('app/views/partials/auth/outhead.php');
 include base_path('app/views/partials/shared/info-modal.php');
+include base_path('app/views/partials/shared/confirm-modal.php');
 if (isset($_GET['success']) && $_GET['success'] === 'reset complete') {
         unset($_SESSION['reset']);
 }

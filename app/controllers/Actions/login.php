@@ -27,6 +27,8 @@ if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $fo
 $username = trim((string) ($_POST['username'] ?? ''));
 $password = (string) ($_POST['password'] ?? '');
 
+unset($_SESSION['pending_device_transfer']);
+
 try {
     $authenticationService = new AuthenticationService();
     $account = $authenticationService->authenticate($username, $password);
@@ -51,6 +53,27 @@ try {
     }
 
     $messengerDestination = $_SESSION['messenger_login_destination'] ?? null;
+
+    if ($account['role'] === 'driver' && (new \App\Services\UserSessionService())->hasActiveSession((int) $account['userId'])) {
+        session_regenerate_id(true);
+
+        unset(
+            $_SESSION['user_id'],
+            $_SESSION['logged_in'],
+            $_SESSION['first_name'],
+            $_SESSION['role'],
+            $_SESSION['registration_pending'],
+            $_SESSION['registration_role']);
+
+        $_SESSION['pending_device_transfer'] = [
+            'user_id' => (int) $account['userId'],
+            'created_at' => time(),
+            'expires_at' => time() + 300,
+        ];
+
+        header('Location: /signin?device_transfer=required', true, 303);
+        exit();
+    }
 
     session_regenerate_id(true);
     unset($_SESSION['registration_pending'], $_SESSION['registration_role']);
