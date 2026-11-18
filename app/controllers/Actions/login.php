@@ -16,6 +16,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['loginAcct'])) {
     exit();
 }
 
+if (isset($_SESSION['user_id']) && ($_SESSION['logged_in'] ?? false) === true) {
+    try {
+        $sessionService = new UserSessionService();
+
+        if ($sessionService->isCurrentValid((int) $_SESSION['user_id'])) {
+            header('Location: /', true, 303);
+            exit();
+        }
+    } catch (\Throwable $exception) {
+        Logger::logException($exception, 'Unable to validate existing login session');
+    }
+
+    // Never carry stale authentication into a new login attempt.
+    unset(
+        $_SESSION['user_id'],
+        $_SESSION['logged_in'],
+        $_SESSION['first_name'],
+        $_SESSION['role'],
+        $_SESSION['birth_date']
+    );
+}
+
 $formToken = trim((string) ($_POST['userToken'] ?? ''));
 $sessionToken = (string) ($_SESSION['user_token'] ?? '');
 
@@ -56,7 +78,9 @@ try {
     $messengerDestination = $_SESSION['messenger_login_destination'] ?? null;
 
     if ($account['role'] === 'driver' && (new \App\Services\UserSessionService())->hasActiveSession((int) $account['userId'])) {
-        session_regenerate_id(true);
+        if (!session_regenerate_id(true)) {
+            throw new \RuntimeException('Unable to regenerate the session ID.');
+        }
 
         unset(
             $_SESSION['user_id'],
@@ -64,7 +88,8 @@ try {
             $_SESSION['first_name'],
             $_SESSION['role'],
             $_SESSION['registration_pending'],
-            $_SESSION['registration_role']);
+            $_SESSION['registration_role']
+        );
 
         $_SESSION['pending_device_transfer'] = [
             'user_id' => (int) $account['userId'],

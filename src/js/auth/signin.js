@@ -48,6 +48,51 @@ $(document).ready(() => {
 
 const qString = window.location.search;
 const urlParams = new URLSearchParams(qString);
+const deviceTransferRequired = urlParams.get('device_transfer') === 'required';
+
+if (deviceTransferRequired) {
+    const confirmModal = document.querySelector('#confirm-modal');
+    const confirmBtn = document.querySelector('#confirm-modal-confirm');
+    const cancelBtn = document.querySelector('#confirm-modal-cancel');
+    const csrfToken = document.querySelector('input[name="userToken"]')?.value;
+
+    if (confirmModal && confirmBtn && cancelBtn && csrfToken) {
+        buildModal.confirm('Your account is already signed in on another device. Continuing will sign out that device and transfer your session to this one. Would you like to continue?', 'Transfer to This Device', 'Cancel');
+
+        const modal = bootstrap.Modal.getOrCreateInstance(confirmModal);
+
+        const submitTransfer = (action) => {
+            confirmBtn.disabled = true;
+            cancelBtn.disabled = true;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/device-transfer';
+
+            for (const [name, value] of Object.entries({
+                userToken: csrfToken,
+                transfer_action: action
+            })) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        };
+
+        confirmBtn.addEventListener('click', () => submitTransfer('confirm'));
+        cancelBtn.addEventListener('click', () => submitTransfer('cancel'));
+
+        modal.show();
+    } else {
+        console.error('Device-transfer confirmation could not be initialized.');
+    }
+};
+
 const paramValue = urlParams.get('success');
 if (paramValue === 'logged out') {
     setInterval(() => {
@@ -57,7 +102,7 @@ if (paramValue === 'logged out') {
 
 // Check if the client has agreed already
 const drvrAgreed = localStorage.getItem('operator_consented');
-if (!drvrAgreed) {
+if (!drvrAgreed && !deviceTransferRequired) {
     window.addEventListener('load', () => {
         setTimeout(() => {
             $(infoModal).modal('toggle'),

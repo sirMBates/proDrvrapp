@@ -132,13 +132,13 @@ class UserSessionService {
         $idleExpiresAt = new \DateTimeImmutable($session['expires_at'], $utc);
         $absoluteExpiresAt = new \DateTimeImmutable($session['absolute_expires_at'], $utc);
 
-        if ($now >= $idleExpiry || $now >= $absoluteExpiry) {
+        if ($now >= $idleExpiresAt || $now >= $absoluteExpiresAt) {
             return false;
         }
 
         $newIdleExpiry = $now->modify('+' . self::IDLE_TIMEOUT_SECONDS . ' seconds');
-        if ($newIdleExpiry > $absoluteExpiry) {
-            $newIdleExpiry = $absoluteExpiry;
+        if ($newIdleExpiry > $absoluteExpiresAt) {
+            $newIdleExpiry = $absoluteExpiresAt;
         }
 
         return $this->sessionRepository->touch($this->currentSessionHash(), $newIdleExpiry->format('Y-m-d H:i:s'));

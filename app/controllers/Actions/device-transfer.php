@@ -74,6 +74,13 @@ try {
         throw new \RuntimeException('Unable to regenerate the session ID.');
     }
 
+    unset(
+        $_SESSION['registration_pending'],
+        $_SESSION['registration_role'],
+        $_SESSION['user_name'],
+        $_SESSION['birth_date']
+    );
+
     // Atomically revoke previous sessions and authorize this one.
     $authorized = $sessionService->authorizeDriverSession($userId, true);
 
