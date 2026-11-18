@@ -25,10 +25,11 @@ if (!$isCli) {
     ini_set('session.use_only_cookies', 1);
     ini_set('session.use_strict_mode', 1);
     ini_set('session.save_path', BASE_PATH . 'storage/sessions');
+    ini_set('session.gc_maxlifetime', '28800');
 
     session_set_cookie_params([
         //↓lifetime is set in seconds (1 hr).
-        'lifetime' => 3600,
+        'lifetime' => 0,
         //'domain' => 'prodriver.local',
         'path' => '/',
         'secure' => true,
@@ -38,25 +39,6 @@ if (!$isCli) {
 
     if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
-    }
-
-    if (!isset($_SESSION['last_regeneration'])) {
-        # if there is no time variable set in session[last_regeneration]
-        # regenerate session id and add current time to session[last_regeneration] variable.
-        session_regenerate_id(true);
-        $_SESSION['last_regeneration'] = time();
-    } else {
-        # The following code basically resets the session_id every 1hr.
-        # Interval 60secs x 60mins = total secs: 3600secs or 1hr
-        # if there is a time set in session[last_regeneration] variable
-        # if the current time( time() ) (-)minus the time variable saved in session[last_regeneration]
-        # is greater or equal to ( >= ) an hour which is the interval variable ( $interval = 60secs * 60mins )
-        # update/regenerate session id (true) and update time in session variable [last_regeneration]
-        $interval = 60 * 60;
-        if (time() - $_SESSION['last_regeneration'] >= $interval) {
-            session_regenerate_id(true);
-            $_SESSION['last_regeneration'] = time();
-        }
     }
 
     /*

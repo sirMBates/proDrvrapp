@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use App\Services\UserSessionService;
+
 class Router {
     protected $routes = [];
     protected $protectedRoutes = [];
@@ -44,26 +46,42 @@ class Router {
                 $uriExists = true;
 
                 if ($route['method'] === $method) {
-                     // Check if route is protected
-                    if ($route['protected'] && (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
-                        if ($method === 'GET' && $route['uri'] === '/message-center') {
-                            $destination = '/message-center';
+                    // Check if route is protected
+                    if ($route['protected']) {
+                        $isAuthenticated = isset($_SESSION['user_id'], $_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 
-                            $conversationId = filter_var($_GET['conversation'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                        $isSessionValid = false;
 
-                            $recipientId = filter_var($_GET['recipient'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-                            if ($conversationId !== false && $conversationId !== null) {
-                                $destination .= '?conversation=' . (int) $conversationId;
-                            } elseif ($recipientId !== false && $recipientId !== null) {
-                                $destination .= '?recipient=' . (int) $recipientId;
+                        if ($isAuthenticated) {
+                            try {
+                                $sessionService = new UserSessionService();
+                                $isSessionValid = $sessionService->isCurrentValid((int) $_SESSION['user_id']);
+                            } catch (\Throwable $exception) {
+                                error_log('[SESSION VALIDATION ERROR] ' . $exception::class . ': ' . $exception->getMessage());
                             }
-
-                            $_SESSION['messenger_login_destination'] = $destination;
                         }
 
-                        header("Location: /signin");
-                        exit(); 
+                        if (!$isAuthenticated || !$isSessionValid) {
+                            // Preserve the existing Messenger redirect logic here.
+                            if ($method === 'GET' && $route['uri'] === '/message-center') {
+                                $destination = '/message-center';
+
+                                $conversationId = filter_var($_GET['conversation'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+                                $recipientId = filter_var($_GET['recipient'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+                                if ($conversationId !== false && $conversationId !== null) {
+                                    $destination .= '?conversation=' . (int) $conversationId;
+                                } elseif ($recipientId !== false && $recipientId !== null) {
+                                    $destination .= '?recipient=' . (int) $recipientId;
+                                }
+
+                                $_SESSION['messenger_login_destination'] = $destination;
+                            }
+
+                            header("Location: /signin");
+                            exit(); 
+                        }
                     }
 
                     return require base_path($route['controller']);

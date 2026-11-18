@@ -73,6 +73,26 @@ class AuthenticationService {
 
         return $user !== null && password_verify($password, $user['password']);
     }
+
+    public function findActiveDriverById(int $userId): array {
+        if ($userId < 1) {
+            throw new \InvalidArgumentException('Invalid user ID.');
+        }
+
+        $user = $this->userRepository->findById($userId);
+        if ($user === null || $user['role'] !== 'driver' || $user['account_status'] !== 'active') {
+            throw new \DomainException('This driver account is no longer eligible for authentication.');
+        }
+
+        $key = Key::loadFromAsciiSafeString($_ENV['SECRET_KEY']);
+
+        return [
+            'userId' => (int) $user['user_id'],
+            'firstName' => Crypto::decrypt($user['first_name'], $key),
+            'birthdate' => !empty($user['birth_date']) ? Crypto::decrypt($user['birth_date'], $key) : null,
+            'role' => 'driver'
+        ];
+    }
 }
 
 ?>

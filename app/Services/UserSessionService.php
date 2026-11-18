@@ -81,6 +81,37 @@ class UserSessionService {
         return $this->sessionRepository->findBySessionHash($this->currentSessionHash());
     }
 
+    public function isCurrentValid(int $userId): bool {
+        if ($userId < 1) {
+            return false;
+        }
+
+        $session = $this->findCurrent();
+        if ($session === null) {
+            return false;
+        }
+
+        if ((int) $session['user_id'] !== $userId) {
+            return false;
+        }
+
+        if ($session['revoked_at'] !== null) {
+            return false;
+        }
+
+        if (empty($session['absolute_expires_at'])) {
+            return false;
+        }
+
+        $utc = new \DateTimeZone('UTC');
+
+        $now = new \DateTimeImmutable('now', $utc);
+        $idleExpiresAt = new \DateTimeImmutable($session['expires_at'], $utc);
+        $absoluteExpiresAt = new \DateTimeImmutable($session['absolute_expires_at'], $utc);
+
+        return $now < $idleExpiresAt && $now < $absoluteExpiresAt;
+    }
+
     public function hasActiveSession(int $userId): bool {
         if ($userId < 1) {
             throw new \InvalidArgumentException('Invalid user ID.');
@@ -95,10 +126,11 @@ class UserSessionService {
             return false;
         }
 
-        $now = new \DateTimeImmutable();
+        $utc = new \DateTimeZone('UTC');
 
-        $idleExpiry = new \DateTimeImmutable($session['expires_at']);
-        $absoluteExpiry = new \DateTimeImmutable($session['absolute_expires_at']);
+        $now = new \DateTimeImmutable('now', $utc);
+        $idleExpiresAt = new \DateTimeImmutable($session['expires_at'], $utc);
+        $absoluteExpiresAt = new \DateTimeImmutable($session['absolute_expires_at'], $utc);
 
         if ($now >= $idleExpiry || $now >= $absoluteExpiry) {
             return false;
@@ -135,7 +167,7 @@ class UserSessionService {
     }
 
     private function expirationDate(int $lifetimeSeconds): string {
-        return (new DateTimeImmutable())->modify("+{$lifetimeSeconds} seconds")->format('Y-m-d H:i:s');
+        return (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->modify("+{$lifetimeSeconds} seconds")->format('Y-m-d H:i:s');
     }
 }
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\AuthenticationService;
+use App\Services\UserSessionService;
 use Core\Flash;
 use Core\Logger;
 
@@ -75,9 +76,35 @@ try {
         exit();
     }
 
-    session_regenerate_id(true);
+    if (!session_regenerate_id(true)) {
+        throw new \RuntimeException('Unable to regenerate the session ID.');
+    }
+
     unset($_SESSION['registration_pending'], $_SESSION['registration_role']);
 
+    $userSessionService = new UserSessionService();
+
+    if ($account['role'] === 'driver') {
+        $authorized = $userSessionService->authorizeDriverSession((int) $account['userId']);
+
+        if (!$authorized) {
+            // A concurrent login may have established another session
+            // after our initial existing-session check.
+            $_SESSION['pending_device_transfer'] = [
+                'user_id' => (int) $account['userId'],
+                'created_at' => time(),
+                'expires_at' => time() + 300,
+            ];
+
+            header('Location: /signin?device_transfer=required', true, 303);
+            exit();
+        }
+    } else {
+        $userSessionService->register((int) $account['userId']);
+    }
+
+    // Only establish authenticated PHP session state after
+    // successful registry authorization.
     $_SESSION['user_id'] = $account['userId'];
     $_SESSION['first_name'] = $account['firstName'];
     $_SESSION['logged_in'] = true;

@@ -7,6 +7,7 @@ use App\Repositories\DriverStatusRepository;
 use App\Repositories\EmergencyRepository;
 use App\Services\DriverStatusService;
 use App\Services\EmergencyService;
+use App\Services\UserSessionService;
 use Core\Database;
 use Core\Flash;
 
@@ -122,6 +123,16 @@ try {
         $statusRecord = $driverStatusService->endShiftIfNeeded($driverId);
 
         $pdo->commit();
+    }
+
+    // Revoke the authenticated session before destroying its PHP session ID.
+    try {
+        $userSessionService = new UserSessionService();
+        if (!$userSessionService->revokeCurrent()) {
+            error_log('[LOGOUT WARNING] No active registry record was revoked for user ID: ' . $driverId);
+        }
+    } catch (Throwable $sessionException) {
+        error_log('[LOGOUT SESSION REVOCATION ERROR] ' . $sessionException::class . ': ' . $sessionException->getMessage());
     }
 
     $destroyAuthenticatedSession();

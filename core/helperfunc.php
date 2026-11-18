@@ -31,15 +31,25 @@ function requireLoginAjax(?string $requiredRole = null): void {
     }
 
     header('Content-Type: application/json; charset=utf-8');
-
-    // 1. Verify the authenticated session.
+    
+    // 1. Verify the PHP session and database session registry.
     $isAuthenticated = isset($_SESSION['user_id'], $_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
+    $isSessionValid = false;
 
-    if (!$isAuthenticated) {
+    if ($isAuthenticated) {
+        try {
+            $sessionService = new \App\Services\UserSessionService();
+            $isSessionValid = $sessionService->isCurrentValid((int) $_SESSION['user_id']);
+        } catch (\Throwable $exception) {
+            error_log('[AJAX SESSION VALIDATION ERROR] ' . $exception::class . ': ' . $exception->getMessage());
+        }
+    }
+
+    if (!$isAuthenticated || !$isSessionValid) {
         http_response_code(401);
         echo json_encode([
             'status' => 'error',
-            'message' => 'Authentication required.'
+            'message' => 'Your session is invalid or has expired. Please sign in again.'
         ]);
         exit();
     }
