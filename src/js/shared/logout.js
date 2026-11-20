@@ -54,6 +54,30 @@ export class LogoutManager {
         });
     };
 
+    async logoutOnly() {
+        const data = await proDriverRequest('/logout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': this.csrfToken
+            },
+            body: JSON.stringify({
+                action: LOGOUT_ACTIONS.LOGOUT_ONLY
+            })
+        });
+
+        if (data?.status !== 'success') {
+            throw new Error(data?.message || 'You could not be signed out.');
+        }
+
+        this.clearDriverSessionState();
+        const redirect = data?.data?.redirect || '/signin?success=logged+out';
+
+        window.location.assign(redirect);
+        return true;
+    }
+
     async submitLogout(action, clickedButton) {
         if (this.isSubmitting) {
             return;

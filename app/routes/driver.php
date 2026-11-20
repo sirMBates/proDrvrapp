@@ -29,6 +29,7 @@ $router->get('/messenger-contacts', 'app/api/messenger-contacts.php');
 $router->get('/messenger-retrieve-messages', 'app/api/messenger-retrieve-messages.php');
 $router->get('/messenger-unread', 'app/api/messenger-unread.php');
 $router->get('/messenger-group-members', 'app/api/messenger-group-members.php');
+$router->get('/session-status', 'app/api/session-status.php', true);
 
 $router->post('/setstatus', 'app/api/setstatus.php');
 $router->post('/signature-request', 'app/api/signature-request.php');
@@ -43,6 +44,7 @@ $router->post('/messenger-mark-read', 'app/api/messenger-mark-read.php');
 $router->post('/messenger-delete-conversations', 'app/api/messenger-delete-conversations.php');
 $router->post('/messenger-create-group', 'app/api/messenger-create-group.php');
 $router->post('/push-subscription', 'app/api/push-subscription.php');
+$router->post('/session-activity', 'app/api/session-activity.php', true);
 
 $router->patch('/profile', 'app/controllers/Actions/updateprofileacct.php');
 $router->patch('/setprofilepicture', 'app/api/setprofilepicture.php');

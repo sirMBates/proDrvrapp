@@ -10,6 +10,9 @@ import { LogoutManager } from '../shared/logout.js';
 import { initializeMessageNotifications } from './message-notifications.js';
 import { PageGuidance } from './page-guidance.js';
 import { getPreferences, updatePreference } from './preferences.js';
+import { SessionActivityManager } from '../shared/session-activity.js';
+import { SessionCountdownManager } from '../shared/session-countdown.js';
+import { SessionExpirationModal } from '../shared/session-expiration-modal.js';
 
 const curView = getCurrentView();
 const menuProfileImage = document.querySelector('#menuProfileImage');
@@ -520,6 +523,84 @@ window.addEventListener('DOMContentLoaded', () => {
                 console.error('There was a problem with the fetch operation:', error);
         });
 
+        // Session Expiration Modal Management
+        const sessionExpirationModal = new SessionExpirationModal(
+                async () => {
+                        const renewed = await sessionActivityManager.renewSession();
+                        if (!renewed) {
+                                return false;
+                        }
+
+                        if (sessionCountdownManager.isWarningPeriod()) {
+                                console.warn('[SESSION MODAL] Renewal succeeded, but session expiration is still approaching.');
+                                return false;
+                        }
+
+                        sessionActivityManager.resumeAutomaticRenewal();
+                        return true;
+                },
+
+                // Sign Out
+                async () => {
+                        if (!logoutManager) {
+                                throw new Error('Logout manager is unavailable.');
+                        }
+
+                        return await logoutManager.logoutOnly();
+                }
+        );
+
+        sessionExpirationModal.init();
+
+        // Session Expiration Countdown Management
+        const sessionCountdownManager = new SessionCountdownManager(
+                // Five-minute warning callback
+                () => {
+                        sessionActivityManager.pauseAutomaticRenewal();
+                        // Determine which deadline controls expiration. ⬇
+                        sessionExpirationModal.setExpirationMode(sessionCountdownManager.isAbsoluteExpiration());
+                        // Synchronize the display before showing the modal. ⬇
+                        sessionExpirationModal.updateCountdown(sessionCountdownManager.getRemainingTime());
+                        sessionExpirationModal.show();
+                },
+
+                // Countdown tick callback
+                (remainingMs) => {
+                        if (sessionCountdownManager.warningActive) {
+                                sessionExpirationModal.updateCountdown(remainingMs);
+                        }
+                },
+
+                // Session expiration callback
+                () => {
+                        console.warn('[SESSION] Expiration deadline reached. Returning to sign-in.');
+                        sessionActivityManager.sessionExpired = true;
+                        sessionActivityManager.pauseAutomaticRenewal();
+
+                        // Clear the same browser state as a normal logout.
+                        if (logoutManager) {
+                                logoutManager.clearDriverSessionState();
+                        }
+
+                        // Never submit End of Shift during session expiration.
+                        window.location.replace('/signin?session=expired');
+                },
+
+                // Warning-cleared callback
+                () => {
+                        console.debug('[SESSION] Warning cleared. Restoring normal session activity.');
+                        sessionExpirationModal.modal?.hide();
+                        sessionActivityManager.resumeAutomaticRenewal();
+                }
+        );
+
+        // Session Activity Management
+        const sessionActivityManager = new SessionActivityManager(
+                (expiresAt, absoluteExpiresAt) => {
+                        sessionCountdownManager.updateDeadlines(expiresAt, absoluteExpiresAt);
+                }
+        );
+
         logoutManager = new LogoutManager({
                 logoutTrigger,
                 driverOffcanvas,
@@ -531,6 +612,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 errorDisplay: logoutModalError
         });
         logoutManager.init();
+
+        // Begin monitoring only after all dependent managers are ready
+        sessionActivityManager.init();
+        void sessionCountdownManager.init();
 
         if (logoutTrigger) {
                 initializeMessageNotifications({

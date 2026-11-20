@@ -62,6 +62,19 @@ class Router {
                         }
 
                         if (!$isAuthenticated || !$isSessionValid) {
+                            // Remove stale authentication state from invalid sessions.
+                            // Do not destroy the PHP session; preserve CSRF and flash support.
+                            unset(
+                                $_SESSION['user_id'],
+                                $_SESSION['logged_in'],
+                                $_SESSION['first_name'],
+                                $_SESSION['role'],
+                                $_SESSION['user_name'],
+                                $_SESSION['birth_date'],
+                                $_SESSION['registration_pending'],
+                                $_SESSION['registration_role'],
+                                $_SESSION['pending_device_transfer']
+                            );
                             // Preserve the existing Messenger redirect logic here.
                             if ($method === 'GET' && $route['uri'] === '/message-center') {
                                 $destination = '/message-center';
