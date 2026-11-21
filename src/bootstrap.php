@@ -65,6 +65,12 @@ return new class {
 
         $isAuthenticated = isset($_SESSION['user_id'], $_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 
+        // Redirect unauthenticated requests for known protected routes.
+        if (!$isAuthenticated && $uri === '/assignments') {
+            header('Location: /signin', true, 302);
+            exit();
+        }
+
         $isRegistrationPending = !$isAuthenticated && isset($_SESSION['user_id']) && ($_SESSION['registration_pending'] ?? false) === true;
 
         // Prevent authenticated users from returning to auth/account setup pages

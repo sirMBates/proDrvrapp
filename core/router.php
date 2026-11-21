@@ -7,8 +7,19 @@ use App\Services\UserSessionService;
 class Router {
     protected $routes = [];
     protected $protectedRoutes = [];
+    protected bool $discoveryMode = false;
+
+    public function setDiscoveryMode(bool $enabled): void {
+        $this->discoveryMode = $enabled;
+    }
 
     public function add($method, $uri, $controller, $protected = false) {
+        // Discovery mode registers protected page routes only.
+        // API endpoints and other unprotected routes are skipped.
+        if ($this->discoveryMode && !$protected) {
+            return;
+        }
+
         $this->routes[] = [
             'uri' => $uri,
             'controller' => $controller,

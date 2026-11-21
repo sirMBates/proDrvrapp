@@ -536,7 +536,6 @@ window.addEventListener('DOMContentLoaded', () => {
                                 return false;
                         }
 
-                        sessionActivityManager.resumeAutomaticRenewal();
                         return true;
                 },
 
